@@ -23,12 +23,15 @@ function fileSelectHandler(e) {
 }
 
 function uploadOn(e, callback) {
+    console.log("Drop. URL = ", e.dataTransfer.getData('URL'));
+
     // CASE 1 : THE DROPPED OBJECT IS A URL TO SOME FAUST CODE
     if (e.dataTransfer.getData('URL') && e.dataTransfer.getData('URL').split(
             ':').shift() != "file") {
         var url = e.dataTransfer.getData('URL');
         var filename = url.toString().split('/').pop();
-        filename = filename.toString().split('.').shift();
+        console.log("filename is ", filename);
+        document.getElementById("filename").value = filename;
         var xmlhttp = new XMLHttpRequest();
 
         xmlhttp.onreadystatechange = function() {
@@ -53,10 +56,11 @@ function uploadOn(e, callback) {
 
         // CASE 2 : THE DROPPED OBJECT IS SOME FAUST CODE
         if (dsp_code) {
-            //console.log("CASE 2");
+            console.log("CASE 2");
             //dsp_code = "process = vgroup(\"" + "TEXT" + "\", environment{" + dsp_code + "}.process);";
             callback();
         }
+
         // CASE 3 : THE DROPPED OBJECT IS A FILE CONTAINING SOME FAUST CODE
         else {
             var files = e.target.files || e.dataTransfer.files;
@@ -72,6 +76,9 @@ function uploadOn(e, callback) {
                 var reader = new FileReader();
                 var ext = file.name.toString().split('.').pop();
                 var filename = file.name.toString().split('.').shift();
+                console.log("filename is ", filename + "." + ext);
+                document.getElementById("filename").value = filename + "." + ext;
+
                 var type;
 
                 if (ext === "dsp") {
@@ -136,7 +143,7 @@ function download(filename, text) {
 // Download section
 function saveFaustCode() {
     console.log("save faust code");
-    download("foo.dsp", codeEditor.getValue());
+    download(document.getElementById("filename").value, codeEditor.getValue());
 }
 
 //-----------------------------------------------------------------------
@@ -227,7 +234,7 @@ function trigCompilation(key)
 
 function exportFaustSource() {
     getSHAKey(  document.getElementById("exportUrl").value,
-                "FaustDSP",
+                document.getElementById("filename").value,
                 codeEditor.getValue(),
                 trigCompilation,
                 cancelLoader

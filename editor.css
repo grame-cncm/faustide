@@ -88,6 +88,16 @@
 		border-color: #0062cc;
 	}
 
+	.dropzone input {
+		min-width: 300px;
+		height: auto;
+		text-align: center;
+		line-height: 2.5rem;
+		font-size : 20px;
+		background-color: inherit;
+		color: #0069d9;
+		border-width: 0px;
+	}
 	.editionzone {
 		grid-column: 2 3;
 		grid-row: 2 3;

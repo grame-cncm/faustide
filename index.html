@@ -46,11 +46,12 @@
 			<div role=button class="action-button" onclick="openExportDialog()">
 				<i class="fa fa-plus-circle" aria-hidden="true"></i>
 			</div>
+		</div>
 
-		</div>
 		<div id="myDropZone" class="dropzone">
-			<p>dropzone</p>
+			<input id="filename" contenteditable="true" value="untitled.dsp"/>
 		</div>
+
 		<div class="editionzone">
 			<textarea id="myTextarea">
 import("stdfaust.lib");
@@ -70,7 +71,6 @@ process = +;
 			<input id="exportUrl" contenteditable="true" value="http://faustservice.grame.fr" onkeyup="onEnterKey()"/>
 			<select id="Platform" onChange="changeArchs()"></select>
 			<select id="Architecture" onChange="deleteQrCode()"> </select>
-			<!-- <input id="exportButton" type="button" value="Export" onclick="exportFaustSource()"/> -->
 			<div id="exportButton" role=button class="export-button" onclick="exportFaustSource()">
 				Export
 			</div>
