@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Faust Live</title>
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto:300,400" rel="stylesheet">
+
+	<link rel=stylesheet href="codemirror/theme/eclipse.css">
+	<link rel=stylesheet href="codemirror/lib/codemirror.css">
+	<link rel=stylesheet href="codemirror/doc/docs.css">
+	<link rel=stylesheet href="codemirror/addon/hint/show-hint.css">
+
+	<link rel=stylesheet href="faustlive.css">
+	<script src="codemirror/lib/codemirror.js"></script>
+	<script src="codemirror/mode/clike/clike.js"></script>
+	<script src="codemirror/mode/faust/faust.js"></script>
+	<script src="codemirror/mode/faust/faustsnippets.js"></script>
+	<script src="codemirror/addon/edit/matchbrackets.js"></script>
+	<script src="codemirror/addon/dialog/dialog.js"></script>
+	<script src="codemirror/addon/search/search.js"></script>
+	<script src="codemirror/addon/hint/show-hint.js"></script>
+	<script src="codemirror/addon/hint/anyword-hint.js"></script>
+	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
+	<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+
+</head>
+<body>
+
+	<div class="application">
+		<div class="logozone"><img src="faust-logo.png" width=58px alt="LOGO"></div>
+		<div class="actionzone">
+			<div role=button class="action-button" onclick="runFaustCode()">
+				<i class="fa fa-play" aria-hidden="true"></i>
+			</div>
+
+			<div role=button class="action-button" onclick="saveFaustCode()">
+				<i class="fa fa-download" aria-hidden="true"></i>
+			</div>
+
+			<div role=button class="action-button" onclick="faustDocumentation()">
+				<i class="fa fa-book" aria-hidden="true"></i>
+			</div>
+
+			<div role=button class="action-button" onclick="openExportDialog()">
+				<i class="fa fa-plus-circle" aria-hidden="true"></i>
+			</div>
+
+		</div>
+		<div id="myDropZone" class="dropzone">
+			<p>dropzone</p>
+		</div>
+		<div class="editionzone">
+			<textarea id="myTextarea">
+import("stdfaust.lib");
+process = +;
+			</textarea>
+		</div>
+	</div>
+	<div class="modalwrapper" id="faustuiwrapper">
+		<span class="closeBtn" onclick="stopFaustCode()">&times;</span>
+		<div class="faustui" id="faustui"></div>
+	</div>
+
+	<div class="modalwrapper" id="exportwrapper">
+		<span class="closeBtn" onclick="closeExportDialog()">&times;</span>
+		<div class="exportui" id="exportui">
+			<h1>Export Faust Code</h1>
+			<input id="exportUrl" contenteditable="true" value="http://faustservice.grame.fr" onkeyup="onEnterKey()"/>
+			<select id="Platform" onChange="changeArchs()"></select>
+			<select id="Architecture" onChange="deleteQrCode()"> </select>
+			<input id="exportButton" type="button" value="Export" onclick="exportFaustSource()"/>
+
+			<div id="qrDiv">
+				<div id="loader">
+					<i class="fa fa-cog fa-spin fa-3x fa-fw"></i>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <script src="scripts/jsscripts.js"></script>
+    <script src="scripts/libfaust-wasm.js"></script>
+    <script src="scripts/WebMIDIAPI.js"></script>
+    <!-- <script src="binaryen.js"> </script> -->
+    <script src="scripts/webaudio-wasm-wrapper.js"></script>
+    <script src="scripts/compilefaust.js"></script>
+	<script src="scripts/runfaust.js"></script>
+	<script src="scripts/ExportLib.js"></script>
+	<script src="scripts/qrcode.js"></script>
+	<script src="scripts/exportUI.js"></script>
+
+	<script src="scripts/faustlive.js"></script>
+
+
+
+</body>
+</html>
