@@ -238,7 +238,7 @@ function trigCompilation(key)
 // exportFaustSource: send sourcecode to export URL : get back shakey and trig compilation if success
 function exportFaustSource() {
     getSHAKey(  document.getElementById("exportUrl").value,
-                document.getElementById("filename").value,
+                document.getElementById("filename").value.split(".")[0],
                 codeEditor.getValue(),
                 trigCompilation,
                 cancelLoader
