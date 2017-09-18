@@ -39,15 +39,33 @@
 		height: 1.5rem;
 		text-align: center;
 		color: #fff;
-		background-color: #007bff33;
-		border-color: #007bff;
+		background-color: #0069d9;
+		border-color: #0069d9;
 		border-radius: 2px;
 		user-select: none;
 	}
 
-	.action-button:hover {
+	.export-button {
+		width: auto;
+		margin: 10px;
+		padding: 4px;
+		height: 1.5rem;
+		text-align: center;
+		color: #fff;
 		background-color: #0069d9;
-		border-color: #0062cc;
+		border-color: #0069d9;
+		border-radius: 2px;
+		user-select: none;
+	}
+
+	.export-button:hover {
+		background-color: #007bff;
+		border-color: #007bff;
+	}
+
+	.action-button:hover {
+		background-color: #007bff;
+		border-color: #007bff;
 	}
 
 	.dropzone {
@@ -90,7 +108,7 @@
 		height: 100%;
 		width:100%;
 		overflow: auto;
-		background-color: rgba(187, 188, 190, 0.75);	
+		background-color: rgba(229, 231, 233, 0.83);
 	}
 
 	.faustui {
@@ -102,15 +120,14 @@
 /* Close Button used to stop the running Faust code */
 
 	.closeBtn{
-		color:#ccc;
 		float: right;
 		font-size:40px;
-		color:#fff;
+		color:#0069d9;
 		margin: 0px 10px 0px 0px;
 	  }
 
 	.closeBtn:hover,.closeBtn:focus{
-		color:#000;
+		color:#007bff;
 		text-decoration: none;
 		cursor:pointer;
 	}
@@ -125,7 +142,7 @@
 		width: 250px;
 		height: calc(100%-80px);
 		background-color:white;
-		box-shadow: 3px 3px 5px 0px rgba(75, 81, 122, 0.46); 
+		box-shadow: 3px 3px 5px 0px rgba(75, 81, 122, 0.46);
 	}
 
 	.exportui h1 {

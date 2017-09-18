@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>Faust Live</title>
+	<title>Faust Editor</title>
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto:300,400" rel="stylesheet">
 
 	<link rel=stylesheet href="codemirror/theme/eclipse.css">
@@ -12,7 +12,7 @@
 	<link rel=stylesheet href="codemirror/doc/docs.css">
 	<link rel=stylesheet href="codemirror/addon/hint/show-hint.css">
 
-	<link rel=stylesheet href="faustlive.css">
+	<link rel=stylesheet href="editor.css">
 	<script src="codemirror/lib/codemirror.js"></script>
 	<script src="codemirror/mode/clike/clike.js"></script>
 	<script src="codemirror/mode/faust/faust.js"></script>
@@ -70,7 +70,11 @@ process = +;
 			<input id="exportUrl" contenteditable="true" value="http://faustservice.grame.fr" onkeyup="onEnterKey()"/>
 			<select id="Platform" onChange="changeArchs()"></select>
 			<select id="Architecture" onChange="deleteQrCode()"> </select>
-			<input id="exportButton" type="button" value="Export" onclick="exportFaustSource()"/>
+			<!-- <input id="exportButton" type="button" value="Export" onclick="exportFaustSource()"/> -->
+			<div id="exportButton" role=button class="export-button" onclick="exportFaustSource()">
+				Export
+			</div>
+
 
 			<div id="qrDiv">
 				<div id="loader">
