@@ -204,18 +204,21 @@ function closeExportDialog()
     document.getElementById('exportwrapper').style.display = 'none';
 }
 
+// startWaitingQrCode: show spinning gear
 function startWaitingQrCode()
 {
     console.log("start Waiting QrCode");
     document.getElementById("loader").style.display = "block";
 }
 
+// startWaitingQrCode: hide spinning gear
 function stopWaitingQrCode()
 {
     console.log("stop Waiting QrCode");
     document.getElementById("loader").style.display = "none";
 }
 
+// trigCompilation: sendPrecompileRequest : show QrCode if success
 function trigCompilation(key)
 {
     console.log("trigCompilation " + key);
@@ -232,6 +235,7 @@ function trigCompilation(key)
                          );
 }
 
+// exportFaustSource: send sourcecode to export URL : get back shakey and trig compilation if success
 function exportFaustSource() {
     getSHAKey(  document.getElementById("exportUrl").value,
                 document.getElementById("filename").value,
