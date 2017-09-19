@@ -10,7 +10,7 @@ if (!isWasm) {
 }
 
 var audio_context = (isWebKitAudio) ? new webkitAudioContext() : new AudioContext();
-var buffer_size = 1024;
+var buffer_size = 4096;
 var audio_input = null;
 var midi_input = [];
 var factory = null;
@@ -95,7 +95,7 @@ function compileDSP() {
 
 						if (!dsp) {
 							alert(faust.getErrorMessage());
-							// Fix me 
+							// Fix me
 							document.getElementById('faustuiwrapper').style.display = 'none';
 							return;
 						}
@@ -139,7 +139,7 @@ function compileDSP() {
 
 				if (!factory) {
 					alert(faust.getErrorMessage());
-					// Fix me 
+					// Fix me
 					document.getElementById('faustuiwrapper').style.display = 'none';
 					return;
 				}
@@ -151,7 +151,7 @@ function compileDSP() {
 
 						if (!dsp) {
 							alert(faust.getErrorMessage());
-							// Fix me 
+							// Fix me
 							document.getElementById('faustuiwrapper').style.display = 'none';
 							return;
 						}
