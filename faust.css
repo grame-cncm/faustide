@@ -23,19 +23,19 @@ text {
 .faust-button-label {
 	font-family: Arial, Verdana, Helvetica, sans;
 	font-size: 13px;
-	fill: rgba(0,182,253,0.6);
+	fill: rgba(122, 219, 255, 0.79);
 }
 
 .faust-tgroup-label {
 	font-family: Arial, Verdana, Helvetica, sans;
 	font-size: 13px;
-	fill: rgba(0,182,253,0.6);
+	fill: rgba(122, 219, 255, 0.79);
 }
 
 .faust-label {
 	font-family: Arial, Verdana, Helvetica, sans;
 	font-size: 13px;
-	fill: rgba(0,182,253,0.6);
+	fill: rgba(35, 34, 13, 0.71);
 }
 
 .faust-value-text {
