@@ -140,10 +140,36 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
 
-// Download section
+//-----------------------------------------------------------------------
+// Load and Save Faust code on the local file system
+//-----------------------------------------------------------------------
+
+// Save section
 function saveFaustCode() {
     console.log("save faust code");
     download(document.getElementById("filename").value, codeEditor.getValue());
+}
+
+// Read faust source file from file system
+// e: event
+function readSourceFile(evt) {
+    var file = evt.target.files[0];
+    if (!file) { return; }
+    document.getElementById("filename").value = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var contents = e.target.result;
+        codeEditor.setValue(contents);
+    };
+    reader.readAsText(file);
+}
+
+// Load Faust file from local file system via #fileinput element
+function loadFaustCode() {
+    console.log("load faust code");
+    var gFileInput = document.getElementById('fileinput');
+    gFileInput.addEventListener('change', readSourceFile, false);
+    gFileInput.click();
 }
 
 //-----------------------------------------------------------------------

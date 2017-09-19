@@ -36,6 +36,10 @@
 				<i class="fa fa-play" aria-hidden="true"></i>
 			</div>
 
+			<div role=button class="action-button" onclick="loadFaustCode()">
+				<i class="fa fa-upload" aria-hidden="true"></i>
+			</div>
+
 			<div role=button class="action-button" onclick="saveFaustCode()">
 				<i class="fa fa-download" aria-hidden="true"></i>
 			</div>
@@ -60,6 +64,7 @@ process = +;
 			</textarea>
 		</div>
 	</div>
+	<input type="file" id="fileinput" style="display:none"/>
 	<div class="modalwrapper" id="faustuiwrapper">
 		<span class="closeBtn" onclick="stopFaustCode()">&times;</span>
 		<div class="faustui" id="faustui"></div>
