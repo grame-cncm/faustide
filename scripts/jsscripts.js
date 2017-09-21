@@ -1452,12 +1452,6 @@ _f4u$t.disable_zoom = function() {
   metaNode.content = "target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no";
   headID.appendChild(metaNode);
 }
-<<<<<<< HEAD
-=======
-
-// x=30, y=20 pour le label des checkbox
-
->>>>>>> uistyle
 _f4u$t.checkbox_inits = {
   mom : null,
   d : 19,
@@ -3589,15 +3583,12 @@ _f4u$t.SVG.prototype.make = function() {
   _f4u$t.VIEWPORT_SCALE = Math.min(this.w/viewport_dims[0], this.h/viewport_dims[1]);
 }
 
-<<<<<<< HEAD
-=======
 
 
 //------------------------------------------------------------------------------
 // DIVERS
 //------------------------------------------------------------------------------
 
->>>>>>> uistyle
 _f4u$t.check_label = function(label) {
   return (label.substring(0, 2) == "0x") ? "" : label;
 }
