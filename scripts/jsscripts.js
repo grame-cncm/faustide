@@ -359,7 +359,7 @@ RGB value of the color grey in an array.
 @type Array
 @default [100,100,100]
 **/
-_f4u$t.GREY = [100,100,100];
+_f4u$t.GREY = [150,150,150];
 
 /**
 RGB value of the color pink in an array.
@@ -1452,6 +1452,12 @@ _f4u$t.disable_zoom = function() {
   metaNode.content = "target-densitydpi=device-dpi, initial-scale=1.0, user-scalable=no";
   headID.appendChild(metaNode);
 }
+<<<<<<< HEAD
+=======
+
+// x=30, y=20 pour le label des checkbox
+
+>>>>>>> uistyle
 _f4u$t.checkbox_inits = {
   mom : null,
   d : 19,
@@ -1505,12 +1511,12 @@ _f4u$t.tgroup_inits = {
 _f4u$t.group_inits = {
   mom : null,
   axis : _f4u$t.X_AXIS,
-  padding : 10,
-  other_axis_padding : 10,
+  padding : 8,
+  other_axis_padding : 8,
   draw_background : true,
   label : '',
   objs : [],
-  gravity : [_f4u$t.CENTER, _f4u$t.CENTER],
+  gravity : [_f4u$t.CENTER, _f4u$t.BOTTOM],
   label : '',
   fill : 'url(#groupBoxGradient)',
   stretchable : [false, false],
@@ -1596,7 +1602,7 @@ _f4u$t.bargraph_inits.meter_fill = 'url(#barGraphMeterGradient)';
 _f4u$t.bargraph_inits.curtain_stroke = _f4u$t.BLACK;
 _f4u$t.bargraph_inits.meter_stroke = _f4u$t.BLACK;
 _f4u$t.bargraph_inits.init = null;
-_f4u$t.bargraph_inits.girth = 30;
+_f4u$t.bargraph_inits.girth = 16;
 
 _f4u$t.hbargraph_inits = $.extend(true, {}, _f4u$t.bargraph_inits);
 _f4u$t.hbargraph_inits.meter_fill = 'url(#horizontalBarGraphMeterGradient)';
@@ -1649,10 +1655,14 @@ _f4u$t.label_inits = {
   stretchable : [false, false]
 }
 
+//-----------------------------------------------------------------------
+// THE VARIOUS GRADIENTS
+//-----------------------------------------------------------------------
+
 _f4u$t.linear_gradient_inits = {
   buttonDownGradient :
     {
-      stops : [['0%', '#404040', 1],['100%', '#B0B0B0', 1]],
+      stops : [['0%', 'rgb(233,30,101)', 0.8],['100%', 'rgb(247, 110, 158)', 1]],
       x1 : "0%",
       y1 : "0%",
       x2 : "0%",
@@ -1663,7 +1673,7 @@ _f4u$t.linear_gradient_inits = {
     },
   buttonUpGradient :
     {
-      stops : [['0%', '#B0B0B0', 1],['100%', '#404040', 1]],
+      stops : [['0%', 'rgb(247, 110, 158)', 0.8],['100%', 'rgb(233,30,101)', 1]],
       x1 : "0%",
       y1 : "0%",
       x2 : "100%",
@@ -1696,7 +1706,7 @@ _f4u$t.linear_gradient_inits = {
     },
   groupBoxGradient :
     {
-      stops : [['0%', '#A0A0A0', 1],['100%', '#202020', 1]],
+      stops : [['0%', '#333', 1],['100%', '#111', 1]],
       x1 : "0%",
       y1 : "0%",
       x2 : "100%",
@@ -1817,7 +1827,7 @@ _f4u$t.linear_gradient_inits = {
 _f4u$t.radial_gradient_inits = {
   rotatingButtonHandleGradient :
     {
-      stops : [['0%', 'rgb(255,255,255)', 0.8],['100%', 'rgb(110,110,110)', 1]],
+      stops : [['0%', 'rgb(247, 110, 158)', 0.8],['100%', 'rgb(233,30,101)', 1]],
       cx : "40%",
       cy : "35%",
       r : "50%",
@@ -2006,7 +2016,7 @@ _f4u$t.UIObject.prototype.make_tooltip_box = function(svg, parent, id) {
   var ttbox = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    2,
+    0,
     -textdims.width*0.05,
     -(textdims.height*1.1),
     textdims.width*1.1,
@@ -2041,6 +2051,10 @@ _f4u$t.UIObject.prototype.make_tooltip = function(svg, linked_obj_id, id) {
 
 // Basic UI objects used all over the place
 
+//------------------------------------------------------------------------------
+// ValueBox
+//------------------------------------------------------------------------------
+
 _f4u$t.ValueBox = function(options) {
   _f4u$t.init_prop(this, options, 'vbox', 'mom');
   _f4u$t.init_prop(this, options, 'vbox', 'init');
@@ -2064,7 +2078,7 @@ _f4u$t.ValueBox.prototype.make_box = function(svg, parent) {
   var vb = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    2,
+    0,
     0,
     0,
     this.width,
@@ -2072,7 +2086,7 @@ _f4u$t.ValueBox.prototype.make_box = function(svg, parent) {
     {
       id: 'faust_value_box_'+id,
       fill : _f4u$t.color_to_rgb(_f4u$t.WHITE),
-      stroke : _f4u$t.color_to_rgb(_f4u$t.BLACK),
+      //stroke : _f4u$t.color_to_rgb(_f4u$t.BLACK),
       'class': 'faust-vbox-box',
       onmousedown : mousedown,
       ontouchstart : mousedown
@@ -2111,6 +2125,11 @@ _f4u$t.ValueBox.prototype.make = function(svg, parent) {
   return g;
 }
 
+
+//------------------------------------------------------------------------------
+// Label
+//------------------------------------------------------------------------------
+
 _f4u$t.Label = function(options) {
   _f4u$t.init_prop(this, options, 'label', 'mom');
   _f4u$t.init_prop(this, options, 'label', 'label');
@@ -2141,7 +2160,7 @@ _f4u$t.Label.prototype.make = function(svg, parent) {
   var vl = _f4u$t.make_text(
     svg,
     parent,
-    4,
+    8,
     this.dims()[_f4u$t.Y_AXIS],
     label,
     {
@@ -2160,9 +2179,9 @@ _f4u$t.Label.prototype.make = function(svg, parent) {
 _f4u$t.IncrementalObject = function () {}
 _f4u$t.extend(_f4u$t.UIObject, _f4u$t.IncrementalObject);
 
-/*
-  DEFINES A ROTATING BUTTON.
-*/
+//------------------------------------------------------------------------------
+// ROTATING BUTTON.
+//------------------------------------------------------------------------------
 
 _f4u$t.RotatingButton = function(options) {
   _f4u$t.init_prop(this, options, 'rbutton', 'mom');
@@ -2248,7 +2267,7 @@ _f4u$t.RotatingButton.prototype.make_mgroove = function(svg, parent, id) {
     d,
     {
       fill : _f4u$t.color_to_rgb(this.mgroove_fill),
-      stroke : _f4u$t.color_to_rgb(this.mgroove_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.mgroove_stroke),
       id : full_id,
       'class' : 'faust-rbutton-mgroove'
     }
@@ -2272,7 +2291,7 @@ _f4u$t.RotatingButton.prototype.make_dot = function(svg, parent, id, rot) {
     this.r() * (1 - this.kp) * 0.5,
     {
       fill : _f4u$t.color_to_rgb(this.dot_fill),
-      stroke : _f4u$t.color_to_rgb(this.dot_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.dot_stroke),
       id : full_id,
       'class' : 'faust-rbutton-dot'
     }
@@ -2316,7 +2335,7 @@ _f4u$t.RotatingButton.prototype.make_meter = function(svg, parent, id) {
     d,
     {
       fill : _f4u$t.color_to_rgb(this.meter_fill),
-      stroke : _f4u$t.color_to_rgb(this.meter_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.meter_stroke),
       id : full_id,
       'class' : 'faust-rbutton-meter'
     }
@@ -2338,7 +2357,7 @@ _f4u$t.RotatingButton.prototype.make_groove = function(svg, parent, id) {
     this.r() * this.kp,
     {
       fill : _f4u$t.color_to_rgb(this.groove_fill),
-      stroke : _f4u$t.color_to_rgb(this.groove_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.groove_stroke),
       id : full_id,
       'class' : 'faust-rbutton-groove'
     }
@@ -2433,9 +2452,10 @@ _f4u$t.RotatingButton.prototype.make = function(svg, parent) {
   return g;
 }
 
-/*
-  DEFINES A SLIDER.
-*/
+//------------------------------------------------------------------------------
+//  SLIDER
+//------------------------------------------------------------------------------
+
 
 _f4u$t.SlidingObject = function(options, type) {
   _f4u$t.init_prop(this, options, type, 'mom');
@@ -2504,14 +2524,14 @@ _f4u$t.Slider.prototype.make_groove = function(svg, parent, id) {
   var groove = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     _f4u$t.xy(this.axis, startp, 0),
     0,
     _f4u$t.xy(this.axis, w - startp, w),
     _f4u$t.xy(this.axis, h, startp),
     {
       fill : _f4u$t.color_to_rgb(this.groove_fill),
-      stroke : _f4u$t.color_to_rgb(this.groove_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.groove_stroke),
       id : full_id,
       'class' : _f4u$t.xy(this.axis, 'faust-hslider-groove', 'faust-vslider-groove'),
       transform : trans
@@ -2534,14 +2554,14 @@ _f4u$t.Slider.prototype.make_meter = function(svg, parent, id) {
   var groove = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.groove_fill),
-      stroke : _f4u$t.color_to_rgb(this.groove_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.groove_stroke),
       id : full_id,
       'class' : _f4u$t.xy(this.axis, 'faust-hslider-meter', 'faust-vslider-meter'),
       transform : trans
@@ -2571,14 +2591,14 @@ _f4u$t.Slider.prototype.make_handle = function(svg, parent, id) {
   var handle = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    2,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.handle_fill),
-      stroke : _f4u$t.color_to_rgb(this.handle_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.handle_stroke),
       id : full_id,
       'class' : _f4u$t.xy(this.axis, 'faust-hslider-handle', 'faust-vslider-handle'),
       transform : 'translate('+x+','+y+')'
@@ -2617,9 +2637,10 @@ _f4u$t.Slider.prototype.make = function(svg, parent) {
   return g;
 }
 
-/*
-  DEFINES A HORIZONTAL SLIDER.
-*/
+
+//------------------------------------------------------------------------------
+//  HORIZONTAL SLIDER.
+//------------------------------------------------------------------------------
 
 _f4u$t.HorizontalSlider = function(options) {
   options = options || {};
@@ -2630,9 +2651,10 @@ _f4u$t.HorizontalSlider = function(options) {
 
 _f4u$t.extend(_f4u$t.Slider, _f4u$t.HorizontalSlider);
 
-/*
-  DEFINES A VERTICAL SLIDER.
-*/
+
+//------------------------------------------------------------------------------
+// VERTICAL SLIDER.
+//------------------------------------------------------------------------------
 
 _f4u$t.VerticalSlider = function(options) {
   options = options || {};
@@ -2642,6 +2664,11 @@ _f4u$t.VerticalSlider = function(options) {
 }
 
 _f4u$t.extend(_f4u$t.Slider, _f4u$t.VerticalSlider);
+
+
+//------------------------------------------------------------------------------
+// Bargraph
+//------------------------------------------------------------------------------
 
 _f4u$t.BarGraph = function(options, type) {
   _f4u$t.SlidingObject.call(this, options, type);
@@ -2664,14 +2691,14 @@ _f4u$t.BarGraph.prototype.make_curtain = function(svg, parent, id) {
   var curtain = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.curtain_fill),
-      stroke : _f4u$t.color_to_rgb(this.curtain_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.curtain_stroke),
       id : full_id,
       transform : _f4u$t.xy(this.axis,'translate('+(xo + this.length)+',0) scale(-1,1)', 'translate('+xo+',0)'),
       'class' : _f4u$t.xy(this.axis, 'faust-hbargraph-curtain', 'faust-vbargraph-curtain')
@@ -2688,14 +2715,14 @@ _f4u$t.BarGraph.prototype.make_meter = function(svg, parent, id) {
   var meter = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.meter_fill),
-      stroke : _f4u$t.color_to_rgb(this.meter_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.meter_stroke),
       id : 'faust_'+this.type+'_meter_'+id,
       transform : 'translate('+xo+',0)',
       'class' : _f4u$t.xy(this.axis, 'faust-hbargraph-meter', 'faust-vbargraph-meter')
@@ -2727,9 +2754,10 @@ _f4u$t.BarGraph.prototype.make = function(svg, parent) {
   return g;
 }
 
-/*
-  DEFINES A HORIZONTAL BAR GRAPH.
-*/
+
+//------------------------------------------------------------------------------
+// HORIZONTAL BAR GRAPH
+//------------------------------------------------------------------------------
 
 _f4u$t.HorizontalBarGraph = function(options) {
   options = options || {};
@@ -2740,9 +2768,10 @@ _f4u$t.HorizontalBarGraph = function(options) {
 
 _f4u$t.extend(_f4u$t.BarGraph, _f4u$t.HorizontalBarGraph);
 
-/*
-  DEFINES A VERTICAL BAR GRAPH.
-*/
+
+//------------------------------------------------------------------------------
+// VERTICAL BAR GRAPH
+//------------------------------------------------------------------------------
 
 _f4u$t.VerticalBarGraph = function(options) {
   options = options || {};
@@ -2752,6 +2781,11 @@ _f4u$t.VerticalBarGraph = function(options) {
 }
 
 _f4u$t.extend(_f4u$t.BarGraph, _f4u$t.VerticalBarGraph);
+
+
+//------------------------------------------------------------------------------
+// Checkbox
+//------------------------------------------------------------------------------
 
 _f4u$t.CheckBox = function(options) {
   _f4u$t.init_prop(this, options, 'checkbox','mom');
@@ -2787,14 +2821,14 @@ _f4u$t.CheckBox.prototype.make_box = function(svg, parent, id) {
   var box = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.box_fill),
-      stroke : _f4u$t.color_to_rgb(this.box_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.box_stroke),
       id : full_id,
       'class' : 'faust-checkbox-box',
       transform : 'translate('+xo+',0)',
@@ -2820,11 +2854,11 @@ _f4u$t.CheckBox.prototype.make_check = function(svg, parent, id) {
     {
       id : full_id,
       fill : _f4u$t.color_to_rgb(this.check_fill),
-      stroke : _f4u$t.color_to_rgb(this.check_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.check_stroke),
       style : "opacity:"+(this.init == 1 ? 1.0 : 0.0),
       onmouseup : mouseup,
       //ontouchend : touchup, // deactivated so that touch doesn't trigger both box and check at the same time
-      'class' : 'faust-chekbox-check',
+      'class' : 'faust-checkbox-check',
       transform : 'translate('+xo+',0)'
     }
   );
@@ -2846,9 +2880,10 @@ _f4u$t.CheckBox.prototype.make = function(svg, parent) {
   return g;
 }
 
-/*
-  Button in
-*/
+
+//------------------------------------------------------------------------------
+// Button
+//------------------------------------------------------------------------------
 
 _f4u$t.Button = function(options) {
   _f4u$t.init_prop(this, options, 'button','mom');
@@ -2896,7 +2931,7 @@ _f4u$t.Button.prototype.make_button_box = function(svg, parent, id) {
     {
       id : full_id,
       fill : _f4u$t.color_to_rgb(this.fill_off),
-      stroke : _f4u$t.color_to_rgb(this.stroke),
+      //stroke : _f4u$t.color_to_rgb(this.stroke),
       'class' : 'faust-button-box',
       onmouseover : '_f4u$t.button_hover("'+full_id+'")',
       onmouseout : '_f4u$t.button_unhover("'+full_id+'")'
@@ -2949,6 +2984,11 @@ _f4u$t.Button.prototype.make = function(svg, parent) {
 
   return g;
 }
+
+
+//------------------------------------------------------------------------------
+// NUMERICAL ENTRY
+//------------------------------------------------------------------------------
 
 _f4u$t.NumericalEntry = function(options) {
   _f4u$t.init_prop(this, options, 'nentry', 'mom');
@@ -3009,7 +3049,7 @@ _f4u$t.NumericalEntry.prototype.make_button = function(svg, parent, id, xo, incr
   var button = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
@@ -3017,7 +3057,7 @@ _f4u$t.NumericalEntry.prototype.make_button = function(svg, parent, id, xo, incr
     {
 
       fill : _f4u$t.color_to_rgb(this.button_fill),
-      stroke : _f4u$t.color_to_rgb(this.button_stroke),
+      //stroke : _f4u$t.color_to_rgb(this.button_stroke),
       transform : 'translate('+xo+',0)',
       id : full_id,
       'class' : 'faust-nentry-box'
@@ -3119,6 +3159,11 @@ _f4u$t.NumericalEntry.prototype.make = function(svg, parent) {
 
   return g;
 }
+
+
+//------------------------------------------------------------------------------
+// LAYOUT MANAGER
+//------------------------------------------------------------------------------
 
 _f4u$t.LayoutManager = function(options) {
   var type = _f4u$t.xy(options.axis, 'hgroup','vgroup');
@@ -3257,14 +3302,14 @@ _f4u$t.LayoutManager.prototype.make_background = function(svg, parent) {
   var background = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
     h,
     {
       fill : _f4u$t.color_to_rgb(this.fill),
-      stroke : _f4u$t.color_to_rgb(this.stroke),
+      //stroke : _f4u$t.color_to_rgb(this.stroke),
       'class' : 'faust-group-background',
       id : full_id,
       style: +'fill-opacity:0.2;'
@@ -3300,6 +3345,11 @@ _f4u$t.LayoutManager.prototype.make = function(svg, parent) {
   //this.make_dim_cross(svg, g);
   return g;
 }
+
+
+//------------------------------------------------------------------------------
+// TAB GROUP
+//------------------------------------------------------------------------------
 
 _f4u$t.TabGroup = function(options) {
   _f4u$t.init_prop(this, options, 'tgroup', 'mom');
@@ -3390,7 +3440,7 @@ _f4u$t.TabGroup.prototype.make_tab = function(svg, parent, w, h, x, y, goodid, b
   var tab = _f4u$t.make_rectangle_via_rect(
     svg,
     parent,
-    4,
+    0,
     0,
     0,
     w,
@@ -3399,7 +3449,7 @@ _f4u$t.TabGroup.prototype.make_tab = function(svg, parent, w, h, x, y, goodid, b
       transform: 'translate('+x+','+y+')',
       'class' : 'faust-tgroup-box',
       fill : _f4u$t.color_to_rgb(fill),
-      stroke : _f4u$t.color_to_rgb(this.stroke),
+      //stroke : _f4u$t.color_to_rgb(this.stroke),
       id : 'faust_tab_'+_f4u$t.unique(goodid),
       onmousedown : mousedown,
       ontouchstart : mousedown
@@ -3455,6 +3505,11 @@ _f4u$t.TabGroup.prototype.make = function(svg, parent) {
 
   return g;
 }
+
+
+//------------------------------------------------------------------------------
+// SVG
+//------------------------------------------------------------------------------
 
 // rather than extending the jQuery svg object, we just create a wrapper around it
 _f4u$t.SVG = function(svg, w, h, options) {
@@ -3534,6 +3589,15 @@ _f4u$t.SVG.prototype.make = function() {
   _f4u$t.VIEWPORT_SCALE = Math.min(this.w/viewport_dims[0], this.h/viewport_dims[1]);
 }
 
+<<<<<<< HEAD
+=======
+
+
+//------------------------------------------------------------------------------
+// DIVERS
+//------------------------------------------------------------------------------
+
+>>>>>>> uistyle
 _f4u$t.check_label = function(label) {
   return (label.substring(0, 2) == "0x") ? "" : label;
 }
@@ -3822,8 +3886,9 @@ _f4u$t.make_checkbox = function(dct, hash) {
   var label = new _f4u$t.Label({label : _f4u$t.check_label(dct["label"]), id : id+"_label", mom : null});
 
   var lm = new _f4u$t.LayoutManager(lm_options);
-  lm.objs.push(checkbox);
   lm.objs.push(label);
+  lm.objs.push(checkbox);
+
 
   return lm;
 }
@@ -4157,7 +4222,9 @@ _f4u$t.initiate_bargraph = function(axis, fullid, weakaxis, strongaxis, minval, 
   _f4u$t.IDS_TO_ATTRIBUTES[id]["step"] = step;
   _f4u$t.IDS_TO_ATTRIBUTES[id]["init"] = init;
   _f4u$t.IDS_TO_ATTRIBUTES[id]["unit"] = unit;
-  _f4u$t.IDS_TO_ATTRIBUTES[id]["label"] = label;
+  _f4u$t.IDS_TO_ATTRIBUTES[id]["integer"] = false;
+  _f4u$t.IDS_TO_ATTRIBUTES[id]["ndec"] = (maxval-minval) <= 10 ? 2 : (maxval-minval) <= 100 ? 1 : 0;
+ _f4u$t.IDS_TO_ATTRIBUTES[id]["label"] = label;
   _f4u$t.IDS_TO_ATTRIBUTES[id]["address"] = address;
   _f4u$t.path_to_id(address, fullid);
 }
@@ -4753,8 +4820,7 @@ _f4u$t.dumb_label_update = function(id, c) {
   var integer = _f4u$t.IDS_TO_ATTRIBUTES[id]["integer"];
   if (integer) {
     c = (c + 0.49999).toString().parseInt();
-  }
-  else {
+  } else {
     c = c.toFixed(_f4u$t.IDS_TO_ATTRIBUTES[id]["ndec"]);
   }
   _f4u$t.IDS_TO_ATTRIBUTES[id]["buffer"] = c;

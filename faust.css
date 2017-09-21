@@ -34,8 +34,8 @@ text {
 
 .faust-label {
 	font-family: Arial, Verdana, Helvetica, sans;
-	font-size: 13px;
-	fill: rgba(35, 34, 13, 0.71);
+	font-size: 14px;
+	fill: rgba(248, 187, 208, 0.75);
 }
 
 .faust-value-text {
@@ -80,32 +80,26 @@ path.faust-rbutton-handle {
 	stroke : black;
 }
 
-rect.faust-hslider-meter {
-	fill : url(#horizontalSliderMeterGradient);
-}
-
-rect.faust-hslider-groove {
-	fill : rgba(28,126,192,0.65);
-	stroke : rgba(0,182,253,0.9);
-}
 
 rect.faust-hslider-handle {
-	fill : url(#horizontalSliderHandleGradient);
-	stroke : black;
+	fill : black;
 }
 
-rect.faust-vslider-meter {
-	fill : url(#verticalSliderMeterGradient);
+rect.faust-vslider-meter,
+rect.faust-hslider-meter {
+	fill : #F48FB1;
 }
 
-rect.faust-vslider-groove {
-	fill : rgba(28,126,192, 0.65);
-	stroke : rgba(0,182,253,0.9);
+rect.faust-vslider-groove,
+rect.faust-hslider-groove {
+	//fill : #FCE4EC;
+	fill : black;
 }
 
-rect.faust-vslider-handle {
-	fill : url(#verticalSliderHandleGradient);
-	stroke : black;
+rect.faust-vslider-handle,
+rect.faust-hslider-handle {
+	fill : rgba(233, 30, 101, 0.63);
+	stroke : rgba(233, 30, 101, 0.99);
 }
 
 rect.faust-hbargraph-curtain {
@@ -161,7 +155,9 @@ rect.faust-tgroup-box {
 }
 
 circle.faust-rbutton-groove {
+	//fill : rgba(233, 30, 101, 0.63);
 	fill : url(#rotatingButtonHandleGradient);
+	stroke : rgb(233, 30, 101);
 }
 
 circle.faust-rbutton-dot {
@@ -170,11 +166,11 @@ circle.faust-rbutton-dot {
 }
 
 path.faust-rbutton-meter {
-	fill : rgb(50,50,50);
+	fill : black;
 }
 
 path.faust-rbutton-mgroove {
-	fill : url(#rotatingButtonMeterGradient);
+	fill : #F48FB1;
 }
 
 // as all of the above rectangles could be implemented as paths, we duplicate the definitions for paths
