@@ -21,9 +21,13 @@ var poly_flag = "OFF";
 var ftz_flag = "2";
 var poly_nvoices = 16;
 var output_handler = null;
-//var libraries_url = "http://127.0.0.1:8000/libraries/";
-//var libraries_url = "http://faust.grame.fr/modules/libraries/";
-var libraries_url = "./libraries/";
+
+// compute libraries URL relative to current page
+var wurl =  window.location.href;
+var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
+
+console.log("URL:", libraries_url);
+
 
 function deleteDSP()
 {
