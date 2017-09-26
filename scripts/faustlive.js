@@ -27,8 +27,7 @@ function uploadOn(e, callback) {
     console.log("Drop. URL = ", e.dataTransfer.getData('URL'));
 
     // CASE 1 : THE DROPPED OBJECT IS A URL TO SOME FAUST CODE
-    if (e.dataTransfer.getData('URL') && e.dataTransfer.getData('URL').split(
-            ':').shift() != "file") {
+    if (e.dataTransfer.getData('URL') && e.dataTransfer.getData('URL').split(':').shift() != "file") {
         var url = e.dataTransfer.getData('URL');
         var filename = url.toString().split('/').pop();
         console.log("filename is ", filename);
