@@ -20,4 +20,4 @@
 .cm-s-eclipse span.cm-error { color: #f00; }
 
 .cm-s-eclipse .CodeMirror-activeline-background { background: #F7F1BC; }
-.cm-s-eclipse .CodeMirror-matchingbracket { outline:1px solid grey; color:black !important; }
+.cm-s-eclipse .CodeMirror-matchingbracket { background-color: yellow; color:black !important; }

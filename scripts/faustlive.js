@@ -12,7 +12,7 @@ var codeEditor = CodeMirror.fromTextArea(myTextarea, {
     lineWrapping: true,
     allowDropFileTypes: ["application/octet-stream"],
     indentWithTabs: true,
-    matchBrackets: false
+    matchBrackets: true
 });
 
 function fileSelectHandler(e) {
