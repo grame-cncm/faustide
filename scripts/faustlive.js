@@ -115,8 +115,7 @@ function fileDragHover(e) {
 
 function updateDSPCode() {
     codeEditor.setValue(dsp_code);
-    //    console.log("FAUST CODE:", codeEditor.getValue());
-
+    // console.log("FAUST CODE:", codeEditor.getValue());
 }
 
 function configureDropZone(zoneid) {
@@ -275,7 +274,6 @@ function exportFaustSource() {
 // Code Mirror configuration
 //-----------------------------------------------------------------------
 
-
 codeEditor.setOption("extraKeys", {
     'Ctrl-D':  faustDocumentation,
     'Ctrl-R':  runFaustCode
@@ -292,6 +290,20 @@ codeEditor.on('keyup', function(editor, event)
     }
 });
 
-
-
 configureDropZone("myDropZone");
+
+// To activate audio on iOS
+window.addEventListener('touchstart', function() {
+
+                        // create empty buffer
+                        var buffer = audio_context.createBuffer(1, 1, 22050);
+                        var source = audio_context.createBufferSource();
+                        source.buffer = buffer;
+
+                        // connect to output (your speakers)
+                        source.connect(audio_context.destination);
+
+                        // play the file
+                        source.start();
+
+                        }, false);
