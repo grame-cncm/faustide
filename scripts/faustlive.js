@@ -271,6 +271,23 @@ function exportFaustSource() {
             );
 }
 
+
+//-----------------------------------------------------------------------
+// Config Dialog
+//-----------------------------------------------------------------------
+
+function openConfigDialog()
+{
+    console.log("Open Configuration Dialog");
+    document.getElementById('configwrapper').style.display = 'block';
+}
+
+function closeConfigDialog()
+{
+    console.log("Close Configuration Dialog");
+    document.getElementById('configwrapper').style.display = 'none';
+}
+
 //-----------------------------------------------------------------------
 // Code Mirror configuration
 //-----------------------------------------------------------------------
@@ -295,3 +312,5 @@ codeEditor.on('keyup', function(editor, event)
 
 
 configureDropZone("myDropZone");
+activateMIDIInput();
+

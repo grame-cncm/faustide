@@ -24,16 +24,19 @@ var output_handler = null;
 
 function setBufferSize(bs_item) {
 	buffer_size = bs_item.options[bs_item.selectedIndex].value;
+	console.log("setBufferSize", buffer_size);
 	compileDSP();
 }
 
 function setPoly(poly_item) {
 	poly_flag = poly_item.options[poly_item.selectedIndex].value;
+	console.log("setPoly", poly_flag);
 	compileDSP();
 }
 
 function setPolyVoices(voices_item) {
 	poly_nvoices = voices_item.options[voices_item.selectedIndex].value;
+	console.log("setPolyVoices", poly_nvoices);
 	compileDSP();
 }
 
@@ -364,7 +367,8 @@ setInterval(function() {
 	}
 }, 1000);
 
+activateMIDIInput();
 // 'faust_module' global is defined in webaudio-wasm-wrapper.js file, 'onRuntimeInitialized' will be called when code is ready
 // (see https://kripken.github.io/emscripten-site/docs/getting_started/FAQ.html)
 
-faust_module['onRuntimeInitialized'] = init;
+//faust_module['onRuntimeInitialized'] = init;

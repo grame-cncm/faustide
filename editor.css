@@ -170,3 +170,46 @@
 		color:hsla(220, 66%, 39%, 0.91);
 		font-size: 3em;
 	}
+
+
+	.configui{
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-gap:20px;
+		margin:auto;
+		margin-top:100px;
+		padding:20px;
+		width: 80%;
+		height: calc(100%-80px);
+		background-color:white;
+		box-shadow: 3px 3px 5px 0px rgba(75, 81, 122, 0.46);
+	}
+
+	.configui h1 {
+		text-align: center;
+		color:hsla(220, 66%, 39%, 0.91);
+	}
+
+	.config {
+		display:grid;
+		grid-template-columns: 1fr 1fr;
+		grid-gap: 8px;
+	}
+
+	.config-element {
+		border: none;
+		background-color: #9FA8EB;
+		padding: 10px;
+	}
+	.config-element p {
+		font-style: italic;
+		font-size: 0.8em;
+	}
+	.config-element ul {
+		font-style: italic;
+		list-style-type: none;
+	}
+	.config-element li {
+		font-style: italic;
+		list-style-type: none;
+	}

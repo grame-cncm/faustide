@@ -40,6 +40,10 @@
 			<div role=button class="action-button" onclick="openExportDialog()">
 				<i class="fa fa-plus-circle" aria-hidden="true"></i>
 			</div>
+
+			<div role=button class="action-button" onclick="openConfigDialog()">
+				<i class="fa fa-wrench" aria-hidden="true"></i>
+			</div>
 		</div>
 
 		<div id="myDropZone" class="dropzone">
@@ -54,6 +58,7 @@ process = +;
 		</div>
 	</div>
 	<input type="file" id="fileinput" style="display:none"/>
+
 	<div class="modalwrapper" id="faustuiwrapper">
 		<span class="closeBtn" onclick="stopFaustCode()">&times;</span>
 		<div class="faustui" id="faustui"></div>
@@ -78,6 +83,61 @@ process = +;
 			</div>
 		</div>
 	</div>
+
+
+	<div class="modalwrapper" id="configwrapper">
+		<span class="closeBtn" onclick="closeConfigDialog()">&times;</span>
+		<div class="configui" id="configui">
+			<h1>Configure Running Mode</h1>
+			<div class="config">
+
+				<div class="config-element">
+					<H3>Buffer size</H3>
+					<form method="POST" name="menu">
+						<select id="selectedBuffer" name="selectedBuffer"
+							onChange="setBufferSize(this.form.selectedBuffer)">
+							<option value = 128> 128 </option>
+							<option value = 256> 256 </option>
+							<option value = 512> 512 </option>
+							<option selected value = 1024> 1024 </option>
+							<option value = 2048> 2048 </option>
+							<option value = 4096> 4096 </option>
+							<option value = 8192> 8192 </option>
+						</select>
+					</form>
+					<p>You can change the buffer size (from 256 to 8192 frames in ScripProcessor mode, it will be fixed at 128 frames in AudioWorklet mode).</p>
+				</div>
+
+				<div class="config-element">
+					<H3>Polyphonic instrument</H3>
+					<div class="line2">
+					<form method="POST" name="menu">
+						<select id="selectedPoly" name="selectedPoly"
+							onChange="setPoly(this.form.selectedPoly)">
+							<option value = ON> ON </option>
+							<option selected value = OFF> OFF </option>
+						</select>
+					</form>
+					<form method="POST" name="menu">
+						<select id="polyVoices" name="polyVoices"
+							onChange="setPolyVoices(this.form.polyVoices)">
+							<option value = 4> 4 </option>
+							<option value = 8> 8 </option>
+							<option selected value = 16> 16 </option>
+							<option value = 32> 32 </option>
+							<option value = 64> 64 </option>
+							<option value = 128> 128 </option>
+						</select>
+					</form>
+					</div>
+					<p>Assuming your DSP code is <a href="http://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>). <p> Be sure to launch the HTML page <B>after</B> your MIDI application(s)/devices(s) to be sure MIDI ports are properly detected.</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
 
 
 	<script src="codemirror/lib/codemirror.js"></script>
