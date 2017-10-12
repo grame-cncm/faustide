@@ -198,16 +198,47 @@ function stopFaustCode() {
 //-----------------------------------------------------------------------
 // Open Faust documentation
 //-----------------------------------------------------------------------
+// Left-extend a position by 3 characters
+function back3ch(pos)
+{
+    return {'line':pos.line, 'ch':pos.ch-3};
+}
 
+// Test is a character is alpha numeric
+function isAlphaNumeric(code) {
+    return ((code > 47 && code < 58) || // numeric (0-9)
+            (code > 64 && code < 91) || // upper alpha (A-Z)
+            (code > 96 && code < 123));
+}
+
+// Open the documentation for the function under the cursor,
+// handle special case at the end of a word.
 function faustDocumentation()
 {
-    console.log("open Faust documentation");
+    //console.log("open Faust documentation");
     let word = codeEditor.getSelection();
     if (word === "") {
-        const pos = codeEditor.findWordAt(codeEditor.getCursor());
+        const curs = codeEditor.getCursor();
+        const pos = codeEditor.findWordAt(curs);
         word = codeEditor.getRange(pos.anchor, pos.head);
+        if (isAlphaNumeric(word.charCodeAt(0))) {
+            //console.log("We are inside a word, left-extend 3 characters to get the prefix 'xx.'");
+            word = codeEditor.getRange(back3ch(pos.anchor), pos.head);
+        } else {
+            //console.log("It seems that we are at the end of a word !");
+            const pos2 = codeEditor.findWordAt({'line':curs.line, 'ch':curs.ch-1});
+            word = codeEditor.getRange(pos2.anchor, pos2.head);
+            if (isAlphaNumeric(word.charCodeAt(0))) {
+                //console.log("We are now inside a word, left-extend 3 characters to get the prefix 'xx.'");
+                word = codeEditor.getRange(back3ch(pos2.anchor), pos2.head);
+            } else {
+                //console.log("We are still not inside a word, we give up");
+                word = "";
+            }
+        }
     }
-    window.open("http://faust.grame.fr/libraries.html#" + word, 'documentation');
+    //console.log("open documentation link for word", word);
+    window.open("http://faust.grame.fr/libraries.html#" + word.toLowerCase(), 'documentation');
 }
 
 //-----------------------------------------------------------------------
