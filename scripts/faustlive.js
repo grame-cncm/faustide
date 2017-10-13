@@ -205,10 +205,20 @@ function back3ch(pos)
 }
 
 // Test is a character is alpha numeric
-function isAlphaNumeric(code) {
+function isAlphaNumeric(code)
+{
     return ((code > 47 && code < 58) || // numeric (0-9)
             (code > 64 && code < 91) || // upper alpha (A-Z)
             (code > 96 && code < 123));
+}
+
+// Test if a string is a two letters library prefix: 'xx.'
+function isLibPrefix(str)
+{
+    return  (str.length == 3)
+            && isAlphaNumeric(str.charCodeAt(0))
+            && isAlphaNumeric(str.charCodeAt(1))
+            && (str.charCodeAt(2) == 46);
 }
 
 // Open the documentation for the function under the cursor,
@@ -218,26 +228,51 @@ function faustDocumentation()
     //console.log("open Faust documentation");
     let word = codeEditor.getSelection();
     if (word === "") {
+        // we don't have a selection, therefore we try to figure out the function name
+        // at the curseur position
         const curs = codeEditor.getCursor();
         const pos = codeEditor.findWordAt(curs);
         word = codeEditor.getRange(pos.anchor, pos.head);
         if (isAlphaNumeric(word.charCodeAt(0))) {
+
             //console.log("We are inside a word, left-extend 3 characters to get the prefix 'xx.'");
-            word = codeEditor.getRange(back3ch(pos.anchor), pos.head);
+            const prefix = codeEditor.getRange(back3ch(pos.anchor), pos.anchor);
+            if (isLibPrefix(prefix)) {
+                // we have a prefix, we extend the word to search with the prefix
+                console.log("a valid prefix found", '"'+prefix+'"');
+                word = codeEditor.getRange(back3ch(pos.anchor), pos.head);
+            } else {
+                // no valid prefix, we keep the word as it is
+                console.log("no valid prefix found", '"'+prefix+'"');
+            }
+
+
         } else {
-            //console.log("It seems that we are at the end of a word !");
+
+            console.log("It seems that we are at the end of a word !");
+            // try to find a word before and tart the whole process again
             const pos2 = codeEditor.findWordAt({'line':curs.line, 'ch':curs.ch-1});
             word = codeEditor.getRange(pos2.anchor, pos2.head);
             if (isAlphaNumeric(word.charCodeAt(0))) {
-                //console.log("We are now inside a word, left-extend 3 characters to get the prefix 'xx.'");
-                word = codeEditor.getRange(back3ch(pos2.anchor), pos2.head);
+
+                //console.log("We are inside a word, left-extend 3 characters to get the prefix 'xx.'");
+                const prefix = codeEditor.getRange(back3ch(pos2.anchor), pos2.anchor);
+                if (isLibPrefix(prefix)) {
+                    // we have a prefix, we extend the word to search with the prefix
+                    console.log("a valid prefix found", '"'+prefix+'"');
+                    word = codeEditor.getRange(back3ch(pos2.anchor), pos2.head);
+                } else {
+                    // no valid prefix, we keep the word as it is
+                    console.log("no valid prefix found", '"'+prefix+'"');
+                }
+
             } else {
                 //console.log("We are still not inside a word, we give up");
                 word = "";
             }
         }
     }
-    //console.log("open documentation link for word", word);
+    console.log("open documentation link for word", '"'+word+'"');
     window.open("http://faust.grame.fr/libraries.html#" + word.toLowerCase(), 'documentation');
 }
 
@@ -344,4 +379,12 @@ codeEditor.on('keyup', function(editor, event)
 
 configureDropZone("myDropZone");
 activateMIDIInput();
+tippy('.action-button', {
+    theme: 'honeybee',
+    arrow: true
+  })
+tippy('.dropzone', {
+    theme: 'honeybee',
+    arrow: true
+  })
 

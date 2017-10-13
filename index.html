@@ -13,6 +13,7 @@
 	<link rel=stylesheet href="codemirror/addon/hint/show-hint.css">
 	<link rel=stylesheet href="editor.css">
 	<link rel=stylesheet href="font-awesome/css/font-awesome.min.css">
+	<link rel=stylesheet href="tippy.css">
 	<link rel=stylesheet href="faust.css">
 
 </head>
@@ -21,32 +22,32 @@
 	<div class="application">
 		<div class="logozone"><img src="faust-logo.png" width=58px alt="LOGO"></div>
 		<div class="actionzone">
-			<div role=button class="action-button" onclick="runFaustCode()">
+			<div role=button class="action-button" title="Compile and run the Faust program" onclick="runFaustCode()">
 				<i class="fa fa-play" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" onclick="loadFaustCode()">
+			<div role=button class="action-button" title="Upload/Edit a local file" onclick="loadFaustCode()">
 				<i class="fa fa-upload" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" onclick="saveFaustCode()">
+			<div role=button class="action-button" title="Download/Save as a local file" onclick="saveFaustCode()">
 				<i class="fa fa-download" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" onclick="faustDocumentation()">
+			<div role=button class="action-button" title="Open the online documentation" onclick="faustDocumentation()">
 				<i class="fa fa-book" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" onclick="openExportDialog()">
+			<div role=button class="action-button" title="Export/compile to specific plateform binary code" onclick="openExportDialog()">
 				<i class="fa fa-plus-circle" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" onclick="openConfigDialog()">
+			<div role=button class="action-button" title="Configure buffer size and Midi polyphony" onclick="openConfigDialog()">
 				<i class="fa fa-wrench" aria-hidden="true"></i>
 			</div>
 		</div>
 
-		<div id="myDropZone" class="dropzone">
+		<div id="myDropZone" class="dropzone" title="Drop a Faust file to edit" >
 			<input id="filename" contenteditable="true" value="untitled.dsp"/>
 		</div>
 
@@ -152,6 +153,7 @@ process = +;
 	<script src="codemirror/addon/hint/anyword-hint.js"></script>
 	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
 
+    <script src="scripts/tippy.min.js"></script>
     <script src="scripts/jsscripts.js"></script>
     <script src="scripts/libfaust-wasm.js"></script>
     <script src="scripts/WebMIDIAPI.js"></script>
