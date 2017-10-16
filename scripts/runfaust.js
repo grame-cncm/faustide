@@ -1,6 +1,5 @@
 'use strict';
 
-
 function setBufferSize(bs_item) {
 	buffer_size = bs_item.options[bs_item.selectedIndex].value;
 	console.log("setBufferSize", buffer_size);
@@ -34,13 +33,13 @@ function keyOff(channel, pitch, velocity) {
 }
 
 function pitchWheel(channel, bend) {
-	if (DSP && isPoly) {
+	if (DSP) {
 		DSP.pitchWheel(channel, bend);
 	}
 }
 
 function ctrlChange(channel, ctrl, value) {
-	if (DSP && isPoly) {
+	if (DSP) {
 		DSP.ctrlChange(channel, ctrl, value);
 	}
 }

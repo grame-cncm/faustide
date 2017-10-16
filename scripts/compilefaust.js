@@ -27,7 +27,6 @@ var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
 
 console.log("URL:", libraries_url);
 
-
 function deleteDSP()
 {
 	if (DSP) {
@@ -48,7 +47,8 @@ function deleteDSP()
 
 }
 
-function compileDSP() {
+function compileDSP() 
+{
 	if (DSP) {
 		if (audio_input) {
 			audio_input.disconnect(DSP);

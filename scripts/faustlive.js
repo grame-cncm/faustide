@@ -375,6 +375,7 @@ codeEditor.on('keyup', function(editor, event)
 
 configureDropZone("myDropZone");
 activateMIDIInput();
+
 tippy('.action-button', {
     theme: 'honeybee',
     arrow: true
