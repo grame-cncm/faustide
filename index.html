@@ -45,6 +45,15 @@
 			<div role=button class="action-button" title="Configure buffer size and Midi polyphony" onclick="openConfigDialog()">
 				<i class="fa fa-wrench" aria-hidden="true"></i>
 			</div>
+			<div>
+			</div>
+			<form method="POST" name="menu" class="action-select" title="Activate MIDI polyphonic mode"  >
+				<select id="selectedPoly" name="selectedPoly"
+					onChange="setPoly(this.form.selectedPoly)">
+					<option value = ON> ON </option>
+					<option selected value = OFF> OFF </option>
+				</select>
+			</form>
 		</div>
 
 		<div id="myDropZone" class="dropzone" title="Drop a Faust file to edit" >
@@ -111,14 +120,6 @@ process = +;
 
 				<div class="config-element">
 					<H3>Polyphonic instrument</H3>
-					<div class="line2">
-					<form method="POST" name="menu">
-						<select id="selectedPoly" name="selectedPoly"
-							onChange="setPoly(this.form.selectedPoly)">
-							<option value = ON> ON </option>
-							<option selected value = OFF> OFF </option>
-						</select>
-					</form>
 					<form method="POST" name="menu">
 						<select id="polyVoices" name="polyVoices"
 							onChange="setPolyVoices(this.form.polyVoices)">
@@ -130,7 +131,6 @@ process = +;
 							<option value = 128> 128 </option>
 						</select>
 					</form>
-					</div>
 					<p>Assuming your DSP code is <a href="http://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>). <p> Be sure to launch the HTML page <B>after</B> your MIDI application(s)/devices(s) to be sure MIDI ports are properly detected.</p>
 				</div>
 			</div>

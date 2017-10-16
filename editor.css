@@ -45,6 +45,9 @@
 		user-select: none;
 	}
 
+	.action-select {
+		text-align: center;
+	}
 	.export-button {
 		width: auto;
 		margin: 10px;

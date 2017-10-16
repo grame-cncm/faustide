@@ -379,8 +379,12 @@ activateMIDIInput();
 tippy('.action-button', {
     theme: 'honeybee',
     arrow: true
-  })
-tippy('.dropzone', {
+  });
+  tippy('.action-select', {
+    theme: 'honeybee',
+    arrow: true
+  });
+  tippy('.dropzone', {
     theme: 'honeybee',
     arrow: true
   })
