@@ -173,7 +173,7 @@ function loadPageState() {
 	if (typeof(Storage) !== "undefined" && localStorage.getItem(
 			"FaustLocalStorage") === "on") {
 		buffer_size = (localStorage.getItem("buffer_size") ? localStorage.getItem(
-			"buffer_size") : 1024);
+			"buffer_size") : 256);
 		poly_flag = (localStorage.getItem("poly_flag") ? localStorage.getItem(
 			"poly_flag") : "OFF");
 		poly_nvoices = (localStorage.getItem("poly_nvoices") ? localStorage.getItem(
