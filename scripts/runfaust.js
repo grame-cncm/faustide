@@ -1,26 +1,5 @@
 'use strict';
 
-var isWebKitAudio = (typeof(webkitAudioContext) !== "undefined");
-var isWasm = (typeof(WebAssembly) !== "undefined");
-var isPoly = false;
-
-if (!isWasm) {
-	alert("WebAssembly is not supported in this browser, the page will not work !")
-}
-
-var audio_context = (isWebKitAudio) ? new webkitAudioContext() : new AudioContext();
-var buffer_size = 1024;
-var audio_input = null;
-var midi_input = [];
-var factory = null;
-var DSP = null;
-var dsp_code = null;
-var faust_svg = null;
-var poly_flag = "OFF";
-var ftz_flag = "2";
-var poly_nvoices = 16;
-var output_handler = null;
-
 
 function setBufferSize(bs_item) {
 	buffer_size = bs_item.options[bs_item.selectedIndex].value;
@@ -89,15 +68,6 @@ function onerrorcallback(error) {
 	console.log(error);
 }
 
-function onsuccesscallbackJazz(access) {
-	var inputs = access.getInputs();
-	for (var i = 0; i < inputs.length; i++) {
-		var input = access.getInput(inputs[i]);
-		midi_input.push(input);
-		input.onmessage = midiMessageReceived;
-	}
-}
-
 function onsuccesscallbackStandard(access) {
 	for (var input of access.inputs.values()) {
 		midi_input.push(input);
@@ -109,12 +79,7 @@ function onsuccesscallbackStandard(access) {
 function activateMIDIInput() {
 	console.log("activateMIDIInput");
 	if (typeof(navigator.requestMIDIAccess) !== "undefined") {
-		if (navigator.requestMIDIAccess() != undefined) {
-			navigator.requestMIDIAccess().then(onsuccesscallbackStandard,
-				onerrorcallback);
-		} else {
-			navigator.requestMIDIAccess(onsuccesscallbackJazz, onerrorcallback);
-		}
+		navigator.requestMIDIAccess().then(onsuccesscallbackStandard, onerrorcallback);
 	} else {
 		alert(
 			"MIDI input cannot be activated, either your browser still does't have it, or you need to explicitly activate it."
