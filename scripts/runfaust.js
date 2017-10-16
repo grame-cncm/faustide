@@ -68,11 +68,23 @@ function onerrorcallback(error) {
 }
 
 function onsuccesscallbackStandard(access) {
-	for (var input of access.inputs.values()) {
-		midi_input.push(input);
-		input.onmidimessage = midiMessageReceived;
-		console.log(input.name);
-	}
+
+    access.onstatechange = function(e) {
+        if (e.port.type === "input") {
+            if (e.port.state  === "connected") {
+                console.log(e.port.name + " is connected");
+                e.port.onmidimessage = midiMessageReceived;
+            } else if (e.port.state  === "disconnected") {
+                console.log(e.port.name + " is disconnected");
+                e.port.onmidimessage = null;
+            }
+        }
+    }
+
+    for (var input of access.inputs.values()) {
+        input.onmidimessage = midiMessageReceived;
+        console.log(input.name + " is connected");
+    }
 }
 
 function activateMIDIInput() {
@@ -298,7 +310,7 @@ function initPage() {
 	_f4u$t.main_loop = function() {}
 
 	// Restore 'save' checkbox state
-	document.getElementById("localstorage").checked = (localStorage.getItem("FaustLocalStorage") === "on");
+	//document.getElementById("localstorage").checked = (localStorage.getItem("FaustLocalStorage") === "on");
 
 	// Load page state
 	loadPageState();
