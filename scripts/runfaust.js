@@ -25,24 +25,20 @@ var output_handler = null;
 function setBufferSize(bs_item) {
 	buffer_size = bs_item.options[bs_item.selectedIndex].value;
 	console.log("setBufferSize", buffer_size);
-	compileDSP();
 }
 
 function setPoly(poly_item) {
 	poly_flag = poly_item.options[poly_item.selectedIndex].value;
 	console.log("setPoly", poly_flag);
-	compileDSP();
 }
 
 function setPolyVoices(voices_item) {
 	poly_nvoices = voices_item.options[voices_item.selectedIndex].value;
 	console.log("setPolyVoices", poly_nvoices);
-	compileDSP();
 }
 
 function setFTZ(ftz_item) {
 	ftz_flag = ftz_item.options[ftz_item.selectedIndex].value;
-	compileDSP();
 }
 
 // MIDI input handling
