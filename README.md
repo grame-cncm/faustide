@@ -1,5 +1,5 @@
 # fausteditorweb
-The online Faust Editor can be used to edit and run Faust code from any recent Web Browser with WebAssembly support. It works completely on the client side and it is therefore very convenient for situations with many simultaneous users (workshops, classrooms, etc.). It embeds the latest version of the Faust compiler with a [WebAssembly](http://webassembly.org) backend and can run code in MIDI polyphonic mode.
+The online Faust Editor can be used to edit, compile and run Faust code from any recent Web Browser with [webassembly](http://webassembly.org) support. It works completely on the client side and it is therefore very convenient for situations with many simultaneous users (workshops, classrooms, etc.). It embeds the latest version of the Faust compiler with a webassembly backend and can run code in MIDI polyphonic mode.
 
 ![](/images/editor-help.png)
 
@@ -10,7 +10,7 @@ The editor engine is based on [codemirror](https://codemirror.net/). It offers s
 
 ### Recommended Browsers
 
-The recommended browsers are the latest versions of Firefox and Chrome with WebAssembly support. Chrome is recommended for MIDI, but it requires an https connexion to use the audio inputs. MIDI will not work with Firefox.
+The recommended browsers are the latest versions of Firefox and Chrome. Chrome is recommended for MIDI, but it requires an https connexion to use the audio inputs. On the other hand MIDI is not supported by Firefox.
 
 ### Useful links
 
