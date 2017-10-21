@@ -1,10 +1,11 @@
 # fausteditorweb
-The online Faust Editor can be used to edit, compile and run Faust code from any recent Web Browser with [webassembly](http://webassembly.org) support. It works completely on the client side and it is therefore very convenient for situations with many simultaneous users (workshops, classrooms, etc.). It embeds the latest version of the Faust compiler with a webassembly backend and can run code in MIDI polyphonic mode.
+The online  [Faust Editor](http://faust.grame.fr/editor) can be used to _edit_, _compile_ and _run_ Faust code from any recent Web Browser with [webassembly](http://webassembly.org) support. It works completely on the client side and it is therefore very convenient for situations with many simultaneous users (workshops, classrooms, etc.). It embeds the latest version of the Faust compiler with an efficient webassembly backend and offers polyphonic MIDI support.
 
 ![](/images/editor-help.png)
 
 ### Features
-The editor engine is based on [codemirror](https://codemirror.net/). It offers syntax highlighting, auto completion and access to the Faust online documentation access. The online documentation access uses the function name at the cursor position to locate to the relevant information.
+
+The editor engine is based on [codemirror](https://codemirror.net/). It provides _syntax highlighting_, _auto completion_ and direct access to the _online documentation_. The documentation command (ctrl-d) uses the function name at the cursor position to locate to the relevant information.
 
 ![](/images/editor-doc.png) 
 
