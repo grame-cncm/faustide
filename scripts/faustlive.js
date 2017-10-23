@@ -336,7 +336,6 @@ function exportFaustSource() {
             );
 }
 
-
 //-----------------------------------------------------------------------
 // Config Dialog
 //-----------------------------------------------------------------------
@@ -373,9 +372,6 @@ codeEditor.on('keyup', function(editor, event)
     }
 });
 
-configureDropZone("myDropZone");
-activateMIDIInput();
-
 tippy('.action-button', {
     theme: 'honeybee',
     arrow: true
@@ -404,3 +400,22 @@ window.addEventListener('touchstart', function() {
     source.start();
 
 }, false);
+
+//-----------------------------------------------------------------------
+// Initialization
+//-----------------------------------------------------------------------
+
+// Main entry point, called when libfaust.js has finished to load
+function init() {
+	// No polling from the server needed, so use an empty loop
+	_f4u$t.main_loop = function() {}
+	
+	// Configure editor
+	configureDropZone("myDropZone");
+	
+	// And activate MIDI
+	activateMIDIInput();
+}
+
+// Setup the main entry point in libfaust.js 
+faust_module['onRuntimeInitialized'] = init;

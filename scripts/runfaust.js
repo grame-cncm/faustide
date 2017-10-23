@@ -127,14 +127,14 @@ function getDevice(device) {
 	audio_input.connect(DSP);
 }
 
+// Save/Load functions using local storage
+
 function setLocalStorage(state) {
 	console.log(state);
 	if (typeof(Storage) !== "undefined") {
 		localStorage.setItem("FaustLocalStorage", ((state) ? "on" : "off"));
 	}
 }
-
-// Save/Load functions using local storage
 
 function restoreMenu(id, value) {
 	for (var i = 0; i < document.getElementById(id).length; i++) {
@@ -200,96 +200,6 @@ function loadPageState() {
 	}
 }
 
-function fileDragHover(e) {
-	e.stopPropagation();
-	e.preventDefault();
-	e.target.className = (e.type === "dragover" ? "hover" : "");
-}
-
-function fileSelectHandler(e) {
-	fileDragHover(e);
-	var files = e.target.files || e.dataTransfer.files;
-	f = files[0];
-	uploadFile(f);
-}
-
-function uploadOn(e, callback) {
-	if (!isWasm) {
-		alert("WebAssembly is not supported in this browser !")
-		return;
-	}
-
-	// CASE 1 : THE DROPPED OBJECT IS A URL TO SOME FAUST CODE
-	if (e.dataTransfer.getData('URL') && e.dataTransfer.getData('URL').split(':').shift() !=
-		"file") {
-		var url = e.dataTransfer.getData('URL');
-		var filename = url.toString().split('/').pop();
-		filename = filename.toString().split('.').shift();
-		var xmlhttp = new XMLHttpRequest();
-
-		xmlhttp.onreadystatechange = function() {
-			if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-				dsp_code = "process = vgroup(\"" + filename + "\", environment{" + xmlhttp
-					.responseText + "}.process);";
-				callback();
-			}
-		}
-
-		try {
-			xmlhttp.open("GET", url, false);
-			// Avoid error "mal formé" on firefox
-			xmlhttp.overrideMimeType('text/html');
-			xmlhttp.send();
-		} catch (err) {
-			alert(err);
-		}
-
-	} else if (e.dataTransfer.getData('URL').split(':').shift() != "file") {
-		dsp_code = e.dataTransfer.getData('text');
-
-		// CASE 2 : THE DROPPED OBJECT IS SOME FAUST CODE
-		if (dsp_code) {
-			dsp_code = "process = vgroup(\"" + "TEXT" + "\", environment{" + dsp_code +
-				"}.process);";
-			callback();
-		}
-		// CASE 3 : THE DROPPED OBJECT IS A FILE CONTAINING SOME FAUST CODE
-		else {
-			var files = e.target.files || e.dataTransfer.files;
-			var file = files[0];
-
-			if (location.host.indexOf("sitepointstatic") >= 0) return;
-
-			var request = new XMLHttpRequest();
-			if (request.upload) {
-
-				var reader = new FileReader();
-				var ext = file.name.toString().split('.').pop();
-				var filename = file.name.toString().split('.').shift();
-				var type;
-
-				if (ext === "dsp") {
-					type = "dsp";
-					reader.readAsText(file);
-				} else if (ext === "json") {
-					type = "json";
-					reader.readAsText(file);
-				}
-
-				reader.onloadend = function(e) {
-					dsp_code = "process = vgroup(\"" + filename + "\",environment{" + reader.result +
-						"}.process);";
-					callback();
-				};
-			}
-		}
-	}
-	// CASE 4 : ANY OTHER STRANGE THING
-	else {
-		window.alert("This object is not Faust code...");
-	}
-}
-
 function checkPolyphonicDSP(json) {
 	if (!((json.indexOf("/freq") !== -1) && (json.indexOf("/gain") !== -1) && (
 			json.indexOf("/gate") !== -1))) {
@@ -298,49 +208,3 @@ function checkPolyphonicDSP(json) {
 		)
 	}
 }
-
-
-function uploadFile(e) {
-	fileDragHover(e);
-	uploadOn(e, compileDSP);
-}
-
-function initPage() {
-	// No polling from the server needed, so use an empty loop
-	_f4u$t.main_loop = function() {}
-
-	// Restore 'save' checkbox state
-	//document.getElementById("localstorage").checked = (localStorage.getItem("FaustLocalStorage") === "on");
-
-	// Load page state
-	loadPageState();
-}
-
-function init() {
-	activateMIDIInput();
-
-	var filedrag1 = document.getElementById("filedrag");
-	filedrag1.addEventListener("dragover", fileDragHover, false);
-	filedrag1.addEventListener("dragleave", fileDragHover, false);
-	filedrag1.addEventListener("drop", uploadFile, false);
-	filedrag1.textContent =
-		"Drop a Faust .dsp file or URL here (compiled using libfaust version " +
-		faust.getLibFaustVersion() + ")";
-}
-
-// Init page
-initPage();
-
-// Save DSP state to local storage
-setInterval(function() {
-	savePageState();
-	if (DSP) {
-		saveDSPState();
-	}
-}, 1000);
-
-activateMIDIInput();
-// 'faust_module' global is defined in webaudio-wasm-wrapper.js file, 'onRuntimeInitialized' will be called when code is ready
-// (see https://kripken.github.io/emscripten-site/docs/getting_started/FAQ.html)
-
-//faust_module['onRuntimeInitialized'] = init;
