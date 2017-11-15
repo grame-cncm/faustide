@@ -131,6 +131,8 @@ function compileDSP()
 						DSP.connect(audio_context.destination);
 
 						loadDSPState();
+						
+						setInterval(function() { saveDSPState(); }, 1000);
 					});
 			});
 
@@ -187,6 +189,8 @@ function compileDSP()
 						DSP.connect(audio_context.destination);
 
 						loadDSPState();
+						
+						setInterval(function() { saveDSPState(); }, 1000);
 					});
 			});
 	}

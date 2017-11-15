@@ -407,14 +407,18 @@ window.addEventListener('touchstart', function() {
 
 // Main entry point, called when libfaust.js has finished to load
 function init() {
+
 	// No polling from the server needed, so use an empty loop
 	_f4u$t.main_loop = function() {}
 	
 	// Configure editor
 	configureDropZone("myDropZone");
 	
-	// And activate MIDI
+	// Activate MIDI
 	activateMIDIInput();
+	
+	// Activate locate storage for DSP state
+	setLocalStorage(true);
 }
 
 // Setup the main entry point in libfaust.js 
