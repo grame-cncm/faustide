@@ -113,6 +113,7 @@ function activateAudioInput() {
 		}, getDevice, function(e) {
 			alert('Error getting audio input');
 			console.log(e);
+			audio_input = null;
 		});
 	} else {
 		alert('Audio input API not available');

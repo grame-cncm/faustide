@@ -132,7 +132,7 @@ function compileDSP()
 
 						loadDSPState();
 						
-						setInterval(function() { saveDSPState(); }, 1000);
+						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});
 			});
 
@@ -190,7 +190,7 @@ function compileDSP()
 
 						loadDSPState();
 						
-						setInterval(function() { saveDSPState(); }, 1000);
+						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});
 			});
 	}
