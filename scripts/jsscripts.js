@@ -2291,8 +2291,8 @@ _f4u$t.RotatingButton.prototype.make_dot = function(svg, parent, id, rot) {
     }
   );
 
-  $('#'+full_id).bind('mousedown', mousedown);
-  $('#'+full_id).bind('touchstart', mousedown);
+  //$('#'+full_id).bind('mousedown', mousedown);
+  //$('#'+full_id).bind('touchstart', mousedown);
   return dot;
 }
 
@@ -2353,12 +2353,13 @@ _f4u$t.RotatingButton.prototype.make_groove = function(svg, parent, id) {
       fill : _f4u$t.color_to_rgb(this.groove_fill),
       //stroke : _f4u$t.color_to_rgb(this.groove_stroke),
       id : full_id,
-      'class' : 'faust-rbutton-groove'
+      'class' : 'faust-rbutton-groove',
+      'pointer-events': 'none'
     }
   );
 
-  $('#'+full_id).bind('mousedown', mousedown);
-  $('#'+full_id).bind('touchstart', mousedown);
+  //$('#'+full_id).bind('mousedown', mousedown);
+  //$('#'+full_id).bind('touchstart', mousedown);
   return groove;
 }
 
@@ -2379,13 +2380,14 @@ _f4u$t.RotatingButton.prototype.make_handle = function(svg, parent, id) {
       stroke : _f4u$t.color_to_rgb(this.handle_stroke),
       "stroke-width" : this.handle_width,
       'class' : 'faust-rbutton-handle',
+      'pointer-events': 'none',
       id : full_id,
       transform : 'translate(0,0) scale(1,1) rotate('+startp+','+origin[0]+','+origin[1]+')'
     }
   );
 
-  $('#'+full_id).bind('mousedown', mousedown);
-  $('#'+full_id).bind('touchstart', mousedown);
+  //$('#'+full_id).bind('mousedown', mousedown);
+  //$('#'+full_id).bind('touchstart', mousedown);
   return handle;
 }
 
@@ -4351,7 +4353,21 @@ _f4u$t.activate_slider = function(ee) {
 }
 
 _f4u$t.activate_rbutton = function(ee) {
-  _f4u$t.activate_moving_object(ee);
+    console.log("activate_rbutton", ee);
+    var touches = ee.changedTouches || [ee];
+    if (ee.originalEvent) {
+        touches = ee.originalEvent.changedTouches || [ee];
+    }
+    var identifier = touches[0].identifier || 0;
+    var longid = touches[0].target.id;
+    var id = _f4u$t.unique(longid);
+    _f4u$t._I[identifier] = {id : longid, moved : false, value : null, address : _f4u$t.IDS_TO_ATTRIBUTES[id]["address"]};
+    _f4u$t.active_addresses.push(_f4u$t.IDS_TO_ATTRIBUTES[id]["address"]);
+    // turns off zoom for mobile devices
+    $('body').bind('touchmove', function(event) { event.defaultPrevented() });
+    // if we touch a groove, we want the object to snap to the correct position, so
+    // we need to call the move function.
+    _f4u$t.move_active_object(ee);
 }
 
 _f4u$t.activate_moving_object = function(ee) {
