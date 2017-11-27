@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Faust DSP</title>
+</head>
+<body>
+  <p>This a Faust DSP</p>
+</body>
+<script src="scripts/libfaust-wasm.js"></script>
+<script src="scripts/webaudio-wasm-wrapper.js"></script>
+<script src="scripts/runfaust.js"></script>
+<script src="scripts/compilefaust.js"></script>
+<script>
+  function run(){
+    dsp_code = faustCode;
+    compileDSP();
+  }
+/*
+  var isWebKitAudio = (typeof (webkitAudioContext) !== "undefined");
+  var audio_context = (isWebKitAudio) ? new webkitAudioContext() : new AudioContext();
+  var osc = null;
+  var libraries_url = "https://faust.grame.fr/modules/libraries/";
+
+  function startosc() {
+    // Prepare argv list
+    var argv = [];
+    argv.push("-ftz");
+    argv.push("2");
+    argv.push("-I");
+    argv.push(libraries_url);
+    
+    console.log("Compiling: " + faustCode);
+    faust.createDSPFactory(faustCode,argv,
+      function (factory) {
+        faust.createDSPInstance(factory, audio_context, 1024,
+          function (node) {
+            osc = node;
+            osc.connect(audio_context.destination);
+          }
+        )
+      }
+    );
+  }
+  */
+
+/*
+  function cut(){
+    var fCode = document.getElementById("faustCode");
+    fCode.innerHTML = faustCode;
+    //console.log("Here: " + faustCode);
+  }
+  */
+  faust_module['onRuntimeInitialized'] = run;
+</script>
+</html>

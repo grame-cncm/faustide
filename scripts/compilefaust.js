@@ -89,7 +89,7 @@ function compileDSP()
 				if (!factory) {
 					alert(faust.getErrorMessage());
 					// Fix me
-					document.getElementById('faustuiwrapper').style.display = 'none';
+					//document.getElementById('faustuiwrapper').style.display = 'none';
 					return;
 				}
 
@@ -102,7 +102,7 @@ function compileDSP()
 						if (!dsp) {
 							alert(faust.getErrorMessage());
 							// Fix me
-							document.getElementById('faustuiwrapper').style.display = 'none';
+							//document.getElementById('faustuiwrapper').style.display = 'none';
 							return;
 						}
 						checkPolyphonicDSP(dsp.getJSON());
@@ -149,7 +149,7 @@ function compileDSP()
 				if (!factory) {
 					alert(faust.getErrorMessage());
 					// Fix me
-					document.getElementById('faustuiwrapper').style.display = 'none';
+					//document.getElementById('faustuiwrapper').style.display = 'none';
 					return;
 				}
 
@@ -161,7 +161,7 @@ function compileDSP()
 						if (!dsp) {
 							alert(faust.getErrorMessage());
 							// Fix me
-							document.getElementById('faustuiwrapper').style.display = 'none';
+							//document.getElementById('faustuiwrapper').style.display = 'none';
 							return;
 						}
 
@@ -176,11 +176,11 @@ function compileDSP()
 						/* faust_svg = $('<div />');
 						$('body').append(faust_svg);
 						output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), DSP.setParamValue); */
-						faust_svg = $('#faustui');
-						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
-						DSP.setOutputParamHandler(output_handler);
-						console.log(DSP.getNumInputs());
-						console.log(DSP.getNumOutputs());
+						//faust_svg = $('#faustui');
+						//output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
+						//DSP.setOutputParamHandler(output_handler);
+						//console.log(DSP.getNumInputs());
+						//console.log(DSP.getNumOutputs());
 						DSP.metadata({
 							declare: function(key, value) {
 								console.log("key = " + key + " value = " + value);

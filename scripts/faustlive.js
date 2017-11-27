@@ -174,13 +174,17 @@ function loadFaustCode() {
 //-----------------------------------------------------------------------
 // Run the Faust code in the code editor
 //-----------------------------------------------------------------------
-
+var dspWindow = null;
 function runFaustCode() {
     dsp_code = codeEditor.getValue();
     console.log("run faust code: ", dsp_code);
+    dspWindow = window.open('dsp.html','Faust DSP');
+    dspWindow.faustCode = dsp_code;
+    /*
     let modal = document.getElementById('faustuiwrapper');
     modal.style.display = 'block';
     compileDSP();
+    */
 }
 
 // Stop the Faust code currently running
