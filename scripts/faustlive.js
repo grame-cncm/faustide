@@ -176,15 +176,15 @@ function loadFaustCode() {
 //-----------------------------------------------------------------------
 var dspWindow = null;
 function runFaustCode() {
-    dsp_code = codeEditor.getValue();
-    console.log("run faust code: ", dsp_code);
-    dspWindow = window.open('dsp.html','Faust DSP');
-    dspWindow.faustCode = dsp_code;
-    /*
-    let modal = document.getElementById('faustuiwrapper');
-    modal.style.display = 'block';
-    compileDSP();
-    */
+  // TODO: this needs to be improved, just just update window instead of recreating it
+  dsp_code = codeEditor.getValue();
+  if(dspWindow != null) {
+    dspWindow.deleteDSP();
+    dspWindow.close();
+    dspWindow = null;
+  }
+  dspWindow = window.open('dsp.html','Faust DSP');
+  dspWindow.faustCode = dsp_code;
 }
 
 // Stop the Faust code currently running

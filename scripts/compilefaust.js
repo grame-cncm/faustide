@@ -39,10 +39,8 @@ function deleteDSP()
 		} else {
 			faust.deleteDSPInstance(DSP);
 		}
-		_f4u$t.hard_delete(faust_svg);
 
 		DSP = null;
-		faust_svg = null;
 	}
 
 }
