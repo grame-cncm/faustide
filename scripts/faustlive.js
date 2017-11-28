@@ -276,6 +276,30 @@ function faustDocumentation()
 }
 
 //-----------------------------------------------------------------------
+// Block diagram visualization
+//-----------------------------------------------------------------------
+function openBlockDiagram()
+{
+
+    console.log("open block diagram visualisation");
+    getSHAKey(  document.getElementById("exportUrl").value,
+                document.getElementById("filename").value.split(".")[0],
+                codeEditor.getValue(),
+                trigBlockDiagram,
+                cancelLoader
+            );
+
+}
+
+function trigBlockDiagram(key)
+{
+    console.log("We got the key", key);
+    console.log("the url is : ", "https://faustservice.grame.fr/" + key + "/diagram/process.svg" );
+    window.open("https://faustservice.grame.fr/" + key + "/diagram/process.svg", 'blockdiagram');
+}
+
+
+//-----------------------------------------------------------------------
 // Export Dialog
 //-----------------------------------------------------------------------
 
@@ -410,16 +434,16 @@ function init() {
 
 	// No polling from the server needed, so use an empty loop
 	_f4u$t.main_loop = function() {}
-	
+
 	// Configure editor
 	configureDropZone("myDropZone");
-	
+
 	// Activate MIDI
 	activateMIDIInput();
-	
+
 	// Activate locate storage for DSP state
 	setLocalStorage(true);
 }
 
-// Setup the main entry point in libfaust.js 
+// Setup the main entry point in libfaust.js
 faust_module['onRuntimeInitialized'] = init;
