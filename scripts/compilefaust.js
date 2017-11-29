@@ -58,7 +58,6 @@ function compileDSP()
 			faust.deleteDSPInstance(DSP);
 		}
 		DSP = null;
-		_f4u$t.hard_delete(faust_svg);
 	}
 
 	if (!dsp_code) {
@@ -117,7 +116,7 @@ function compileDSP()
 						$('body').append(faust_svg);
 						output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), DSP.setParamValue); */
 						faust_svg = $('#faustui');
-						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
+						//output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
 						DSP.setOutputParamHandler(output_handler);
 						console.log(DSP.getNumInputs());
 						console.log(DSP.getNumOutputs());
@@ -128,7 +127,12 @@ function compileDSP()
 						});
 						DSP.connect(audio_context.destination);
 
-						loadDSPState();
+						// Load previous state is deactivated for now
+						//loadDSPState();
+						
+						var faustUI = FaustUI(DSP);
+						document.getElementById("fUI").innerHTML = "";
+					  document.getElementById("fUI").appendChild(faustUI);
 						
 						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});
@@ -185,8 +189,13 @@ function compileDSP()
 							}
 						});
 						DSP.connect(audio_context.destination);
-
-						loadDSPState();
+						
+						// Load previous state is deactivated for now
+						//loadDSPState();
+						
+						var faustUI = FaustUI(DSP);
+						document.getElementById("fUI").innerHTML = "";
+					  document.getElementById("fUI").appendChild(faustUI);
 						
 						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});

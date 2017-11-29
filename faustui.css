@@ -1,0 +1,246 @@
+body{
+  margin: 0px;
+}
+
+#faustUI{
+  width: 100%;
+  height: 100%;
+  color: white;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+#faustUI * {
+  font-family: sans-serif;
+}
+
+.uiElement{
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 5px;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.label{
+  text-align: center;
+  padding: 1px;
+}
+
+.vgroup{
+  display: flex;
+  flex-direction: column;
+  flex:1;
+}
+
+.hgroup{
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.value{
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  width: 100%;
+  text-align: center;
+}
+
+.bar{
+  border-radius: 5px;
+  background: white;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  cursor: pointer;
+}
+
+.bar:hover {
+    opacity: 1;
+}
+
+.cursor{
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: DodgerBlue;
+  cursor: pointer;
+}
+
+.hslider{
+  /*TODO: perhaps change a non-flex system*/
+  display: flex;
+  flex-direction: column;
+}
+
+.hslider .bar{
+  align-items: center;
+  margin-top: 7px;
+  margin-bottom: 7px;
+  height: 14px;
+}
+
+.hslider .cursor{
+  margin-left: -12px;
+  margin-top: -5px;
+}
+
+.vslider{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.vslider .value{
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+
+.vslider .bar{
+  width: 14px;
+  min-height: 200px;
+  height: 100%;
+}
+
+.vslider .cursor{
+  margin-top: -12px;
+  margin-left: -5px;
+  background: DodgerBlue;
+  cursor: pointer;
+}
+
+.knob{
+  flex-direction: column;
+  align-items: center;
+}
+
+.knob .value{
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.knob .base{
+  position: relative;
+  border-radius: 50%;
+  background: white;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  cursor: pointer;
+  justify-content: center;
+  width: 100%;
+  padding-top: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+.knob .base:hover {
+  opacity: 1;
+}
+
+.knob .handle{
+  position: absolute;
+  width: 100%;
+  height: 10px;
+  cursor: pointer;
+  top: 50%;
+  margin-top: -5px;
+  /*transform: rotate(-90deg);*/
+}
+
+.knob .handle .tip{
+  background: DodgerBlue;
+  width: 50%;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.nentry{
+  width: 100%;
+  border-radius: 5px;
+  border: none;
+  margin-bottom: 5px;
+  font-size: 100%;
+  text-align: center;
+}
+
+.button{
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  height: 24px;
+  background-color: rgb(220,220,220);
+  font-size: 100%;
+  justify-content: center;
+  flex: 1;
+}
+
+.button:active{
+  background-color: white;
+}
+
+.hbargraph{
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+
+.hbargraph .barback{
+  position: relative;
+  border-radius: 5px;
+  background: white;
+  outline: none;
+  height: 14px;
+}
+
+.hbargraph .bartop{
+  position: absolute;
+  border-radius: 5px;
+  background: DodgerBlue;
+  outline: none;
+  height: 14px;
+  width: 50%;
+}
+
+.vbargraph{
+  margin-bottom: 14px;
+  height: 100%;
+  min-height: 200px;
+  align-items: center;
+  justify-content: center;
+}
+
+.vbargraph .barback{
+  position: relative;
+  border-radius: 5px;
+  background: white;
+  outline: none;
+  width: 14px;
+  height: 100%;
+  margin:auto;
+}
+
+.vbargraph .bartop{
+  position: absolute;
+  border-radius: 5px;
+  background: DodgerBlue;
+  outline: none;
+  width: 100%;
+  bottom: 0;
+}

@@ -178,13 +178,14 @@ var dspWindow = null;
 function runFaustCode() {
   // TODO: this needs to be improved, just just update window instead of recreating it
   dsp_code = codeEditor.getValue();
-  if(dspWindow != null) {
-    dspWindow.deleteDSP();
-    dspWindow.close();
-    dspWindow = null;
+  if(dspWindow == null || dspWindow.closed) {
+    dspWindow = window.open('dsp.html','Faust DSP');
+    dspWindow.faustCode = dsp_code;
   }
-  dspWindow = window.open('dsp.html','Faust DSP');
-  dspWindow.faustCode = dsp_code;
+  else {
+    dspWindow.dsp_code = dsp_code;
+    dspWindow.compileDSP();
+  }
 }
 
 // Stop the Faust code currently running
@@ -413,7 +414,7 @@ window.addEventListener('touchstart', function() {
 function init() {
 
 	// No polling from the server needed, so use an empty loop
-	_f4u$t.main_loop = function() {}
+	//_f4u$t.main_loop = function() {}
 	
 	// Configure editor
 	configureDropZone("myDropZone");
