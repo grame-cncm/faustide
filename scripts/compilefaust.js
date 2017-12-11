@@ -44,28 +44,15 @@ function deleteDSP()
 		DSP = null;
 		faust_svg = null;
 	}
-
 }
 
 function compileDSP() 
 {
-	if (DSP) {
-		if (audio_input) {
-			audio_input.disconnect(DSP);
-		}
-		DSP.disconnect(audio_context.destination);
-		if (isPoly) {
-			faust.deletePolyDSPInstance(DSP);
-		} else {
-			faust.deleteDSPInstance(DSP);
-		}
-		DSP = null;
-		_f4u$t.hard_delete(faust_svg);
-	}
-
 	if (!dsp_code) {
 		return;
 	}
+	
+	deleteDSP();
 
 	// Prepare argv list
 	var argv = [];
@@ -119,19 +106,13 @@ function compileDSP()
 						$('body').append(faust_svg);
 						output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), DSP.setParamValue); */
 						faust_svg = $('#faustui');
-						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
+						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, function(path, val) { DSP.setParamValue(path, val); });
 						DSP.setOutputParamHandler(output_handler);
 						console.log(DSP.getNumInputs());
 						console.log(DSP.getNumOutputs());
-						DSP.metadata({
-							declare: function(key, value) {
-								console.log("key = " + key + " value = " + value);
-							}
-						});
-						DSP.connect(audio_context.destination);
-
-						loadDSPState();
 						
+						DSP.connect(audio_context.destination);
+						loadDSPState();
 						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});
 			});
@@ -177,19 +158,13 @@ function compileDSP()
 						$('body').append(faust_svg);
 						output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), DSP.setParamValue); */
 						faust_svg = $('#faustui');
-						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, DSP.setParamValue);
+						output_handler = _f4u$t.main(DSP.getJSON(), faust_svg, function(path, val) { DSP.setParamValue(path, val); });
 						DSP.setOutputParamHandler(output_handler);
 						console.log(DSP.getNumInputs());
 						console.log(DSP.getNumOutputs());
-						DSP.metadata({
-							declare: function(key, value) {
-								console.log("key = " + key + " value = " + value);
-							}
-						});
-						DSP.connect(audio_context.destination);
-
-						loadDSPState();
 						
+						DSP.connect(audio_context.destination);
+						loadDSPState();
 						setInterval(function() { if (DSP) saveDSPState(); }, 1000);
 					});
 			});
