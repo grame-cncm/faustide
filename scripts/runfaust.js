@@ -1,7 +1,12 @@
 'use strict';
 
 function setBufferSize(bs_item) {
-	buffer_size = bs_item.options[bs_item.selectedIndex].value;
+    buffer_size = parseInt(bs_item.options[bs_item.selectedIndex].value);
+    if (buffer_size === 128 && rendering_mode === "ScriptProcessor") {
+        console.log("buffer_size cannot be set to 128 in ScriptProcessor mode !");
+        buffer_size = 256;
+        restoreMenu("selectedBuffer", buffer_size);
+    }
 	console.log("setBufferSize", buffer_size);
 }
 
@@ -17,6 +22,21 @@ function setPolyVoices(voices_item) {
 
 function setFTZ(ftz_item) {
 	ftz_flag = ftz_item.options[ftz_item.selectedIndex].value;
+}
+
+function setRenderingMode(rendering_item) {
+    rendering_mode = rendering_item.options[rendering_item.selectedIndex].value;
+    if (rendering_mode === "AudioWorklet") {
+        console.log("setRenderingMode AudioWorklet");
+        buffer_size = 128;
+        restoreMenu("selectedBuffer", buffer_size);
+        document.getElementById("selectedBuffer").disabled = true;
+    } else {
+        buffer_size = 1024;
+        restoreMenu("selectedBuffer", buffer_size);
+        document.getElementById("selectedBuffer").disabled = false;
+    }
+    compileDSP();
 }
 
 // MIDI input handling
@@ -138,17 +158,19 @@ function setLocalStorage(state) {
 }
 
 function restoreMenu(id, value) {
-	for (var i = 0; i < document.getElementById(id).length; i++) {
-		if (document.getElementById(id).options[i].value === value) {
-			document.getElementById(id).selectedIndex = i;
-			break;
-		}
-	}
+    if (document.getElementById(id)) {
+        for (var i = 0; i < document.getElementById(id).length; i++) {
+            // Weak comparison here
+            if (document.getElementById(id).options[i].value == value) {
+                document.getElementById(id).selectedIndex = i;
+                break;
+            }
+        }
+    }
 }
 
 function saveDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem(
-			"FaustLocalStorage") === "on") {
+	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
 			localStorage.setItem(params[i], DSP.getParamValue(params[i]));
@@ -157,18 +179,17 @@ function saveDSPState() {
 }
 
 function savePageState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem(
-			"FaustLocalStorage") === "on") {
-		localStorage.setItem("buffer_size", buffer_size);
-		localStorage.setItem("poly_flag", poly_flag);
-		localStorage.setItem("ftz_flag", ftz_flag);
-		localStorage.setItem("poly_nvoices", poly_nvoices);
-	}
+    if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
+        localStorage.setItem("buffer_size", buffer_size);
+        localStorage.setItem("poly_flag", poly_flag);
+        localStorage.setItem("ftz_flag", ftz_flag);
+        localStorage.setItem("poly_nvoices", poly_nvoices);
+        localStorage.setItem("rendering_mode", rendering_mode);
+    }
 }
 
 function loadDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem(
-			"FaustLocalStorage") === "on") {
+	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
 			if (localStorage.getItem(params[i])) {
@@ -182,23 +203,24 @@ function loadDSPState() {
 }
 
 function loadPageState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem(
-			"FaustLocalStorage") === "on") {
-		buffer_size = (localStorage.getItem("buffer_size") ? localStorage.getItem(
-			"buffer_size") : 256);
-		poly_flag = (localStorage.getItem("poly_flag") ? localStorage.getItem(
-			"poly_flag") : "OFF");
-		poly_nvoices = (localStorage.getItem("poly_nvoices") ? localStorage.getItem(
-			"poly_nvoices") : 16);
-		ftz_flag = (localStorage.getItem("ftz_flag") ? localStorage.getItem(
-			"ftz_flag") : 2);
+    if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
+        buffer_size = (localStorage.getItem("buffer_size") ? localStorage.getItem("buffer_size") : 256);
+        poly_flag = (localStorage.getItem("poly_flag") ? localStorage.getItem("poly_flag") : "OFF");
+        poly_nvoices = (localStorage.getItem("poly_nvoices") ? localStorage.getItem("poly_nvoices") : 16);
+        ftz_flag = (localStorage.getItem("ftz_flag") ? localStorage.getItem("ftz_flag") : 2);
+        rendering_mode = (localStorage.getItem("rendering_mode") ? localStorage.getItem("rendering_mode") : "ScriptProcessor");
 
-		// Restore menus
-		restoreMenu("selectedBuffer", buffer_size);
-		restoreMenu("selectedPoly", poly_flag);
-		restoreMenu("polyVoices", poly_nvoices);
-		restoreMenu("selectedFTZ", ftz_flag);
-	}
+        // Restore menus
+        restoreMenu("selectedBuffer", buffer_size);
+        restoreMenu("selectedPoly", poly_flag);
+        restoreMenu("polyVoices", poly_nvoices);
+        restoreMenu("selectedFTZ", ftz_flag);
+        restoreMenu("selectedRenderingMode", rendering_mode);
+
+        if (rendering_mode === "AudioWorklet") {
+            document.getElementById("selectedBuffer").disabled = true;
+        }
+    }
 }
 
 function checkPolyphonicDSP(json) {

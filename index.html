@@ -46,7 +46,7 @@
 				<i class="fa fa-picture-o" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" title="Configure buffer size and Midi polyphony" onclick="openConfigDialog()">
+			<div role=button class="action-button" title="Configure running mode" onclick="openConfigDialog()">
 				<i class="fa fa-wrench" aria-hidden="true"></i>
 			</div>
 			<div>
@@ -134,10 +134,23 @@ process = +;
 							<option value = 128> 128 </option>
 						</select>
 					</form>
-					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>). <p> Be sure to launch the HTML page <B>after</B> your MIDI application(s)/devices(s) to be sure MIDI ports are properly detected.</p>
+					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>). 
 				</div>
+				
+				<div class="config-element">
+					<H3>ScriptProcessor/AudioWorklet</H3>
+					<form method="POST" name="menu">
+						<select id="selectedRenderingMode" name="selectedRenderingMode"
+							onChange="setRenderingMode(this.form.selectedRenderingMode)">
+							<option selected value = ScriptProcessor> ScriptProcessor </option>
+                       	    <option value = AudioWorklet> AudioWorklet </option>
+						</select>
+					</form>
+					<p>ScriptProcessor: audio rendering is done using the old ScriptProcessor model</p>
+                	<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
+				</div>
+				
 			</div>
-
 		</div>
 	</div>
 

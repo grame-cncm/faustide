@@ -438,12 +438,25 @@ function init() {
 	// Configure editor
 	configureDropZone("myDropZone");
 
-	// Activate MIDI
-	activateMIDIInput();
+    // Check AudioWorklet support
+    if (!workletAvailable()) {
+        document.getElementById("selectedRenderingMode").disabled = true;
+        alert("AudioWorklet is not supported, ScriptProcessor model only will be available");
+    }
 
+    // Activate MIDI
+    activateMIDIInput();
+    
 	// Activate locate storage for DSP state
 	setLocalStorage(true);
+	
+    // Load page state
+    loadPageState();
+
+    // Timer to save page and DSP state to local storage
+    setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
 }
 
 // Setup the main entry point in libfaust.js
 faust_module['onRuntimeInitialized'] = init;
+
