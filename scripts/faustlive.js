@@ -272,7 +272,7 @@ function faustDocumentation()
         }
     }
     console.log("open documentation link for word", '"'+word+'"');
-    window.open("https://faust.grame.fr/libraries.html#" + word.toLowerCase(), 'documentation');
+    window.open("libraries/doc/library.html#" + word.toLowerCase(), 'documentation');
 }
 
 //-----------------------------------------------------------------------
