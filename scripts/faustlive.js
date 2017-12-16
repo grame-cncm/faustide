@@ -43,7 +43,7 @@ function uploadOn(e, callback) {
         }
 
         try {
-            xmlhttp.open("get", url, false);
+            xmlhttp.open("GET", url, false);
             // Avoid error "mal formé" on firefox
             xmlhttp.overrideMimeType('text/html');
             xmlhttp.send();
