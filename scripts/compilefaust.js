@@ -27,6 +27,13 @@ var wurl =  window.location.href;
 var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
 console.log("URL:", libraries_url);
 
+function workletAvailable()
+{
+    if (typeof (OfflineAudioContext) === "undefined") return false;
+    var context = new OfflineAudioContext(1, 1, 44100);
+    return context.audioWorklet && typeof context.audioWorklet.addModule === 'function';
+}
+
 function deleteDSP()
 {
 	if (DSP) {
@@ -46,67 +53,51 @@ function deleteDSP()
 	}
 }
 
-function activateMonoDSP(dsp)
+function activateDSP(dsp)
 {
-    if (!dsp) {
-        alert(faust.getErrorMessage());
+    if (dsp) {
+        DSP = dsp;
+        if (DSP.getNumInputs() > 0) {
+            activateAudioInput();
+        } else {
+            audio_input = null;
+        }
+        
+        // Setup UI
+        faust_svg = $('#faustui');
+        output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), function(path, val) { DSP.setParamValue(path, val); });
+        DSP.setOutputParamHandler(output_handler);
+        DSP.connect(audio_context.destination);
+    
+        console.log(DSP.getNumInputs());
+        console.log(DSP.getNumOutputs());
+        
+        loadDSPState();
+    } else {
+      	alert(faust.getErrorMessage());
         // Fix me
         document.getElementById('faustuiwrapper').style.display = 'none';
-        return;
     }
-    
-    DSP = dsp;
-    if (DSP.getNumInputs() > 0) {
-        activateAudioInput();
-    } else {
-        audio_input = null;
-    }
-    
-    // Setup UI
-    faust_svg = $('#faustui');
-    output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), function(path, val) { DSP.setParamValue(path, val); });
-    DSP.setOutputParamHandler(output_handler);
-    console.log(DSP.getNumInputs());
-    console.log(DSP.getNumOutputs());
-    //DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
-    DSP.connect(audio_context.destination);
-    
-    loadDSPState();
+}
+
+function activateMonoDSP(dsp)
+{
+    activateDSP(dsp);
 }
 
 function activatePolyDSP(dsp)
 {
-    if (!dsp) {
-        alert(faust.getErrorMessage());
-        // Fix me
-        document.getElementById('faustuiwrapper').style.display = 'none';
-        return;
-    }
-    
+	activateDSP(dsp);
     checkPolyphonicDSP(dsp.getJSON());
-    DSP = dsp;
-    
-    if (DSP.getNumInputs() > 0) {
-        activateAudioInput();
-    } else {
-        audio_input = null;
-    }
-    
-    // Setup UI
-    faust_svg = $('#faustui');
-    output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), function(path, val) { DSP.setParamValue(path, val); });
-    DSP.setOutputParamHandler(output_handler);
-    console.log(DSP.getNumInputs());
-    console.log(DSP.getNumOutputs());
-    //DSP.metadata({ declare: function(key, value) { console.log("key = " + key + " value = " + value); }});
-    DSP.connect(audio_context.destination);
-    
-    loadDSPState();
 }
 
 function compileMonoDSP(factory)
 {
-    if (rendering_mode === "ScriptProcessor") {
+    if (!factory) {
+        alert(faust.getErrorMessage());
+        // Fix me
+        document.getElementById('faustuiwrapper').style.display = 'none';
+    } else if (rendering_mode === "ScriptProcessor") {
         console.log("ScriptProcessor createDSPInstance");
         faust.createDSPInstance(factory, audio_context, buffer_size, activateMonoDSP);
     } else {
@@ -117,7 +108,11 @@ function compileMonoDSP(factory)
 
 function compilePolyDSP(factory)
 {
-    if (rendering_mode === "ScriptProcessor") {
+    if (!factory) {
+        alert(faust.getErrorMessage());
+        // Fix me
+        document.getElementById('faustuiwrapper').style.display = 'none';
+    } else if (rendering_mode === "ScriptProcessor") {
         console.log("ScriptProcessor createPolyDSPInstance");
         faust.createPolyDSPInstance(factory, audio_context, buffer_size, poly_nvoices, activatePolyDSP);
     } else {
@@ -126,19 +121,8 @@ function compilePolyDSP(factory)
     }
 }
 
-function workletAvailable()
-{
-    if (typeof (OfflineAudioContext) === "undefined") return false;
-    var context = new OfflineAudioContext(1, 1, 44100);
-    return context.audioWorklet && typeof context.audioWorklet.addModule === 'function';
-}
-
 function compileDSP()
 {
-	if (!dsp_code) {
-		return;
-	}
-	
 	deleteDSP();
 
 	// Prepare argv list
@@ -147,43 +131,17 @@ function compileDSP()
 	argv.push(ftz_flag);
 	argv.push("-I");
 	argv.push(libraries_url);
-
 	console.log(argv);
 
 	if (poly_flag === "ON") {
-
 		isPoly = true;
 		console.log("Poly DSP");
-
 		// Create a poly DSP factory from the dsp code
-		faust.createPolyDSPFactory(dsp_code,
-			argv,
-			function(factory) {
-				if (!factory) {
-					alert(faust.getErrorMessage());
-					// Fix me
-					document.getElementById('faustuiwrapper').style.display = 'none';
-					return;
-				}
-                compilePolyDSP(factory);
-			});
-
-	} else {
-
+		faust.createPolyDSPFactory(dsp_code, argv, function(factory) { compilePolyDSP(factory); });
+    } else {
 		isPoly = false;
 		console.log("Mono DSP");
-
 		// Create a mono DSP factory from the dsp code
-		faust.createDSPFactory(dsp_code,
-			argv,
-			function(factory) {
-				if (!factory) {
-					alert(faust.getErrorMessage());
-					// Fix me
-					document.getElementById('faustuiwrapper').style.display = 'none';
-					return;
-				}
-				compileMonoDSP(factory);
-			});
+		faust.createDSPFactory(dsp_code, argv, function(factory) { compileMonoDSP(factory); });
 	}
 }

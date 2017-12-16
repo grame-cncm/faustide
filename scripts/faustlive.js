@@ -43,7 +43,7 @@ function uploadOn(e, callback) {
         }
 
         try {
-            xmlhttp.open("GET", url, false);
+            xmlhttp.open("get", url, false);
             // Avoid error "mal formé" on firefox
             xmlhttp.overrideMimeType('text/html');
             xmlhttp.send();
@@ -127,15 +127,13 @@ function configureDropZone(zoneid) {
 
 function download(filename, text) {
     var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' +
-        encodeURIComponent(text));
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
 
     element.style.display = 'none';
     document.body.appendChild(element);
 
     element.click();
-
     document.body.removeChild(element);
 }
 
@@ -197,6 +195,7 @@ function stopFaustCode() {
 //-----------------------------------------------------------------------
 // Open Faust documentation
 //-----------------------------------------------------------------------
+
 // Left-extend a position by 3 characters
 function back3ch(pos)
 {
@@ -278,16 +277,15 @@ function faustDocumentation()
 //-----------------------------------------------------------------------
 // Block diagram visualization
 //-----------------------------------------------------------------------
+
 function openBlockDiagram()
 {
-
     console.log("open block diagram visualisation");
-    getSHAKey(  document.getElementById("exportUrl").value,
-                document.getElementById("filename").value.split(".")[0],
-                codeEditor.getValue(),
-                trigBlockDiagram,
-                cancelLoader
-            );
+    getSHAKey(document.getElementById("exportUrl").value,
+            document.getElementById("filename").value.split(".")[0],
+            codeEditor.getValue(),
+            trigBlockDiagram,
+            cancelLoader);
 
 }
 
@@ -297,7 +295,6 @@ function trigBlockDiagram(key)
     console.log("the url is : ", "https://faustservice.grame.fr/" + key + "/diagram/process.svg" );
     window.open("https://faustservice.grame.fr/" + key + "/diagram/process.svg", 'blockdiagram');
 }
-
 
 //-----------------------------------------------------------------------
 // Export Dialog
@@ -342,12 +339,12 @@ function trigCompilation(key)
 
     startWaitingQrCode();
 
-    sendPrecompileRequest(  document.getElementById("exportUrl").value,
-                            key,
-                            plateform,
-                            architecture,
-                            sha => { stopWaitingQrCode(); updateQrCode(sha); }
-                         );
+    sendPrecompileRequest(document.getElementById("exportUrl").value,
+                        key,
+                        plateform,
+                        architecture,
+                        sha => { stopWaitingQrCode(); updateQrCode(sha); }
+                        );
 }
 
 // exportFaustSource: send sourcecode to export URL : get back shakey and trig compilation if success
