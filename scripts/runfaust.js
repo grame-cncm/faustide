@@ -32,11 +32,10 @@ function setRenderingMode(rendering_item) {
         restoreMenu("selectedBuffer", buffer_size);
         document.getElementById("selectedBuffer").disabled = true;
     } else {
-        buffer_size = 1024;
+        buffer_size = 256;
         restoreMenu("selectedBuffer", buffer_size);
         document.getElementById("selectedBuffer").disabled = false;
     }
-    compileDSP();
 }
 
 // MIDI input handling
@@ -127,9 +126,7 @@ function activateAudioInput() {
 
 	if (navigator.getUserMedia) {
 		navigator.getUserMedia({
-			audio: {
-				echoCancellation: false
-			}
+			audio: { echoCancellation: false }
 		}, getDevice, function(e) {
 			alert('Error getting audio input');
 			console.log(e);
@@ -224,10 +221,9 @@ function loadPageState() {
 }
 
 function checkPolyphonicDSP(json) {
-	if (!((json.indexOf("/freq") !== -1) && (json.indexOf("/gain") !== -1) && (
-			json.indexOf("/gate") !== -1))) {
-		alert(
-			"Faust DSP code is not Polyphonic, it will probably not work correctly in this mode..."
-		)
-	}
+    if (!((json.indexOf("/freq") !== -1)
+        && (json.indexOf("/gain") !== -1)
+        && (json.indexOf("/gate") !== -1))) {
+        alert("Faust DSP code is not Polyphonic, it will probably not work correctly in this mode...");
+    }
 }

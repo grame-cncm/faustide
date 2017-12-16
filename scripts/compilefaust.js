@@ -25,7 +25,6 @@ var output_handler = null;
 // compute libraries URL relative to current page
 var wurl =  window.location.href;
 var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
-
 console.log("URL:", libraries_url);
 
 function deleteDSP()
