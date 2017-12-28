@@ -1,0 +1,102 @@
+{
+    "dir": "ltr",
+    "lang": "en",
+    "name": "FaustEditor",
+    "scope": "/editor/",
+    "display": "browser",
+    "start_url": "https://faust.grame.fr/editor/",
+    "short_name": "FaustEditor",
+    "theme_color": "transparent",
+    "description": "Faust Code editor",
+    "orientation": "any",
+    "background_color": "transparent",
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "/images/793103ce-80b8-38f0-fd56-4c389f481d18.webPlatform.png",
+            "sizes": "48x48",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/16bf9bba-99ed-5212-b7c8-b8aab5a3ce00.webPlatform.png",
+            "sizes": "1240x600",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/1d627859-32c2-4292-cfaa-6b4d046d6962.webPlatform.png",
+            "sizes": "300x300",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/a44088ed-96a6-49e2-6703-2bab0e0d8c25.webPlatform.png",
+            "sizes": "88x88",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/1337c07d-deb2-277b-e24f-81ea7af1b277.webPlatform.png",
+            "sizes": "24x24",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/aadcddcd-ac0f-80d6-7ada-ec51a1807810.webPlatform.png",
+            "sizes": "50x50",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/3c8b532a-73d7-313d-c523-2027d7369143.webPlatform.png",
+            "sizes": "620x300",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/a0cad177-aba3-a325-86ba-67f552e39aeb.webPlatform.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/33072e95-1b80-4ef9-23cd-22cf045a1efb.webPlatform.png",
+            "sizes": "144x144",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/7f20850d-fd84-cd8c-750e-015813cdcbd5.webPlatform.png",
+            "sizes": "96x96",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/545e1f4a-8458-1643-133d-980ef72ee9a9.webPlatform.png",
+            "sizes": "72x72",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/cff79dfd-5352-5304-8e1e-e18f29f2632a.webPlatform.png",
+            "sizes": "36x36",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/ios/ios-appicon-1024-1024.png",
+            "sizes": "1024x1024",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/9c8827fb-4698-b3e1-2bbb-6fb4a8d2f24d.webPlatform.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/95cadf49-9062-4f50-ba1f-888029fe795a.webPlatform.png",
+            "sizes": "152x152",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/95890f6e-2c60-5175-b8bd-c03f5fb4de67.webPlatform.png",
+            "sizes": "120x120",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/559b8aac-af3b-57c6-885d-8c099d37699e.webPlatform.png",
+            "sizes": "76x76",
+            "type": "image/png"
+        }
+    ]
+}

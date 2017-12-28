@@ -7,7 +7,7 @@
 	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27" content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
 	<title>Faust Editor</title>
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto:300,400" rel="stylesheet">
-
+	<link rel="manifest" href="manifest.json"></link>
 	<link rel=stylesheet href="codemirror/theme/eclipse.css">
 	<link rel=stylesheet href="codemirror/lib/codemirror.css">
 	<link rel=stylesheet href="codemirror/doc/docs.css">
@@ -155,6 +155,21 @@ process = +;
 		</div>
 	</div>
 
+<!-- <script>
+		console.log("service worker !!!!")
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker
+				.register('./sw.js')
+				.then(function(reg) {
+					console.log("service worker registrated", reg)
+				})
+				.catch(function(err) {
+					console.log("error", err)
+				})
+		}
+	</script>
+ -->
+ 	<script src="pwabuilder-sw-register.js"></script>
 	<script src="codemirror/lib/codemirror.js"></script>
 	<script src="codemirror/mode/clike/clike.js"></script>
 	<script src="codemirror/mode/faust/faust.js"></script>
