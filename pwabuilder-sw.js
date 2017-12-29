@@ -1,7 +1,14 @@
 //This is the service worker with the Cache-first network
 
-var CACHE = 'pwabuilder-precache';
+var CACHE = 'pwabuilder-precache-v1';
+var precacheFilesNEW = [];
 var precacheFiles = [
+    "libfaust-wasm.wasm",
+    "mixer32.wasm",
+    "faust.css",
+    "editor.css",
+    "tippy.css",
+    "index.html",
     "libraries/all.lib",
     "libraries/analyzers.lib",
     "libraries/basics.lib",
@@ -29,7 +36,19 @@ var precacheFiles = [
     "libraries/synths.lib",
     "libraries/tonestacks.lib",
     "libraries/tubes.lib",
-    "libraries/vaeffects.lib"
+    "libraries/vaeffects.lib",
+    "scripts/compilefaust.js",
+    "scripts/qrcode.js",
+    "scripts/WebMIDIAPI.js",
+    "scripts/runfaust.js",
+    "scripts/ExportLib.js",
+    "scripts/faustlive.js",
+    "scripts/jsscripts.js",
+    "scripts/exportUI.js",
+    "scripts/tippy.min.js",
+    "scripts/webaudio-wasm-wrapper.js",
+    "scripts/libfaust-wasm.js",
+    "font-awesome/fonts/fontawesome-webfont.ttf?v=4.7.0"
   ];
 
 //Install stage sets up the cache-array to configure pre-cache content
