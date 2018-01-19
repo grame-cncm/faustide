@@ -177,14 +177,19 @@ function loadFaustCode() {
 function ctrlRunFaustCode(ev)
 {
     if (ev.ctrlKey &&  ev.key=="r") {
-        if (isFaustCodeRunning()) {
-            stopFaustCode()
-        } else {
-            runFaustCode();
-        }
+        startStopFaustCode();
     }
 }
 
+// Start or Stop Faust Code
+function startStopFaustCode()
+{
+    if (isFaustCodeRunning()) {
+        stopFaustCode()
+    } else {
+        runFaustCode();
+    }
+}
 
 // Check if the Faust Code is running or not
 function isFaustCodeRunning()
@@ -400,7 +405,7 @@ function closeConfigDialog()
 
 codeEditor.setOption("extraKeys", {
     'Ctrl-D':  faustDocumentation,
-    'Ctrl-R':  runFaustCode
+    'Ctrl-R':  startStopFaustCode
 });
 
 // We want to show possible completions only when we type a character
