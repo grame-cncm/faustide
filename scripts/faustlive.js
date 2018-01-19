@@ -173,15 +173,36 @@ function loadFaustCode() {
 // Run the Faust code in the code editor
 //-----------------------------------------------------------------------
 
-function runFaustCode() {
+// an event handler that runs or stop the faust code (CTRL-R)
+function ctrlRunFaustCode(ev)
+{
+    if (ev.ctrlKey &&  ev.key=="r") {
+        if (isFaustCodeRunning()) {
+            stopFaustCode()
+        } else {
+            runFaustCode();
+        }
+    }
+}
+
+
+// Check if the Faust Code is running or not
+function isFaustCodeRunning()
+{
+    return document.getElementById('faustuiwrapper').style.display == 'block';
+}
+
+// Run the Faust Code
+function runFaustCode()
+{
     dsp_code = codeEditor.getValue();
     console.log("run faust code: ", dsp_code);
-    let modal = document.getElementById('faustuiwrapper');
-    modal.style.display = 'block';
+
+    document.getElementById('faustuiwrapper').style.display = 'block';
     compileDSP();
 }
 
-// Stop the Faust code currently running
+// Stop the currently running Faust code
 function stopFaustCode() {
     console.log("stop faust code");
 
@@ -443,17 +464,19 @@ function init() {
 
     // Activate MIDI
     activateMIDIInput();
-    
+
 	// Activate locate storage for DSP state
 	setLocalStorage(true);
-	
+
     // Load page state
     loadPageState();
 
     // Timer to save page and DSP state to local storage
     setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
+
+    document.addEventListener("keypress", ctrlRunFaustCode, true);
+    console.log("and of init");
 }
 
 // Setup the main entry point in libfaust.js
 faust_module['onRuntimeInitialized'] = init;
-
