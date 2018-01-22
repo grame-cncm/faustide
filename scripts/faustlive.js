@@ -464,7 +464,7 @@ function init() {
     // Check AudioWorklet support
     if (!workletAvailable()) {
         document.getElementById("selectedRenderingMode").disabled = true;
-        alert("AudioWorklet is not supported, ScriptProcessor model only will be available");
+        console.log("AudioWorklet is not supported, ScriptProcessor model only will be available");
     }
 
     // Activate MIDI
