@@ -480,7 +480,7 @@ function init() {
     setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
 
     document.addEventListener("keypress", ctrlRunFaustCode, true);
-    console.log("and of init");
+    console.log("end of init");
 }
 
 // Setup the main entry point in libfaust.js
