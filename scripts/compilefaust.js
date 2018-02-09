@@ -24,6 +24,7 @@ var output_handler = null;
 
 // compute libraries URL relative to current page
 var wurl =  window.location.href;
+var wurl = wurl.substr(0, wurl.indexOf('?'));  // remove options from the URL
 var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
 console.log("URL:", libraries_url);
 
@@ -62,16 +63,16 @@ function activateDSP(dsp)
         } else {
             audio_input = null;
         }
-        
+
         // Setup UI
         faust_svg = $('#faustui');
         output_handler = _f4u$t.main(DSP.getJSON(), $(faust_svg), function(path, val) { DSP.setParamValue(path, val); });
         DSP.setOutputParamHandler(output_handler);
         DSP.connect(audio_context.destination);
-    
+
         console.log(DSP.getNumInputs());
         console.log(DSP.getNumOutputs());
-        
+
         loadDSPState();
     } else {
       	alert(faust.getErrorMessage());
