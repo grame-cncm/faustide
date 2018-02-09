@@ -169,6 +169,55 @@ function loadFaustCode() {
     gFileInput.click();
 }
 
+//---------------------------------------------------------------------------------
+// Load Faust code from a code parameter in the URL.
+//
+// This function should be called at init time. It search for a code=<url>
+// parameter in the editor's url. If it finds one, it fetches the file and
+// copies its content into the editor.
+//
+// The structure of the URL is: https://faust.grame.fr/editor/?code=<dsp-code-url>
+// Example:
+// https://faust.grame.fr/editor/?code=https://faust.grame.fr/modules/Kisana.dsp
+
+function loadCodeFromUrlParam()
+{
+    // extract code parameter from page URL
+    var wurl = window.location.href;
+    var n = wurl.indexOf('?')+1;            // begin of parameters
+    if (n === -1) {
+        console.log ("no parameters in the URL");
+        return;
+    } else {
+        var m = wurl.indexOf("code=",n);        // begin of code
+        if (m === -1) {
+            console.log("no specific code parameter in the URL");
+            return;
+        } else {
+            m = m+5;        // begin of code url
+
+            // search end of code url delimited by # or & or the end of the string
+            var p = wurl.indexOf("&",m);
+            if (p === -1) { p = wurl.indexOf("#",m); }
+            if (p === -1) { p = wurl.length; }
+
+            // get the code url and fetch it
+            var curl = wurl.substring(m,p);
+            console.log("code url is",curl);
+            fetch(curl, {"mode":"cors"}).then(
+                function(response) {
+                    return response.text().then(function(text) {
+                        codeEditor.setValue(text);
+                        // update the title with the name of the file
+                        var f1 = curl.lastIndexOf('/');
+                        var filename = curl.substring(f1+1);
+                        console.log("filename is", filename);
+                        document.getElementById("filename").value = filename;
+                })});
+        }
+    }
+}
+
 //-----------------------------------------------------------------------
 // Run the Faust code in the code editor
 //-----------------------------------------------------------------------
@@ -466,6 +515,9 @@ function init() {
         document.getElementById("selectedRenderingMode").disabled = true;
         console.log("AudioWorklet is not supported, ScriptProcessor model only will be available");
     }
+
+    // Try to load code from current URL
+    loadCodeFromUrlParam();
 
     // Activate MIDI
     activateMIDIInput();
