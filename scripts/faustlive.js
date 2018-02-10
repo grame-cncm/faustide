@@ -170,51 +170,44 @@ function loadFaustCode() {
 }
 
 //---------------------------------------------------------------------------------
-// Load Faust code from a code parameter in the URL.
+// Configure the editor using parameters in the URL. This function should be called
+// at init time.
 //
-// This function should be called at init time. It search for a code=<url>
-// parameter in the editor's url. If it finds one, it fetches the file and
-// copies its content into the editor.
+// buffer=128|256|512|...|8192
+// poly=ON|OFF
+// nvoices=4|8|16|32|64|128
+// ftz=0|1|2
+// rendering=ScriptProcessor|AudioWorklet
+// code=<dsp-code-url>
 //
-// The structure of the URL is: https://faust.grame.fr/editor/?code=<dsp-code-url>
 // Example:
 // https://faust.grame.fr/editor/?code=https://faust.grame.fr/modules/Kisana.dsp
+// https://faust.grame.fr/editor/?buffer=256&poly=on&nvoices=4&code=https://raw.githubusercontent.com/grame-cncm/faust/master-dev/tests/architecture-tests/organ.dsp
 
-function loadCodeFromUrlParam()
+function configureEditorFromUrlParams()
 {
-    // extract code parameter from page URL
-    var wurl = window.location.href;
-    var n = wurl.indexOf('?')+1;            // begin of parameters
-    if (n === -1) {
-        console.log ("no parameters in the URL");
-        return;
-    } else {
-        var m = wurl.indexOf("code=",n);        // begin of code
-        if (m === -1) {
-            console.log("no specific code parameter in the URL");
-            return;
-        } else {
-            m = m+5;        // begin of code url
+    var params = new URLSearchParams(window.location.search);
 
-            // search end of code url delimited by # or & or the end of the string
-            var p = wurl.indexOf("&",m);
-            if (p === -1) { p = wurl.indexOf("#",m); }
-            if (p === -1) { p = wurl.length; }
+    // Restore menus
+    if (params.has("buffer"))       restoreMenu("selectedBuffer", params.get("buffer"));
+    if (params.has("poly"))         restoreMenu("selectedPoly", params.get("poly").toUpperCase());
+    if (params.has("nvoices"))      restoreMenu("polyVoices", params.get("nvoices"));
+    if (params.has("ftz"))          restoreMenu("selectedFTZ", params.get("ftz"));
+    if (params.has("rendering"))    restoreMenu("selectedRenderingMode", params.get("rendering"));
 
-            // get the code url and fetch it
-            var curl = wurl.substring(m,p);
-            console.log("code url is",curl);
-            fetch(curl, {"mode":"cors"}).then(
-                function(response) {
-                    return response.text().then(function(text) {
-                        codeEditor.setValue(text);
-                        // update the title with the name of the file
-                        var f1 = curl.lastIndexOf('/');
-                        var filename = curl.substring(f1+1);
-                        console.log("filename is", filename);
-                        document.getElementById("filename").value = filename;
-                })});
-        }
+    var curl = params.get("code");
+    if (curl) {
+        console.log("code url is", curl);
+        fetch(curl, {"mode":"cors"}).then(
+            function(response) {
+                return response.text().then(function(text) {
+                    codeEditor.setValue(text);
+                    // update the title with the name of the file
+                    var f1 = curl.lastIndexOf('/');
+                    var filename = curl.substring(f1+1);
+                    console.log("filename is", filename);
+                    document.getElementById("filename").value = filename;
+            })});
     }
 }
 
@@ -516,9 +509,6 @@ function init() {
         console.log("AudioWorklet is not supported, ScriptProcessor model only will be available");
     }
 
-    // Try to load code from current URL
-    loadCodeFromUrlParam();
-
     // Activate MIDI
     activateMIDIInput();
 
@@ -527,6 +517,9 @@ function init() {
 
     // Load page state
     loadPageState();
+
+    // Try to load code from current URL
+    configureEditorFromUrlParams();
 
     // Timer to save page and DSP state to local storage
     setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
