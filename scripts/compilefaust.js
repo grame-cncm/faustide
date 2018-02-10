@@ -24,7 +24,10 @@ var output_handler = null;
 
 // compute libraries URL relative to current page
 var wurl =  window.location.href;
-var wurl = wurl.substr(0, wurl.indexOf('?'));  // remove options from the URL
+var qm = wurl.indexOf('?');
+if (qm > 0) {
+    wurl = wurl.substr(0, qm);  // remove options from the URL
+}
 var libraries_url = wurl.substr(0, wurl.lastIndexOf('/')) + "/libraries/";
 console.log("URL:", libraries_url);
 
