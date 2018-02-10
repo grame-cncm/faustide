@@ -190,7 +190,10 @@ function configureEditorFromUrlParams()
 
     // Restore menus
     if (params.has("buffer"))       restoreMenu("selectedBuffer", params.get("buffer"));
-    if (params.has("poly"))         restoreMenu("selectedPoly", params.get("poly").toUpperCase());
+    if (params.has("poly"))         {
+        poly_flag = params.get("poly").toUpperCase();
+        restoreMenu("selectedPoly", poly_flag);
+    }
     if (params.has("nvoices"))      restoreMenu("polyVoices", params.get("nvoices"));
     if (params.has("ftz"))          restoreMenu("selectedFTZ", params.get("ftz"));
     if (params.has("rendering"))    restoreMenu("selectedRenderingMode", params.get("rendering"));
