@@ -517,6 +517,9 @@ function init() {
 
 	// Activate locate storage for DSP state
 	setLocalStorage(true);
+	
+	// Restore 'save DSP control parameters' checkbox state
+	document.getElementById("dspstorage").checked = (localStorage.getItem("FaustDSPStorage") === "on");
 
     // Load page state
     loadPageState();

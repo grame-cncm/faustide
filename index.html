@@ -103,7 +103,8 @@ process = +;
 		<span class="closeBtn" onclick="closeConfigDialog()">&times;</span>
 		<div class="configui" id="configui">
 			<h1>Configure Running Mode</h1>
-			<div class="config">
+            
+         	<div class="config">
 
 				<div class="config-element">
 					<H3>Buffer size</H3>
@@ -151,6 +152,8 @@ process = +;
                 	<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
 				</div>
 
+            <p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B> </p>
+    
 			</div>
 		</div>
 	</div>

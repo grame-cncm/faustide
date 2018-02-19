@@ -154,6 +154,13 @@ function setLocalStorage(state) {
 	}
 }
 
+function setDSPStorage(state) {
+	console.log(state);
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem("FaustDSPStorage", ((state) ? "on" : "off"));
+	}
+}
+
 function restoreMenu(id, value) {
     if (document.getElementById(id)) {
         for (var i = 0; i < document.getElementById(id).length; i++) {
@@ -167,10 +174,24 @@ function restoreMenu(id, value) {
 }
 
 function saveDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
+	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustDSPStorage") === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
 			localStorage.setItem(params[i], DSP.getParamValue(params[i]));
+		}
+	}
+}
+
+function loadDSPState() {
+	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustDSPStorage") === "on") {
+		var params = DSP.getParams();
+		for (var i = 0; i < params.length; i++) {
+			if (localStorage.getItem(params[i])) {
+				// Restore DSP state
+				DSP.setParamValue(params[i], Number(localStorage.getItem(params[i])));
+				// Restore GUI state
+				output_handler(params[i], Number(localStorage.getItem(params[i])));
+			}
 		}
 	}
 }
@@ -183,20 +204,6 @@ function savePageState() {
         localStorage.setItem("poly_nvoices", poly_nvoices);
         localStorage.setItem("rendering_mode", rendering_mode);
     }
-}
-
-function loadDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-		var params = DSP.getParams();
-		for (var i = 0; i < params.length; i++) {
-			if (localStorage.getItem(params[i])) {
-				// Restore DSP state
-				DSP.setParamValue(params[i], Number(localStorage.getItem(params[i])));
-				// Restore GUI state
-				output_handler(params[i], Number(localStorage.getItem(params[i])));
-			}
-		}
-	}
 }
 
 function loadPageState() {
