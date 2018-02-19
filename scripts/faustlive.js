@@ -315,7 +315,6 @@ function faustDocumentation()
                 console.log("no valid prefix found", '"'+prefix+'"');
             }
 
-
         } else {
 
             console.log("It seems that we are at the end of a word !");
@@ -500,11 +499,11 @@ window.addEventListener('touchstart', function() {
 // Main entry point, called when libfaust.js has finished to load
 function init() {
 
-	// No polling from the server needed, so use an empty loop
-	_f4u$t.main_loop = function() {}
+    // No polling from the server needed, so use an empty loop
+    _f4u$t.main_loop = function() {}
 
-	// Configure editor
-	configureDropZone("myDropZone");
+    // Configure editor
+    configureDropZone("myDropZone");
 
     // Check AudioWorklet support
     if (!workletAvailable()) {
@@ -515,14 +514,14 @@ function init() {
     // Activate MIDI
     activateMIDIInput();
 
-	// Activate locate storage for DSP state
-	setLocalStorage(true);
-	
-	// Restore 'save DSP control parameters' checkbox state
-	document.getElementById("dspstorage").checked = (localStorage.getItem("FaustDSPStorage") === "on");
+    // Activate locate storage for DSP state
+    setLocalStorage(true);
 
     // Load page state
     loadPageState();
+
+    // Restore 'save DSP control parameters' checkbox state
+    document.getElementById("dspstorage").checked = (localStorage.getItem("FaustDSPStorage") === "on");
 
     // Try to load code from current URL
     configureEditorFromUrlParams();
