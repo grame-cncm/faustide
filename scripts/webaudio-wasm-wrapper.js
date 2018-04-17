@@ -1450,19 +1450,23 @@ var mydspProcessorString = `
             var input = inputs[0];
             var output = outputs[0];
             
-            // Check inputs/outputs
-            if (input === undefined
-                || output === undefined
-                || input[0][0] === undefined
-                || output[0][0] === undefined) {
-                console.log("Process error");
+            // Check inputs
+            if (this.numIn > 0 && ((input === undefined) || (input[0][0] === undefined))) {
+            	console.log("Process input error");
+                return true;
+            }
+            // Check outputs
+            if (this.numOut > 0 && ((output === undefined) || (output[0][0] === undefined))) {
+            	console.log("Process output error");
                 return true;
             }
             
             // Copy inputs
-            for (var chan = 0; chan < Math.min(this.numIn, input.length) ; ++chan) {
-                var dspInput = this.dspInChannnels[chan];
-                dspInput.set(input[chan]);
+            if (input !== undefined) {
+                for (var chan = 0; chan < Math.min(this.numIn, input.length) ; ++chan) {
+                    var dspInput = this.dspInChannnels[chan];
+                    dspInput.set(input[chan]);
+                }
             }
             
             // Update controls (possibly needed for sample accurate control)
@@ -1478,9 +1482,11 @@ var mydspProcessorString = `
             this.update_outputs();
             
             // Copy outputs
-            for (var chan = 0; chan < Math.min(this.numOut, output.length); ++chan) {
-                var dspOutput = this.dspOutChannnels[chan];
-                output[chan].set(dspOutput);
+            if (output !== undefined) {
+                for (var chan = 0; chan < Math.min(this.numOut, output.length); ++chan) {
+                    var dspOutput = this.dspOutChannnels[chan];
+                    output[chan].set(dspOutput);
+                }
             }
             
             return true;
@@ -3208,20 +3214,24 @@ var mydspPolyProcessorString = `
             var input = inputs[0];
             var output = outputs[0];
             
-            // Check inputs/outputs
-            if (input === undefined
-                || output === undefined
-                || input[0][0] === undefined
-                || output[0][0] === undefined) {
-                console.log("Process error");
+            // Check inputs
+            if (this.numIn > 0 && ((input === undefined) || (input[0][0] === undefined))) {
+            	console.log("Process input error");
+                return true;
+            }
+            // Check outputs
+            if (this.numOut > 0 && ((output === undefined) || (output[0][0] === undefined))) {
+            	console.log("Process output error");
                 return true;
             }
             
             // Copy inputs
-            for (var chan = 0; chan < Math.min(this.numIn, input.length) ; ++chan) {
-                var dspInput = this.dspInChannnels[chan];
-                dspInput.set(input[chan]);
-        	}
+            if (input !== undefined) {
+                for (var chan = 0; chan < Math.min(this.numIn, input.length) ; ++chan) {
+                    var dspInput = this.dspInChannnels[chan];
+                    dspInput.set(input[chan]);
+                }
+            }
             
             // Possibly call an externally given callback (for instance to synchronize playing a MIDIFile...)
             if (this.compute_handler) {
@@ -3263,9 +3273,11 @@ var mydspPolyProcessorString = `
             this.update_outputs();
             
             // Copy outputs
-            for (var chan = 0; chan < Math.min(this.numOut, output.length); ++chan) {
-                var dspOutput = this.dspOutChannnels[chan];
-                output[chan].set(dspOutput);
+            if (output !== undefined) {
+                for (var chan = 0; chan < Math.min(this.numOut, output.length); ++chan) {
+                    var dspOutput = this.dspOutChannnels[chan];
+                    output[chan].set(dspOutput);
+                }
             }
             
             return true;
