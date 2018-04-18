@@ -17,14 +17,16 @@ var codeEditor = CodeMirror.fromTextArea(myTextarea, {
     autoCloseBrackets: true
 });
 
-function fileSelectHandler(e) {
+function fileSelectHandler(e) 
+{
     fileDragHover(e);
     var files = e.target.files || e.dataTransfer.files;
     f = files[0];
     uploadFile(f);
 }
 
-function uploadOn(e, callback) {
+function uploadOn(e, callback) 
+{
     console.log("Drop URL : ", e.dataTransfer.getData('URL'));
 
     // CASE 1 : THE DROPPED OBJECT IS A URL TO SOME FAUST CODE
@@ -110,30 +112,35 @@ function uploadOn(e, callback) {
     }
 }
 
-function uploadFile(e) {
+function uploadFile(e) 
+{
     fileDragHover(e);
     uploadOn(e, updateDSPCode);
 }
 
-function fileDragHover(e) {
+function fileDragHover(e) 
+{
     e.stopPropagation();
     e.preventDefault();
     /*e.target.className = (e.type === "dragover" ? "hover" : "");*/
 }
 
-function updateDSPCode() {
+function updateDSPCode() 
+{
     codeEditor.setValue(dsp_code);
     // console.log("FAUST CODE:", codeEditor.getValue());
 }
 
-function configureDropZone(zoneid) {
+function configureDropZone(zoneid) 
+{
     var filedrag1 = document.getElementById(zoneid);
     filedrag1.addEventListener("dragover", fileDragHover, false);
     filedrag1.addEventListener("dragleave", fileDragHover, false);
     filedrag1.addEventListener("drop", uploadFile, false);
 }
 
-function download(filename, text) {
+function download(filename, text) 
+{
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
@@ -157,7 +164,8 @@ function saveFaustCode() {
 
 // Read faust source file from file system
 // e: event
-function readSourceFile(evt) {
+function readSourceFile(evt) 
+{
     var file = evt.target.files[0];
     if (!file) { return; }
     document.getElementById("filename").value = file.name;
@@ -170,7 +178,8 @@ function readSourceFile(evt) {
 }
 
 // Load Faust file from local file system via #fileinput element
-function loadFaustCode() {
+function loadFaustCode() 
+{
     console.log("load faust code");
     var gFileInput = document.getElementById('fileinput');
     gFileInput.addEventListener('change', readSourceFile, false);
@@ -261,7 +270,8 @@ function runFaustCode()
 }
 
 // Stop the currently running Faust code
-function stopFaustCode() {
+function stopFaustCode() 
+{
     console.log("stop faust code");
 
     // Delete the UI content in the DOM
@@ -292,7 +302,7 @@ function isAlphaNumeric(code)
 // Test if a string is a two letters library prefix: 'xx.'
 function isLibPrefix(str)
 {
-    return  (str.length == 3)
+    return (str.length == 3)
             && isAlphaNumeric(str.charCodeAt(0))
             && isAlphaNumeric(str.charCodeAt(1))
             && (str.charCodeAt(2) == 46);
@@ -420,18 +430,27 @@ function trigCompilation(key)
                         key,
                         plateform,
                         architecture,
-                        sha => { stopWaitingQrCode(); updateQrCode(sha); }
-                        );
+                        sha => { stopWaitingQrCode(); updateQrCode(sha); });
 }
 
 // exportFaustSource: send sourcecode to export URL : get back shakey and trig compilation if success
 function exportFaustSource() {
-    getSHAKey(  document.getElementById("exportUrl").value,
-                document.getElementById("filename").value.split(".")[0],
-                codeEditor.getValue(),
-                trigCompilation,
-                cancelLoader
-            );
+	
+    getSHAKey(document.getElementById("exportUrl").value,
+            document.getElementById("filename").value.split(".")[0],
+            codeEditor.getValue(),
+            trigCompilation,
+            cancelLoader);
+            
+    /*     
+    console.log(expandDSP(codeEditor.getValue()));
+    
+    getSHAKey(document.getElementById("exportUrl").value,
+            document.getElementById("filename").value.split(".")[0],
+            expandDSP(codeEditor.getValue()),
+            trigCompilation,
+            cancelLoader);  
+    */
 }
 
 //-----------------------------------------------------------------------

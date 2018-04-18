@@ -7,7 +7,7 @@
 //--- Send asynchronous GET request to FaustWeb to get the list of available targets
 // @exportUrl : url of FaustWeb service to target
 // @callback : function called once request succeeded
-// 				- @param : the available targets as a JSON application
+// 	- @param : the available targets as a JSON application
 // json = {"platform1":["arch1", "arch2", ..., "archn"], ... , "platformn":["arch1", "arch2", ..., "archn"]}
 
 function getTargets(exportUrl, callback, errCallback) {
@@ -121,7 +121,7 @@ function getArchitectures(json, platform) {
 	var data = JSON.parse(json);
 
 	return data[platform];
-	//     var archs = data[platform];
+	// var archs = data[platform];
 
 	// 	for (var i =0; i<archs.length; i++)
 	// 		architectures[i] = archs[i];

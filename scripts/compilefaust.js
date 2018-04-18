@@ -154,3 +154,21 @@ function compileDSP()
 		faust.createDSPFactory(dsp_code, argv, function(factory) { compileMonoDSP(factory); });
 	}
 }
+
+function expandDSP(dsp_code)
+{
+	// Prepare argv list
+	var argv = [];
+	argv.push("-ftz");
+	argv.push(ftz_flag);
+	argv.push("-I");
+	argv.push(libraries_url);
+	/*
+	// TODO : support for multiple library directories
+	argv.push("-I");
+	argv.push(base_url);
+	*/
+	console.log(argv);
+
+	return faust.expandDSP(dsp_code, argv)
+}
