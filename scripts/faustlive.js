@@ -1,7 +1,8 @@
 /*
-	A Faustlive like web application.
+	A Faustlive like Web application.
 */
 var dsp_code = "";
+var base_url = "";
 
 var codeEditor = CodeMirror.fromTextArea(myTextarea, {
     lineNumbers: true,
@@ -24,13 +25,20 @@ function fileSelectHandler(e) {
 }
 
 function uploadOn(e, callback) {
-    console.log("Drop. URL = ", e.dataTransfer.getData('URL'));
+    console.log("Drop URL : ", e.dataTransfer.getData('URL'));
 
     // CASE 1 : THE DROPPED OBJECT IS A URL TO SOME FAUST CODE
     if (e.dataTransfer.getData('URL') && e.dataTransfer.getData('URL').split(':').shift() != "file") {
         var url = e.dataTransfer.getData('URL');
+         
+        // Get base URL
+        var url_str = url.toString();
+        var last_split = url_str.lastIndexOf('/');
+        base_url = url_str.substring(0, last_split) + '/';
+        
+        // Get filename
         var filename = url.toString().split('/').pop();
-        console.log("filename is ", filename);
+        console.log("filename is : ", filename);
         document.getElementById("filename").value = filename;
         var xmlhttp = new XMLHttpRequest();
 
@@ -190,7 +198,7 @@ function configureEditorFromUrlParams()
 
     // Restore menus
     if (params.has("buffer"))       restoreMenu("selectedBuffer", params.get("buffer"));
-    if (params.has("poly"))         {
+    if (params.has("poly")) {
         poly_flag = params.get("poly").toUpperCase();
         restoreMenu("selectedPoly", poly_flag);
     }
@@ -208,7 +216,7 @@ function configureEditorFromUrlParams()
                     // update the title with the name of the file
                     var f1 = curl.lastIndexOf('/');
                     var filename = curl.substring(f1+1);
-                    console.log("filename is", filename);
+                    console.log("filename is : ", filename);
                     document.getElementById("filename").value = filename;
             })});
     }
@@ -221,7 +229,7 @@ function configureEditorFromUrlParams()
 // an event handler that runs or stop the faust code (CTRL-R)
 function ctrlRunFaustCode(ev)
 {
-    if (ev.ctrlKey &&  ev.key=="r") {
+    if (ev.ctrlKey &&  ev.key == "r") {
         startStopFaustCode();
     }
 }
@@ -246,7 +254,7 @@ function isFaustCodeRunning()
 function runFaustCode()
 {
     dsp_code = codeEditor.getValue();
-    console.log("run faust code: ", dsp_code);
+    console.log("run faust code : ", dsp_code);
 
     document.getElementById('faustuiwrapper').style.display = 'block';
     compileDSP();
@@ -356,7 +364,6 @@ function openBlockDiagram()
             codeEditor.getValue(),
             trigBlockDiagram,
             cancelLoader);
-
 }
 
 function trigBlockDiagram(key)
@@ -522,6 +529,9 @@ function init() {
 
     // Restore 'save DSP control parameters' checkbox state
     document.getElementById("dspstorage").checked = (localStorage.getItem("FaustDSPStorage") === "on");
+    
+    // Restore 'save DSP source' checkbox state
+    document.getElementById("sourcestorage").checked = (localStorage.getItem("FaustSourceStorage") === "on");
 
     // Try to load code from current URL
     configureEditorFromUrlParams();

@@ -161,6 +161,13 @@ function setDSPStorage(state) {
 	}
 }
 
+function setSourceStorage(state) {
+	console.log(state);
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem("FaustSourceStorage", ((state) ? "on" : "off"));
+	}
+}
+
 function restoreMenu(id, value) {
     if (document.getElementById(id)) {
         for (var i = 0; i < document.getElementById(id).length; i++) {
@@ -203,6 +210,11 @@ function savePageState() {
         localStorage.setItem("ftz_flag", ftz_flag);
         localStorage.setItem("poly_nvoices", poly_nvoices);
         localStorage.setItem("rendering_mode", rendering_mode);
+        
+        // Possibly save DSP source
+        if (localStorage.getItem("FaustSourceStorage") === "on") {
+        	localStorage.setItem("dsp_code", codeEditor.getValue());
+        }
     }
 }
 
@@ -213,6 +225,11 @@ function loadPageState() {
         poly_nvoices = (localStorage.getItem("poly_nvoices") ? localStorage.getItem("poly_nvoices") : 16);
         ftz_flag = (localStorage.getItem("ftz_flag") ? localStorage.getItem("ftz_flag") : 2);
         rendering_mode = (localStorage.getItem("rendering_mode") ? localStorage.getItem("rendering_mode") : "ScriptProcessor");
+        
+        // Possibly restore DSP source
+        if (localStorage.getItem("FaustSourceStorage") === "on" && localStorage.getItem("dsp_code")) {
+            codeEditor.setValue(localStorage.getItem("dsp_code"));
+        }
 
         // Restore menus
         restoreMenu("selectedBuffer", buffer_size);

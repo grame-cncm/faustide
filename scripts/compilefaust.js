@@ -135,6 +135,11 @@ function compileDSP()
 	argv.push(ftz_flag);
 	argv.push("-I");
 	argv.push(libraries_url);
+	/*
+	// TODO : support for multiple library directories
+	argv.push("-I");
+	argv.push(base_url);
+	*/
 	console.log(argv);
 
 	if (poly_flag === "ON") {

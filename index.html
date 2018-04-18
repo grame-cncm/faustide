@@ -98,13 +98,12 @@ process = +;
 		</div>
 	</div>
 
-
 	<div class="modalwrapper" id="configwrapper">
 		<span class="closeBtn" onclick="closeConfigDialog()">&times;</span>
 		<div class="configui" id="configui">
 			<h1>Configure Running Mode</h1>
-            
-         	<div class="config">
+
+        <div class="config">
 
 				<div class="config-element">
 					<H3>Buffer size</H3>
@@ -145,15 +144,14 @@ process = +;
 						<select id="selectedRenderingMode" name="selectedRenderingMode"
 							onChange="setRenderingMode(this.form.selectedRenderingMode)">
 							<option selected value = ScriptProcessor> ScriptProcessor </option>
-                       	    <option value = AudioWorklet> AudioWorklet </option>
+              				<option value = AudioWorklet> AudioWorklet </option>
 						</select>
 					</form>
 					<p>ScriptProcessor: audio rendering is done using the old ScriptProcessor model</p>
-                	<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
+					<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
 				</div>
-
-            <p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B> </p>
-    
+				<p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B> </p>
+				<p> <input id="sourcestorage" type="checkbox" onclick="setSourceStorage(checked)"> <B>Save DSP source</B> </p>
 			</div>
 		</div>
 	</div>
@@ -168,18 +166,17 @@ process = +;
 	<script src="codemirror/addon/search/search.js"></script>
 	<script src="codemirror/addon/hint/show-hint.js"></script>
 	<script src="codemirror/addon/hint/anyword-hint.js"></script>
-	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
 
-    <script src="scripts/tippy.min.js"></script>
-    <script src="scripts/jsscripts.js"></script>
-    <script src="scripts/libfaust-wasm.js"></script>
-    <script src="scripts/webaudio-wasm-wrapper.js"></script>
-    <script src="scripts/compilefaust.js"></script>
+	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
+  	<script src="scripts/tippy.min.js"></script>
+  	<script src="scripts/jsscripts.js"></script>
+  	<script src="scripts/libfaust-wasm.js"></script>
+  	<script src="scripts/webaudio-wasm-wrapper.js"></script>
+  	<script src="scripts/compilefaust.js"></script>
 	<script src="scripts/runfaust.js"></script>
 	<script src="scripts/ExportLib.js"></script>
 	<script src="scripts/qrcode.js"></script>
 	<script src="scripts/exportUI.js"></script>
-
 	<script src="scripts/faustlive.js"></script>
 
 </body>
