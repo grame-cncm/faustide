@@ -1,6 +1,7 @@
 'use strict';
 
-function setBufferSize(bs_item) {
+function setBufferSize(bs_item) 
+{
     buffer_size = parseInt(bs_item.options[bs_item.selectedIndex].value);
     if (buffer_size === 128 && rendering_mode === "ScriptProcessor") {
         console.log("buffer_size cannot be set to 128 in ScriptProcessor mode !");
@@ -10,21 +11,25 @@ function setBufferSize(bs_item) {
 	console.log("setBufferSize", buffer_size);
 }
 
-function setPoly(poly_item) {
+function setPoly(poly_item) 
+{
 	poly_flag = poly_item.options[poly_item.selectedIndex].value;
 	console.log("setPoly", poly_flag);
 }
 
-function setPolyVoices(voices_item) {
+function setPolyVoices(voices_item) 
+{
 	poly_nvoices = voices_item.options[voices_item.selectedIndex].value;
 	console.log("setPolyVoices", poly_nvoices);
 }
 
-function setFTZ(ftz_item) {
+function setFTZ(ftz_item) 
+{
 	ftz_flag = ftz_item.options[ftz_item.selectedIndex].value;
 }
 
-function setRenderingMode(rendering_item) {
+function setRenderingMode(rendering_item) 
+{
     rendering_mode = rendering_item.options[rendering_item.selectedIndex].value;
     if (rendering_mode === "AudioWorklet") {
         console.log("setRenderingMode AudioWorklet");
@@ -39,31 +44,36 @@ function setRenderingMode(rendering_item) {
 }
 
 // MIDI input handling
-function keyOn(channel, pitch, velocity) {
+function keyOn(channel, pitch, velocity) 
+{
 	if (DSP && isPoly) {
 		DSP.keyOn(channel, pitch, velocity);
 	}
 }
 
-function keyOff(channel, pitch, velocity) {
+function keyOff(channel, pitch, velocity) 
+{
 	if (DSP && isPoly) {
 		DSP.keyOff(channel, pitch, velocity);
 	}
 }
 
-function pitchWheel(channel, bend) {
+function pitchWheel(channel, bend) 
+{
 	if (DSP) {
 		DSP.pitchWheel(channel, bend);
 	}
 }
 
-function ctrlChange(channel, ctrl, value) {
+function ctrlChange(channel, ctrl, value) 
+{
 	if (DSP) {
 		DSP.ctrlChange(channel, ctrl, value);
 	}
 }
 
-function midiMessageReceived(ev) {
+function midiMessageReceived(ev) 
+{
 	var cmd = ev.data[0] >> 4;
 	var channel = ev.data[0] & 0xf;
 	var data1 = ev.data[1];
@@ -82,12 +92,13 @@ function midiMessageReceived(ev) {
 	}
 }
 
-function onerrorcallback(error) {
+function onerrorcallback(error) 
+{
 	console.log(error);
 }
 
-function onsuccesscallbackStandard(access) {
-
+function onsuccesscallbackStandard(access) 
+{
     access.onstatechange = function(e) {
         if (e.port.type === "input") {
             if (e.port.state  === "connected") {
@@ -106,7 +117,8 @@ function onsuccesscallbackStandard(access) {
     }
 }
 
-function activateMIDIInput() {
+function activateMIDIInput() 
+{
 	console.log("activateMIDIInput");
 	if (typeof(navigator.requestMIDIAccess) !== "undefined") {
 		navigator.requestMIDIAccess().then(onsuccesscallbackStandard, onerrorcallback);
@@ -118,7 +130,8 @@ function activateMIDIInput() {
 }
 
 // Audio input handling
-function activateAudioInput() {
+function activateAudioInput() 
+{
 	console.log("activateAudioInput");
 	if (!navigator.getUserMedia) {
 		navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -137,7 +150,8 @@ function activateAudioInput() {
 	}
 }
 
-function getDevice(device) {
+function getDevice(device) 
+{
 	// Create an AudioNode from the stream.
 	audio_input = audio_context.createMediaStreamSource(device);
 
@@ -147,28 +161,26 @@ function getDevice(device) {
 
 // Save/Load functions using local storage
 
-function setLocalStorage(state) {
+function setLocalStorage(state) 
+{
 	console.log(state);
-	if (typeof(Storage) !== "undefined") {
-		localStorage.setItem("FaustLocalStorage", ((state) ? "on" : "off"));
-	}
+	setStorageItemValue('FaustEditor', 'FaustLocalStorage', ((state) ? "on" : "off"));
 }
 
-function setDSPStorage(state) {
+function setDSPStorage(state) 
+{
 	console.log(state);
-	if (typeof(Storage) !== "undefined") {
-		localStorage.setItem("FaustDSPStorage", ((state) ? "on" : "off"));
-	}
+	setStorageItemValue('FaustEditor', 'FaustDSPStorage', ((state) ? "on" : "off"));
 }
 
-function setSourceStorage(state) {
+function setSourceStorage(state) 
+{
 	console.log(state);
-	if (typeof(Storage) !== "undefined") {
-		localStorage.setItem("FaustSourceStorage", ((state) ? "on" : "off"));
-	}
+	setStorageItemValue('FaustEditor', 'FaustSourceStorage', ((state) ? "on" : "off"));
 }
 
-function restoreMenu(id, value) {
+function restoreMenu(id, value) 
+{
     if (document.getElementById(id)) {
         for (var i = 0; i < document.getElementById(id).length; i++) {
             // Weak comparison here
@@ -180,55 +192,60 @@ function restoreMenu(id, value) {
     }
 }
 
-function saveDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustDSPStorage") === "on") {
+function saveDSPState() 
+{
+	if (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
-			localStorage.setItem(params[i], DSP.getParamValue(params[i]));
+			setStorageItemValue('FaustEditor', params[i], DSP.getParamValue(params[i]));
 		}
 	}
 }
 
-function loadDSPState() {
-	if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustDSPStorage") === "on") {
+function loadDSPState() 
+{
+	if (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
-			if (localStorage.getItem(params[i])) {
+			var value = getStorageItemValue('FaustEditor', params[i]);
+			if (value) {
 				// Restore DSP state
-				DSP.setParamValue(params[i], Number(localStorage.getItem(params[i])));
+				DSP.setParamValue(params[i], Number(value));
 				// Restore GUI state
-				output_handler(params[i], Number(localStorage.getItem(params[i])));
+				output_handler(params[i], Number(value));
 			}
 		}
 	}
 }
 
-function savePageState() {
-    if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-        localStorage.setItem("buffer_size", buffer_size);
-        localStorage.setItem("poly_flag", poly_flag);
-        localStorage.setItem("ftz_flag", ftz_flag);
-        localStorage.setItem("poly_nvoices", poly_nvoices);
-        localStorage.setItem("rendering_mode", rendering_mode);
+function savePageState() 
+{
+    if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
+        setStorageItemValue('FaustEditor', 'buffer_size', buffer_size);
+        setStorageItemValue('FaustEditor', 'poly_flag', poly_flag);
+        setStorageItemValue('FaustEditor', 'ftz_flag', ftz_flag);
+        setStorageItemValue('FaustEditor', 'poly_nvoices', poly_nvoices);
+        setStorageItemValue('FaustEditor', 'rendering_mode', rendering_mode);
         
         // Possibly save DSP source
-        if (localStorage.getItem("FaustSourceStorage") === "on") {
-        	localStorage.setItem("dsp_code", codeEditor.getValue());
+        if (getStorageItemValue('FaustEditor', 'FaustSourceStorage') === "on") {
+        	setStorageItemValue('FaustEditor', 'dsp_code', codeEditor.getValue());
         }
     }
 }
 
-function loadPageState() {
-    if (typeof(Storage) !== "undefined" && localStorage.getItem("FaustLocalStorage") === "on") {
-        buffer_size = (localStorage.getItem("buffer_size") ? localStorage.getItem("buffer_size") : 256);
-        poly_flag = (localStorage.getItem("poly_flag") ? localStorage.getItem("poly_flag") : "OFF");
-        poly_nvoices = (localStorage.getItem("poly_nvoices") ? localStorage.getItem("poly_nvoices") : 16);
-        ftz_flag = (localStorage.getItem("ftz_flag") ? localStorage.getItem("ftz_flag") : 2);
-        rendering_mode = (localStorage.getItem("rendering_mode") ? localStorage.getItem("rendering_mode") : "ScriptProcessor");
+function loadPageState() 
+{
+	if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
+        buffer_size = (getStorageItemValue('FaustEditor', 'buffer_size') ? getStorageItemValue('FaustEditor', 'buffer_size') : 256);
+        poly_flag = (getStorageItemValue('FaustEditor', 'poly_flag') ? getStorageItemValue('FaustEditor', 'poly_flag') : "OFF");
+        poly_nvoices = (getStorageItemValue('FaustEditor', 'poly_nvoices') ? getStorageItemValue('FaustEditor', 'poly_nvoices') : 16);
+        ftz_flag = (getStorageItemValue('FaustEditor', 'ftz_flag') ? getStorageItemValue('FaustEditor', 'ftz_flag') : 2);
+        rendering_mode = (getStorageItemValue('FaustEditor', 'rendering_mode') ? getStorageItemValue('FaustEditor', 'rendering_mode') : "ScriptProcessor");
         
         // Possibly restore DSP source
-        if (localStorage.getItem("FaustSourceStorage") === "on" && localStorage.getItem("dsp_code")) {
-            codeEditor.setValue(localStorage.getItem("dsp_code"));
+        if (getStorageItemValue('FaustEditor', 'FaustSourceStorage') === "on" && getStorageItemValue('FaustEditor', 'dsp_code')) {
+            codeEditor.setValue(getStorageItemValue('FaustEditor', 'dsp_code'));
         }
 
         // Restore menus
@@ -244,7 +261,8 @@ function loadPageState() {
     }
 }
 
-function checkPolyphonicDSP(json) {
+function checkPolyphonicDSP(json) 
+{
     if (!((json.indexOf("/freq") !== -1)
         && (json.indexOf("/gain") !== -1)
         && (json.indexOf("/gate") !== -1))) {

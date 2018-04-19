@@ -434,8 +434,8 @@ function trigCompilation(key)
 }
 
 // exportFaustSource: send sourcecode to export URL : get back shakey and trig compilation if success
-function exportFaustSource() {
-	
+function exportFaustSource() 
+{
     getSHAKey(document.getElementById("exportUrl").value,
             document.getElementById("filename").value.split(".")[0],
             codeEditor.getValue(),
@@ -503,9 +503,9 @@ tippy('.action-button', {
   })
 
 // To activate audio on iOS
-window.addEventListener('touchstart', function() {
-
-    // create empty buffer
+window.addEventListener('touchstart', function() 
+{
+   // create empty buffer
     var buffer = audio_context.createBuffer(1, 1, 22050);
     var source = audio_context.createBufferSource();
     source.buffer = buffer;
@@ -523,7 +523,9 @@ window.addEventListener('touchstart', function() {
 //-----------------------------------------------------------------------
 
 // Main entry point, called when libfaust.js has finished to load
-function init() {
+function init() 
+{
+	console.log("FaustEditor: version 1.0.0");
 
     // No polling from the server needed, so use an empty loop
     _f4u$t.main_loop = function() {}
@@ -545,12 +547,12 @@ function init() {
 
     // Load page state
     loadPageState();
-
+  
     // Restore 'save DSP control parameters' checkbox state
-    document.getElementById("dspstorage").checked = (localStorage.getItem("FaustDSPStorage") === "on");
+    document.getElementById("dspstorage").checked = (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on");
     
     // Restore 'save DSP source' checkbox state
-    document.getElementById("sourcestorage").checked = (localStorage.getItem("FaustSourceStorage") === "on");
+    document.getElementById("sourcestorage").checked = (getStorageItemValue('FaustEditor', 'FaustSourceStorage') === "on");
 
     // Try to load code from current URL
     configureEditorFromUrlParams();
@@ -559,7 +561,8 @@ function init() {
     setInterval(function() { savePageState(); if (DSP) { saveDSPState(); }}, 1000);
 
     document.addEventListener("keypress", ctrlRunFaustCode, true);
-    console.log("end of init");
+    
+    //console.log("end of init");
 }
 
 // Setup the main entry point in libfaust.js
