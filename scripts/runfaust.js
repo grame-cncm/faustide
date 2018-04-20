@@ -236,9 +236,6 @@ function savePageState()
 
 function restoreMenus() 
 {
-
-	console.log("restoreMenus");
-
 	// Restore menus
     restoreMenu("selectedBuffer", buffer_size);
     restoreMenu("selectedPoly", poly_flag);
@@ -256,32 +253,18 @@ function restoreMenus()
 function loadPageState() 
 {
 	if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
+        
         buffer_size = (getStorageItemValue('FaustEditor', 'buffer_size') ? getStorageItemValue('FaustEditor', 'buffer_size') : 256);
         poly_flag = (getStorageItemValue('FaustEditor', 'poly_flag') ? getStorageItemValue('FaustEditor', 'poly_flag') : "OFF");
         poly_nvoices = (getStorageItemValue('FaustEditor', 'poly_nvoices') ? getStorageItemValue('FaustEditor', 'poly_nvoices') : 16);
         ftz_flag = (getStorageItemValue('FaustEditor', 'ftz_flag') ? getStorageItemValue('FaustEditor', 'ftz_flag') : 2);
         rendering_mode = (getStorageItemValue('FaustEditor', 'rendering_mode') ? getStorageItemValue('FaustEditor', 'rendering_mode') : "ScriptProcessor");
-        
+
         // Possibly restore DSP source
         if (getStorageItemValue('FaustEditor', 'FaustSourceStorage') === "on" && getStorageItemValue('FaustEditor', 'dsp_code')) {
             codeEditor.setValue(getStorageItemValue('FaustEditor', 'dsp_code'));
         }
 
-		/*
-        // Restore menus
-        restoreMenu("selectedBuffer", buffer_size);
-        restoreMenu("selectedPoly", poly_flag);
-        restoreMenu("polyVoices", poly_nvoices);
-        restoreMenu("selectedFTZ", ftz_flag);
-        restoreMenu("selectedRenderingMode", rendering_mode);
-
-        if (rendering_mode === "AudioWorklet") {
-            document.getElementById("selectedBuffer").disabled = true;
-            buffer_size = 128;
-        	restoreMenu("selectedBuffer", buffer_size);
-        }
-        */
-        
         restoreMenus();
     }
 }

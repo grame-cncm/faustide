@@ -200,24 +200,11 @@ function loadFaustCode()
 // https://faust.grame.fr/editor/?code=https://faust.grame.fr/modules/Kisana.dsp
 // https://faust.grame.fr/editor/?buffer=256&poly=on&nvoices=4&code=https://raw.githubusercontent.com/grame-cncm/faust/master-dev/tests/architecture-tests/organ.dsp
 
-
 function configureEditorFromUrlParams()
 {
     var params = new URLSearchParams(window.location.search);
-
-	/*
-    // Restore menus
-    if (params.has("buffer"))       restoreMenu("selectedBuffer", params.get("buffer"));
-    if (params.has("poly")) {
-        poly_flag = params.get("poly").toUpperCase();
-        restoreMenu("selectedPoly", poly_flag);
-    }
-    if (params.has("nvoices"))      restoreMenu("polyVoices", params.get("nvoices"));
-    if (params.has("ftz"))          restoreMenu("selectedFTZ", params.get("ftz"));
-    if (params.has("rendering"))    restoreMenu("selectedRenderingMode", params.get("rendering"));
     
-    */
-    
+    // Restore internal state
     if (params.has("buffer"))       buffer_size = params.get("buffer");
     if (params.has("poly")) {
         poly_flag = params.get("poly").toUpperCase();
@@ -226,6 +213,7 @@ function configureEditorFromUrlParams()
     if (params.has("ftz"))          ftz_flag = params.get("ftz");
     if (params.has("rendering"))    rendering_mode = params.get("rendering");
     
+    // And reflect it in the menus
     restoreMenus();
 
     var curl = params.get("code");
