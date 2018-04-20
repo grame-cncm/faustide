@@ -35,8 +35,7 @@ function uploadOn(e, callback)
          
         // Get base URL
         var url_str = url.toString();
-        var last_split = url_str.lastIndexOf('/');
-        base_url = url_str.substring(0, last_split) + '/';
+        base_url = url_str.substring(0, url_str.lastIndexOf('/')) + '/';
         
         // Get filename
         var filename = url.toString().split('/').pop();
@@ -201,10 +200,12 @@ function loadFaustCode()
 // https://faust.grame.fr/editor/?code=https://faust.grame.fr/modules/Kisana.dsp
 // https://faust.grame.fr/editor/?buffer=256&poly=on&nvoices=4&code=https://raw.githubusercontent.com/grame-cncm/faust/master-dev/tests/architecture-tests/organ.dsp
 
+
 function configureEditorFromUrlParams()
 {
     var params = new URLSearchParams(window.location.search);
 
+	/*
     // Restore menus
     if (params.has("buffer"))       restoreMenu("selectedBuffer", params.get("buffer"));
     if (params.has("poly")) {
@@ -214,6 +215,18 @@ function configureEditorFromUrlParams()
     if (params.has("nvoices"))      restoreMenu("polyVoices", params.get("nvoices"));
     if (params.has("ftz"))          restoreMenu("selectedFTZ", params.get("ftz"));
     if (params.has("rendering"))    restoreMenu("selectedRenderingMode", params.get("rendering"));
+    
+    */
+    
+    if (params.has("buffer"))       buffer_size = params.get("buffer");
+    if (params.has("poly")) {
+        poly_flag = params.get("poly").toUpperCase();
+    }
+    if (params.has("nvoices"))      poly_nvoices = params.get("nvoices");
+    if (params.has("ftz"))          ftz_flag = params.get("ftz");
+    if (params.has("rendering"))    rendering_mode = params.get("rendering");
+    
+    restoreMenus();
 
     var curl = params.get("code");
     if (curl) {
@@ -238,7 +251,7 @@ function configureEditorFromUrlParams()
 // an event handler that runs or stop the faust code (CTRL-R)
 function ctrlRunFaustCode(ev)
 {
-    if (ev.ctrlKey &&  ev.key == "r") {
+    if (ev.ctrlKey && ev.key == "r") {
         startStopFaustCode();
     }
 }
@@ -525,7 +538,7 @@ window.addEventListener('touchstart', function()
 // Main entry point, called when libfaust.js has finished to load
 function init() 
 {
-	console.log("FaustEditor: version 1.0.0");
+	console.log("FaustEditor: version 1.0.1");
 
     // No polling from the server needed, so use an empty loop
     _f4u$t.main_loop = function() {}
