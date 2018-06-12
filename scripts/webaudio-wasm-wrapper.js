@@ -1187,20 +1187,6 @@ var mydspProcessorString = `
                 // Keep inputs adresses
                 obj.inputs_items.push(item.address);
                 obj.pathTable[item.address] = parseInt(item.index);
-                if (item.meta !== undefined) {
-                    for (var i = 0; i < item.meta.length; i++) {
-                        if (item.meta[i].midi !== undefined) {
-                            if (item.meta[i].midi.trim() === "pitchwheel") {
-                                obj.fPitchwheelLabel.push(item.address);
-                            } else if (item.meta[i].midi.trim().split(" ")[0] === "ctrl") {
-                                obj.fCtrlLabel[parseInt(item.meta[i].midi.trim().split(" ")[1])]
-                                .push({ path:item.address,
-                                      min:parseFloat(item.min),
-                                      max:parseFloat(item.max) });
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -1272,10 +1258,6 @@ var mydspProcessorString = `
             this.dspInChannnels = [];
             this.dspOutChannnels = [];
 
-            this.fPitchwheelLabel = [];
-            this.fCtrlLabel = new Array(128);
-            for (var i = 0; i < this.fCtrlLabel.length; i++) { this.fCtrlLabel[i] = []; }
-
             this.numIn = parseInt(this.json_object.inputs);
             this.numOut = parseInt(this.json_object.outputs);
 
@@ -1290,9 +1272,9 @@ var mydspProcessorString = `
             this.HEAP32 = new Int32Array(this.HEAP);
             this.HEAPF32 = new Float32Array(this.HEAP);
 
-            console.log(this.HEAP);
-            console.log(this.HEAP32);
-            console.log(this.HEAPF32);
+            //console.log(this.HEAP);
+            //console.log(this.HEAP32);
+            //console.log(this.HEAPF32);
 
             // bargraph
             this.outputs_timer = 5;
@@ -1367,30 +1349,6 @@ var mydspProcessorString = `
                 this.factory.init(this.dsp, sampleRate); // 'sampleRate' is defined in AudioWorkletGlobalScope
             }
 
-            this.ctrlChange = function (channel, ctrl, value)
-            {
-                if (this.fCtrlLabel[ctrl] !== []) {
-                    for (var i = 0; i < this.fCtrlLabel[ctrl].length; i++) {
-                        var path = this.fCtrlLabel[ctrl][i].path;
-                        this.setParamValue(path, mydspProcessor.remap(value, 0, 127, this.fCtrlLabel[ctrl][i].min, this.fCtrlLabel[ctrl][i].max));
-                        if (this.output_handler) {
-                            this.output_handler(path, this.getParamValue(path));
-                        }
-                    }
-                }
-            }
-
-            this.pitchWheel = function (channel, wheel)
-            {
-                for (var i = 0; i < this.fPitchwheelLabel.length; i++) {
-                    var path = this.fPitchwheelLabel[i];
-                    this.setParamValue(path, Math.pow(2.0, wheel/12.0));
-                    if (this.output_handler) {
-                        this.output_handler(path, this.getParamValue(path));
-                    }
-                }
-            }
-
             this.setParamValue = function (path, val)
             {
                 this.HEAPF32[this.pathTable[path]] = val;
@@ -1403,46 +1361,6 @@ var mydspProcessorString = `
 
             // Init resulting DSP
             this.initAux();
-
-            // Set message handler
-            this.port.onmessage = this.handleMessage.bind(this);
-        }
-
-        handleMessage(event)
-        {
-            var msg = event.data;
-            switch (msg.type) {
-                // Generic MIDI message
-                case "midi": this.midiMessage(msg.data); break;
-                // Typed MIDI message
-                case "keyOn": this.keyOn(msg.data[0], msg.data[1], msg.data[2]); break;
-                case "keyOff": this.keyOff(msg.data[0], msg.data[1], msg.data[2]); break;
-                case "ctrlChange": this.ctrlChange(msg.data[0], msg.data[1], msg.data[2]); break;
-                case "pitchWheel": this.pitchWheel(msg.data[0], msg.data[1]); break;
-                // Generic data message
-                case "param": this.setParamValue(msg.key, msg.value); break;
-                //case "patch": this.onpatch(msg.data); break;
-            }
-        }
-
-        midiMessage(data)
-        {
-            var cmd = data[0] >> 4;
-            var channel = data[0] & 0xf;
-            var data1 = data[1];
-            var data2 = data[2];
-
-            if (channel === 9) {
-                return;
-            } else if (cmd === 8 || ((cmd === 9) && (data2 === 0))) {
-                //this.keyOff(channel, data1, data2);
-            } else if (cmd === 9) {
-                //this.keyOn(channel, data1, data2);
-            } else if (cmd === 11) {
-                //this.ctrlChange(channel, data1, data2);
-            } else if (cmd === 14) {
-                //this.pitchWheel(channel, ((data2 * 128.0 + data1)-8192)/8192.0);
-            }
         }
 
         process(inputs, outputs, parameters)
@@ -1625,6 +1543,21 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
                        || item.type === "nentry") {
                 // Keep inputs adresses
                 obj.inputs_items.push(item.address);
+                // Decode MIDI
+                if (item.meta !== undefined) {
+                    for (var i = 0; i < item.meta.length; i++) {
+                        if (item.meta[i].midi !== undefined) {
+                            if (item.meta[i].midi.trim() === "pitchwheel") {
+                                obj.fPitchwheelLabel.push(item.address);
+                            } else if (item.meta[i].midi.trim().split(" ")[0] === "ctrl") {
+                                obj.fCtrlLabel[parseInt(item.meta[i].midi.trim().split(" ")[1])]
+                                .push({ path:item.address,
+                                      min:parseFloat(item.min),
+                                      max:parseFloat(item.max) });
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1635,6 +1568,11 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
         // input/output items
         this.inputs_items = [];
         this.outputs_items = [];
+        
+        // MIDI
+        this.fPitchwheelLabel = [];
+        this.fCtrlLabel = new Array(128);
+        for (var i = 0; i < this.fCtrlLabel.length; i++) { this.fCtrlLabel[i] = []; }
 
         // Parse UI
         this.parse_ui(this.json_object.ui, this);
@@ -1662,20 +1600,50 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
 
     audio_node.ctrlChange = function(channel, ctrl, value)
     {
-        this.port.postMessage({ type: "ctrlChange", data: [channel, ctrl, value] });
+        if (this.fCtrlLabel[ctrl] !== []) {
+            for (var i = 0; i < this.fCtrlLabel[ctrl].length; i++) {
+                var path = this.fCtrlLabel[ctrl][i].path;
+                this.setParamValue(path, audio_node.remap(value, 0, 127, this.fCtrlLabel[ctrl][i].min, this.fCtrlLabel[ctrl][i].max));
+                if (this.output_handler) {
+                    this.output_handler(path, this.getParamValue(path));
+                }
+            }
+        }
     }
 
     audio_node.pitchWheel = function(channel, wheel)
     {
-        this.port.postMessage({ type: "pitchWheel", data: [channel, wheel] });
+        for (var i = 0; i < this.fPitchwheelLabel.length; i++) {
+            var path = this.fPitchwheelLabel[i];
+            this.setParamValue(path, Math.pow(2.0, wheel/12.0));
+            if (this.output_handler) {
+                this.output_handler(path, this.getParamValue(path));
+            }
+        }
     }
 
     audio_node.midiMessage = function(data)
     {
-        this.port.postMessage({ type:"midi", data:data });
+        var cmd = data[0] >> 4;
+        var channel = data[0] & 0xf;
+        var data1 = data[1];
+        var data2 = data[2];
+        
+        if (channel === 9) {
+            return;
+        } else if (cmd === 11) {
+            this.ctrlChange(channel, data1, data2);
+        } else if (cmd === 14) {
+            this.pitchWheel(channel, ((data2 * 128.0 + data1)-8192)/8192.0);
+        }
     }
 
     audio_node.metadata = function (handler) {}
+    
+    audio_node.remap = function(v, mn0, mx0, mn1, mx1)
+    {
+        return (1.0 * (v - mn0) / (mx0 - mn0)) * (mx1 - mn1) + mn1;
+    }
 
     // And use it
     callback(audio_node);
@@ -1853,9 +1821,9 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
     // wasm effect
     sp.effect = (effect_instance) ? effect_instance.exports : null;
 
-    console.log(sp.mixer);
-    console.log(sp.factory);
-    console.log(sp.effect);
+    //console.log(sp.mixer);
+    //console.log(sp.factory);
+    //console.log(sp.effect);
 
     // Start of DSP memory ('polyphony' DSP voices)
     sp.dsp_voices = [];
@@ -1941,12 +1909,14 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
 
         // Then decide which one to steal
         if (oldest_date_release != Number.MAX_VALUE) {
-            if (faust.debug)
+            if (faust.debug) {
                 console.log("Steal release voice : voice_date = %d cur_date = %d voice = %d", sp.dsp_voices_date[voice_release], sp.fDate, voice_release);
+            }
             return sp.allocVoice(voice_release);
         } else if (oldest_date_playing != Number.MAX_VALUE) {
-            if (faust.debug)
+            if (faust.debug) {
                 console.log("Steal playing voice : voice_date = %d cur_date = %d voice = %d", sp.dsp_voices_date[voice_playing], sp.fDate, voice_playing);
+            }
             return sp.allocVoice(voice_playing);
         } else {
             return sp.kNoVoice;
@@ -2274,8 +2244,9 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
     sp.keyOn = function (channel, pitch, velocity)
     {
         var voice = sp.getFreeVoice();
-        if (faust.debug)
+        if (faust.debug) {
             console.log("keyOn voice %d", voice);
+        }
         sp.factory.setParamValue(sp.dsp_voices[voice], sp.fFreqLabel, sp.midiToFreq(pitch));
         sp.factory.setParamValue(sp.dsp_voices[voice], sp.fGainLabel, velocity/127.);
         sp.dsp_voices_state[voice] = pitch;
@@ -2292,15 +2263,17 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
     {
         var voice = sp.getPlayingVoice(pitch);
         if (voice !== sp.kNoVoice) {
-            if (faust.debug)
+            if (faust.debug) {
                 console.log("keyOff voice %d", voice);
+            }
             // No use of velocity for now...
             sp.factory.setParamValue(sp.dsp_voices[voice], sp.fGateLabel, 0.0);
             // Release voice
             sp.dsp_voices_state[voice] = sp.kReleaseVoice;
         } else {
-            if (faust.debug)
+            if (faust.debug) {
                 console.log("Playing voice not found...");
+            }
         }
     }
 
@@ -2873,9 +2846,9 @@ var mydspPolyProcessorString = `
             this.HEAP32 = new Int32Array(this.HEAP);
             this.HEAPF32 = new Float32Array(this.HEAP);
 
-            console.log(this.HEAP);
-            console.log(this.HEAP32);
-            console.log(this.HEAPF32);
+            //console.log(this.HEAP);
+            //console.log(this.HEAP32);
+            //console.log(this.HEAPF32);
 
             // bargraph
             this.outputs_timer = 5;
@@ -2901,8 +2874,8 @@ var mydspPolyProcessorString = `
             // Setup DSP voices offset
             this.dsp_start = this.audio_heap_mixing + (this.numOut * mydspPolyProcessor.buffer_size * this.sample_size);
 
-            console.log(this.mixer);
-            console.log(this.factory);
+            //console.log(this.mixer);
+            //console.log(this.factory);
 
             // Start of DSP memory ('polyphony' DSP voices)
             this.polyphony = mydspPolyProcessor.polyphony;
@@ -2992,12 +2965,14 @@ var mydspPolyProcessorString = `
 
                 // Then decide which one to steal
                 if (oldest_date_release != Number.MAX_VALUE) {
-                    if (this.debug)
+                    if (this.debug) {
                         console.log("Steal release voice : voice_date = %d cur_date = %d voice = %d", this.dsp_voices_date[voice_release], this.fDate, voice_release);
+                    }
                     return this.allocVoice(voice_release);
                 } else if (oldest_date_playing != Number.MAX_VALUE) {
-                    if (this.debug)
+                    if (this.debug) {
                         console.log("Steal playing voice : voice_date = %d cur_date = %d voice = %d", this.dsp_voices_date[voice_playing], this.fDate, voice_playing);
+                    }
                     return this.allocVoice(voice_playing);
                 } else {
                     return this.kNoVoice;
@@ -3088,8 +3063,9 @@ var mydspPolyProcessorString = `
             this.keyOn = function (channel, pitch, velocity)
             {
                 var voice = this.getFreeVoice();
-                if (this.debug)
+                if (this.debug) {
                     console.log("keyOn voice %d", voice);
+                }
                 this.factory.setParamValue(this.dsp_voices[voice], this.fFreqLabel, this.midiToFreq(pitch));
                 this.factory.setParamValue(this.dsp_voices[voice], this.fGainLabel, velocity/127.);
                 this.dsp_voices_state[voice] = pitch;
@@ -3104,8 +3080,9 @@ var mydspPolyProcessorString = `
                     // Release voice
                     this.dsp_voices_state[voice] = this.kReleaseVoice;
                 } else {
-                    if (this.debug)
+                    if (this.debug) {
                         console.log("Playing voice not found...");
+                    }
                 }
             }
 
