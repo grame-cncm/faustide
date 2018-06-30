@@ -270,6 +270,14 @@ function runFaustCode()
     compileDSP();
 }
 
+function activateRunButton() 
+{
+	// Setup the click action
+  	var div = document.querySelector("#run");
+  	div.style.color = "#fff";
+  	div.onclick = runFaustCode;
+}
+
 // Stop the currently running Faust code
 function stopFaustCode() 
 {
@@ -526,7 +534,7 @@ window.addEventListener('touchstart', function()
 // Main entry point, called when libfaust.js has finished to load
 function init() 
 {
-	console.log("FaustEditor: version 1.0.3");
+	console.log("FaustEditor: version 1.0.4");
 
     // No polling from the server needed, so use an empty loop
     _f4u$t.main_loop = function() {}
@@ -563,6 +571,8 @@ function init()
 
     document.addEventListener("keypress", ctrlRunFaustCode, true);
     
+     activateRunButton();
+     
     //console.log("end of init");
 }
 
