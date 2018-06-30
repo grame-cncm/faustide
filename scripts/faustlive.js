@@ -380,8 +380,8 @@ function openBlockDiagram()
 function trigBlockDiagram(key)
 {
     console.log("We got the key", key);
-    console.log("the url is : ", "https://faustservice.grame.fr/" + key + "/diagram/process.svg" );
-    window.open("https://faustservice.grame.fr/" + key + "/diagram/process.svg", 'blockdiagram');
+    console.log("the url is : ", document.getElementById("exportUrl").value + "/" + key + "/diagram/process.svg" );
+    window.open(document.getElementById("exportUrl").value + "/" + key + "/diagram/process.svg", 'blockdiagram');
 }
 
 //-----------------------------------------------------------------------
