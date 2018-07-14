@@ -571,9 +571,8 @@ function init()
 
     document.addEventListener("keypress", ctrlRunFaustCode, true);
     
-     activateRunButton();
-     
-    //console.log("end of init");
+    // Make the run button usable
+    activateRunButton();
 }
 
 // Setup the main entry point in libfaust.js
