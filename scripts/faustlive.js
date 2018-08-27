@@ -375,12 +375,6 @@ function faustDocumentation()
 // Block diagram visualization
 //-----------------------------------------------------------------------
 
-function checkDSP()
-{
-	// Create a DSP factory from the dsp code
-	faust.createPolyDSPFactory(codeEditor.getValue(), [], function(factory) {});
-}
-
 function openBlockDiagram()
 {
 	if (expandDSP(codeEditor.getValue())) {
@@ -408,11 +402,15 @@ function trigBlockDiagram(key)
 
 function openExportDialog()
 {
-    console.log("open Export Dialog");
-    document.getElementById('exportwrapper').style.display = 'block';
-    if (! codeEditor.isClean()) {
-        deleteQrCode();
-        codeEditor.markClean();
+    if (expandDSP(codeEditor.getValue())) {
+        console.log("open Export Dialog");
+        document.getElementById('exportwrapper').style.display = 'block';
+        if (! codeEditor.isClean()) {
+            deleteQrCode();
+            codeEditor.markClean();
+        }
+    } else {
+        alert(faust.getErrorMessage());
     }
 }
 
@@ -544,7 +542,7 @@ window.addEventListener('touchstart', function()
 // Main entry point, called when libfaust.js has finished to load
 function init() 
 {
-	console.log("FaustEditor: version 1.0.5");
+	console.log("FaustEditor: version 1.0.6");
 
     // No polling from the server needed, so use an empty loop
     _f4u$t.main_loop = function() {}
