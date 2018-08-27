@@ -170,5 +170,5 @@ function expandDSP(dsp_code)
 	*/
 	console.log(argv);
 
-	return faust.expandDSP(dsp_code, argv)
+	return faust.expandDSP(dsp_code, argv);
 }

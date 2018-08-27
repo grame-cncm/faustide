@@ -267,12 +267,80 @@ faust.compileCode = function (factory_name, code, argv, internal_memory)
     }
 
     try {
-        var time1 = performance.now();
-        var module_code_ptr = faust.createWasmCDSPFactoryFromString(name_ptr, code_ptr, argv_aux.length, argv_ptr, error_msg_ptr, internal_memory);
+        var time1 = performance.now();      
+        var module_code_ptr = faust.createWasmCDSPFactoryFromString(name_ptr, code_ptr, argv_aux.length, argv_ptr, error_msg_ptr, internal_memory);            
         var time2 = performance.now();
+        
         console.log("Faust compilation duration : " + (time2 - time1));
 
         faust.error_msg = faust_module.Pointer_stringify(error_msg_ptr);
+        
+        /*
+        // New API test
+        
+        //var code =  "process = _,_,_,_;";
+        var code =  "import(\"stdfaust.lib\"); process = dm.zita_rev1;";
+        //var code = "import(\"stdfaust.lib\"); vol = vslider(\"vol\", 0.6, 0, 1, 0.01); process = _+vol,_+(0.3*vol);";
+    	//var code = "import(\"stdfaust.lib\"); vol = vslider(\"vol\", 0.6, 0, 1, 0.01); process = (_+vol)*os.osc(440),_+(0.3*vol*os.osc(800));";     
+        //var code = "import(\"stdfaust.lib\"); process = os.osc(440);";
+
+        var argv1 = faust_module.makeStringVector();
+        console.log(argv1);
+        argv1.push_back("-ftz");
+        argv1.push_back("2");
+        argv1.push_back("-cn");
+        argv1.push_back(factory_name);
+        argv1.push_back("-I");
+        argv1.push_back("http://127.0.0.1:8000/libraries/");
+        
+        var time3 = performance.now();
+        var factory_ptr = faust_module.wasm_dynamic_dsp_factory.createWasmDSPFactoryFromString2("FaustDSP", code, argv1, false);   
+        console.log("FACTORY JSON : " + factory_ptr.getJSON())
+         
+     	var time4 = performance.now();
+        console.log("C++ Faust compilation duration : " + (time4 - time3));
+        
+        if (factory_ptr) {
+        	console.log("factory_ptr " + factory_ptr);
+        	var instance_ptr = factory_ptr.createDSPInstance();
+        	console.log("instance_ptr " + instance_ptr);
+        	console.log("instance_ptr getNumInputs " + instance_ptr.getNumInputs());
+        	console.log("instance_ptr getNumOutputs " + instance_ptr.getNumOutputs());
+     	 	instance_ptr.init(44100);
+        	
+        	instance_ptr.computeJSTest(128);      	
+        	//instance_ptr.compute(128, 0, 0);
+        	 
+        } else {
+        	console.log("getErrorMessage " + faust_module.wasm_dsp_factory.getErrorMessage());
+        }   
+        
+        fetch('t1.wasm')
+        .then(dsp_file => dsp_file.arrayBuffer())
+        .then(dsp_bytes => { var factory_ptr1 = faust_module.wasm_dsp_factory.readWasmDSPFactoryFromMachine2(dsp_bytes);
+        	console.log("factory_ptr1 " + factory_ptr);
+        	var instance_ptr1 = factory_ptr.createDSPInstance();
+        	console.log("instance_ptr1 " + instance_ptr);
+        	console.log("instance_ptr1 getNumInputs " + instance_ptr1.getNumInputs());
+        	console.log("instance_ptr1 getNumOutputs " + instance_ptr1.getNumOutputs());
+        	
+        	//console.log("faust_module.wasm_dsp_factory.createAudioBuffers " + faust_module.wasm_dsp_factory.createAudioBuffers);
+        	
+        	var js_inputs = faust_module.wasm_dsp_factory.createAudioBuffers(instance_ptr1.getNumInputs(), 256);
+        	var js_outputs = faust_module.wasm_dsp_factory.createAudioBuffers(instance_ptr1.getNumOutputs(), 256);
+        	
+        	//console.log("instance_ptr1.compute " + instance_ptr1.compute);
+        	
+        	instance_ptr1.compute(256, js_inputs, js_outputs);
+        	
+        	faust_module.wasm_dsp_factory.deleteAudioBuffers(js_inputs, instance_ptr1.getNumInputs());
+        	faust_module.wasm_dsp_factory.deleteAudioBuffers(js_outputs, instance_ptr1.getNumOutputs());
+        	
+        	//instance_ptr1.computeJSTest(128);
+        });    
+         
+        // End API test
+        */
 
         if (module_code_ptr === 0) {
             return null;
@@ -446,30 +514,43 @@ faust.expandDSP = function (code, argv)
         faust_module.stringToUTF8(argv[i], arg_ptr, faust_module.lengthBytesUTF8(argv[i]) + 1);
         argv_ptr_buffer[i] = arg_ptr;
     }
+    
+    try {
+        
+        var expand_dsp_ptr = faust.expandCDSPFromString(name_ptr, code_ptr, argv.length, argv_ptr, sha_key_ptr, error_msg_ptr);
+        var expand_dsp = faust_module.Pointer_stringify(expand_dsp_ptr);
+        var sha_key = faust_module.Pointer_stringify(sha_key_ptr);
+        faust.error_msg = faust_module.Pointer_stringify(error_msg_ptr);
 
-    var expand_dsp_ptr = faust.expandCDSPFromString(name_ptr, code_ptr, argv.length, argv_ptr, sha_key_ptr, error_msg_ptr);
-    var expand_dsp = faust_module.Pointer_stringify(expand_dsp_ptr);
-    var sha_key = faust_module.Pointer_stringify(sha_key_ptr);
-    faust.error_msg = faust_module.Pointer_stringify(error_msg_ptr);
+        // Free strings
+        faust_module._free(code_ptr);
+        faust_module._free(name_ptr);
+        faust_module._free(sha_key_ptr);
+        faust_module._free(error_msg_ptr);
 
-    // Free strings
-    faust_module._free(code_ptr);
-    faust_module._free(name_ptr);
-    faust_module._free(sha_key_ptr);
-    faust_module._free(error_msg_ptr);
+        // Free C allocated expanded string
+        faust.freeCMemory(expand_dsp_ptr);
 
-    // Free C allocated expanded string
-    faust.freeCMemory(expand_dsp_ptr);
+        // Get an updated integer view on the newly allocated buffer after possible emscripten memory grow
+        argv_ptr_buffer = new Int32Array(faust_module.HEAP32.buffer, argv_ptr, argv.length);
+        // Free 'argv' C side array
+        for (var i = 0; i < argv.length; i++) {
+            faust_module._free(argv_ptr_buffer[i]);
+        }
+        faust_module._free(argv_ptr);
 
-    // Get an updated integer view on the newly allocated buffer after possible emscripten memory grow
-    argv_ptr_buffer = new Int32Array(faust_module.HEAP32.buffer, argv_ptr, argv.length);
-    // Free 'argv' C side array
-    for (var i = 0; i < argv.length; i++) {
-        faust_module._free(argv_ptr_buffer[i]);
+        return expand_dsp;
+        
+    } catch (e) {
+        // libfaust is compiled without C++ exception activated, so a JS exception is throwed and catched here
+        faust.error_msg = faust_module.Pointer_stringify(faust.getErrorAfterException());
+        if (faust.error_msg === "") {
+            // Report the Emscripten error
+            faust.error_msg = e;
+        }
+        faust.cleanupAfterException();
+        return null;
     }
-    faust_module._free(argv_ptr);
-
-    return expand_dsp;
 }
 
 /**
@@ -1667,9 +1748,7 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
         for (let i = 0; i < this.getDescriptor().length; i++) {
             Object.assign(params, { [this.getDescriptor()[i]]: `${this.getParam(this.getDescriptor()[i])}` });
         }
-        return new Promise(resolve => {
-                           resolve(params)
-                           });
+        return new Promise(resolve => { resolve(params); });
     }
     
     /**
@@ -1680,15 +1759,15 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
     {
         return new Promise(resolve => {
                            for (const param in state) {
-                           if (state.hasOwnProperty(param)) this.setParam(param, state[param]);
+                                if (state.hasOwnProperty(param)) this.setParam(param, state[param]);
                            }
                            try {
-                           this.gui.setAttribute('state', JSON.stringify(state));
+                                this.gui.setAttribute('state', JSON.stringify(state));
                            } catch (error) {
-                           console.warn("Plugin without gui or GUI not defined", error);
+                                console.warn("Plugin without gui or GUI not defined", error);
                            }
                            resolve(state);
-                           })
+                           });
     }
     
     /**
@@ -1800,7 +1879,7 @@ faust.createMemory = function (factory, buffer_size, polyphony) {
         return n;
     }
 
-    var memory_size = pow2limit(((factory.effect_json_object) ?  parseInt(factory.effect_json_object.size) : 0) + parseInt(factory.json_object.size) * polyphony + ((parseInt(factory.json_object.inputs) + parseInt(factory.json_object.outputs) * 2) * (ptr_size + (buffer_size * sample_size)))) / 65536;
+    var memory_size = pow2limit(((factory.effect_json_object) ? parseInt(factory.effect_json_object.size) : 0) + parseInt(factory.json_object.size) * polyphony + ((parseInt(factory.json_object.inputs) + parseInt(factory.json_object.outputs) * 2) * (ptr_size + (buffer_size * sample_size)))) / 65536;
   	memory_size = Math.max(2, memory_size); // As least 2
 	return new WebAssembly.Memory({ initial: memory_size, maximum: memory_size });
 }
