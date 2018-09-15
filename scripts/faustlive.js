@@ -270,12 +270,20 @@ function runFaustCode()
     compileDSP();
 }
 
-function activateRunButton() 
+function activateButtons() 
 {
 	// Setup the click action
-  	var div = document.querySelector("#run");
-  	div.style.color = "#fff";
-  	div.onclick = runFaustCode;
+  	var div1 = document.querySelector("#run");
+  	div1.style.color = "#fff";
+  	div1.onclick = runFaustCode;
+  	
+  	var div2 = document.querySelector("#export");
+  	div2.style.color = "#fff";
+  	div2.onclick = openExportDialog;
+  	
+  	var div3 = document.querySelector("#block");
+  	div3.style.color = "#fff";
+  	div3.onclick = openBlockDiagram;
 }
 
 // Stop the currently running Faust code
@@ -542,7 +550,7 @@ window.addEventListener('touchstart', function()
 // Main entry point, called when libfaust.js has finished to load
 function init() 
 {
-	console.log("FaustEditor: version 1.0.6");
+	console.log("FaustEditor: version 1.0.7");
 
     // No polling from the server needed, so use an empty loop
     _f4u$t.main_loop = function() {}
@@ -579,8 +587,8 @@ function init()
 
     document.addEventListener("keypress", ctrlRunFaustCode, true);
     
-    // Make the run button usable
-    activateRunButton();
+    // Make the run, export, block buttons usable
+    activateButtons();
 }
 
 // Setup the main entry point in libfaust.js
