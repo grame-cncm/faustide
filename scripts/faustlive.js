@@ -261,7 +261,6 @@ function runFaustCode() {
   compileDSP();
 }
 
-<<<<<<< HEAD
 function activateButtons() {
   // Setup the click action
   var div1 = document.querySelector('#run');
@@ -275,13 +274,6 @@ function activateButtons() {
   var div3 = document.querySelector('#block');
   div3.style.color = '#fff';
   div3.onclick = openBlockDiagram;
-=======
-function activateRunButton() {
-  // Setup the click action
-  var div = document.querySelector('#run');
-  div.style.color = '#fff';
-  div.onclick = runFaustCode;
->>>>>>> Attempt to speedup url code loading
 }
 
 // Stop the currently running Faust code
@@ -376,7 +368,6 @@ function faustDocumentation() {
 // Block diagram visualization
 //-----------------------------------------------------------------------
 
-<<<<<<< HEAD
 function openBlockDiagram() {
   if (expandDSP(codeEditor.getValue())) {
     console.log('open block diagram visualisation');
@@ -387,14 +378,6 @@ function openBlockDiagram() {
   } else {
     alert(faust.getErrorMessage());
   }
-=======
-function openBlockDiagram() {
-  console.log('open block diagram visualisation');
-  getSHAKey(
-      document.getElementById('exportUrl').value,
-      document.getElementById('filename').value.split('.')[0],
-      codeEditor.getValue(), trigBlockDiagram, cancelLoader);
->>>>>>> Attempt to speedup url code loading
 }
 
 function trigBlockDiagram(key) {
@@ -413,7 +396,6 @@ function trigBlockDiagram(key) {
 // Export Dialog
 //-----------------------------------------------------------------------
 
-<<<<<<< HEAD
 function openExportDialog() {
   if (expandDSP(codeEditor.getValue())) {
     console.log('open Export Dialog');
@@ -425,15 +407,6 @@ function openExportDialog() {
   } else {
     alert(faust.getErrorMessage());
   }
-=======
-function openExportDialog() {
-  console.log('open Export Dialog');
-  document.getElementById('exportwrapper').style.display = 'block';
-  if (!codeEditor.isClean()) {
-    deleteQrCode();
-    codeEditor.markClean();
-  }
->>>>>>> Attempt to speedup url code loading
 }
 
 function closeExportDialog() {
@@ -597,14 +570,10 @@ function init() {
 
   activateRunButton();
 
-<<<<<<< HEAD
   document.addEventListener('keypress', ctrlRunFaustCode, true);
 
   // Make the run, export, block buttons usable
   activateButtons();
-=======
-  // console.log("end of init");
->>>>>>> Attempt to speedup url code loading
 }
 
 // Setup the main entry point in libfaust.js
