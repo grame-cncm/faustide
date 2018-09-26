@@ -568,10 +568,6 @@ function init() {
 
   document.addEventListener('keypress', ctrlRunFaustCode, true);
 
-  activateRunButton();
-
-  document.addEventListener('keypress', ctrlRunFaustCode, true);
-
   // Make the run, export, block buttons usable
   activateButtons();
 }
