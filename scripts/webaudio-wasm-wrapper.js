@@ -11,7 +11,6 @@ faust.debug = false;
 
 faust.error_msg = "";
 
-
 // JSON parsing functions
 faust.parse_ui = function(ui, obj)
 {
@@ -63,7 +62,8 @@ faust.getLibFaustVersion = function ()
 
 faust.createDSPFactory = function (code, argv, callback)
 {
-	return code; // Simply returns code
+    console.log("createDSPFactory");
+ 	callback(code); // Simply returns code
 }
 
 faust.createPolyDSPFactory = function (code, argv, callback)
@@ -80,22 +80,15 @@ faust.deleteDSPFactory = function (factory) {};
 
 faust.createDSPInstance = function (factory, context, buffer_size, callback)
 {
-	alert("createDSPInstance not supported for now");
-}
-
-faust.deleteDSPInstance = function (dsp) {}
-
-faust.createDSPWorkletInstance = function(factory, context, callback)
-{
     // Resume audio context each time...
     context.resume();
     try {
         var faust_node = context.createFaustNode(factory);
         faust_node.inputs_items = [];
         faust_node.outputs_items = [];
-
+        
         // API adaptation
-        faust_node.getJSON = function () 
+        faust_node.getJSON = function ()
         {
             return faust_node.json();
         }
@@ -109,7 +102,7 @@ faust.createDSPWorkletInstance = function(factory, context, callback)
         }
         faust_node.setOutputParamHandler = function (handler)
         {
-            alert("setOutputParamHandler not supported for now");
+            //alert("setOutputParamHandler not supported for now");
         }
         faust_node.getOutputParamHandler = function ()
         {
@@ -124,16 +117,27 @@ faust.createDSPWorkletInstance = function(factory, context, callback)
         {
             return faust_node.numberOfOutputs;
         }
-        faust_node.getParams = function () 
+        faust_node.getParams = function ()
         {
             var json_object = JSON.parse(faust_node.json());
             faust.parse_ui(json_object.ui, faust_node);
             return faust_node.inputs_items;
         }
+        
+        // Call continuation
+        callback(faust_node);
+        
     } catch (e) {
         console.log(e);
         callback(null);
-    } 
+    }
+}
+
+faust.deleteDSPInstance = function (dsp) {}
+
+faust.createDSPWorkletInstance = function(factory, context, callback)
+{
+    alert("createDSPWorkletInstance not supported for now");
 }
 
 faust.deleteDSPWorkletInstance = function (dsp) {}
@@ -144,7 +148,6 @@ faust.createPolyDSPInstance = function (factory, context, buffer_size, polyphony
 }
 
 faust.deletePolyDSPInstance = function (dsp) {}
-
 
 faust.createPolyDSPWorkletInstance = function(factory, context, polyphony, callback)
 {

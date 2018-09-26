@@ -164,19 +164,19 @@ function getDevice(device)
 function setLocalStorage(state) 
 {
 	console.log(state);
-	setStorageItemValue('FaustEditor', 'FaustLocalStorage', ((state) ? "on" : "off"));
+	//setStorageItemValue('FaustEditor', 'FaustLocalStorage', ((state) ? "on" : "off"));
 }
 
 function setDSPStorage(state) 
 {
 	console.log(state);
-	setStorageItemValue('FaustEditor', 'FaustDSPStorage', ((state) ? "on" : "off"));
+	//setStorageItemValue('FaustEditor', 'FaustDSPStorage', ((state) ? "on" : "off"));
 }
 
 function setSourceStorage(state) 
 {
 	console.log(state);
-	setStorageItemValue('FaustEditor', 'FaustSourceStorage', ((state) ? "on" : "off"));
+	//setStorageItemValue('FaustEditor', 'FaustSourceStorage', ((state) ? "on" : "off"));
 }
 
 function restoreMenu(id, value) 
@@ -194,16 +194,19 @@ function restoreMenu(id, value)
 
 function saveDSPState() 
 {
+    /*
 	if (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
 			setStorageItemValue('FaustEditor', params[i], DSP.getParamValue(params[i]));
 		}
 	}
+    */
 }
 
 function loadDSPState() 
 {
+    /*
 	if (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on") {
 		var params = DSP.getParams();
 		for (var i = 0; i < params.length; i++) {
@@ -216,10 +219,12 @@ function loadDSPState()
 			}
 		}
 	}
+    */
 }
 
 function savePageState() 
 {
+    /*
     if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
         setStorageItemValue('FaustEditor', 'buffer_size', buffer_size);
         setStorageItemValue('FaustEditor', 'poly_flag', poly_flag);
@@ -232,6 +237,7 @@ function savePageState()
         	setStorageItemValue('FaustEditor', 'dsp_code', codeEditor.getValue());
         }
     }
+    */
 }
 
 function restoreMenus() 
@@ -252,6 +258,7 @@ function restoreMenus()
 
 function loadPageState() 
 {
+    /*
 	if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
         
         buffer_size = (getStorageItemValue('FaustEditor', 'buffer_size') ? getStorageItemValue('FaustEditor', 'buffer_size') : 256);
@@ -267,6 +274,7 @@ function loadPageState()
 
         restoreMenus();
     }
+    */
 }
 
 function checkPolyphonicDSP(json) 

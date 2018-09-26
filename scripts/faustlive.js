@@ -563,21 +563,23 @@ function init()
         document.getElementById("selectedRenderingMode").disabled = true;
         console.log("AudioWorklet is not supported, ScriptProcessor model only will be available");
     }
-
+   
+    /*
     // Activate MIDI
-    activateMIDIInput();
-
+    //activateMIDIInput();
+    
     // Activate locate storage for DSP state
     setLocalStorage(true);
 
     // Load page state
     loadPageState();
-  
+   
     // Restore 'save DSP control parameters' checkbox state
     document.getElementById("dspstorage").checked = (getStorageItemValue('FaustEditor', 'FaustDSPStorage') === "on");
     
     // Restore 'save DSP source' checkbox state
     document.getElementById("sourcestorage").checked = (getStorageItemValue('FaustEditor', 'FaustSourceStorage') === "on");
+    */
 
     // Try to load code from current URL
     configureEditorFromUrlParams();
@@ -591,5 +593,5 @@ function init()
     activateButtons();
 }
 
-// Setup the main entry point in libfaust.js
-faust_module['onRuntimeInitialized'] = init;
+// Start the main entry point in libfaust.js
+init();
