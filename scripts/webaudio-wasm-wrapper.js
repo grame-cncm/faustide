@@ -62,7 +62,6 @@ faust.getLibFaustVersion = function ()
 
 faust.createDSPFactory = function (code, argv, callback)
 {
-    console.log("createDSPFactory");
  	callback(code); // Simply returns code
 }
 
@@ -106,7 +105,7 @@ faust.createDSPInstance = function (factory, context, buffer_size, callback)
         }
         faust_node.getOutputParamHandler = function ()
         {
-            alert("getOutputParamHandler not supported for now");
+            //alert("getOutputParamHandler not supported for now");
             return null;
         }
         faust_node.getNumInputs = function ()
