@@ -12,7 +12,7 @@ var audio_context = (isWebKitAudio) ? new webkitAudioContext() : new AudioContex
 var buffer_size = 256;
 var audio_input = null;
 var midi_input = [];
-var factory = null;
+var factory_stack = [];
 var DSP = null;
 var dsp_code = null;
 var faust_svg = null;
@@ -23,7 +23,7 @@ var rendering_mode = "ScriptProcessor";
 var output_handler = null;
 
 // compute libraries URL relative to current page
-var wurl =  window.location.href;
+var wurl = window.location.href;
 var qm = wurl.indexOf('?');
 if (qm > 0) {
     wurl = wurl.substr(0, qm);  // remove options from the URL
@@ -36,6 +36,17 @@ function workletAvailable()
     if (typeof (OfflineAudioContext) === "undefined") return false;
     var context = new OfflineAudioContext(1, 1, 44100);
     return context.audioWorklet && typeof context.audioWorklet.addModule === 'function';
+}
+
+// Do no keep more than 10 alive DSP factories 
+function checkFactoryStack(factory)
+{
+    if (factory && factory_stack.indexOf(factory) === -1) {
+        factory_stack.push(factory);
+        if (factory_stack.length >= 10) {
+            faust.deleteDSPFactory(factory_stack.shift());
+        }
+    }
 }
 
 function deleteDSP()
@@ -146,12 +157,12 @@ function compileDSP()
 		isPoly = true;
 		console.log("Poly DSP");
 		// Create a poly DSP factory from the dsp code
-		faust.createPolyDSPFactory(dsp_code, argv, function(factory) { compilePolyDSP(factory); });
+		faust.createPolyDSPFactory(dsp_code, argv, function(factory) { compilePolyDSP(factory); checkFactoryStack(factory); });
     } else {
 		isPoly = false;
 		console.log("Mono DSP");
 		// Create a mono DSP factory from the dsp code
-		faust.createDSPFactory(dsp_code, argv, function(factory) { compileMonoDSP(factory); });
+		faust.createDSPFactory(dsp_code, argv, function(factory) { compileMonoDSP(factory); checkFactoryStack(factory); });
 	}
 }
 
