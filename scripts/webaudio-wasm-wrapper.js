@@ -1674,7 +1674,7 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
 
     audio_node.getJSON = function() { return factory.getJSON(); }
     
-    // For WAP
+    // For WAP : TODO
     audio_node.getMetadata = function() { return factory.getJSON(); }
 
     // Needed for sample accurate control
@@ -1765,16 +1765,16 @@ faust.createDSPWorkletInstanceAux = function(factory, context, callback)
     audio_node.setState = async function(state)
     {
         return new Promise(resolve => {
-                           for (const param in state) {
-                                if (state.hasOwnProperty(param)) this.setParam(param, state[param]);
-                           }
-                           try {
-                                this.gui.setAttribute('state', JSON.stringify(state));
-                           } catch (error) {
-                                console.warn("Plugin without gui or GUI not defined", error);
-                           }
-                           resolve(state);
-                           });
+           for (const param in state) {
+                if (state.hasOwnProperty(param)) this.setParam(param, state[param]);
+           }
+           try {
+                this.gui.setAttribute('state', JSON.stringify(state));
+           } catch (error) {
+                console.warn("Plugin without gui or GUI not defined", error);
+           }
+           resolve(state);
+        });
     }
     
     /**
@@ -1873,12 +1873,15 @@ faust.deleteDSPWorkletInstance = function (dsp) {}
     .....
 */
 
-faust.createMemory = function (factory, buffer_size, polyphony) {
+faust.createMemory = function (factory, buffer_size, polyphony_aux) {
 
     // Memory allocator
     var ptr_size = 4;
     var sample_size = 4;
-
+    
+    // Hack : at least 4 voices (to avoid weird wasm memory bug?)
+    var polyphony = Math.max(4, polyphony_aux);
+   
     function pow2limit (x)
     {
         var n = 65536; // Minimum = 64 kB
@@ -2854,12 +2857,15 @@ var mydspPolyProcessorString = `
             return params;
         }
 
-        static createMemory(buffer_size, polyphony)
+        static createMemory(buffer_size, polyphony_aux)
         {
             // Memory allocator
             var ptr_size = 4;
             var sample_size = 4;
-
+            
+            // Hack : at least 4 voices (to avoid weird wasm memory bug?)
+            var polyphony = Math.max(4, polyphony_aux);
+           
             function pow2limit(x)
             {
                 var n = 65536; // Minimum = 64 kB

@@ -5,7 +5,7 @@ function setBufferSize(bs_item)
     buffer_size = parseInt(bs_item.options[bs_item.selectedIndex].value);
     if (buffer_size === 128 && rendering_mode === "ScriptProcessor") {
         console.log("buffer_size cannot be set to 128 in ScriptProcessor mode !");
-        buffer_size = 256;
+        buffer_size = 1024;
         restoreMenu("selectedBuffer", buffer_size);
     }
 	console.log("setBufferSize", buffer_size);
@@ -37,7 +37,7 @@ function setRenderingMode(rendering_item)
         restoreMenu("selectedBuffer", buffer_size);
         document.getElementById("selectedBuffer").disabled = true;
     } else {
-        buffer_size = 256;
+        buffer_size = 1024;
         restoreMenu("selectedBuffer", buffer_size);
         document.getElementById("selectedBuffer").disabled = false;
     }
@@ -254,7 +254,7 @@ function loadPageState()
 {
 	if (getStorageItemValue('FaustEditor', 'FaustLocalStorage') === "on") {
         
-        buffer_size = (getStorageItemValue('FaustEditor', 'buffer_size') ? getStorageItemValue('FaustEditor', 'buffer_size') : 256);
+        buffer_size = (getStorageItemValue('FaustEditor', 'buffer_size') ? getStorageItemValue('FaustEditor', 'buffer_size') : 1024);
         poly_flag = (getStorageItemValue('FaustEditor', 'poly_flag') ? getStorageItemValue('FaustEditor', 'poly_flag') : "OFF");
         poly_nvoices = (getStorageItemValue('FaustEditor', 'poly_nvoices') ? getStorageItemValue('FaustEditor', 'poly_nvoices') : 16);
         ftz_flag = (getStorageItemValue('FaustEditor', 'ftz_flag') ? getStorageItemValue('FaustEditor', 'ftz_flag') : 2);

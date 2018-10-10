@@ -9,7 +9,7 @@ if (!isWasm) {
 }
 
 var audio_context = (isWebKitAudio) ? new webkitAudioContext() : new AudioContext();
-var buffer_size = 256;
+var buffer_size = 1024;
 var audio_input = null;
 var midi_input = [];
 var factory_stack = [];
