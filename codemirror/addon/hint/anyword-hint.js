@@ -1,6 +1,11 @@
 // CodeMirror, copyright (c) by Marijn Haverbeke and others
 // Distributed under an MIT license: http://codemirror.net/LICENSE
 
+function isAlphaNumChar(c)
+{
+  return ("a" <= c && c <= "z") || ("A" <= c && c <= "Z") || ("0" <= c && c <= "9");
+} 
+
 (function(mod) {
   if (typeof exports == "object" && typeof module == "object") // CommonJS
     mod(require("../../lib/codemirror"));
@@ -21,6 +26,7 @@
     var end = cur.ch, start = end;
     while (start && word.test(curLine.charAt(start - 1))) --start;
     var curWord = start != end && curLine.slice(start, end);
+    console.log("===> curWord = ", curWord);
     var list = options && options.list || [], seen = {};
 
 
@@ -65,6 +71,14 @@
         }
       }
     }
+
+    // ajout YO =================================================
+    // Check for prefix: move start backward if there is a prefix 'xy.'
+    if (curLine.charAt(start-1) == ".") {
+      --start;
+      while (isAlphaNumChar(curLine.charAt(start-1)))  --start; 
+    }
+    // fin ajout  YO ============================================
 
     return {list: list, from: CodeMirror.Pos(cur.line, start), to: CodeMirror.Pos(cur.line, end)};
   });

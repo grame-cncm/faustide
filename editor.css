@@ -32,6 +32,19 @@
 		background-color: #2b3373;
 	}
 
+	.dynamic-button {
+		width: auto;
+		margin: 10px;
+		padding: 4px;
+		height: 1.5rem;
+		text-align: center;
+		color: grey;
+		background-color: #0069d9;
+		border-color: #0069d9;
+		border-radius: 2px;
+		user-select: none;
+	}
+	
 	.action-button {
 		width: auto;
 		margin: 10px;
@@ -195,7 +208,7 @@
 
 	.config {
 		display:grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr;
 		grid-gap: 8px;
 	}
 

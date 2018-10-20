@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27" content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
 	<title>Faust Editor</title>
 	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto:300,400" rel="stylesheet">
 
@@ -22,7 +23,7 @@
 	<div class="application">
 		<div class="logozone"><img src="faust-logo.png" width=58px alt="LOGO"></div>
 		<div class="actionzone">
-			<div role=button class="action-button" title="(CTRL-R) Compile and run the Faust program" onclick="runFaustCode()">
+			<div role=button class="dynamic-button" id = "run" title="(CTRL-R) Compile and run the Faust program" ">
 				<i class="fa fa-play" aria-hidden="true"></i>
 			</div>
 
@@ -38,15 +39,15 @@
 				<i class="fa fa-book" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" title="Export/compile to specific plateform binary code" onclick="openExportDialog()">
+			<div role=button class="dynamic-button" id = "export" title="Export/compile to specific plateform binary code" >
 				<i class="fa fa-truck" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" title="View the block diagram" onclick="openBlockDiagram()">
+			<div role=button class="dynamic-button" id = "block" title="View the block diagram" >
 				<i class="fa fa-picture-o" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="action-button" title="Configure buffer size and Midi polyphony" onclick="openConfigDialog()">
+			<div role=button class="action-button" title="Configure running mode" onclick="openConfigDialog()">
 				<i class="fa fa-wrench" aria-hidden="true"></i>
 			</div>
 			<div>
@@ -97,12 +98,12 @@ process = +;
 		</div>
 	</div>
 
-
 	<div class="modalwrapper" id="configwrapper">
 		<span class="closeBtn" onclick="closeConfigDialog()">&times;</span>
 		<div class="configui" id="configui">
 			<h1>Configure Running Mode</h1>
-			<div class="config">
+
+        <div class="config">
 
 				<div class="config-element">
 					<H3>Buffer size</H3>
@@ -110,9 +111,9 @@ process = +;
 						<select id="selectedBuffer" name="selectedBuffer"
 							onChange="setBufferSize(this.form.selectedBuffer)">
 							<option value = 128> 128 </option>
-							<option selected value = 256> 256 </option>
+							<option value = 256> 256 </option>
 							<option value = 512> 512 </option>
-							<option value = 1024> 1024 </option>
+							<option selected value = 1024> 1024 </option>
 							<option value = 2048> 2048 </option>
 							<option value = 4096> 4096 </option>
 							<option value = 8192> 8192 </option>
@@ -126,6 +127,8 @@ process = +;
 					<form method="POST" name="menu">
 						<select id="polyVoices" name="polyVoices"
 							onChange="setPolyVoices(this.form.polyVoices)">
+							<option value = 1> 1 </option>
+							<option value = 2> 2 </option>
 							<option value = 4> 4 </option>
 							<option value = 8> 8 </option>
 							<option selected value = 16> 16 </option>
@@ -134,10 +137,24 @@ process = +;
 							<option value = 128> 128 </option>
 						</select>
 					</form>
-					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>). <p> Be sure to launch the HTML page <B>after</B> your MIDI application(s)/devices(s) to be sure MIDI ports are properly detected.</p>
+					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>).
 				</div>
-			</div>
 
+				<div class="config-element">
+					<H3>ScriptProcessor/AudioWorklet</H3>
+					<form method="POST" name="menu">
+						<select id="selectedRenderingMode" name="selectedRenderingMode"
+							onChange="setRenderingMode(this.form.selectedRenderingMode)">
+							<option selected value = ScriptProcessor> ScriptProcessor </option>
+              				<option value = AudioWorklet> AudioWorklet </option>
+						</select>
+					</form>
+					<p>ScriptProcessor: audio rendering is done using the old ScriptProcessor model</p>
+					<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
+				</div>
+				<p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B> </p>
+				<p> <input id="sourcestorage" type="checkbox" onclick="setSourceStorage(checked)"> <B>Save DSP source</B> </p>
+			</div>
 		</div>
 	</div>
 
@@ -151,18 +168,18 @@ process = +;
 	<script src="codemirror/addon/search/search.js"></script>
 	<script src="codemirror/addon/hint/show-hint.js"></script>
 	<script src="codemirror/addon/hint/anyword-hint.js"></script>
-	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
 
-    <script src="scripts/tippy.min.js"></script>
-    <script src="scripts/jsscripts.js"></script>
-    <script src="scripts/libfaust-wasm.js"></script>
-    <script src="scripts/webaudio-wasm-wrapper.js"></script>
-    <script src="scripts/compilefaust.js"></script>
+	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
+  	<script src="scripts/tippy.min.js"></script>
+  	<script src="scripts/localStorage.js"></script>
+  	<script src="scripts/jsscripts.js"></script>
+  	<script src="scripts/libfaust-wasm.js"></script>
+  	<script src="scripts/webaudio-wasm-wrapper.js"></script>
+  	<script src="scripts/compilefaust.js"></script>
 	<script src="scripts/runfaust.js"></script>
 	<script src="scripts/ExportLib.js"></script>
 	<script src="scripts/qrcode.js"></script>
 	<script src="scripts/exportUI.js"></script>
-
 	<script src="scripts/faustlive.js"></script>
 
 </body>
