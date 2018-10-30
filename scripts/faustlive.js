@@ -264,15 +264,15 @@ function runFaustCode() {
 function activateButtons() {
   // Setup the click action
   var div1 = document.querySelector('#run');
-  div1.style.color = '#fff';
+  div1.style.opacity = "1";
   div1.onclick = runFaustCode;
 
   var div2 = document.querySelector('#export');
-  div2.style.color = '#fff';
+  div2.style.opacity = "1";
   div2.onclick = openExportDialog;
 
   var div3 = document.querySelector('#block');
-  div3.style.color = '#fff';
+  div3.style.opacity = "1";
   div3.onclick = openBlockDiagram;
 }
 

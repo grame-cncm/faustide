@@ -38,7 +38,8 @@
 		padding: 4px;
 		height: 1.5rem;
 		text-align: center;
-		color: grey;
+		color: #fff;
+		opacity: 0.3;
 		background-color: #0069d9;
 		border-color: #0069d9;
 		border-radius: 2px;
