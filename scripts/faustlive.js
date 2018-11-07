@@ -401,7 +401,7 @@ function openExportDialog() {
     console.log('open Export Dialog');
     document.getElementById('exportwrapper').style.display = 'block';
     if (!codeEditor.isClean()) {
-      deleteQrCode();
+      deleteQrCode(document.getElementById("qrDiv"));
       codeEditor.markClean();
     }
   } else {
@@ -444,7 +444,7 @@ function trigCompilation(key) {
       document.getElementById('exportUrl').value, key, plateform, architecture,
       sha => {
         stopWaitingQrCode();
-        updateQrCode(sha);
+        updateQrCode(sha, document.getElementById("qrDiv"));
       });
 }
 
@@ -458,7 +458,6 @@ function exportFaustSource() {
 
   /*
   console.log(expandDSP(codeEditor.getValue()));
-
   getSHAKey(document.getElementById("exportUrl").value,
           document.getElementById("filename").value.split(".")[0],
           expandDSP(codeEditor.getValue()),

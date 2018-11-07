@@ -1,12 +1,12 @@
 "use strict";
 
-function onEnterKey(e) {
-	if (!e) {
-		var e = window.event;
+function onEnterKey(event) {
+	if (!event) {
+		var event = window.event;
 	}
 
-	if (e.keyCode === 13) {
-		e.preventDefault();
+	if (event.keyCode === 13) {
+		event.preventDefault();
 		updateFWTargets();
 	}
 }
@@ -24,8 +24,9 @@ function closeExport(event) {
 
 	var target = event.target;
 	while (target && target != document.getElementById("export") && target !=
-		document.getElementById("plusImg"))
+		document.getElementById("plusImg")) {
 		target = target.parentNode;
+	}
 
 	if (!target) {
 		document.getElementById("plusImg").style.visibility = "visible";
@@ -34,17 +35,13 @@ function closeExport(event) {
 	}
 }
 
-function deleteQrCode()
+function deleteQrCode(div)
 {
-	// Empty Div before adding new qrcode
-	var toEmpty = document.getElementById("qrDiv");
-	
-	for (var i = toEmpty.children.length - 1; i >= 0; i--) {
-		if (toEmpty.children[i].id != "loader") {
-			toEmpty.removeChild(toEmpty.children[i]);
+	for (var i = div.children.length - 1; i >= 0; i--) {
+		if (div.children[i].id != "loader") {
+			div.removeChild(div.children[i]);
 		}
 	}
-	
 }
 
 function forgeURL()
@@ -56,31 +53,21 @@ function forgeURL()
 	return document.getElementById("exportUrl").value + "/" + sha + "/" + plateform + "/" + architecture + "/" + output;
 }
 
-function updateQrCode(sha) 
+function updateQrCode(sha, div) 
 {
-	deleteQrCode();
+	deleteQrCode(div);
 
 	var plateform = document.getElementById("Platform").options[document.getElementById("Platform").selectedIndex].value;
 	var architecture = document.getElementById("Architecture").options[document.getElementById("Architecture").selectedIndex].value;
-	var output = "binary.zip";
-
-	if (plateform === "android") {
-		output = "binary.apk";
-	}
+	var output = (plateform === "android") ? "binary.apk" : "binary.zip";
 
 	var link = document.createElement('a');
 	link.href = document.getElementById("exportUrl").value + "/" + sha + "/" +
 		plateform + "/" + architecture + "/" + output;
 
-	// 	Delete existing content if existing
-	var qrcodeSpan = document.getElementById('qrcodeDiv');
-	if (qrcodeSpan) {
-		qrcodeSpan.parentNode.removeChild(qrcodeSpan);
-	}
-
 	var myWhiteDiv = getQrCode(document.getElementById("exportUrl").value, sha, plateform, architecture, output, 130);
 
-	document.getElementById("qrDiv").appendChild(link);
+	div.appendChild(link);
 	link.appendChild(myWhiteDiv);
 }
 
@@ -95,13 +82,12 @@ function cleanComboBox(id) {
 }
 
 function changeArchs() {
-	// CLEAN COMBOBOX BEFORE ADDING NEW OPTIONS
+	// Clean combobox before adding new options
 	cleanComboBox("Architecture");
-	deleteQrCode();
+	deleteQrCode(document.getElementById("qrDiv"));
 
-	var plat = document.getElementById("Platform").options[document.getElementById(
-		"Platform").selectedIndex].value;
-	var archs = getArchitectures(window.json, plat);
+	var platform = document.getElementById("Platform").options[document.getElementById("Platform").selectedIndex].value;
+	var archs = getArchitectures(window.json, platform);
 
 	for (var j = 0; j < archs.length; j++) {
 		var a = document.createElement('option');
@@ -111,17 +97,17 @@ function changeArchs() {
 }
 
 function updateFWTargets() {
-	// CLEAN COMBOBOX BEFORE ADDING NEW OPTIONS
+	// Clean combobox before adding new options
 	cleanComboBox("Platform");
 	cleanComboBox("Architecture");
 
 	getTargets(document.getElementById("exportUrl").value, function(json) {
 		window.json = json;
-		var plats = getPlatforms(json);
+		var platforms = getPlatforms(json);
 
-		for (var i = 0; i < plats.length; i++) {
-			var o = document.createElement('option');
-			o.text = plats[i];
+		for (var i = 0; i < platforms.length; i++) {
+			var o = document.createElement("option");
+			o.text = platforms[i];
 			document.getElementById("Platform").options.add(o);
 		}
 
