@@ -191,10 +191,12 @@ function loadFaustCode() {
 // ftz=0|1|2
 // rendering=ScriptProcessor|AudioWorklet
 // code=<dsp-code-url>
+// inline=<base64url-encoded-faust>
 //
 // Example:
 // https://faust.grame.fr/editor/?code=https://faust.grame.fr/modules/Kisana.dsp
 // https://faust.grame.fr/editor/?buffer=256&poly=on&nvoices=4&code=https://raw.githubusercontent.com/grame-cncm/faust/master-dev/tests/architecture-tests/organ.dsp
+// https://faust.grame.fr/editor/?inline=cHJvY2VzcyA9ICs7IC8vIHRlc3Q
 
 function configureEditorFromUrlParams() {
   var params = new URLSearchParams(window.location.search);
@@ -211,6 +213,15 @@ function configureEditorFromUrlParams() {
   // And reflect it in the menus
   restoreMenus();
 
+  // set editor content either from inline code
+  var inlinecode = params.get('inline');
+  if (inlinecode) {
+    console.log('inline code is', inlinecode);
+    var inlinetext = base64_decode(inlinecode + '===');
+    codeEditor.setValue(inlinetext);
+  }
+
+  // set editor content from url
   var curl = params.get('code');
   if (curl) {
     console.log('code url is', curl);
@@ -264,15 +275,15 @@ function runFaustCode() {
 function activateButtons() {
   // Setup the click action
   var div1 = document.querySelector('#run');
-  div1.style.opacity = "1";
+  div1.style.opacity = '1';
   div1.onclick = runFaustCode;
 
   var div2 = document.querySelector('#export');
-  div2.style.opacity = "1";
+  div2.style.opacity = '1';
   div2.onclick = openExportDialog;
 
   var div3 = document.querySelector('#block');
-  div3.style.opacity = "1";
+  div3.style.opacity = '1';
   div3.onclick = openBlockDiagram;
 }
 
@@ -401,7 +412,7 @@ function openExportDialog() {
     console.log('open Export Dialog');
     document.getElementById('exportwrapper').style.display = 'block';
     if (!codeEditor.isClean()) {
-      deleteQrCode(document.getElementById("qrDiv"));
+      deleteQrCode(document.getElementById('qrDiv'));
       codeEditor.markClean();
     }
   } else {
@@ -444,7 +455,7 @@ function trigCompilation(key) {
       document.getElementById('exportUrl').value, key, plateform, architecture,
       sha => {
         stopWaitingQrCode();
-        updateQrCode(sha, document.getElementById("qrDiv"));
+        updateQrCode(sha, document.getElementById('qrDiv'));
       });
 }
 

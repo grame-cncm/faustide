@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,13 +19,15 @@
 	<link rel=stylesheet href="faust.css">
 
 </head>
+
 <body>
 
 	<div class="application">
 		<div class="logozone"><img src="faust-logo.png" width=58px alt="LOGO"></div>
 		<div class="actionzone">
-			<div role=button class="dynamic-button" id = "run" title="(CTRL-R) Compile and run the Faust program" ">
-				<i class="fa fa-play" aria-hidden="true"></i>
+			<div role=button class="dynamic-button" id="run" title="(CTRL-R) Compile and run the Faust program"
+			 ">
+				<i class=" fa fa-play" aria-hidden="true"></i>
 			</div>
 
 			<div role=button class="action-button" id="upload" title="Upload/Edit a local file" onclick="loadFaustCode()">
@@ -39,11 +42,11 @@
 				<i class="fa fa-book" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="dynamic-button" id = "export" title="Export/compile to specific plateform binary code" >
+			<div role=button class="dynamic-button" id="export" title="Export/compile to specific plateform binary code">
 				<i class="fa fa-truck" aria-hidden="true"></i>
 			</div>
 
-			<div role=button class="dynamic-button" id = "block" title="View the block diagram" >
+			<div role=button class="dynamic-button" id="block" title="View the block diagram">
 				<i class="fa fa-picture-o" aria-hidden="true"></i>
 			</div>
 
@@ -52,17 +55,16 @@
 			</div>
 			<div>
 			</div>
-			<form method="POST" name="menu" class="action-select" title="Activate MIDI polyphonic mode"  >
-				<select id="selectedPoly" name="selectedPoly"
-					onChange="setPoly(this.form.selectedPoly)">
-					<option value = ON> ON </option>
-					<option selected value = OFF> OFF </option>
+			<form method="POST" name="menu" class="action-select" title="Activate MIDI polyphonic mode">
+				<select id="selectedPoly" name="selectedPoly" onChange="setPoly(this.form.selectedPoly)">
+					<option value=ON> ON </option>
+					<option selected value=OFF> OFF </option>
 				</select>
 			</form>
 		</div>
 
-		<div id="myDropZone" class="dropzone" title="Drop a Faust file to edit" >
-			<input id="filename" contenteditable="true" value="untitled.dsp"/>
+		<div id="myDropZone" class="dropzone" title="Drop a Faust file to edit">
+			<input id="filename" contenteditable="true" value="untitled.dsp" />
 		</div>
 
 		<div class="editionzone">
@@ -72,7 +74,7 @@ process = +;
 			</textarea>
 		</div>
 	</div>
-	<input type="file" id="fileinput" style="display:none"/>
+	<input type="file" id="fileinput" style="display:none" />
 
 	<div class="modalwrapper" id="faustuiwrapper">
 		<span class="closeBtn" onclick="stopFaustCode()">&times;</span>
@@ -83,7 +85,7 @@ process = +;
 		<span class="closeBtn" onclick="closeExportDialog()">&times;</span>
 		<div class="exportui" id="exportui">
 			<h1>Export Faust Code</h1>
-			<input id="exportUrl" contenteditable="true" value="https://faustservice.grame.fr" onkeyup="onEnterKey()"/>
+			<input id="exportUrl" contenteditable="true" value="https://faustservice.grame.fr" onkeyup="onEnterKey()" />
 			<select id="Platform" onChange="changeArchs()"></select>
 			<select id="Architecture" onChange="deleteQrCode()"> </select>
 			<div id="exportButton" role=button class="export-button" onclick="exportFaustSource()">
@@ -103,56 +105,61 @@ process = +;
 		<div class="configui" id="configui">
 			<h1>Configure Running Mode</h1>
 
-        <div class="config">
+			<div class="config">
 
 				<div class="config-element">
 					<H3>Buffer size</H3>
 					<form method="POST" name="menu">
-						<select id="selectedBuffer" name="selectedBuffer"
-							onChange="setBufferSize(this.form.selectedBuffer)">
-							<option value = 128> 128 </option>
-							<option value = 256> 256 </option>
-							<option value = 512> 512 </option>
-							<option selected value = 1024> 1024 </option>
-							<option value = 2048> 2048 </option>
-							<option value = 4096> 4096 </option>
-							<option value = 8192> 8192 </option>
+						<select id="selectedBuffer" name="selectedBuffer" onChange="setBufferSize(this.form.selectedBuffer)">
+							<option value=128> 128 </option>
+							<option value=256> 256 </option>
+							<option value=512> 512 </option>
+							<option selected value=1024> 1024 </option>
+							<option value=2048> 2048 </option>
+							<option value=4096> 4096 </option>
+							<option value=8192> 8192 </option>
 						</select>
 					</form>
-					<p>You can change the buffer size (from 256 to 8192 frames in ScripProcessor mode, it will be fixed at 128 frames in AudioWorklet mode).</p>
+					<p>You can change the buffer size (from 256 to 8192 frames in ScripProcessor mode, it will be fixed at 128 frames
+						in AudioWorklet mode).</p>
 				</div>
 
 				<div class="config-element">
 					<H3>Polyphonic instrument</H3>
 					<form method="POST" name="menu">
-						<select id="polyVoices" name="polyVoices"
-							onChange="setPolyVoices(this.form.polyVoices)">
-							<option value = 1> 1 </option>
-							<option value = 2> 2 </option>
-							<option value = 4> 4 </option>
-							<option value = 8> 8 </option>
-							<option selected value = 16> 16 </option>
-							<option value = 32> 32 </option>
-							<option value = 64> 64 </option>
-							<option value = 128> 128 </option>
+						<select id="polyVoices" name="polyVoices" onChange="setPolyVoices(this.form.polyVoices)">
+							<option value=1> 1 </option>
+							<option value=2> 2 </option>
+							<option value=4> 4 </option>
+							<option value=8> 8 </option>
+							<option selected value=16> 16 </option>
+							<option value=32> 32 </option>
+							<option value=64> 64 </option>
+							<option value=128> 128 </option>
 						</select>
 					</form>
-					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web MIDI API</a>).
+					<p>Assuming your DSP code is <a href="https://faust.grame.fr/news/2016/01/13/polyphonic-instruments.html ">polyphonic
+							ready</a>, you can activate the polyphonic mode, adjust the number of available voices, and test it with a MIDI
+						device or application (usable with Chrome which implements the <a href="https://webaudio.github.io/web-midi-api/">Web
+							MIDI API</a>).
 				</div>
 
 				<div class="config-element">
 					<H3>ScriptProcessor/AudioWorklet</H3>
 					<form method="POST" name="menu">
-						<select id="selectedRenderingMode" name="selectedRenderingMode"
-							onChange="setRenderingMode(this.form.selectedRenderingMode)">
-							<option selected value = ScriptProcessor> ScriptProcessor </option>
-              				<option value = AudioWorklet> AudioWorklet </option>
+						<select id="selectedRenderingMode" name="selectedRenderingMode" onChange="setRenderingMode(this.form.selectedRenderingMode)">
+							<option selected value=ScriptProcessor> ScriptProcessor </option>
+							<option value=AudioWorklet> AudioWorklet </option>
 						</select>
 					</form>
 					<p>ScriptProcessor: audio rendering is done using the old ScriptProcessor model</p>
-					<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate it</a><p>
+					<p>AudioWorklet: audio rendering is done using the new AudioWorklet model. This can only be tested with Chrome
+						Canary for now, be sure to <a href="https://googlechromelabs.github.io/web-audio-samples/audio-worklet/">activate
+							it</a>
+						<p>
 				</div>
-				<p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B> </p>
+				<p> <input id="dspstorage" type="checkbox" onclick="setDSPStorage(checked)"> <B>Save DSP control parameters state</B>
+				</p>
 				<p> <input id="sourcestorage" type="checkbox" onclick="setSourceStorage(checked)"> <B>Save DSP source</B> </p>
 			</div>
 		</div>
@@ -170,17 +177,19 @@ process = +;
 	<script src="codemirror/addon/hint/anyword-hint.js"></script>
 
 	<!-- <script src="codemirror/addon/hint/faust-hint.js"></script> -->
-  	<script src="scripts/tippy.min.js"></script>
-  	<script src="scripts/localStorage.js"></script>
-  	<script src="scripts/jsscripts.js"></script>
-  	<script src="scripts/libfaust-wasm.js"></script>
-  	<script src="scripts/webaudio-wasm-wrapper.js"></script>
-  	<script src="scripts/compilefaust.js"></script>
+	<script src="scripts/tippy.min.js"></script>
+	<script src="scripts/localStorage.js"></script>
+	<script src="scripts/jsscripts.js"></script>
+	<script src="scripts/libfaust-wasm.js"></script>
+	<script src="scripts/webaudio-wasm-wrapper.js"></script>
+	<script src="scripts/compilefaust.js"></script>
 	<script src="scripts/runfaust.js"></script>
 	<script src="scripts/ExportLib.js"></script>
 	<script src="scripts/qrcode.js"></script>
 	<script src="scripts/exportUI.js"></script>
+	<script src="scripts/base64.js"></script>
 	<script src="scripts/faustlive.js"></script>
 
 </body>
+
 </html>
