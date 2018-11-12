@@ -2354,7 +2354,7 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
     sp.instanceConstants = function (sample_rate)
     {
         for (var i = 0; i < polyphony; i++) {
-            fsp.actory.instanceConstants(sp.dsp_voices[i], sample_rate);
+            sp.factory.instanceConstants(sp.dsp_voices[i], sample_rate);
         }
     }
 
@@ -2585,7 +2585,7 @@ faust.createPolyDSPInstanceAux = function (factory, time1, mixer_instance, dsp_i
             res = res.concat("\"ui\":[{\"type\":\"tgroup\",\"label\":\"Polyphonic\",\"items\":[");
             res = res.concat("{\"type\": \"vgroup\",\"label\":\"Voices\",\"items\":");
             res = res.concat(JSON.stringify(factory.json_object.ui));
-            res = res.concat("},");
+            res = res.concat("}");
             res = res.concat("]}]}");
             return res;
         }
@@ -3621,7 +3621,7 @@ faust.createPolyDSPWorkletInstanceAux = function (factory, context, polyphony, c
             res = res.concat("\"ui\":[{\"type\":\"tgroup\",\"label\":\"Polyphonic\",\"items\":[");
             res = res.concat("{\"type\": \"vgroup\",\"label\":\"Voices\",\"items\":");
             res = res.concat(JSON.stringify(factory.json_object.ui));
-            res = res.concat("},");
+            res = res.concat("}");
             res = res.concat("]}]}");
             return res;
         }
