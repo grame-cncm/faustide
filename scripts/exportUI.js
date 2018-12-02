@@ -37,9 +37,11 @@ function closeExport(event) {
 
 function deleteQrCode(div)
 {
-	for (var i = div.children.length - 1; i >= 0; i--) {
-		if (div.children[i].id != "loader") {
-			div.removeChild(div.children[i]);
+	if (div !== undefined) {
+		for (var i = div.children.length - 1; i >= 0; i--) {
+			if (div.children[i].id != "loader") {
+				div.removeChild(div.children[i]);
+			}
 		}
 	}
 }
