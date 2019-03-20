@@ -1,0 +1,59 @@
+body {
+    background-color: #1e1e1e;
+    color: whitesmoke;
+    margin: 0;
+    & > #root {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        position: absolute;
+        display: flex;
+        & > #left {
+            max-width: 100px;
+            & > #btns {
+                margin-top: 60px;
+                & > button.btn {
+                    width: 80px;
+                    margin-top: 10px;
+                    color: whitesmoke;
+                    & > i.fas {
+                        margin-right: 5px
+                    }
+                    & > span {
+                        display: none;
+                    }
+                    &:hover {
+                        & > i.fas {
+                            display: none;
+                        }
+                        & > span {
+                            display: inline-block;
+                        }
+                    }
+                }
+                & > #btn-run {
+                    $color: #bcf0ff;
+                    border-color: $color;
+                    &:hover {
+                        background-color: darken($color, 50%);
+                        border-color: $color;
+                    }
+                }
+                & > #btn-upload {
+                    $color: #ff3366;
+                    border-color: $color;
+                    &:hover {
+                        background-color: darken($color, 50%);
+                        border-color: $color;
+                    }
+                }
+            }
+        }
+        & > #center {
+            & > #editor {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    }
+}

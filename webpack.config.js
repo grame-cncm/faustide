@@ -1,4 +1,5 @@
 const path = require('path');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const config = {
   entry: './src/index.ts',
@@ -6,7 +7,8 @@ const config = {
     extensions: ['.ts', '.js']
   },
   output: {
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
+    chunkFilename: 'js/[chunkhash].js'
   },
   node: {
     fs: 'empty'
@@ -25,9 +27,32 @@ const config = {
         options: {
           mimetype: 'application/wasm'
         }
+      },
+      {
+        test: /\.s[ac]ss$/,
+        use: ["style-loader", "css-loader", "sass-loader"]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+        use: [ 
+          {
+            loader: 'file-loader',
+            options: {
+              outputPath: 'assets/',
+              publicPath: 'assets/'
+            }
+          }
+        ]
       }
     ]
-  }
+  },
+  plugins: [
+    new MonacoWebpackPlugin()
+  ]
 };
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
