@@ -1,0 +1,41 @@
+{
+  "name": "fausteditorweb",
+  "version": "0.0.1",
+  "description": "Faust Editor",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fr0stbyteR/fausteditorweb.git"
+  },
+  "keywords": [
+    "Faust",
+    "WebAudio",
+    "WebAssembly"
+  ],
+  "author": "Grame-CNCM",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Fr0stbyteR/fausteditorweb/issues"
+  },
+  "homepage": "https://github.com/Fr0stbyteR/fausteditorweb#readme",
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/plugin-proposal-object-rest-spread": "^7.3.4",
+    "@babel/plugin-transform-async-to-generator": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-typescript": "^7.3.3",
+    "@babel/runtime": "^7.3.4",
+    "babel-loader": "^8.0.5",
+    "tslint": "^5.14.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.3.3333",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0"
+  }
+}
