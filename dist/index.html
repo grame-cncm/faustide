@@ -13,27 +13,27 @@
 	<div id="root">
 		<div id="left" class="container">
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<button type="button" class="btn btn-outline-secondary btn-lg" id="btn-run" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP">
+				<button id="btn-run" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP">
 					<i class="fas fa-play fa-sm"></i>
-					<span>Run</span>
+					<span>Compile</span>
 				</button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-upload" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
+				<button id="btn-upload" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
 					<i class="fas fa-upload fa-sm"></i>
 					<span>Upload</span>
 				</button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-save" data-toggle="tooltip" data-placement="right" title="Download/Save as a local file">
+				<button id="btn-save" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Download/Save as a local file">
 					<i class="fas fa-save fa-sm"></i>
 					<span>Save As</span>
 				</button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-docs" data-toggle="tooltip" data-placement="right" title="(CTRL-D) Open the online documentation">
+				<button id="btn-docs" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="(CTRL-D) Open the online documentation">
 					<i class="fas fa-book fa-sm"></i>
 					<span>Docs</span>
 				</button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-export" data-toggle="tooltip" data-placement="right" title="Export/compile to specific plateform binary code">
+				<button id="btn-export" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Export/compile to specific plateform binary code">
 					<i class="fas fa-truck fa-sm"></i>
 					<span>Export</span>
 				</button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-diagram" data-toggle="tooltip" data-placement="right" title="View the block diagram">
+				<button id="btn-diagram" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="View the block diagram">
 					<i class="fas fa-code-branch fa-sm"></i>
 					<span>Diagram</span>
 				</button>
@@ -42,7 +42,7 @@
 				<div class="input-group-prepend">
 					<span class="input-group-text">Poly Voices</span>
 				</div>
-				<select class="form-control" id="select-voices">
+				<select id="select-voices" class="form-control">
 					<option selected value="0">Mono</option>
 					<option value="1">1</option>
 					<option value="2">2</option>
@@ -58,7 +58,7 @@
 				<div class="input-group-prepend">
 					<span class="input-group-text">Buffer Size</span>
 				</div>
-				<select class="form-control" id="select-buffer-size">
+				<select id="select-buffer-size" class="form-control">
 					<option value="128">128</option>
 					<option value="256">256</option>
 					<option value="512">512</option>
@@ -69,29 +69,43 @@
 				</select>
 			</form>
 			<div class="form form-check">
-				<input class="form-check-input" type="checkbox" value="" id="check-worklet" disabled>
+				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled>
 				<label class="form-check-label" for="useWorklet">
 					Use AudioWorklet
 				</label>
 			</div>
 			<div class="form form-check">
-				<input class="form-check-input" type="checkbox" value="" id="check-save-params">
+				<input id="check-save-params" class="form-check-input" type="checkbox" value="">
 				<label class="form-check-label" for="saveParams">
 					Save Params State
 				</label>
 			</div>
 			<div class="form form-check">
-				<input class="form-check-input" type="checkbox" value="" id="check-save-dsp">
+				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="">
 				<label class="form-check-label" for="saveDsp">
 					Save DSP Source
 				</label>
 			</div>
 		</div>
 		<div id="center" class="container">
-			<div id="editor"></div>
+			<ul id="center-tab" class="nav nav-tabs" role="tablist">
+				<li class="nav-item">
+					<a id="tab-editor" class="nav-link active" data-toggle="tab" href="#editor" role="tab" aria-controls="editor" aria-selected="true">Editor</a>
+				</li>
+				<li class="nav-item">
+					<a id="tab-dsp-ui" class="nav-link" data-toggle="tab" href="#dsp-ui" role="tab" aria-controls="dsp-ui" aria-selected="false">DSP</a>
+				</li>
+			</ul>
+			<div id="center-content" class="tab-content">
+				<div id="editor" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-editor"></div>
+				<div id="dsp-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-dsp-ui">
+					<span id="dsp-ui-default">DSP not running</span>
+				</div>
+			</div>
 		</div>
 		<div id="right" class="container">
-			<div id="dsp-ui"></div>
+			<div id="midi-ui"></div>
+			<div id="input-ui"></div>
 			<div id="webaudio-ui"></div>
 		</div>
 	</div>

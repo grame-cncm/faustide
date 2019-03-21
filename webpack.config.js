@@ -1,4 +1,5 @@
 const path = require('path');
+const webpack = require('webpack');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const config = {
@@ -51,7 +52,13 @@ const config = {
     ]
   },
   plugins: [
-    new MonacoWebpackPlugin()
+    new MonacoWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.$': 'jquery',
+      'window.jQuery': 'jquery'
+    })
   ]
 };
 module.exports = (env, argv) => {
