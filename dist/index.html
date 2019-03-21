@@ -13,12 +13,86 @@
 	<div id="root">
 		<div id="left" class="container">
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-run"><i class="fas fa-play fa-sm"></i><span>Run</span></button>
-				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-upload"><i class="fas fa-upload fa-sm"></i><span>Upload</span></button>
+				<button type="button" class="btn btn-outline-secondary btn-lg" id="btn-run" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP">
+					<i class="fas fa-play fa-sm"></i>
+					<span>Run</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-upload" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
+					<i class="fas fa-upload fa-sm"></i>
+					<span>Upload</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-save" data-toggle="tooltip" data-placement="right" title="Download/Save as a local file">
+					<i class="fas fa-save fa-sm"></i>
+					<span>Save As</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-docs" data-toggle="tooltip" data-placement="right" title="(CTRL-D) Open the online documentation">
+					<i class="fas fa-book fa-sm"></i>
+					<span>Docs</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-export" data-toggle="tooltip" data-placement="right" title="Export/compile to specific plateform binary code">
+					<i class="fas fa-truck fa-sm"></i>
+					<span>Export</span>
+				</button>
+				<button type="button" class="btn btn-outline-secondary btn-sm" id="btn-diagram" data-toggle="tooltip" data-placement="right" title="View the block diagram">
+					<i class="fas fa-code-branch fa-sm"></i>
+					<span>Diagram</span>
+				</button>
+			</div>
+			<form class="input-group input-group-sm">
+				<div class="input-group-prepend">
+					<span class="input-group-text">Poly Voices</span>
+				</div>
+				<select class="form-control" id="select-voices">
+					<option selected value="0">Mono</option>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="4">4</option>
+					<option value="8">8</option>
+					<option value="16">16</option>
+					<option value="32">32</option>
+					<option value="64">64</option>
+					<option value="128">128</option>
+				</select>
+			</form>
+			<form class="input-group input-group-sm">
+				<div class="input-group-prepend">
+					<span class="input-group-text">Buffer Size</span>
+				</div>
+				<select class="form-control" id="select-buffer-size">
+					<option value="128">128</option>
+					<option value="256">256</option>
+					<option value="512">512</option>
+					<option selected value="1024">1024</option>
+					<option value="2048">2048</option>
+					<option value="4096">4096</option>
+					<option value="8192">8192</option>
+				</select>
+			</form>
+			<div class="form form-check">
+				<input class="form-check-input" type="checkbox" value="" id="check-worklet" disabled>
+				<label class="form-check-label" for="useWorklet">
+					Use AudioWorklet
+				</label>
+			</div>
+			<div class="form form-check">
+				<input class="form-check-input" type="checkbox" value="" id="check-save-params">
+				<label class="form-check-label" for="saveParams">
+					Save Params State
+				</label>
+			</div>
+			<div class="form form-check">
+				<input class="form-check-input" type="checkbox" value="" id="check-save-dsp">
+				<label class="form-check-label" for="saveDsp">
+					Save DSP Source
+				</label>
 			</div>
 		</div>
 		<div id="center" class="container">
 			<div id="editor"></div>
+		</div>
+		<div id="right" class="container">
+			<div id="dsp-ui"></div>
+			<div id="webaudio-ui"></div>
 		</div>
 	</div>
 </body>
