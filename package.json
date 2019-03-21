@@ -52,6 +52,7 @@
     "tslint-config-airbnb": "^5.11.1",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.3.3333",
+    "webmidi": "^2.3.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.3.0"
   },

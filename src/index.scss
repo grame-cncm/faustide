@@ -125,9 +125,7 @@ body {
                     width: 100%;
                     height: 100%;
                     & > #dsp-ui-default {
-                        margin-top: 20%;
-                        display: block;
-                        text-align: center;
+                        top: 20%;
                     }
                 }
             }
@@ -137,6 +135,7 @@ body {
             width: 200px;
             flex: 0 0 200px;
             min-width: 200px;
+            font-size: 0.8em;
         }
     }
 }

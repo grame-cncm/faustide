@@ -99,12 +99,25 @@
 			<div id="center-content" class="tab-content">
 				<div id="editor" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-editor"></div>
 				<div id="dsp-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-dsp-ui">
-					<span id="dsp-ui-default">DSP not running</span>
+					<div id="dsp-ui-default" class="alert alert-info" role="alert">
+						<h5>DSP not running</h5>
+						<p>Click Compile to run a dsp with your faust code.</p>
+					</div>
 				</div>
 			</div>
 		</div>
 		<div id="right" class="container">
-			<div id="midi-ui"></div>
+			<div id="midi-ui" class="container">
+				<form class="input-group input-group-sm">
+					<div class="form-row mt-2">
+						<label for="midi-input">MIDI Input</label>
+						<span id="midi-ui-default" class="badge badge-warning ml-2 mb-2">not supported</span>
+						<select id="select-midi-input" class="form-control form-control-sm" disabled>
+							<option selected value="-1">None</option>
+						</select>
+					</div>
+				</form>
+			</div>
 			<div id="input-ui"></div>
 			<div id="webaudio-ui"></div>
 		</div>

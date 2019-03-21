@@ -1,5 +1,6 @@
 // import { Faust } from "faust2webaudio";
 import * as monaco from "monaco-editor";
+import webmidi from "webmidi";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
 import "@fortawesome/fontawesome-free/css/all.css";
@@ -12,7 +13,8 @@ declare global {
         AudioWorklet?: typeof AudioWorklet;
     }
 }
-$(document).ready(async () => {
+$(async () => {
+    $('[data-toggle="tooltip"]').tooltip();
     const editor = initEditor();
     // $(window).on("resize", console.log);
     const { Faust } = await import("faust2webaudio");
