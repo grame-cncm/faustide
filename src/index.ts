@@ -24,7 +24,9 @@ type FaustEditorAudioEnv = {
     mediaDestination?: MediaStreamAudioDestinationNode,
     dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode,
     dspConnectedToOutput: boolean,
-    dspConnectedToInput: boolean
+    dspConnectedToInput: boolean,
+    inputEnabled: boolean,
+    outputEnabled: boolean
 };
 type FaustEditorMIDIEnv = {
     listener: (e: InputEventBase<"midimessage">) => any,
@@ -33,12 +35,21 @@ type FaustEditorMIDIEnv = {
 type FaustEditorUIEnv = {
     drawInputAnalyser: boolean;
     drawOutputAnalyser: boolean;
-}
+};
+type FaustEditorCompileOptions = {
+    useWorklet: boolean,
+    bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096,
+    saveParams: boolean,
+    saveDsp: boolean,
+    voices: number,
+    args: { [key: string]: any }
+};
 $(async () => {
-    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false } as FaustEditorAudioEnv;
+    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: true } as FaustEditorAudioEnv;
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
     const uiEnv = { drawInputAnalyser: false, drawOutputAnalyser: false } as FaustEditorUIEnv;
-    $('[data-toggle="tooltip"]').tooltip();
+    const compileOptions = { useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
+    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     // MIDI Devices
     $("#select-midi-input").on("change", (e) => {
         const id = (e.target as HTMLSelectElement).value;
@@ -60,7 +71,6 @@ $(async () => {
     $("#select-audio-input").on("change", async (e) => {
         const id = (e.target as HTMLSelectElement).value;
         if (audioEnv.currentInput === id) return;
-        const wasConnected = audioEnv.dspConnectedToInput;
         const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
         if (dsp && audioEnv.dspConnectedToInput) { // Disconnect
@@ -71,13 +81,21 @@ $(async () => {
         }
         if (id === "-1") {
             $("#input-analyser").hide();
+            uiEnv.drawInputAnalyser = false;
+            audioEnv.inputEnabled = false;
             return;
         }
         $("#input-analyser").show();
+        uiEnv.drawInputAnalyser = true;
         await initAudioCtx(audioEnv, id);
         const input = audioEnv.inputs[id];
+        audioEnv.currentInput = id;
+        audioEnv.inputEnabled = true;
         if (analyser) input.connect(analyser);
-        if (dsp && wasConnected) input.connect(dsp);
+        if (dsp) {
+            input.connect(dsp);
+            audioEnv.dspConnectedToInput = true;
+        }
     });
     navigator.mediaDevices.enumerateDevices().then((devices) => {
         $("#input-ui-default").hide();
@@ -85,12 +103,44 @@ $(async () => {
         devices.forEach((device) => {
             if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
         });
-    }, e => $("#select-audio-input").hide());
+    }, e => $("#select-audio-input").add("#input-analyser").hide());
+    // Editor
     const editor = await initEditor();
-    // $(window).on("resize", console.log);
+    // Faust Core
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
     await faust.ready;
+    $("#btn-run").on("click", async (e) => {
+        if (!audioEnv.audioCtx) await initAudioCtx(audioEnv);
+        else if (audioEnv.dsp) { // Disconnect current
+            const dsp = audioEnv.dsp;
+            if (audioEnv.dspConnectedToInput) {
+                dsp.disconnect(audioEnv.inputs[audioEnv.currentInput]);
+                audioEnv.dspConnectedToInput = false;
+            }
+            if (audioEnv.dspConnectedToOutput) {
+                dsp.disconnect(audioEnv.audioCtx.destination);
+                if (audioEnv.analyserOutput) dsp.disconnect(audioEnv.analyserOutput);
+                audioEnv.dspConnectedToOutput = false;
+            }
+        }
+        const audioCtx = audioEnv.audioCtx;
+        const { useWorklet, bufferSize, voices, args } = compileOptions;
+        const node = await faust.getNode(editor.getValue(), { audioCtx, useWorklet, bufferSize, voices, args }) as FaustAudioWorkletNode | FaustScriptProcessorNode;
+        if (node) {
+            audioEnv.dsp = node;
+            node.connect(audioEnv.analyserOutput);
+            if (audioEnv.inputEnabled) {
+                audioEnv.inputs[audioEnv.currentInput].connect(audioEnv.dsp);
+                audioEnv.dspConnectedToInput = true;
+            }
+            if (audioEnv.outputEnabled) {
+                audioEnv.dsp.connect(audioEnv.audioCtx.destination);
+                if (audioEnv.analyserOutput) audioEnv.dsp.connect(audioEnv.analyserOutput);
+                audioEnv.dspConnectedToOutput = true;
+            }
+        }
+    });
     // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 });
