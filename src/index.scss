@@ -136,6 +136,17 @@ body {
             flex: 0 0 200px;
             min-width: 200px;
             font-size: 0.8em;
+            & > #input-ui {
+                display: flex;
+                flex-direction: column;
+                & > #input-analyser {
+                    display: flex;
+                    flex-direction: column;
+                    & > canvas {
+                        height: 100px;
+                    }
+                }
+            }
         }
     }
 }

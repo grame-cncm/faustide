@@ -1,11 +1,12 @@
 // import { Faust } from "faust2webaudio";
 import * as monaco from "monaco-editor";
-import webmidi from "webmidi";
+import webmidi, { Input, InputEventBase } from "webmidi";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
+import { FaustScriptProcessorNode, FaustAudioWorkletNode } from "faust2webaudio";
 declare global {
     interface Window {
         AudioContext: typeof AudioContext;
@@ -13,9 +14,41 @@ declare global {
         AudioWorklet?: typeof AudioWorklet;
     }
 }
+type FaustEditorAudioEnv = {
+    audioCtx?: AudioContext,
+    analyserInput?: AnalyserNode,
+    analyserOutput?: AnalyserNode,
+    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode },
+    currentInput?: string;
+    mediaSource?: MediaElementAudioSourceNode,
+    mediaDestination?: MediaStreamAudioDestinationNode,
+    dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode,
+    dspConnectedToOutput: boolean,
+    dspConnectedToInput: boolean
+};
+type FaustEditorMIDIEnv = {
+    listener: (e: InputEventBase<"midimessage">) => any,
+    input: Input
+};
+type FaustEditorUIEnv = {
+    drawInputAnalyser: boolean;
+    drawOutputAnalyser: boolean;
+}
 $(async () => {
+    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false } as FaustEditorAudioEnv;
+    const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
+    const uiEnv = { drawInputAnalyser: false, drawOutputAnalyser: false } as FaustEditorUIEnv;
     $('[data-toggle="tooltip"]').tooltip();
-    // MIDI
+    // MIDI Devices
+    $("#select-midi-input").on("change", (e) => {
+        const id = (e.target as HTMLSelectElement).value;
+        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all", midiEnv.listener);
+        if (id === "-1") return;
+        const input = webmidi.getInputById(id);
+        if (!input) return;
+        midiEnv.input = input;
+        input.addListener("midimessage", "all", midiEnv.listener);
+    });
     webmidi.enable((e) => {
         if (e) return $("#select-midi-input").hide();
         $("#midi-ui-default").hide();
@@ -23,6 +56,36 @@ $(async () => {
         webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
         return $select.children("option").eq(1).prop("selected", true);
     });
+    // Audio Inputs
+    $("#select-audio-input").on("change", async (e) => {
+        const id = (e.target as HTMLSelectElement).value;
+        if (audioEnv.currentInput === id) return;
+        const wasConnected = audioEnv.dspConnectedToInput;
+        const analyser = audioEnv.analyserInput;
+        const dsp = audioEnv.dsp;
+        if (dsp && audioEnv.dspConnectedToInput) { // Disconnect
+            const input = audioEnv.inputs[audioEnv.currentInput];
+            input.disconnect(dsp);
+            if (analyser) input.disconnect(analyser);
+            audioEnv.dspConnectedToInput = false;
+        }
+        if (id === "-1") {
+            $("#input-analyser").hide();
+            return;
+        }
+        $("#input-analyser").show();
+        await initAudioCtx(audioEnv, id);
+        const input = audioEnv.inputs[id];
+        if (analyser) input.connect(analyser);
+        if (dsp && wasConnected) input.connect(dsp);
+    });
+    navigator.mediaDevices.enumerateDevices().then((devices) => {
+        $("#input-ui-default").hide();
+        const $select = $("#select-audio-input").prop("disabled", false);
+        devices.forEach((device) => {
+            if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
+        });
+    }, e => $("#select-audio-input").hide());
     const editor = await initEditor();
     // $(window).on("resize", console.log);
     const { Faust } = await import("faust2webaudio");
@@ -264,4 +327,17 @@ effect = dm.freeverb_demo;`;
     });
     $(window).on("resize", () => editor.layout());
     return editor;
+};
+const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
+    if (!audioEnv.audioCtx) audioEnv.audioCtx = new (window.webkitAudioContext || window.AudioContext)();
+    if (!audioEnv.inputs) audioEnv.inputs = {};
+    if (deviceId && !audioEnv.inputs[deviceId]) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
+        audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
+    }
+    if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
+    if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
+    if (!audioEnv.mediaSource) audioEnv.mediaSource = audioEnv.audioCtx.createMediaElementSource($("#media-source")[0] as HTMLMediaElement);
+    if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
+    return audioEnv;
 };

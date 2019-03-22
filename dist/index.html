@@ -118,7 +118,24 @@
 					</div>
 				</form>
 			</div>
-			<div id="input-ui"></div>
+			<div id="input-ui" class="container">
+				<form class="input-group input-group-sm">
+					<div class="form-row mt-2">
+						<label for="audio-input">Audio Input</label>
+						<span id="input-ui-default" class="badge badge-warning ml-2 mb-2">not supported</span>
+						<select id="select-audio-input" class="form-control form-control-sm" disabled>
+							<option selected value="-1">None</option>
+						</select>
+					</div>
+				</form>
+				<div id="input-analyser">
+					<canvas id="input-spect"></canvas>
+					<canvas id="input-scope"></canvas>
+				</div>
+			</div>
+			<div id="source-ui" class="container">
+				<audio id="media-source"></audio>
+			</div>
 			<div id="webaudio-ui"></div>
 		</div>
 	</div>
