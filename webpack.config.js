@@ -53,7 +53,8 @@ const config = {
   },
   plugins: [
     new MonacoWebpackPlugin({
-      output: 'js'
+      output: 'js',
+      languages: []
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
