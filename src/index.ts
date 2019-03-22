@@ -23,7 +23,7 @@ $(async () => {
         webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
         return $select.children("option").eq(1).prop("selected", true);
     });
-    const editor = initEditor();
+    const editor = await initEditor();
     // $(window).on("resize", console.log);
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
@@ -31,7 +31,7 @@ $(async () => {
     // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 });
-const initEditor = () => {
+const initEditor = async () => {
     const code =
 `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
@@ -43,6 +43,7 @@ process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0
     gate = button("gate");
 };
 effect = dm.freeverb_demo;`;
+    const monaco = await import("monaco-editor");
     monaco.languages.register({
         id: "faust",
         extensions: ["dsp", "lib"],
