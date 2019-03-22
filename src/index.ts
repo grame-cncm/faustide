@@ -15,6 +15,14 @@ declare global {
 }
 $(async () => {
     $('[data-toggle="tooltip"]').tooltip();
+    // MIDI
+    webmidi.enable((e) => {
+        if (e) return $("#select-midi-input").hide();
+        $("#midi-ui-default").hide();
+        const $select = $("#select-midi-input").prop("disabled", false);
+        webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
+        return $select.children("option").eq(1).prop("selected", true);
+    });
     const editor = initEditor();
     // $(window).on("resize", console.log);
     const { Faust } = await import("faust2webaudio");
