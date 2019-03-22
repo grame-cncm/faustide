@@ -107,10 +107,10 @@
 			</div>
 		</div>
 		<div id="right" class="container">
-			<div id="midi-ui" class="container">
+			<div id="midi-ui" class="container mt-2">
 				<form class="input-group input-group-sm">
-					<div class="form-row mt-2">
-						<label for="midi-input">MIDI Input</label>
+					<div class="form-row">
+						<label for="midi-ui">MIDI Input</label>
 						<span id="midi-ui-default" class="badge badge-warning ml-2 mb-2">not supported</span>
 						<select id="select-midi-input" class="form-control form-control-sm" disabled>
 							<option selected value="-1">None</option>
@@ -118,10 +118,10 @@
 					</div>
 				</form>
 			</div>
-			<div id="input-ui" class="container">
+			<div id="input-ui" class="container mt-2">
 				<form class="input-group input-group-sm">
-					<div class="form-row mt-2">
-						<label for="audio-input">Audio Input</label>
+					<div class="form-row">
+						<label for="input-ui">Audio Input</label>
 						<span id="input-ui-default" class="badge badge-warning ml-2 mb-2">not supported</span>
 						<select id="select-audio-input" class="form-control form-control-sm" disabled>
 							<option selected value="-1">None</option>
@@ -133,10 +133,24 @@
 					<canvas id="input-scope"></canvas>
 				</div>
 			</div>
-			<div id="source-ui" class="container">
+			<div id="source-ui" class="container mt-2">
 				<audio id="media-source"></audio>
 			</div>
-			<div id="webaudio-ui"></div>
+			<div id="dsp-ui" class="container mt-2">
+				<div class="form-row">
+					<label for="dsp-ui">DSP</label>
+					<span id="dsp-ui-default" class="badge badge-warning ml-2 mb-2">no DSP yet</span>
+				</div>
+				<div id="output-analyser">
+					<canvas id="output-spect"></canvas>
+					<canvas id="output-scope"></canvas>
+				</div>
+			</div>
+			<div id="output-ui" class="container mb-2">
+				<button id="btn-dac" type="button" class="btn btn-primary btn-em btn-block" data-toggle="button" aria-pressed="false" autocomplete="off">
+					<i class="fas fa-volume-up fa-sm"></i>
+				</button>
+			</div>
 		</div>
 	</div>
 </body>

@@ -136,6 +136,8 @@ body {
             flex: 0 0 200px;
             min-width: 200px;
             font-size: 0.8em;
+            display: flex;
+            flex-direction: column;
             & > #input-ui {
                 display: flex;
                 flex-direction: column;
@@ -146,6 +148,20 @@ body {
                         height: 100px;
                     }
                 }
+            }
+            & > #dsp-ui {
+                display: flex;
+                flex-direction: column;
+                & > #output-analyser {
+                    display: flex;
+                    flex-direction: column;
+                    & > canvas {
+                        height: 100px;
+                    }
+                }
+            }
+            & > #output-ui {
+                margin-top: auto;
             }
         }
     }
