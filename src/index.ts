@@ -90,7 +90,7 @@ $(async () => {
         if (audioEnv.currentInput === id) return;
         const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
-        if (dsp && audioEnv.dspConnectedToInput) { // Disconnect
+        if (dsp && audioEnv.dspConnectedToInput && dsp.numberOfInputs) { // Disconnect
             const input = audioEnv.inputs[audioEnv.currentInput];
             input.disconnect(dsp);
             if (analyser) input.disconnect(analyser);
@@ -109,7 +109,7 @@ $(async () => {
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
         if (analyser) input.connect(analyser);
-        if (dsp) {
+        if (dsp && dsp.numberOfInputs) {
             input.connect(dsp);
             audioEnv.dspConnectedToInput = true;
         }
@@ -189,7 +189,7 @@ $(async () => {
         if (node) {
             audioEnv.dsp = node;
             node.connect(audioEnv.analyserOutput);
-            if (audioEnv.inputEnabled) {
+            if (audioEnv.inputEnabled && node.numberOfInputs) {
                 audioEnv.inputs[audioEnv.currentInput].connect(node);
                 audioEnv.dspConnectedToInput = true;
             }
