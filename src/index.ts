@@ -106,6 +106,7 @@ $(async () => {
             $("#input-analyser").hide();
             uiEnv.drawInputAnalyser = false;
             audioEnv.inputEnabled = false;
+            audioEnv.currentInput = undefined;
             return;
         }
         $("#input-analyser").show();
