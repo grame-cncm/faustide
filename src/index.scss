@@ -172,15 +172,14 @@ body {
                 & > #input-analyser {
                     display: flex;
                     flex-direction: column;
-                    & > canvas {
-                        height: 100px;
-                    }
+                    height: 100px;
                 }
             }
             & > #dsp-ui {
                 display: flex;
                 flex-direction: column;
                 & #dsp-ui-detail {
+                    display: none;
                     width: 100%;
                     & > li {
                         padding: 0px;
@@ -191,9 +190,7 @@ body {
                 & > #output-analyser {
                     display: flex;
                     flex-direction: column;
-                    & > canvas {
-                        height: 100px;
-                    }
+                    height: 100px;
                 }
             }
             & > #output-ui {

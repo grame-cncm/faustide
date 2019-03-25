@@ -19,7 +19,7 @@ declare global {
             uiEnv: FaustEditorUIEnv;
             compileOptions: FaustEditorCompileOptions;
         };
-        $: JQueryStatic;
+        editor: monaco.editor.IStandaloneCodeEditor;
     }
 }
 type FaustEditorAudioEnv = {
@@ -41,8 +41,9 @@ type FaustEditorMIDIEnv = {
     input: Input
 };
 type FaustEditorUIEnv = {
-    drawInputAnalyser: boolean;
-    drawOutputAnalyser: boolean;
+    analysersInited: boolean,
+    inputAnalyser: 0 | 1, // 0 scope, 1 spect
+    outputAnalyser: 0 | 1,
 };
 type FaustEditorCompileOptions = {
     name: string,
@@ -53,11 +54,10 @@ type FaustEditorCompileOptions = {
     voices: number,
     args: { [key: string]: any }
 };
-window.$ = $;
 $(async () => {
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
-    const uiEnv = { drawInputAnalyser: false, drawOutputAnalyser: false } as FaustEditorUIEnv;
+    const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
     const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
     window.faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions };
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
@@ -97,24 +97,27 @@ $(async () => {
     $("#select-audio-input").on("change", async (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (audioEnv.currentInput === id) return;
-        const analyser = audioEnv.analyserInput;
-        const dsp = audioEnv.dsp;
-        if (dsp && audioEnv.dspConnectedToInput && dsp.numberOfInputs) { // Disconnect
-            const input = audioEnv.inputs[audioEnv.currentInput];
-            input.disconnect(dsp);
-            if (analyser) input.disconnect(analyser);
-            audioEnv.dspConnectedToInput = false;
+        if (audioEnv.audioCtx) {
+            const analyser = audioEnv.analyserInput;
+            const dsp = audioEnv.dsp;
+            if (dsp && audioEnv.dspConnectedToInput && dsp.numberOfInputs) { // Disconnect
+                const input = audioEnv.inputs[audioEnv.currentInput];
+                input.disconnect(dsp);
+                if (analyser) input.disconnect(analyser);
+                audioEnv.dspConnectedToInput = false;
+            }
         }
         if (id === "-1") {
             $("#input-analyser").hide();
-            uiEnv.drawInputAnalyser = false;
             audioEnv.inputEnabled = false;
             audioEnv.currentInput = undefined;
             return;
         }
         $("#input-analyser").show();
-        uiEnv.drawInputAnalyser = true;
         await initAudioCtx(audioEnv, id);
+        initAnalysersUI(uiEnv, audioEnv);
+        const analyser = audioEnv.analyserInput;
+        const dsp = audioEnv.dsp;
         const input = audioEnv.inputs[id];
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
@@ -160,8 +163,10 @@ $(async () => {
             }
         } else {
             audioEnv.outputEnabled = true;
-            if (!audioEnv.audioCtx) await initAudioCtx(audioEnv);
-            else if (audioEnv.dsp) {
+            if (!audioEnv.audioCtx) {
+                await initAudioCtx(audioEnv);
+                initAnalysersUI(uiEnv, audioEnv);
+            } else if (audioEnv.dsp) {
                 audioEnv.dsp.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
                 $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
@@ -192,9 +197,8 @@ $(async () => {
     $("#a-save").on("click", e => e.stopPropagation());
     // Editor
     const editor = await initEditor();
-    $("#tab-editor").tab("show").on("shown.bs.tab", () => {
-        editor.layout();
-    });
+    window.editor = editor;
+    $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
     $("#editor").on("dragenter dragover", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -231,8 +235,10 @@ $(async () => {
     const faust = new Faust();
     await faust.ready;
     $("#btn-run").on("click", async (e) => {
-        if (!audioEnv.audioCtx) await initAudioCtx(audioEnv);
-        else if (audioEnv.dsp) { // Disconnect current
+        if (!audioEnv.audioCtx) {
+            await initAudioCtx(audioEnv);
+            initAnalysersUI(uiEnv, audioEnv);
+        } else if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
                 dsp.disconnect(audioEnv.inputs[audioEnv.currentInput]);
@@ -254,6 +260,7 @@ $(async () => {
             uiWindow.postMessage("", "*");
             $("#faust-ui-default").show();
             $("#iframe-faust-ui").hide();
+            $("#output-analyser").hide();
             refreshDspUI();
             throw e;
         }
@@ -276,6 +283,7 @@ $(async () => {
             };
             $("#faust-ui-default").hide();
             $("#iframe-faust-ui").show();
+            $("#output-analyser").show();
             if ($("#tab-faust-ui").hasClass("active")) bindUI();
             else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
             refreshDspUI(node);
@@ -287,6 +295,9 @@ $(async () => {
         const data = JSON.parse(e.data);
         if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, data.value);
     });
+    // Analysers
+    $("#input-analyser").hide().on("click", () => uiEnv.inputAnalyser = 1 - uiEnv.inputAnalyser as 1 | 0);
+    $("#output-analyser").hide().on("click", () => uiEnv.outputAnalyser = 1 - uiEnv.outputAnalyser as 1 | 0);
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
@@ -305,6 +316,85 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.mediaSource) audioEnv.mediaSource = audioEnv.audioCtx.createMediaElementSource($("#media-source")[0] as HTMLMediaElement);
     if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
     return audioEnv;
+};
+const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
+    const audioCtx = audioEnv.audioCtx;
+    const iNode = audioEnv.analyserInput;
+    const oNode = audioEnv.analyserOutput;
+    const w = 170;
+    const h = 100;
+    const iL = iNode.frequencyBinCount;
+    const iT =  new Uint8Array(iL);
+    const iF =  new Uint8Array(iL);
+    const oL = oNode.frequencyBinCount;
+    const oT =  new Uint8Array(oL);
+    const oF =  new Uint8Array(oL);
+    const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
+    iCanvas.width = 170;
+    iCanvas.height = 100;
+    const iCtx = iCanvas.getContext("2d");
+    iCtx.strokeStyle = "#FFFFFF";
+    const oCanvas = $("#output-analyser")[0] as HTMLCanvasElement;
+    oCanvas.width = 170;
+    oCanvas.height = 100;
+    const oCtx = oCanvas.getContext("2d");
+    oCtx.strokeStyle = "#FFFFFF";
+    const draw = () => {
+        if (!audioCtx || audioCtx.state !== "running") return requestAnimationFrame(draw);
+        if (iNode && audioEnv.inputEnabled) {
+            if (uiEnv.inputAnalyser === 0) {
+                iNode.getByteTimeDomainData(iT);
+                iCtx.fillStyle = "#000000";
+                iCtx.fillRect(0, 0, w, h);
+                iCtx.beginPath();
+                for (let i = 0; i < iL; i++) {
+                    const x = w * i / (iL - 1);
+                    const y = h - iT[i] / 128.0 * (h / 2);
+                    if (i === 0) iCtx.moveTo(x, y);
+                    else iCtx.lineTo(x, y);
+                }
+                iCtx.stroke();
+            } else if (uiEnv.inputAnalyser === 1) {
+                iNode.getByteFrequencyData(iF);
+                iCtx.fillStyle = "#000000";
+                iCtx.fillRect(0, 0, w, h);
+                iCtx.fillStyle = "#FFFFFF";
+                for (let i = 0; i < iL; i++) {
+                    const x = w * i / iL;
+                    const y = iF[i] / 128.0 * h;
+                    iCtx.fillRect(x, h - y, w / iL, y);
+                }
+            }
+        }
+        if (oNode && audioEnv.dsp) {
+            if (uiEnv.outputAnalyser === 0) {
+                oNode.getByteTimeDomainData(oT);
+                oCtx.fillStyle = "#000000";
+                oCtx.fillRect(0, 0, w, h);
+                oCtx.beginPath();
+                for (let i = 0; i < iL; i++) {
+                    const x = w * i / (iL - 1);
+                    const y = h - oT[i] / 128.0 * (h / 2);
+                    if (i === 0) oCtx.moveTo(x, y);
+                    else oCtx.lineTo(x, y);
+                }
+                oCtx.stroke();
+            } else if (uiEnv.outputAnalyser === 1) {
+                oNode.getByteFrequencyData(oF);
+                oCtx.fillStyle = "#000000";
+                oCtx.fillRect(0, 0, w, h);
+                oCtx.fillStyle = "#FFFFFF";
+                for (let i = 0; i < iL; i++) {
+                    const x = w * i / iL;
+                    const y = oF[i] / 128.0 * h;
+                    oCtx.fillRect(x, h - y, w / iL, y);
+                }
+            }
+        }
+        return requestAnimationFrame(draw);
+    };
+    uiEnv.analysersInited = true;
+    draw();
 };
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {
