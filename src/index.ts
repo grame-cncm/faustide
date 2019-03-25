@@ -170,6 +170,34 @@ $(async () => {
     $("#tab-editor").tab("show").on("shown.bs.tab", () => {
         editor.layout();
     });
+    $("#editor").on("dragenter dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#editor-overlay").css({ "z-index": 1 });
+    });
+    $("#editor-overlay").on("dragleave dragend", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $(e.currentTarget).css({ "z-index": -1 });
+    });
+    $("#editor-overlay").on("dragenter dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    $("#editor-overlay").on("drop", (e) => {
+        $(e.currentTarget).css({ "z-index": -1 });
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.files.length) {
+            // Stop the propagation of the event
+            e.preventDefault();
+            e.stopPropagation();
+            const file = event.dataTransfer.files[0];
+            const reader = new FileReader();
+            reader.onload = () => editor.setValue(reader.result.toString());
+            reader.onerror = () => undefined;
+            reader.readAsText(file);
+        }
+    });
     // Faust Core
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
@@ -196,6 +224,8 @@ $(async () => {
         } catch (e) {
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage("", "*");
+            $("#faust-ui-default").show();
+            $("#iframe-faust-ui").hide();
             refreshDspUI();
             throw e;
         }
