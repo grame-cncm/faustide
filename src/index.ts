@@ -19,6 +19,7 @@ declare global {
             uiEnv: FaustEditorUIEnv;
             compileOptions: FaustEditorCompileOptions;
         };
+        $: JQueryStatic;
     }
 }
 type FaustEditorAudioEnv = {
@@ -44,6 +45,7 @@ type FaustEditorUIEnv = {
     drawOutputAnalyser: boolean;
 };
 type FaustEditorCompileOptions = {
+    name: string,
     useWorklet: boolean,
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096,
     saveParams: boolean,
@@ -51,11 +53,12 @@ type FaustEditorCompileOptions = {
     voices: number,
     args: { [key: string]: any }
 };
+window.$ = $;
 $(async () => {
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
     const uiEnv = { drawInputAnalyser: false, drawOutputAnalyser: false } as FaustEditorUIEnv;
-    const compileOptions = { useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
+    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
     window.faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions };
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     // Voices
@@ -166,6 +169,27 @@ $(async () => {
             }
         }
     });
+    // Upload
+    $("#btn-upload").on("click", (e) => {
+        $("#input-upload").click();
+    });
+    $("#input-upload").on("input", (e) => {
+        const file = (e.currentTarget as HTMLInputElement).files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            compileOptions.name = file.name.split(".").slice(0, -1).join(".");
+            editor.setValue(reader.result.toString());
+        };
+        reader.onerror = () => undefined;
+        reader.readAsText(file);
+    }).on("click", e => e.stopPropagation());
+    // Save as
+    $("#btn-save").on("click", (e) => {
+        const text = editor.getValue();
+        const uri = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+        $("#a-save").attr({ href: uri, download: compileOptions.name + ".dsp" })[0].click();
+    });
+    $("#a-save").on("click", e => e.stopPropagation());
     // Editor
     const editor = await initEditor();
     $("#tab-editor").tab("show").on("shown.bs.tab", () => {
@@ -194,7 +218,10 @@ $(async () => {
             e.stopPropagation();
             const file = event.dataTransfer.files[0];
             const reader = new FileReader();
-            reader.onload = () => editor.setValue(reader.result.toString());
+            reader.onload = () => {
+                compileOptions.name = file.name.split(".").slice(0, -1).join(".");
+                editor.setValue(reader.result.toString());
+            };
             reader.onerror = () => undefined;
             reader.readAsText(file);
         }
