@@ -93,17 +93,17 @@
 					<a id="tab-editor" class="nav-link active" data-toggle="tab" href="#editor" role="tab" aria-controls="editor" aria-selected="true">Editor</a>
 				</li>
 				<li class="nav-item">
-					<a id="tab-dsp-ui" class="nav-link" data-toggle="tab" href="#dsp-ui" role="tab" aria-controls="dsp-ui" aria-selected="false">DSP</a>
+					<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="false">DSP</a>
 				</li>
 			</ul>
 			<div id="center-content" class="tab-content">
 				<div id="editor" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-editor"></div>
-				<div id="dsp-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-dsp-ui">
-					<div id="dsp-ui-default" class="alert alert-info" role="alert">
+				<div id="faust-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-faust-ui">
+					<div id="faust-ui-default" class="alert alert-info" role="alert">
 						<h5>DSP not running</h5>
 						<p>Click Compile to run a dsp with your faust code.</p>
 					</div>
-					<iframe id="iframe-dsp-ui" src="./dsp_ui.html"></iframe>
+					<iframe id="iframe-faust-ui" src="./faust_ui.html"></iframe>
 				</div>
 			</div>
 		</div>
@@ -141,6 +141,11 @@
 				<div class="form-row">
 					<label for="dsp-ui">DSP</label>
 					<span id="dsp-ui-default" class="badge badge-warning ml-2 mb-2">no DSP yet</span>
+					<ul id="dsp-ui-detail" class="list-group list-group-flush">
+						<li class="list-group-item d-flex justify-content-between align-items-center">Inputs : <span id="dsp-ui-detail-inputs" class="badge badge-info badge-pill">0</span></li>
+						<li class="list-group-item d-flex justify-content-between align-items-center">Outputs : <span id="dsp-ui-detail-outputs" class="badge badge-info badge-pill">0</span></li>
+						<li class="list-group-item d-flex justify-content-between align-items-center">Params : <span id="dsp-ui-detail-params" class="badge badge-info badge-pill">0</span></li>
+					</ul>
 				</div>
 				<div id="output-analyser">
 					<canvas id="output-spect"></canvas>

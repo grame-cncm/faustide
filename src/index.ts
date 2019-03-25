@@ -13,7 +13,12 @@ declare global {
         AudioContext: typeof AudioContext;
         webkitAudioContext: typeof AudioContext;
         AudioWorklet?: typeof AudioWorklet;
-        node: AudioWorkletNode | ScriptProcessorNode;
+        faustEnv: {
+            audioEnv: FaustEditorAudioEnv;
+            midiEnv: FaustEditorMIDIEnv;
+            uiEnv: FaustEditorUIEnv;
+            compileOptions: FaustEditorCompileOptions;
+        };
     }
 }
 type FaustEditorAudioEnv = {
@@ -51,6 +56,7 @@ $(async () => {
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
     const uiEnv = { drawInputAnalyser: false, drawOutputAnalyser: false } as FaustEditorUIEnv;
     const compileOptions = { useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
+    window.faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions };
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     // Voices
     $("#select-voices").on("change", (e) => {
@@ -121,6 +127,8 @@ $(async () => {
             if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
         });
     }, e => $("#select-audio-input").add("#input-analyser").hide());
+    // DSP
+    refreshDspUI();
     // Output
     $("#btn-dac").on("click", async (e) => {
         /*
@@ -141,17 +149,17 @@ $(async () => {
         if (audioEnv.outputEnabled) {
             $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
             .children("span").html("Output is Off");
+            audioEnv.outputEnabled = false;
             if (audioEnv.dspConnectedToOutput) {
                 audioEnv.dsp.disconnect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = false;
-                audioEnv.outputEnabled = false;
             }
         } else {
+            audioEnv.outputEnabled = true;
             if (!audioEnv.audioCtx) await initAudioCtx(audioEnv);
             else if (audioEnv.dsp) {
                 audioEnv.dsp.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
-                audioEnv.outputEnabled = true;
                 $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
                 .children("span").html("Output is On");
             }
@@ -159,6 +167,9 @@ $(async () => {
     });
     // Editor
     const editor = await initEditor();
+    $("#tab-editor").tab("show").on("shown.bs.tab", () => {
+        editor.layout();
+    });
     // Faust Core
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
@@ -182,9 +193,11 @@ $(async () => {
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
         try {
             node = await faust.getNode(editor.getValue(), { audioCtx, useWorklet, bufferSize, voices, args });
-            window.node = node;
         } catch (e) {
-            return;
+            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            uiWindow.postMessage("", "*");
+            refreshDspUI();
+            throw e;
         }
         if (node) {
             audioEnv.dsp = node;
@@ -198,14 +211,17 @@ $(async () => {
                 node.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
             }
-            $("#dsp-ui-default").hide();
-            $("#iframe-dsp-ui").show();
-            $("#tab-dsp-ui").tab("show").one("shown.bs.tab", () => {
-                const uiWindow = ($("#iframe-dsp-ui")[0] as HTMLIFrameElement).contentWindow;
+            const bindUI = () => {
+                const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
                 uiWindow.postMessage(JSON.stringify({ json: node.getJSON() }), "*");
                 node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value }), "*"));
-            });
-            // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#dsp-ui"), (path: string, val: number) => node.setParamValue(path, val));
+            };
+            $("#faust-ui-default").hide();
+            $("#iframe-faust-ui").show();
+            if ($("#tab-faust-ui").hasClass("active")) bindUI();
+            else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
+            refreshDspUI(node);
+            // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
             // node.setOutputParamHandler(dspOutputHandler);
         }
     });
@@ -213,8 +229,6 @@ $(async () => {
         const data = JSON.parse(e.data);
         if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, data.value);
     });
-    // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
@@ -233,6 +247,22 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.mediaSource) audioEnv.mediaSource = audioEnv.audioCtx.createMediaElementSource($("#media-source")[0] as HTMLMediaElement);
     if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
     return audioEnv;
+};
+const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
+    if (!node) {
+        $("#dsp-ui-detail").hide();
+        $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("no DSP yet");
+        return;
+    }
+    $("#dsp-ui-detail").show();
+    if (node instanceof AudioWorkletNode) {
+        $("#dsp-ui-default").removeClass("badge-warning").addClass("badge-success").html("AudioWorklet");
+    } else {
+        $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("ScriptProcessor");
+    }
+    $("#dsp-ui-detail-inputs").html(`${node.getNumInputs()}`);
+    $("#dsp-ui-detail-outputs").html(`${node.getNumOutputs()}`);
+    $("#dsp-ui-detail-params").html(`${node.getParams().length}`);
 };
 const initEditor = async () => {
     const code =

@@ -1457,7 +1457,7 @@
 		@param {Object} raw_json The raw JSON describing the UI to build.
 		**/
 		_f4u$t.make_ui = function(svg, raw_json, width, height, hash) {
-		  var json = eval ("(" + raw_json + ")");
+		  var json = JSON.parse(raw_json);
 		  var faust_svg = new _f4u$t.SVG(
 			svg,
 			width,
@@ -1581,7 +1581,7 @@
 		  To be called when used with the C++/LLVM libfaust based FaustNode.
 		**/
 		_f4u$t.make_audio_ui = function(dsp, svg) {
-		  var json = eval("(" + dsp.json() + ")");
+		  var json = JSON.parse(dsp.json());
 		  var faust_svg = new _f4u$t.SVG(
 			svg,
 			// kludge to prevent scroll bars...
@@ -5419,9 +5419,15 @@
 		$(document).ready(function() {
 			window.addEventListener("message", function (e) {
 				var handler;
+				if (!e.data) {
+					_f4u$t.hard_delete($("#faust-ui")[0]);
+					$("#faust-ui").removeClass("hasSVG");
+					return;
+				}
 				var data = JSON.parse(e.data);
 				if (data.json) {
-					$("#faust-ui").empty().removeClass("hasSVG");
+					_f4u$t.hard_delete($("#faust-ui")[0]);
+					$("#faust-ui").removeClass("hasSVG");
 					handler = _f4u$t.main(data.json, $("#faust-ui"), function(path, value) {
 						e.source.postMessage(JSON.stringify({path: path, value: value}), "*");
 					});

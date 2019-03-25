@@ -5,7 +5,7 @@ body {
     & > #root {
         width: 100%;
         height: 100%;
-        margin: 0;
+        margin: 0px;
         position: absolute;
         display: flex;
         flex-direction: row;
@@ -14,6 +14,7 @@ body {
             margin: 0px;
             flex: 0 0 200px;
             min-width: 200px;
+            max-width: 200px;
             & > #btns {
                 margin-top: 60px;
                 & > button.btn {
@@ -104,8 +105,10 @@ body {
             display: flex;
             flex-direction: column;
             padding: 0px;
+            margin: 0px;
             flex: 1 1 auto;
             min-width: 200px;
+            max-width: unset;
             & > #center-tab {
                 & a.nav-link:not(.active) {
                     color: whitesmoke;
@@ -123,16 +126,16 @@ body {
                     width: 100%;
                     height: 100%;
                 }
-                & > #dsp-ui {
+                & > #faust-ui {
                     width: 100%;
                     height: 100%;
-                    & > #iframe-dsp-ui {
+                    & > #iframe-faust-ui {
                         display: none;
                         border: none;
                         width: 100%;
                         height: 99%;
                     }
-                    & > #dsp-ui-default {
+                    & > #faust-ui-default {
                         top: 20%;
                     }
                 }
@@ -140,9 +143,11 @@ body {
         }
         & > #right {
             padding: 0px;
+            margin: 0px;
             width: 200px;
             flex: 0 0 200px;
             min-width: 200px;
+            max-width: 200px;
             font-size: 0.8em;
             display: flex;
             flex-direction: column;
@@ -160,6 +165,14 @@ body {
             & > #dsp-ui {
                 display: flex;
                 flex-direction: column;
+                & #dsp-ui-detail {
+                    width: 100%;
+                    & > li {
+                        padding: 0px;
+                        background-color: unset;
+                        border-color: rgba(255, 255, 255, 0.125);
+                    }
+                }
                 & > #output-analyser {
                     display: flex;
                     flex-direction: column;
