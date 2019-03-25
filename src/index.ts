@@ -173,19 +173,19 @@ $(async () => {
     $("#editor").on("dragenter dragover", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        $("#editor-overlay").css({ "z-index": 1 });
+        $("#editor-overlay").show();
     });
     $("#editor-overlay").on("dragleave dragend", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        $(e.currentTarget).css({ "z-index": -1 });
+        $(e.currentTarget).hide();
     });
     $("#editor-overlay").on("dragenter dragover", (e) => {
         e.preventDefault();
         e.stopPropagation();
     });
     $("#editor-overlay").on("drop", (e) => {
-        $(e.currentTarget).css({ "z-index": -1 });
+        $(e.currentTarget).hide();
         const event = e.originalEvent as DragEvent;
         if (event.dataTransfer && event.dataTransfer.files.length) {
             // Stop the propagation of the event
