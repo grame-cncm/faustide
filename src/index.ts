@@ -100,7 +100,7 @@ $(async () => {
         if (audioEnv.audioCtx) {
             const analyser = audioEnv.analyserInput;
             const dsp = audioEnv.dsp;
-            if (dsp && audioEnv.dspConnectedToInput && dsp.numberOfInputs) { // Disconnect
+            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
                 const input = audioEnv.inputs[audioEnv.currentInput];
                 input.disconnect(dsp);
                 if (analyser) input.disconnect(analyser);
@@ -122,7 +122,7 @@ $(async () => {
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
         if (analyser) input.connect(analyser);
-        if (dsp && dsp.numberOfInputs) {
+        if (dsp && dsp.getNumInputs()) {
             input.connect(dsp);
             audioEnv.dspConnectedToInput = true;
         }
@@ -267,7 +267,7 @@ $(async () => {
         if (node) {
             audioEnv.dsp = node;
             node.connect(audioEnv.analyserOutput);
-            if (audioEnv.inputEnabled && node.numberOfInputs) {
+            if (audioEnv.inputEnabled && node.getNumInputs()) {
                 audioEnv.inputs[audioEnv.currentInput].connect(node);
                 audioEnv.dspConnectedToInput = true;
             }
@@ -318,6 +318,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     return audioEnv;
 };
 const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
+    if (uiEnv.analysersInited) return;
     const audioCtx = audioEnv.audioCtx;
     const iNode = audioEnv.analyserInput;
     const oNode = audioEnv.analyserOutput;
