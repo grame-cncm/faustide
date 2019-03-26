@@ -2,8 +2,10 @@
 import * as monaco from "monaco-editor";
 import webmidi, { Input, InputEventBase } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode } from "faust2webaudio";
+import * as QRCode from "qrcode";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
+import "bootstrap/js/dist/modal";
 import "bootstrap/js/dist/button";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
@@ -54,13 +56,16 @@ type FaustEditorCompileOptions = {
     voices: number,
     args: { [key: string]: any }
 };
+type FaustExportTargets = { [platform: string]: string[] };
 $(async () => {
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
     const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
     window.faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions };
+    // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+    $("#btn-export").tooltip({ trigger: "hover" });
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
@@ -195,6 +200,74 @@ $(async () => {
         $("#a-save").attr({ href: uri, download: compileOptions.name + ".dsp" })[0].click();
     });
     $("#a-save").on("click", e => e.stopPropagation());
+    // Export
+    const server = "https://faustservicecloud.grame.fr";
+    fetch(`${server}/targets`)
+    .then(response => response.json())
+    .then((targets: FaustExportTargets) => {
+        const plats = Object.keys(targets);
+        if (plats.length) {
+            $("#export-platform").add("#export-arch").empty();
+            plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+            targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+        }
+        $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
+        $("#export-platform").on("change", (e) => {
+            const plat = (e.currentTarget as HTMLSelectElement).value;
+            $("#export-arch").empty();
+            targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+        });
+        $("#export-download").on("click", e => $("#a-export-download")[0].click());
+        $("#a-export-download").on("click", e => e.stopPropagation());
+        $("#export-submit").on("click", () => {
+            $("#export-download").hide();
+            $("#export-loading").css("display", "inline-block");
+            $("#qr-code").hide();
+            $("#export-error").hide();
+            const form = new FormData();
+            form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
+            $.ajax({
+                method: "POST",
+                url: `${server}/filepost`,
+                data: form,
+                contentType: false,
+                processData: false
+            }).done((shaKey) => {
+                const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+                if (matched) {
+                    const plat = $("#export-platform").val();
+                    const arch = $("#export-arch").val();
+                    const path = `${server}/${shaKey}/${plat}/${arch}`;
+                    $.ajax({
+                        method: "GET",
+                        url: `${path}/precompile`
+                    }).done((result) => {
+                        if (result === "DONE") {
+                            const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                            $("#a-export-download").attr({ href })[0];
+                            $("#export-download").show();
+                            $("#qr-code").show();
+                            QRCode.toCanvas(
+                                $("#qr-code")[0] as HTMLCanvasElement,
+                                `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
+                            );
+                            return;
+                        }
+                        $("#export-loading").css("display", "none");
+                        $("#export-error").html(result).show();
+                    }).fail((jqXHR, textStatus) => {
+                        $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                    }).always(() => $("#export-loading").css("display", "none"));
+                    return;
+                }
+                $("#export-loading").css("display", "none");
+                $("#export-error").html(shaKey).show();
+            }).fail((jqXHR, textStatus) => {
+                $("#export-loading").css("display", "none");
+                $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+            });
+        });
+    });
     // Editor
     const editor = await initEditor();
     window.editor = editor;

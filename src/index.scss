@@ -196,6 +196,23 @@ body {
             & > #output-ui {
                 margin-top: auto;
             }
+            }
+        & > #modal-export {
+            color: black;
+            & #export-loading {
+                display: none;
+            }
+            & #export-download {
+                display: none;
+            }
+            & #qr-code {
+                display: none;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            & #export-error {
+                display: none;
+            }
         }
     }
 }
