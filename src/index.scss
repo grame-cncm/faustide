@@ -81,6 +81,9 @@ body {
                         background-color: darken($color, 50%);
                         border-color: $color;
                     }
+                    & > #a-docs {
+                        display: none;
+                    }
                 }
                 & > #btn-export {
                     $color: #e3d26f;

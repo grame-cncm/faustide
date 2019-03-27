@@ -14,7 +14,7 @@
 	<div id="root">
 		<div id="left" class="container">
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<button id="btn-run" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP">
+				<button id="btn-run" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP" disabled>
 					<i class="fas fa-play fa-sm"></i>
 					<span>Compile</span>
 				</button>
@@ -31,17 +31,14 @@
 				<button id="btn-docs" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="(CTRL-D) Open the online documentation">
 					<i class="fas fa-book fa-sm"></i>
 					<span>Docs</span>
+					<a id="a-docs" target="_blank" href="https://faust.grame.fr/tools/editor/libraries/doc/library.html"></a>
 				</button>
 				<button id="btn-export" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#modal-export" data-placement="right" title="Export/compile to specific plateform binary code">
 					<i class="fas fa-truck fa-sm"></i>
 					<span>Export</span>
 				</button>
-				<button id="btn-diagram" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="View the block diagram">
-					<i class="fas fa-code-branch fa-sm"></i>
-					<span>Diagram</span>
-				</button>
 			</div>
-			<form class="input-group input-group-sm">
+			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Poly mode will work with polyphonic-ready code">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Poly Voices</span>
 				</div>
@@ -57,7 +54,7 @@
 					<option value="128">128</option>
 				</select>
 			</form>
-			<form class="input-group input-group-sm">
+			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Will be fixed at 128 frames in AudioWorklet mode">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Buffer Size</span>
 				</div>
@@ -71,17 +68,13 @@
 					<option value="8192">8192</option>
 				</select>
 			</form>
-			<div class="form form-check">
+			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="(recommended) Chrome supports AudioWorklet">
 				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled>
-				<label class="form-check-label" for="useWorklet">
-					Use AudioWorklet
-				</label>
+				<label class="form-check-label" for="useWorklet">Use AudioWorklet</label>
 			</div>
 			<div class="form form-check">
 				<input id="check-save-params" class="form-check-input" type="checkbox" value="">
-				<label class="form-check-label" for="saveParams">
-					Save Params State
-				</label>
+				<label class="form-check-label" for="saveParams">Save Params State</label>
 			</div>
 			<div class="form form-check">
 				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="">

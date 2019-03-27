@@ -200,6 +200,9 @@ $(async () => {
         $("#a-save").attr({ href: uri, download: compileOptions.name + ".dsp" })[0].click();
     });
     $("#a-save").on("click", e => e.stopPropagation());
+    // Docs
+    $("#btn-docs").on("click", e => $("#a-docs")[0].click());
+    $("#a-docs").on("click", e => e.stopPropagation());
     // Export
     const server = "https://faustservicecloud.grame.fr";
     fetch(`${server}/targets`)
@@ -271,6 +274,7 @@ $(async () => {
     // Editor
     const editor = await initEditor();
     window.editor = editor;
+    editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
     $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
     $("#editor").on("dragenter dragover", (e) => {
         e.preventDefault();
@@ -307,7 +311,7 @@ $(async () => {
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
     await faust.ready;
-    $("#btn-run").on("click", async (e) => {
+    $("#btn-run").prop("disabled", false).on("click", async (e) => {
         if (!audioEnv.audioCtx) {
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
@@ -721,7 +725,7 @@ effect = dm.freeverb_demo;`;
         }
     });
     const editor = monaco.editor.create($("#editor")[0], {
-        value: code,
+        value: localStorage.getItem("faust_editor_code") || code,
         language: "faust",
         theme: "vs-dark",
         dragAndDrop: true,
