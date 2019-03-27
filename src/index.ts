@@ -621,11 +621,12 @@ effect = dm.freeverb_demo;`;
     ];
 
     monaco.languages.setMonarchTokensProvider("faust", {
+        faustKeywords,
+        faustFunctions,
+        faustLib,
         defaultToken: "invalid",
         tokenPostfix: ".dsp",
-        keywords: faustKeywords,
-        sysFunctions: faustFunctions,
-        compOperators: [
+        faustCompOperators: [
             "~", ",", ":", "<:", ":>"
         ],
         operators: [
@@ -644,9 +645,10 @@ effect = dm.freeverb_demo;`;
             root: [
                 // identifiers and keywords
                 [/!|_/, "keyword"], // Wire
-                [/[a-z_$][\w$]*/, { cases: {
-                    "@sysFunctions": "constant",
-                    "@keywords": "keyword",
+                [/[a-z_$]([\w\.$]*[\w$])?/, { cases: {
+                    "@faustFunctions": "faustFunctions",
+                    "@faustKeywords": "faustKeywords",
+                    "@faustLib": "faustLib",
                     "@default": "identifier"
                 } }],
                 [/[A-Z][\w\$]*/, "type.identifier"],  // to show class names nicely
@@ -654,10 +656,10 @@ effect = dm.freeverb_demo;`;
                 { include: "@whitespace" },
                 // delimiters and operators
                 [/[{}()\[\]]/, "@brackets"],
-                [/~|,|<:|:>|:/, "delimiter"],
+                [/~|,|<:|:>|:/, "faustCompOperators"],
                 [/[<>](?!@symbols)/, "@brackets"],
                 [/=|\+|\-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, { cases: {
-                    "@operators": "delimiter",
+                    "@operators": "operators",
                     "@default"  : ""
                 } }],
                 // numbers
@@ -708,6 +710,19 @@ effect = dm.freeverb_demo;`;
             { open: '"', close: '"', notIn: ["string"] },
             { open: "/**", close: " */", notIn: ["string"] }
         ],
+    });
+    // Define a new theme that contains only rules that match this language
+    monaco.editor.defineTheme("vs-dark", {
+        base: "vs-dark",
+        inherit: true,
+        rules: [
+            { token: "faustFunctions", foreground: "DDDD99" },
+            { token: "faustKeywords", foreground: "4499CC" },
+            { token: "faustLib", foreground: "CCCCBB" },
+            { token: "faustCompOperators", foreground: "FFDDFF" },
+            { token: "identifier", foreground: "77CCFF" }
+        ],
+        colors: null
     });
     // Register a completion item provider for the new language
     monaco.languages.registerCompletionItemProvider("faust", {
