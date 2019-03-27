@@ -325,14 +325,17 @@ $(async () => {
         }
         const audioCtx = audioEnv.audioCtx;
         const { useWorklet, bufferSize, voices, args } = compileOptions;
+        const code = editor.getValue();
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        let svg: string;
         try {
-            node = await faust.getNode(editor.getValue(), { audioCtx, useWorklet, bufferSize, voices, args });
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args });
+            svg = faust.getDiagram(code, ["-I", args["-I"]]);
         } catch (e) {
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage("", "*");
-            $("#faust-ui-default").show();
-            $("#iframe-faust-ui").hide();
+            $("#faust-ui-default").add("#diagram-default").show();
+            $("#iframe-faust-ui").add("#diagram-svg").hide();
             $("#output-analyser").hide();
             refreshDspUI();
             throw e;
@@ -354,8 +357,9 @@ $(async () => {
                 uiWindow.postMessage(JSON.stringify({ json: node.getJSON() }), "*");
                 node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value }), "*"));
             };
-            $("#faust-ui-default").hide();
-            $("#iframe-faust-ui").show();
+            $("#diagram-svg").empty().html(svg);
+            $("#faust-ui-default").add("#diagram-default").hide();
+            $("#iframe-faust-ui").add("#diagram-svg").show();
             $("#output-analyser").show();
             if ($("#tab-faust-ui").hasClass("active")) bindUI();
             else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
@@ -367,6 +371,13 @@ $(async () => {
     window.addEventListener("message", (e) => {
         const data = JSON.parse(e.data);
         if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, data.value);
+    });
+    // svg hook
+    $("#diagram-svg").on("click", "a", (e) => {
+        e.preventDefault();
+        const fileName = (e.currentTarget as SVGAElement).href.baseVal;
+        const svg = faust.readFile("FaustDSP-svg/" + fileName);
+        $("#diagram-svg").empty().html(svg);
     });
     // Analysers
     $("#input-analyser").hide().on("click", () => uiEnv.inputAnalyser = 1 - uiEnv.inputAnalyser as 1 | 0);

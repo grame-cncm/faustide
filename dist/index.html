@@ -98,6 +98,9 @@
 				<li class="nav-item">
 					<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="false">DSP</a>
 				</li>
+				<li class="nav-item">
+					<a id="tab-diagram" class="nav-link" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
+				</li>
 			</ul>
 			<div id="center-content" class="tab-content">
 				<div id="editor-overlay"></div>
@@ -108,6 +111,13 @@
 						<p>Click Compile to run a dsp with your faust code.</p>
 					</div>
 					<iframe id="iframe-faust-ui" src="./faust_ui.html"></iframe>
+				</div>
+				<div id="diagram" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-diagram">
+					<div id="diagram-default" class="alert alert-info" role="alert">
+						<h5>DSP not running</h5>
+						<p>Click Compile to run a dsp with your faust code.</p>
+					</div>
+					<div id="diagram-svg"></div>
 				</div>
 			</div>
 		</div>
