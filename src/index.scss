@@ -200,10 +200,42 @@ body {
                         height: 100%;
                         background-color: rgba(255, 255, 255, 0.25);
                         display: none;
-                        z-index: 1;
+                        z-index: 5;
                     }
                     & > #source-waveform {
                         background-color: #000;
+                    }
+                    & > #source-controller {
+                        display: none;
+                        position: absolute;
+                        bottom: 0px;
+                        z-index: 5;
+                        & > button {
+                            font-size: 12px;
+                            border-color: transparent;
+                            border-radius: 0px;
+                            padding: 0rem 0.3rem;
+                            z-index: 3;
+                            &.active {
+                                color: unset;
+                                background-color: unset;
+                                border-color: transparent transparent #f8f9fa transparent;
+                                border-bottom-color: #f8f9fa;
+                                &:hover {
+                                    color: #212529;
+                                    background-color: #f8f9fa;
+                                    border-color: #f8f9fa;
+                                }
+                            }
+                            &:focus {
+                                box-shadow: none;
+                            }
+                        }
+                    }
+                    &:hover {
+                        & > #source-controller {
+                            display: block
+                        }
                     }
                 }
                 & > #input-analyser {
