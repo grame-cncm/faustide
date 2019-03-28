@@ -192,6 +192,20 @@ body {
             & > #input-ui {
                 display: flex;
                 flex-direction: column;
+                & > #source-ui {
+                    position: relative;
+                    & > #source-overlay {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        background-color: rgba(255, 255, 255, 0.25);
+                        display: none;
+                        z-index: 1;
+                    }
+                    & > #source-waveform {
+                        background-color: #000;
+                    }
+                }
                 & > #input-analyser {
                     display: flex;
                     flex-direction: column;

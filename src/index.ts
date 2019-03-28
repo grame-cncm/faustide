@@ -7,7 +7,6 @@ import * as WaveSurfer from "wavesurfer.js";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/modal";
-import "bootstrap/js/dist/button";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
@@ -113,7 +112,7 @@ $(async () => {
                 audioEnv.dspConnectedToInput = false;
             }
         }
-        // MediaElementSource
+        // MediaElementSource, Waveform
         if (id === "-1") $("#source-ui").show();
         else $("#source-ui").hide();
         await initAudioCtx(audioEnv, id);
@@ -126,7 +125,14 @@ $(async () => {
                 cursorColor: "#EEE",
                 progressColor: "#888",
                 waveColor: "#BBB",
-                height: 60
+                height: 60,
+                splitChannels: true
+            });
+            wavesurfer.on("play", () => $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause"));
+            wavesurfer.on("pause", () => $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play"));
+            wavesurfer.on("finish", () => {
+                if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
+                else $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
             });
             wavesurfer.load("./02-XYLO1.mp3");
             if ($("#source-waveform audio").length) {
@@ -144,21 +150,72 @@ $(async () => {
             audioEnv.dspConnectedToInput = true;
         }
     }).change();
+    // Waveform
     $("#btn-source-play").on("click", (e) => {
-        if (!wavesurfer.isReady) return;
+        if (!wavesurfer || !wavesurfer.isReady) return;
         if (wavesurfer.isPlaying()) {
-            wavesurfer.pause().then(() => {
-                $(e.currentTarget).children("fa-pause").removeClass("fa-pause").addClass("fa-play");
-            });
+            wavesurfer.pause();
         } else {
-            wavesurfer.play().then(() => {
-                $(e.currentTarget).children("fa-play").removeClass("fa-play").addClass("fa-pause");
-            });
+            wavesurfer.play();
         }
     });
     $("#btn-source-rewind").on("click", (e) => {
         if (!wavesurfer.isReady) return;
         wavesurfer.seekTo(0);
+    });
+    $("#btn-source-loop").on("click", (e) => {
+        $(e.currentTarget).toggleClass("active");
+    });
+    $("#source-waveform").on("dragenter dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $("#source-overlay").show();
+    });
+    $("#source-overlay").on("dragleave dragend", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $(e.currentTarget).hide();
+    });
+    $("#source-overlay").on("dragenter dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    $("#source-overlay").on("drop", (e) => {
+        $(e.currentTarget).hide();
+        if (!wavesurfer.isReady) return;
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.files.length) {
+            // Stop the propagation of the event
+            e.preventDefault();
+            e.stopPropagation();
+            const analyser = audioEnv.analyserInput;
+            const dsp = audioEnv.dsp;
+            let input = audioEnv.inputs[-1];
+            if (analyser && input) input.disconnect(analyser);
+            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
+                input.disconnect(dsp);
+                audioEnv.dspConnectedToInput = false;
+            }
+            audioEnv.inputEnabled = false;
+
+            const file = event.dataTransfer.files[0];
+            try {
+                wavesurfer.load(URL.createObjectURL(file));
+            } catch (e) {
+                console.error(e);
+                return;
+            }
+            if ($("#source-waveform audio").length) {
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+                input = audioEnv.inputs[-1];
+            }
+            audioEnv.inputEnabled = true;
+            if (analyser && input) input.connect(analyser);
+            if (dsp && dsp.getNumInputs()) {
+                input.connect(dsp);
+                audioEnv.dspConnectedToInput = true;
+            }
+        }
     });
     navigator.mediaDevices.enumerateDevices().then((devices) => {
         $("#input-ui-default").hide();
@@ -346,7 +403,7 @@ $(async () => {
         } else if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
-                dsp.disconnect(audioEnv.inputs[audioEnv.currentInput]);
+                audioEnv.inputs[audioEnv.currentInput].disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
             }
             if (audioEnv.dspConnectedToOutput) {
