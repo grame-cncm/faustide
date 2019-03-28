@@ -206,10 +206,12 @@ body {
                         background-color: #000;
                     }
                     & > #source-controller {
-                        display: none;
                         position: absolute;
+                        display: flex;
                         bottom: 0px;
                         z-index: 5;
+                        opacity: 0.2;
+                        transition: opacity 0.15s ease-in-out;
                         & > button {
                             font-size: 12px;
                             border-color: transparent;
@@ -234,7 +236,7 @@ body {
                     }
                     &:hover {
                         & > #source-controller {
-                            display: block
+                            opacity: 1;
                         }
                     }
                 }
