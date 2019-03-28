@@ -3,6 +3,7 @@ import * as monaco from "monaco-editor";
 import webmidi, { Input, InputEventBase } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode } from "faust2webaudio";
 import * as QRCode from "qrcode";
+import * as WaveSurfer from "wavesurfer.js";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/modal";
@@ -28,9 +29,8 @@ type FaustEditorAudioEnv = {
     audioCtx?: AudioContext,
     analyserInput?: AnalyserNode,
     analyserOutput?: AnalyserNode,
-    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode },
+    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode },
     currentInput?: string;
-    mediaSource?: MediaElementAudioSourceNode,
     mediaDestination?: MediaStreamAudioDestinationNode,
     dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode,
     dspConnectedToOutput: boolean,
@@ -99,28 +99,40 @@ $(async () => {
         return $select.children("option").eq(1).prop("selected", true).change();
     });
     // Audio Inputs
+    let wavesurfer: WaveSurfer;
     $("#select-audio-input").on("change", async (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (audioEnv.currentInput === id) return;
         if (audioEnv.audioCtx) {
             const analyser = audioEnv.analyserInput;
             const dsp = audioEnv.dsp;
+            const input = audioEnv.inputs[audioEnv.currentInput];
+            if (analyser) input.disconnect(analyser);
             if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
-                const input = audioEnv.inputs[audioEnv.currentInput];
                 input.disconnect(dsp);
-                if (analyser) input.disconnect(analyser);
                 audioEnv.dspConnectedToInput = false;
             }
         }
-        if (id === "-1") {
-            $("#input-analyser").hide();
-            audioEnv.inputEnabled = false;
-            audioEnv.currentInput = undefined;
-            return;
-        }
-        $("#input-analyser").show();
+        // MediaElementSource
+        if (id === "-1") $("#source-ui").show();
+        else $("#source-ui").hide();
         await initAudioCtx(audioEnv, id);
         initAnalysersUI(uiEnv, audioEnv);
+        if (!wavesurfer) {
+            wavesurfer = WaveSurfer.create({
+                container: $("#source-waveform")[0],
+                audioContext: audioEnv.audioCtx,
+                backend: "MediaElement",
+                cursorColor: "#EEE",
+                progressColor: "#888",
+                waveColor: "#BBB",
+                height: 60
+            });
+            wavesurfer.load("./02-XYLO1.mp3");
+            if ($("#source-waveform audio").length) {
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+            }
+        }
         const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
         const input = audioEnv.inputs[id];
@@ -131,6 +143,22 @@ $(async () => {
             input.connect(dsp);
             audioEnv.dspConnectedToInput = true;
         }
+    }).change();
+    $("#btn-source-play").on("click", (e) => {
+        if (!wavesurfer.isReady) return;
+        if (wavesurfer.isPlaying()) {
+            wavesurfer.pause().then(() => {
+                $(e.currentTarget).children("fa-pause").removeClass("fa-pause").addClass("fa-play");
+            });
+        } else {
+            wavesurfer.play().then(() => {
+                $(e.currentTarget).children("fa-play").removeClass("fa-play").addClass("fa-pause");
+            });
+        }
+    });
+    $("#btn-source-rewind").on("click", (e) => {
+        if (!wavesurfer.isReady) return;
+        wavesurfer.seekTo(0);
     });
     navigator.mediaDevices.enumerateDevices().then((devices) => {
         $("#input-ui-default").hide();
@@ -138,7 +166,7 @@ $(async () => {
         devices.forEach((device) => {
             if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
         });
-    }, e => $("#select-audio-input").add("#input-analyser").hide());
+    });
     // DSP
     refreshDspUI();
     // Output
@@ -384,7 +412,7 @@ $(async () => {
         $("#diagram-svg").empty().html(svg);
     });
     // Analysers
-    $("#input-analyser").hide().on("click", () => uiEnv.inputAnalyser = 1 - uiEnv.inputAnalyser as 1 | 0);
+    $("#input-analyser").on("click", () => uiEnv.inputAnalyser = 1 - uiEnv.inputAnalyser as 1 | 0);
     $("#output-analyser").hide().on("click", () => uiEnv.outputAnalyser = 1 - uiEnv.outputAnalyser as 1 | 0);
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
@@ -396,12 +424,15 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     }
     if (!audioEnv.inputs) audioEnv.inputs = {};
     if (deviceId && !audioEnv.inputs[deviceId]) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
-        audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
+        if (deviceId === "-1") {
+            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+        } else {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
+            audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
+        }
     }
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
-    if (!audioEnv.mediaSource) audioEnv.mediaSource = audioEnv.audioCtx.createMediaElementSource($("#media-source")[0] as HTMLMediaElement);
     if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
     return audioEnv;
 };

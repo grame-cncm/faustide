@@ -132,14 +132,22 @@
 						<label for="input-ui">Audio Input</label>
 						<span id="input-ui-default" class="badge badge-warning ml-2 mb-2">not supported</span>
 						<select id="select-audio-input" class="form-control form-control-sm" disabled>
-							<option selected value="-1">None</option>
+							<option selected value="-1">Audio File</option>
 						</select>
 					</div>
 				</form>
+				<div id="source-ui" class="mt-2">
+					<div id="source-waveform"></div>
+					<div id="source-controller" class="mt-1">
+						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm">
+							<i class="fas fa-step-backward"></i>
+						</button>
+						<button id="btn-source-play" class="btn btn-outline-light btn-sm">
+							<i class="fas fa-play"></i>
+						</button>
+					</div>
+				</div>
 				<canvas id="input-analyser" class="mt-2"></canvas>
-			</div>
-			<div id="source-ui" class="container mt-2">
-				<audio id="media-source"></audio>
 			</div>
 			<div id="dsp-ui" class="container mt-2">
 				<div class="form-row">
