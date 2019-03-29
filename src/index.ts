@@ -449,6 +449,7 @@ $(async () => {
                 audioEnv.splitterOutput = splitter;
                 if (audioEnv.analyserOutputI > channelsCount - 1) {
                     audioEnv.analyserOutputI = channelsCount - 1;
+                    $("#btn-output-analyser-ch").html("ch " + (audioEnv.analyserOutputI + 1).toString());
                 }
                 splitter.connect(analyser, audioEnv.analyserOutputI);
             }
@@ -588,18 +589,20 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     });
     $("#btn-input-analyser-ch").on("click", (e) => {
         const iSplitter = audioEnv.splitterInput;
-        iSplitter.disconnect(iNode, audioEnv.analyserInputI, 0);
-        const i = (audioEnv.analyserInputI + 1) % 2;
+        const oldI = audioEnv.analyserInputI;
+        const i = (oldI + 1) % 2;
+        iSplitter.connect(iNode, i, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
+        setTimeout(() => iSplitter.disconnect(iNode, oldI, 0), 10);
         audioEnv.analyserInputI = i;
-        iSplitter.connect(iNode, i, 0);
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     $("#btn-output-analyser-ch").on("click", (e) => {
         const oSplitter = audioEnv.splitterOutput;
-        oSplitter.disconnect(oNode, audioEnv.analyserOutputI, 0);
-        const i = (audioEnv.analyserOutputI + 1) % audioEnv.dsp.getNumOutputs();
-        audioEnv.analyserOutputI = i;
+        const oldI = audioEnv.analyserOutputI;
+        const i = (oldI + 1) % audioEnv.dsp.getNumOutputs();
         oSplitter.connect(oNode, i, 0);
+        setTimeout(() => oSplitter.disconnect(oNode, oldI, 0), 10);
+        audioEnv.analyserOutputI = i;
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     const draw = () => {
