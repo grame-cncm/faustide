@@ -5417,8 +5417,8 @@
 	</script>
 	<script>
 		$(document).ready(function() {
+			var handler;
 			window.addEventListener("message", function (e) {
-				var handler;
 				if (!e.data) {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
 					$("#faust-ui").removeClass("hasSVG");
@@ -5431,8 +5431,8 @@
 					handler = _f4u$t.main(data.json, $("#faust-ui"), function(path, value) {
 						e.source.postMessage(JSON.stringify({path: path, value: value}), "*");
 					});
-				} else if (data.param && handler) {
-					handler(param.path, param.value);
+				} else if (data.path && typeof data.value !== "undefined" && handler) {
+					handler(data.path, data.value);
 				}
 			})
 		});
