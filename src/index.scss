@@ -210,6 +210,9 @@ body {
                     box-shadow: none;
                 }
             }
+            & wave {
+                overflow: hidden !important;
+            }
             & .btn-overlay-icon {
                 width: 20px;
             }

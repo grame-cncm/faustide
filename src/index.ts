@@ -469,14 +469,31 @@ $(async () => {
         $("#diagram-svg").empty().html(svg);
     });
     // Analysers
+    $("#output-analyser-ui").hide();
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
-        audioEnv.audioCtx = new (window.webkitAudioContext || window.AudioContext)();
+        const audioCtx = new (window.webkitAudioContext || window.AudioContext)();
+        audioEnv.audioCtx = audioCtx;
         audioEnv.outputEnabled = true;
-        $("#btn-dac").removeClass("btn-light").addClass("btn-primary")
-        .children("span").html("Output is On");
+        audioCtx.addEventListener("statechange", () => {
+            if (audioCtx.state === "running") {
+                $("#btn-dac").removeClass("btn-light").addClass("btn-primary")
+                .children("span").html("Output is On");
+            } else {
+                $("#btn-dac").removeClass("btn-primary").addClass("btn-light")
+                .children("span").html("Output is Off");
+            }
+        });
+        const unlockAudioContext = () => {
+            if (audioCtx.state !== "suspended") return;
+            const unlock = (): any => audioCtx.resume().then(clean);
+            const clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
+            $("body").on("touchstart touchend mousedown keydown", unlock);
+        };
+        unlockAudioContext();
     }
+    if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
     if (!audioEnv.inputs) audioEnv.inputs = {};
     if (deviceId && !audioEnv.inputs[deviceId]) {
         if (deviceId === "-1") {
@@ -613,10 +630,10 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
         return;
     }
     $("#dsp-ui-detail").show();
-    if (node instanceof AudioWorkletNode) {
-        $("#dsp-ui-default").removeClass("badge-warning").addClass("badge-success").html("AudioWorklet");
-    } else {
+    if (node instanceof ScriptProcessorNode) {
         $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("ScriptProcessor");
+    } else {
+        $("#dsp-ui-default").removeClass("badge-warning").addClass("badge-success").html("AudioWorklet");
     }
     $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
     $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
