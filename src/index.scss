@@ -210,7 +210,7 @@ body {
                     box-shadow: none;
                 }
             }
-            & wave {
+            & wave { /* stylelint-disable-line selector-type-no-unknown */
                 overflow: hidden !important;
             }
             & .btn-overlay-icon {
@@ -275,6 +275,9 @@ body {
                         background-color: unset;
                         border-color: rgba(255, 255, 255, 0.125);
                     }
+                }
+                & > #output-analyser-ui {
+                    display: none;
                 }
             }
             & > #output-ui {

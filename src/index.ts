@@ -26,7 +26,11 @@ declare global {
 }
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext,
+    splitterInput?: ChannelSplitterNode;
+    analyserInputI: number;
     analyserInput?: AnalyserNode,
+    splitterOutput?: ChannelSplitterNode;
+    analyserOutputI: number;
     analyserOutput?: AnalyserNode,
     inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode },
     currentInput?: string;
@@ -57,7 +61,7 @@ type FaustEditorCompileOptions = {
 };
 type FaustExportTargets = { [platform: string]: string[] };
 $(async () => {
-    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
+    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
     const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
@@ -103,10 +107,11 @@ $(async () => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (audioEnv.currentInput === id) return;
         if (audioEnv.audioCtx) {
+            const splitter = audioEnv.splitterInput;
             const analyser = audioEnv.analyserInput;
             const dsp = audioEnv.dsp;
             const input = audioEnv.inputs[audioEnv.currentInput];
-            if (analyser) input.disconnect(analyser);
+            if (splitter) input.disconnect(splitter);
             if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
                 input.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
@@ -139,12 +144,13 @@ $(async () => {
                 audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
             }
         }
+        const splitter = audioEnv.splitterInput;
         const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
         const input = audioEnv.inputs[id];
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
-        if (analyser) input.connect(analyser);
+        if (splitter) input.connect(splitter);
         if (dsp && dsp.getNumInputs()) {
             input.connect(dsp);
             audioEnv.dspConnectedToInput = true;
@@ -188,10 +194,11 @@ $(async () => {
             // Stop the propagation of the event
             e.preventDefault();
             e.stopPropagation();
+            const splitter = audioEnv.splitterInput;
             const analyser = audioEnv.analyserInput;
             const dsp = audioEnv.dsp;
             let input = audioEnv.inputs[-1];
-            if (analyser && input) input.disconnect(analyser);
+            if (analyser && input) input.disconnect(splitter);
             if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
                 input.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
@@ -210,7 +217,7 @@ $(async () => {
                 input = audioEnv.inputs[-1];
             }
             audioEnv.inputEnabled = true;
-            if (analyser && input) input.connect(analyser);
+            if (analyser && input) input.connect(splitter);
             if (dsp && dsp.getNumInputs()) {
                 input.connect(dsp);
                 audioEnv.dspConnectedToInput = true;
@@ -397,22 +404,25 @@ $(async () => {
     const faust = new Faust();
     await faust.ready;
     $("#btn-run").prop("disabled", false).on("click", async (e) => {
-        if (!audioEnv.audioCtx) {
+        const audioCtx = audioEnv.audioCtx;
+        const input = audioEnv.inputs[audioEnv.currentInput];
+        let splitter = audioEnv.splitterOutput;
+        const analyser = audioEnv.analyserOutput;
+        if (!audioCtx) {
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         } else if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
-                audioEnv.inputs[audioEnv.currentInput].disconnect(dsp);
+                input.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
             }
+            if (dsp && splitter) dsp.disconnect(splitter);
             if (audioEnv.dspConnectedToOutput) {
-                dsp.disconnect(audioEnv.audioCtx.destination);
-                if (audioEnv.analyserOutput) dsp.disconnect(audioEnv.analyserOutput);
+                dsp.disconnect(audioCtx.destination);
                 audioEnv.dspConnectedToOutput = false;
             }
         }
-        const audioCtx = audioEnv.audioCtx;
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         const code = editor.getValue();
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
@@ -431,7 +441,16 @@ $(async () => {
         }
         if (node) {
             audioEnv.dsp = node;
-            node.connect(audioEnv.analyserOutput);
+            const channelsCount = node.getNumOutputs();
+            if (!splitter || splitter.numberOfOutputs !== channelsCount) {
+                if (splitter) splitter.disconnect(analyser);
+                splitter = audioCtx.createChannelSplitter(channelsCount);
+                delete audioEnv.splitterOutput;
+                audioEnv.splitterOutput = splitter;
+                if (audioEnv.analyserOutputI > channelsCount - 1) audioEnv.analyserOutputI = channelsCount - 1;
+                splitter.connect(analyser, audioEnv.analyserOutputI);
+            }
+            node.connect(splitter);
             if (audioEnv.inputEnabled && node.getNumInputs()) {
                 audioEnv.inputs[audioEnv.currentInput].connect(node);
                 audioEnv.dspConnectedToInput = true;
@@ -503,8 +522,10 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
         }
     }
+    if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
+    audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
     if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
     return audioEnv;
 };
@@ -553,14 +574,30 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         iNode.fftSize = size;
         iT = new Uint8Array(iNode.fftSize);
         iF = new Uint8Array(iNode.frequencyBinCount);
-        $(e.currentTarget).html(size.toString());
+        $(e.currentTarget).html(size.toString() + " samps");
     });
     $("#btn-output-analyser-size").on("click", (e) => {
         const size = sizes[(sizes.indexOf(oNode.fftSize) + 1) % 4];
         oNode.fftSize = size;
         oT = new Uint8Array(oNode.fftSize);
         oF = new Uint8Array(oNode.frequencyBinCount);
-        $(e.currentTarget).html(size.toString());
+        $(e.currentTarget).html(size.toString() + " samps");
+    });
+    $("#btn-input-analyser-ch").on("click", (e) => {
+        const iSplitter = audioEnv.splitterInput;
+        const i = (audioEnv.analyserInputI + 1) % 2;
+        audioEnv.analyserInputI = i;
+        iSplitter.disconnect(iNode);
+        iSplitter.connect(iNode, i);
+        $(e.currentTarget).html("ch " + (i + 1).toString());
+    });
+    $("#btn-output-analyser-ch").on("click", (e) => {
+        const oSplitter = audioEnv.splitterOutput;
+        const i = (audioEnv.analyserOutputI + 1) % audioEnv.dsp.getNumOutputs();
+        audioEnv.analyserOutputI = i;
+        oSplitter.disconnect(oNode);
+        oSplitter.connect(oNode, i);
+        $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     const draw = () => {
         if (!audioCtx || audioCtx.state !== "running") return requestAnimationFrame(draw);
