@@ -189,6 +189,47 @@ body {
                 margin-left: 0px;
                 width: 100%
             }
+            & .btn-overlay {
+                font-size: 12px;
+                border-color: transparent;
+                border-radius: 0px;
+                padding: 0rem 0.1rem;
+                z-index: 3;
+                &.active {
+                    color: unset;
+                    background-color: unset;
+                    border-color: transparent transparent #f8f9fa transparent;
+                    border-bottom-color: #f8f9fa;
+                    &:hover {
+                        color: #212529;
+                        background-color: #f8f9fa;
+                        border-color: #f8f9fa;
+                    }
+                }
+                &:focus {
+                    box-shadow: none;
+                }
+            }
+            & .btn-overlay-icon {
+                width: 20px;
+            }
+            & .analyser-ui {
+                position: relative;
+                height: 100px;
+                & > .analyser-controller {
+                    position: absolute;
+                    display: flex;
+                    top: 0px;
+                    z-index: 5;
+                    opacity: 0.4;
+                    transition: opacity 0.15s ease-in-out;
+                }
+                &:hover {
+                    & > .analyser-controller {
+                        opacity: 1;
+                    }
+                }
+            }
             & > #input-ui {
                 display: flex;
                 flex-direction: column;
@@ -210,40 +251,14 @@ body {
                         display: flex;
                         bottom: 0px;
                         z-index: 5;
-                        opacity: 0.2;
+                        opacity: 0.4;
                         transition: opacity 0.15s ease-in-out;
-                        & > button {
-                            font-size: 12px;
-                            border-color: transparent;
-                            border-radius: 0px;
-                            padding: 0rem 0.3rem;
-                            z-index: 3;
-                            &.active {
-                                color: unset;
-                                background-color: unset;
-                                border-color: transparent transparent #f8f9fa transparent;
-                                border-bottom-color: #f8f9fa;
-                                &:hover {
-                                    color: #212529;
-                                    background-color: #f8f9fa;
-                                    border-color: #f8f9fa;
-                                }
-                            }
-                            &:focus {
-                                box-shadow: none;
-                            }
-                        }
                     }
                     &:hover {
                         & > #source-controller {
                             opacity: 1;
                         }
                     }
-                }
-                & > #input-analyser {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100px;
                 }
             }
             & > #dsp-ui {
@@ -257,11 +272,6 @@ body {
                         background-color: unset;
                         border-color: rgba(255, 255, 255, 0.125);
                     }
-                }
-                & > #output-analyser {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100px;
                 }
             }
             & > #output-ui {

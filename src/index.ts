@@ -425,7 +425,7 @@ $(async () => {
             uiWindow.postMessage("", "*");
             $("#faust-ui-default").add("#diagram-default").show();
             $("#iframe-faust-ui").add("#diagram-svg").hide();
-            $("#output-analyser").hide();
+            $("#output-analyser-ui").hide();
             refreshDspUI();
             throw e;
         }
@@ -449,7 +449,7 @@ $(async () => {
             $("#diagram-svg").empty().html(svg);
             $("#faust-ui-default").add("#diagram-default").hide();
             $("#iframe-faust-ui").add("#diagram-svg").show();
-            $("#output-analyser").show();
+            $("#output-analyser-ui").show();
             if ($("#tab-faust-ui").hasClass("active")) bindUI();
             else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
             refreshDspUI(node);
@@ -469,8 +469,6 @@ $(async () => {
         $("#diagram-svg").empty().html(svg);
     });
     // Analysers
-    $("#input-analyser").on("click", () => uiEnv.inputAnalyser = 1 - uiEnv.inputAnalyser as 1 | 0);
-    $("#output-analyser").hide().on("click", () => uiEnv.outputAnalyser = 1 - uiEnv.outputAnalyser as 1 | 0);
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
@@ -495,17 +493,33 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
 };
 const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
     if (uiEnv.analysersInited) return;
+    $("#btn-input-analyser-switch").on("click", (e) => {
+        if (uiEnv.inputAnalyser === 0) {
+            uiEnv.inputAnalyser = 1;
+            $(e.currentTarget).children(".fa-wave-square").removeClass("fa-wave-square").addClass("fa-chart-bar");
+        } else {
+            uiEnv.inputAnalyser = 0;
+            $(e.currentTarget).children(".fa-chart-bar").removeClass("fa-chart-bar").addClass("fa-wave-square");
+        }
+    });
+    $("#btn-output-analyser-switch").on("click", (e) => {
+        if (uiEnv.outputAnalyser === 0) {
+            uiEnv.outputAnalyser = 1;
+            $(e.currentTarget).children(".fa-wave-square").removeClass("fa-wave-square").addClass("fa-chart-bar");
+        } else {
+            uiEnv.outputAnalyser = 0;
+            $(e.currentTarget).children(".fa-chart-bar").removeClass("fa-chart-bar").addClass("fa-wave-square");
+        }
+    });
     const audioCtx = audioEnv.audioCtx;
     const iNode = audioEnv.analyserInput;
     const oNode = audioEnv.analyserOutput;
     const w = 170;
     const h = 100;
-    const iL = iNode.frequencyBinCount;
-    const iT =  new Uint8Array(iL);
-    const iF =  new Uint8Array(iL);
-    const oL = oNode.frequencyBinCount;
-    const oT =  new Uint8Array(oL);
-    const oF =  new Uint8Array(oL);
+    let iT = new Uint8Array(iNode.fftSize);
+    let iF = new Uint8Array(iNode.frequencyBinCount);
+    let oT = new Uint8Array(oNode.fftSize);
+    let oF = new Uint8Array(oNode.frequencyBinCount);
     const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
     iCanvas.width = 170;
     iCanvas.height = 100;
@@ -516,55 +530,74 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     oCanvas.height = 100;
     const oCtx = oCanvas.getContext("2d");
     oCtx.strokeStyle = "#FFFFFF";
+    const sizes = [128, 512, 2048, 8192];
+    $("#btn-input-analyser-size").on("click", (e) => {
+        const size = sizes[(sizes.indexOf(iNode.fftSize) + 1) % 4];
+        iNode.fftSize = size;
+        iT = new Uint8Array(iNode.fftSize);
+        iF = new Uint8Array(iNode.frequencyBinCount);
+        $(e.currentTarget).html(size.toString());
+    });
+    $("#btn-output-analyser-size").on("click", (e) => {
+        const size = sizes[(sizes.indexOf(oNode.fftSize) + 1) % 4];
+        oNode.fftSize = size;
+        oT = new Uint8Array(oNode.fftSize);
+        oF = new Uint8Array(oNode.frequencyBinCount);
+        $(e.currentTarget).html(size.toString());
+    });
     const draw = () => {
         if (!audioCtx || audioCtx.state !== "running") return requestAnimationFrame(draw);
         if (iNode && audioEnv.inputEnabled) {
             if (uiEnv.inputAnalyser === 0) {
+                const l = iT.length;
                 iNode.getByteTimeDomainData(iT);
                 iCtx.fillStyle = "#000000";
                 iCtx.fillRect(0, 0, w, h);
                 iCtx.beginPath();
-                for (let i = 0; i < iL; i++) {
-                    const x = w * i / (iL - 1);
+                for (let i = 0; i < l; i++) {
+                    const x = w * i / (l - 1);
                     const y = h - iT[i] / 128.0 * (h / 2);
                     if (i === 0) iCtx.moveTo(x, y);
                     else iCtx.lineTo(x, y);
                 }
                 iCtx.stroke();
             } else if (uiEnv.inputAnalyser === 1) {
+                const l = iF.length;
                 iNode.getByteFrequencyData(iF);
                 iCtx.fillStyle = "#000000";
                 iCtx.fillRect(0, 0, w, h);
                 iCtx.fillStyle = "#FFFFFF";
-                for (let i = 0; i < iL; i++) {
-                    const x = w * i / iL;
+                for (let i = 0; i < l; i++) {
+                    const x = w * i / l;
                     const y = iF[i] / 128.0 * h;
-                    iCtx.fillRect(x, h - y, w / iL, y);
+                    iCtx.fillRect(x, h - y, w / l, y);
                 }
             }
         }
         if (oNode && audioEnv.dsp) {
             if (uiEnv.outputAnalyser === 0) {
+                const l = oT.length;
                 oNode.getByteTimeDomainData(oT);
                 oCtx.fillStyle = "#000000";
                 oCtx.fillRect(0, 0, w, h);
                 oCtx.beginPath();
-                for (let i = 0; i < iL; i++) {
-                    const x = w * i / (iL - 1);
+                for (let i = 0; i < l; i++) {
+                    const x = w * i / (l - 1);
                     const y = h - oT[i] / 128.0 * (h / 2);
                     if (i === 0) oCtx.moveTo(x, y);
                     else oCtx.lineTo(x, y);
                 }
                 oCtx.stroke();
             } else if (uiEnv.outputAnalyser === 1) {
+                const l = oF.length;
                 oNode.getByteFrequencyData(oF);
                 oCtx.fillStyle = "#000000";
                 oCtx.fillRect(0, 0, w, h);
                 oCtx.fillStyle = "#FFFFFF";
-                for (let i = 0; i < iL; i++) {
-                    const x = w * i / iL;
+                for (let i = 0; i < l; i++) {
+                    const x = w * i / l;
                     const y = oF[i] / 128.0 * h;
-                    oCtx.fillRect(x, h - y, w / iL, y);
+                    oCtx.fillRect(x, h - y, w / l, y);
                 }
             }
         }
@@ -585,9 +618,9 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
     } else {
         $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("ScriptProcessor");
     }
-    $("#dsp-ui-detail-inputs").html(`${node.getNumInputs()}`);
-    $("#dsp-ui-detail-outputs").html(`${node.getNumOutputs()}`);
-    $("#dsp-ui-detail-params").html(`${node.getParams().length}`);
+    $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
+    $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
+    $("#dsp-ui-detail-params").html(node.getParams().length.toString());
 };
 const initEditor = async () => {
     const code =

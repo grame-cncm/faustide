@@ -140,18 +140,26 @@
 					<div id="source-overlay"></div>
 					<div id="source-waveform"></div>
 					<div id="source-controller">
-						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm" data-toggle="tooltip" data-placement="bottom" title="From beginning">
+						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="From beginning">
 							<i class="fas fa-step-backward fa-sm"></i>
 						</button>
-						<button id="btn-source-play" class="btn btn-outline-light btn-sm" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
+						<button id="btn-source-play" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
 							<i class="fas fa-play fa-sm"></i>
 						</button>
-						<button id="btn-source-loop" class="btn btn-outline-light btn-sm" data-toggle="tooltip" data-placement="bottom" title="Loop">
+						<button id="btn-source-loop" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="Loop">
 							<i class="fas fa-undo fa-sm"></i>
 						</button>
 					</div>
 				</div>
-				<canvas id="input-analyser" class="mt-2"></canvas>
+				<div id="input-analyser-ui" class="analyser-ui mt-2">
+					<canvas id="input-analyser"></canvas>
+					<div id="input-analyser-controller" class="analyser-controller">
+						<button id="btn-input-analyser-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectrogram">
+							<i class="fas fa-wave-square fa-sm"></i>
+						</button>
+						<button id="btn-input-analyser-size" class="btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048</button>
+					</div>
+				</div>
 			</div>
 			<div id="dsp-ui" class="container mt-2">
 				<div class="form-row">
@@ -163,7 +171,15 @@
 						<li class="list-group-item d-flex justify-content-between align-items-center">Params : <span id="dsp-ui-detail-params" class="badge">0</span></li>
 					</ul>
 				</div>
-				<canvas id="output-analyser" class="mt-2"></canvas>
+				<div id="output-analyser-ui" class="analyser-ui mt-2">
+					<canvas id="output-analyser"></canvas>
+					<div id="output-analyser-controller" class="analyser-controller">
+						<button id="btn-output-analyser-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectrogram">
+							<i class="fas fa-wave-square fa-sm"></i>
+						</button>
+						<button id="btn-output-analyser-size" class="btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048</button>
+					</div>
+				</div>
 			</div>
 			<div id="output-ui" class="container mb-2">
 				<button id="btn-dac" type="button" class="btn btn-light btn-block">
