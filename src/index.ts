@@ -266,9 +266,9 @@ $(async () => {
             } else if (audioEnv.dsp) {
                 audioEnv.dsp.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
-                $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-                .children("span").html("Output is On");
             }
+            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
+            .children("span").html("Output is On");
         }
     });
     // Upload
@@ -447,15 +447,16 @@ $(async () => {
                 splitter = audioCtx.createChannelSplitter(channelsCount);
                 delete audioEnv.splitterOutput;
                 audioEnv.splitterOutput = splitter;
-                if (audioEnv.analyserOutputI > channelsCount - 1) audioEnv.analyserOutputI = channelsCount - 1;
+                if (audioEnv.analyserOutputI > channelsCount - 1) {
+                    audioEnv.analyserOutputI = channelsCount - 1;
+                }
                 splitter.connect(analyser, audioEnv.analyserOutputI);
             }
-            node.connect(splitter);
             if (audioEnv.inputEnabled && node.getNumInputs()) {
                 audioEnv.inputs[audioEnv.currentInput].connect(node);
                 audioEnv.dspConnectedToInput = true;
             }
-            if (audioEnv.analyserOutput) node.connect(audioEnv.analyserOutput);
+            node.connect(splitter);
             if (audioEnv.outputEnabled) {
                 node.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
@@ -497,9 +498,11 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         audioEnv.outputEnabled = true;
         audioCtx.addEventListener("statechange", () => {
             if (audioCtx.state === "running") {
+                audioEnv.outputEnabled = true;
                 $("#btn-dac").removeClass("btn-light").addClass("btn-primary")
                 .children("span").html("Output is On");
             } else {
+                audioEnv.outputEnabled = false;
                 $("#btn-dac").removeClass("btn-primary").addClass("btn-light")
                 .children("span").html("Output is Off");
             }
@@ -585,18 +588,18 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     });
     $("#btn-input-analyser-ch").on("click", (e) => {
         const iSplitter = audioEnv.splitterInput;
+        iSplitter.disconnect(iNode, audioEnv.analyserInputI, 0);
         const i = (audioEnv.analyserInputI + 1) % 2;
         audioEnv.analyserInputI = i;
-        iSplitter.disconnect(iNode);
-        iSplitter.connect(iNode, i);
+        iSplitter.connect(iNode, i, 0);
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     $("#btn-output-analyser-ch").on("click", (e) => {
         const oSplitter = audioEnv.splitterOutput;
+        oSplitter.disconnect(oNode, audioEnv.analyserOutputI, 0);
         const i = (audioEnv.analyserOutputI + 1) % audioEnv.dsp.getNumOutputs();
         audioEnv.analyserOutputI = i;
-        oSplitter.disconnect(oNode);
-        oSplitter.connect(oNode, i);
+        oSplitter.connect(oNode, i, 0);
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     const draw = () => {
