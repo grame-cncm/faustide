@@ -146,7 +146,7 @@ $(async () => {
         // MediaElementSource, Waveform
         if (id === "-1") $("#source-ui").show();
         else $("#source-ui").hide();
-        await initAudioCtx(audioEnv, id);
+        await initAudioCtx(audioEnv);
         initAnalysersUI(uiEnv, audioEnv);
         if (!wavesurfer) {
             wavesurfer = WaveSurfer.create({
@@ -170,6 +170,7 @@ $(async () => {
                 audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
             }
         }
+        await initAudioCtx(audioEnv, id);
         const splitter = audioEnv.splitterInput;
         const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
@@ -582,7 +583,11 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-    if (!audioEnv.mediaDestination) audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
+    if (!audioEnv.mediaDestination) {
+        try {
+            audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
+        } catch (e) {}
+    }
     return audioEnv;
 };
 const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {

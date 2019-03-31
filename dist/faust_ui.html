@@ -4266,10 +4266,10 @@
 		_f4u$t.transform_to_array = function(transform) {
 		  var out = [];
 		  var flre = "[-+]?[0-9]*\\.?[0-9]*(?:[eE][-+]?[0-9]+)?";
-		  var matrix = new RegExp("^\\s*matrix\\s*\\(\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*\\)");
-		  var translate = new RegExp("^\\s*translate\\s*\\(\\s*("+flre+")\\s*(?:[,]\\s*("+flre+")\\s*)?\\)");
-		  var scale = new RegExp("^\\s*scale\\s*\\(\\s*("+flre+")\\s*(?:[,]\\s*("+flre+")\\s*)?\\)");
-		  var rotate = new RegExp("^\\s*rotate\\s*\\(\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*[,]\\s*("+flre+")\\s*\\)");
+		  var matrix = new RegExp("^\\s*matrix\\s*\\(\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*\\)");
+		  var translate = new RegExp("^\\s*translate\\s*\\(\\s*("+flre+")\\s*(?:[,\\s]\\s*("+flre+")\\s*)?\\)");
+		  var scale = new RegExp("^\\s*scale\\s*\\(\\s*("+flre+")\\s*(?:[,\\s]\\s*("+flre+")\\s*)?\\)");
+		  var rotate = new RegExp("^\\s*rotate\\s*\\(\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*[,\\s]\\s*("+flre+")\\s*\\)");
 		  var skewX = new RegExp("^\\s*skewX\\s*\\(\\s*("+flre+")\\s*\\)");
 		  var skewY = new RegExp("^\\s*skewY\\s*\\(\\s*("+flre+")\\s*\\)");
 		  while(true) {
