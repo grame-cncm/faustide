@@ -10,20 +10,23 @@ import "bootstrap/js/dist/modal";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
+import { Key2Midi } from "./key2midi";
 declare global {
     interface Window {
         AudioContext: typeof AudioContext;
         webkitAudioContext: typeof AudioContext;
         AudioWorklet?: typeof AudioWorklet;
-        faustEnv: {
-            audioEnv: FaustEditorAudioEnv;
-            midiEnv: FaustEditorMIDIEnv;
-            uiEnv: FaustEditorUIEnv;
-            compileOptions: FaustEditorCompileOptions;
-        };
-        editor: monaco.editor.IStandaloneCodeEditor;
+        faustEnv: FaustEditorEnv;
     }
 }
+type FaustEditorEnv = {
+    audioEnv: FaustEditorAudioEnv;
+    midiEnv: FaustEditorMIDIEnv;
+    uiEnv: FaustEditorUIEnv;
+    compileOptions: FaustEditorCompileOptions;
+    editor?: monaco.editor.IStandaloneCodeEditor;
+    jQuery: JQueryStatic;
+};
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext,
     splitterInput?: ChannelSplitterNode;
@@ -42,7 +45,6 @@ type FaustEditorAudioEnv = {
     outputEnabled: boolean
 };
 type FaustEditorMIDIEnv = {
-    listener: (e: InputEventBase<"midimessage">) => any,
     input: Input
 };
 type FaustEditorUIEnv = {
@@ -62,10 +64,10 @@ type FaustEditorCompileOptions = {
 type FaustExportTargets = { [platform: string]: string[] };
 $(async () => {
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
-    const midiEnv = { listener: (e) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(e.data); }, input: null } as FaustEditorMIDIEnv;
+    const midiEnv = { input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
     const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
-    window.faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions };
+    const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     $("#btn-export").tooltip({ trigger: "hover" });
@@ -93,21 +95,37 @@ $(async () => {
         compileOptions.saveDsp = (e.currentTarget as HTMLInputElement).checked;
     });
     // MIDI Devices
+    const key2Midi = new Key2Midi({ enabled: false });
+    document.addEventListener("keydown", (e) => {
+        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+        key2Midi.handleKeyDown(e.key);
+    });
+    document.addEventListener("keyup", (e) => {
+        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+        key2Midi.handleKeyUp(e.key);
+    });
     $("#select-midi-input").on("change", (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
-        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all", midiEnv.listener);
+        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
+        const listener = (data: number[] | Uint8Array) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); };
+        if (id === "-2") {
+            key2Midi.handler = listener;
+            key2Midi.enabled = true;
+            return;
+        }
+        key2Midi.enabled = false;
         if (id === "-1") return;
         const input = webmidi.getInputById(id);
         if (!input) return;
         midiEnv.input = input;
-        input.addListener("midimessage", "all", midiEnv.listener);
+        input.addListener("midimessage", "all", e => listener(e.data));
     });
     webmidi.enable((e) => {
-        if (e) return $("#select-midi-input").hide();
+        if (e) return;
         $("#midi-ui-default").hide();
         const $select = $("#select-midi-input").prop("disabled", false);
         webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
-        return $select.children("option").eq(1).prop("selected", true).change();
+        if (webmidi.inputs.length) $select.children("option").eq(2).prop("selected", true).change();
     });
     // Audio Inputs
     let wavesurfer: WaveSurfer;
@@ -373,7 +391,7 @@ $(async () => {
     });
     // Editor
     const editor = await initEditor();
-    window.editor = editor;
+    faustEnv.editor = editor;
     editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
     $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
     $("#editor").on("dragenter dragover", (e) => {
@@ -519,6 +537,7 @@ $(async () => {
     });
     // Analysers
     $("#output-analyser-ui").hide();
+    window.faustEnv = faustEnv;
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
