@@ -5418,22 +5418,32 @@
 	<script>
 		$(document).ready(function() {
 			var handler;
+			var source;
 			window.addEventListener("message", function (e) {
-				if (!e.data) {
+				var data = JSON.parse(e.data);
+				source = e.source;
+				if (data.type === "clear") {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
 					$("#faust-ui").removeClass("hasSVG");
 					return;
 				}
-				var data = JSON.parse(e.data);
-				if (data.json) {
+				if (data.type === "ui") {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
 					$("#faust-ui").removeClass("hasSVG");
 					handler = _f4u$t.main(data.json, $("#faust-ui"), function(path, value) {
-						e.source.postMessage(JSON.stringify({path: path, value: value}), "*");
+						source.postMessage(JSON.stringify({type: "param", path: path, value: value}), "*");
 					});
-				} else if (data.path && typeof data.value !== "undefined" && handler) {
+					return;
+				}
+				if (data.type === "param" && handler) {
 					handler(data.path, data.value);
 				}
+			});
+			window.addEventListener("keydown", function (e) {
+				if (source) source.postMessage(JSON.stringify({type: "keydown", key: e.key}), "*");
+			})
+			window.addEventListener("keyup", function (e) {
+				if (source) source.postMessage(JSON.stringify({type: "keyup", key: e.key}), "*");
 			})
 		});
 	</script>

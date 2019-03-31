@@ -102,6 +102,7 @@ class Key2Midi {
         if (typeof converted === "undefined") return;
         if (typeof converted === "number") {
             const note = converted + this.offset;
+            if (this.velMap[note]) return;
             this.velMap[note] = this.velocity;
             this.handler([144, converted + this.offset, this.velocity]);
             return;

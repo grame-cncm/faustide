@@ -455,7 +455,7 @@ $(async () => {
             svg = faust.getDiagram(code, ["-I", args["-I"]]);
         } catch (e) {
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            uiWindow.postMessage("", "*");
+            uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
             $("#faust-ui-default").add("#diagram-default").show();
             $("#iframe-faust-ui").add("#diagram-svg").hide();
             $("#output-analyser-ui").hide();
@@ -499,12 +499,12 @@ $(async () => {
             }
             const bindUI = () => {
                 const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-                uiWindow.postMessage(JSON.stringify({ json: node.getJSON() }), "*");
-                node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value }), "*"));
+                uiWindow.postMessage(JSON.stringify({ type: "ui", json: node.getJSON() }), "*");
+                node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value, type: "param" }), "*"));
                 if (compileOptions.saveParams) {
                     const params = node.getParams();
                     for (const path in dspParams) {
-                        if (params.indexOf(path) !== -1) uiWindow.postMessage(JSON.stringify({ path, value: dspParams[path] }), "*");
+                        if (params.indexOf(path) !== -1) uiWindow.postMessage(JSON.stringify({ path, value: dspParams[path], type: "param" }), "*");
                     }
                 }
             };
@@ -522,11 +522,16 @@ $(async () => {
     const dspParams = {} as { [path: string]: number };
     window.addEventListener("message", (e) => {
         const data = JSON.parse(e.data);
-        if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
-        if (compileOptions.saveParams) {
-            dspParams[data.path] = +data.value;
-            localStorage.setItem("faust-editor-dsp-params", JSON.stringify(dspParams));
+        if (data.type === "param") {
+            if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
+            if (compileOptions.saveParams) {
+                dspParams[data.path] = +data.value;
+                localStorage.setItem("faust-editor-dsp-params", JSON.stringify(dspParams));
+            }
+            return;
         }
+        if (data.type === "keydown") return key2Midi.handleKeyDown(data.key);
+        if (data.type === "keyup") return key2Midi.handleKeyUp(data.key);
     });
     // svg hook
     $("#diagram-svg").on("click", "a", (e) => {
