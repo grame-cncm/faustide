@@ -643,6 +643,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         const iSplitter = audioEnv.splitterInput;
         const oldI = audioEnv.analyserInputI;
         const i = (oldI + 1) % 2;
+        if (i === oldI) return;
         iSplitter.connect(iNode, i, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
         setTimeout(() => iSplitter.disconnect(iNode, oldI, 0), 10);
         audioEnv.analyserInputI = i;
@@ -652,6 +653,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         const oSplitter = audioEnv.splitterOutput;
         const oldI = audioEnv.analyserOutputI;
         const i = (oldI + 1) % audioEnv.dsp.getNumOutputs();
+        if (i === oldI) return;
         oSplitter.connect(oNode, i, 0);
         setTimeout(() => oSplitter.disconnect(oNode, oldI, 0), 10);
         audioEnv.analyserOutputI = i;
