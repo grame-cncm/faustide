@@ -112,6 +112,7 @@ body {
         }
         & > #center {
             display: flex;
+            position: relative;
             flex-direction: column;
             padding: 0px;
             margin: 0px;
@@ -173,6 +174,28 @@ body {
                     & > #diagram-default {
                         top: 20%;
                     }
+                }
+            }
+            & > #alert-faust-code {
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                display: inline-flex;
+                visibility: hidden;
+                & > span {
+                    text-overflow: ellipsis;
+                    width: 100%;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    line-height: 1;
+                }
+                & > a {
+                    line-height: 1;
+                }
+                & > button {
+                    padding: 7px;
+                    outline: none;
                 }
             }
         }
@@ -284,8 +307,10 @@ body {
                 margin-top: auto;
             }
         }
-        & > #modal-export {
+        .modal {
             color: black;
+        }
+        & > #modal-export {
             & #export-loading {
                 display: none;
             }

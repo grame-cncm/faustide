@@ -96,6 +96,10 @@ $(async () => {
             return {};
         }
     };
+    const showError = (str: string) => {
+        $("#alert-faust-code>span").text(str);
+        $("#alert-faust-code").css("visibility", "visible");
+    };
     // Async load Monaco Editor
     const editor = await initEditor();
     editor.layout();
@@ -108,6 +112,9 @@ $(async () => {
     faustEnv.editor = editor;
     faustEnv.faust = faust;
     if (compileOptions.saveDsp) loadEditorDspTable();
+    // Alerts
+    $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
+    $("#a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     $("#btn-export").tooltip({ trigger: "hover" });
@@ -283,6 +290,7 @@ $(async () => {
                 wavesurfer.load(URL.createObjectURL(file));
             } catch (e) {
                 console.error(e);
+                showError("Cannot load sound file: " + e);
                 return;
             }
             if ($("#source-waveform audio").length) {
@@ -505,6 +513,7 @@ $(async () => {
             $("#iframe-faust-ui").add("#diagram-svg").hide();
             $("#output-analyser-ui").hide();
             refreshDspUI();
+            showError(e);
             throw e;
         }
         if (node) {
