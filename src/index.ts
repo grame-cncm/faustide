@@ -77,28 +77,29 @@ $(async () => {
     const faust = new Faust();
     await faust.ready;
     const saveEditorDspTable = () => {
-        localStorage.setItem("faust-editor-dsp-table", faust.stringifyDspTable());
+        localStorage.setItem("faust_editor_dsp_table", faust.stringifyDspTable());
     };
     const loadEditorDspTable = () => {
-        const str = localStorage.getItem("faust-editor-dsp-table");
+        const str = localStorage.getItem("faust_editor_dsp_table");
         if (str) faust.parseDspTable(str);
     };
     loadEditorDspTable();
     const saveEditorParams = () => {
         const str = JSON.stringify(compileOptions);
-        localStorage.setItem("faust-editor-params", str);
+        localStorage.setItem("faust_editor_params", str);
     };
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
-        const str = localStorage.getItem("faust-editor-params");
+        const str = localStorage.getItem("faust_editor_params");
         if (!str) return {};
         try {
-            return JSON.parse(localStorage.getItem("faust-editor-params")) as FaustEditorCompileOptions;
+            return JSON.parse(localStorage.getItem("faust_editor_params")) as FaustEditorCompileOptions;
         } catch (e) {
             return {};
         }
     };
     // Async load Monaco Editor
     const editor = await initEditor();
+    editor.layout();
 
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { input: null } as FaustEditorMIDIEnv;
@@ -509,7 +510,7 @@ $(async () => {
         if (node) {
             let dspParams = {} as { [path: string]: number };
             if (compileOptions.saveParams) {
-                const strDspParams = localStorage.getItem("faust-editor-dsp-params");
+                const strDspParams = localStorage.getItem("faust_editor_dsp_params");
                 if (strDspParams) {
                     dspParams = JSON.parse(strDspParams);
                     for (const path in dspParams) {
@@ -566,12 +567,13 @@ $(async () => {
     });
     const dspParams = {} as { [path: string]: number };
     window.addEventListener("message", (e) => {
+        if (!e.data) return;
         const data = JSON.parse(e.data);
         if (data.type === "param") {
             if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
             if (compileOptions.saveParams) {
                 dspParams[data.path] = +data.value;
-                localStorage.setItem("faust-editor-dsp-params", JSON.stringify(dspParams));
+                localStorage.setItem("faust_editor_dsp_params", JSON.stringify(dspParams));
             }
             return;
         }
