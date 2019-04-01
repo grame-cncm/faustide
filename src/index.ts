@@ -1,6 +1,13 @@
 // import { Faust } from "faust2webaudio";
+// TODO
+// documentation hover + Ctrl+D
+// localStorage params, dsps
+// Faust2MD
+// File Name
+// Real-Time compile
+// Error alert
 import * as monaco from "monaco-editor";
-import webmidi, { Input, InputEventBase } from "webmidi";
+import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode } from "faust2webaudio";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
@@ -66,7 +73,7 @@ $(async () => {
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
-    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" } } as FaustEditorCompileOptions;
+    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
     const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
@@ -74,26 +81,31 @@ $(async () => {
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
-    });
+        saveEditorParams(compileOptions);
+    }).children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     // BufferSize
     $("#select-buffer-size").on("change", (e) => {
         compileOptions.bufferSize = +(e.currentTarget as HTMLInputElement).value as 128 | 256 | 512 | 1024 | 2048 | 4096;
-    });
+        saveEditorParams(compileOptions);
+    }).children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     // AudioWorklet
     $("#check-worklet").on("change", (e) => {
         compileOptions.useWorklet = (e.currentTarget as HTMLInputElement).checked;
         if (compileOptions.useWorklet) $("#select-buffer-size").prop("disabled", true).children("option").eq(0).prop("selected", true);
         else $("#select-buffer-size").prop("disabled", false).children("option").eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
+        saveEditorParams(compileOptions);
     });
     if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     // Save Params
-    $("#check-save-params").on("change", (e) => {
+    ($("#check-save-params").on("change", (e) => {
         compileOptions.saveParams = (e.currentTarget as HTMLInputElement).checked;
-    });
+        saveEditorParams(compileOptions);
+    })[0] as HTMLInputElement).checked = compileOptions.saveParams;
     // Save DSP
-    $("#check-save-params").on("change", (e) => {
+    ($("#check-save-dsp").on("change", (e) => {
         compileOptions.saveDsp = (e.currentTarget as HTMLInputElement).checked;
-    });
+        saveEditorParams(compileOptions);
+    })[0] as HTMLInputElement).checked = compileOptions.saveDsp;
     // MIDI Devices
     const key2Midi = new Key2Midi({ enabled: false });
     document.addEventListener("keydown", (e) => {
@@ -308,6 +320,7 @@ $(async () => {
         reader.onload = () => {
             compileOptions.name = file.name.split(".").slice(0, -1).join(".");
             editor.setValue(reader.result.toString());
+            saveEditorParams(compileOptions);
         };
         reader.onerror = () => undefined;
         reader.readAsText(file);
@@ -395,7 +408,7 @@ $(async () => {
     faustEnv.editor = editor;
     editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
     $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
-    $("#editor").on("dragenter dragover", (e) => {
+    $("#center").on("dragenter dragover", (e) => {
         e.preventDefault();
         e.stopPropagation();
         $("#editor-overlay").show();
@@ -421,6 +434,8 @@ $(async () => {
             reader.onload = () => {
                 compileOptions.name = file.name.split(".").slice(0, -1).join(".");
                 editor.setValue(reader.result.toString());
+                localStorage.setItem("faust_editor_code", editor.getValue());
+                saveEditorParams(compileOptions);
             };
             reader.onerror = () => undefined;
             reader.readAsText(file);
@@ -740,6 +755,19 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
     $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
     $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
     $("#dsp-ui-detail-params").html(node.getParams().length.toString());
+};
+const saveEditorParams = (compileOptions: FaustEditorCompileOptions) => {
+    const str = JSON.stringify(compileOptions);
+    localStorage.setItem("faust-editor-params", str);
+};
+const loadEditorParams = (): FaustEditorCompileOptions | {} => {
+    const str = localStorage.getItem("faust-editor-params");
+    if (!str) return {};
+    try {
+        return JSON.parse(localStorage.getItem("faust-editor-params")) as FaustEditorCompileOptions;
+    } catch (e) {
+        return {};
+    }
 };
 const initEditor = async () => {
     const code =
