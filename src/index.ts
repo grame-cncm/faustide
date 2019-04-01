@@ -1,12 +1,12 @@
 // import { Faust } from "faust2webaudio";
 // TODO
 // documentation hover + Ctrl+D
-// localStorage params, dsps
 // Faust2MD
 // File Name
 // Real-Time compile
 // Error alert
 // SVG Zoom
+// better oscilloscope
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
@@ -83,7 +83,6 @@ $(async () => {
         const str = localStorage.getItem("faust_editor_dsp_table");
         if (str) faust.parseDspTable(str);
     };
-    loadEditorDspTable();
     const saveEditorParams = () => {
         const str = JSON.stringify(compileOptions);
         localStorage.setItem("faust_editor_params", str);
@@ -108,6 +107,7 @@ $(async () => {
     const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     faustEnv.editor = editor;
     faustEnv.faust = faust;
+    if (compileOptions.saveDsp) loadEditorDspTable();
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     $("#btn-export").tooltip({ trigger: "hover" });
