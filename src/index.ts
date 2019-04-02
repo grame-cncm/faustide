@@ -4,12 +4,13 @@
 // Faust2MD
 // File Name
 // Real-Time compile
-// Error alert
 // SVG Zoom
 // better oscilloscope
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
+import { Key2Midi } from "./Key2Midi";
+import { Faust2Doc } from "./Faust2Doc";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import "bootstrap/js/dist/tab";
@@ -18,7 +19,6 @@ import "bootstrap/js/dist/modal";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
-import { Key2Midi } from "./key2midi";
 declare global {
     interface Window {
         AudioContext: typeof AudioContext;
@@ -1033,6 +1033,46 @@ effect = dm.freeverb_demo;`;
             });
             return { suggestions };
         }
+    });
+    const getFile = async (fileName: string) => {
+        const libPath = "https://faust.grame.fr/tools/editor/libraries/";
+        const res = await fetch(libPath + fileName);
+        return await res.text();
+    };
+    Faust2Doc.parse("stdfaust.lib", getFile).then((doc) => {
+        monaco.languages.registerHoverProvider("faust", {
+            provideHover: (model, position, token) => {
+                const line$ = position.lineNumber;
+                const line = model.getLineContent(line$);
+                const wordAtPosition = model.getWordAtPosition(position);
+                if (!wordAtPosition) return null;
+                let column$ = wordAtPosition.startColumn - 1;
+                const name = wordAtPosition.word;
+                let prefixes = [] as string[];
+                while (column$ - 2 >= 0 && line[column$ - 1] === ".") {
+                    column$ -= 2;
+                    const prefixWord = model.getWordAtPosition(new monaco.Position(line$, column$));
+                    prefixes = [prefixWord.word, ...prefixes]; // reverse order
+                    column$ = prefixWord.startColumn - 1;
+                }
+                while (prefixes.length) {
+                    const strPrefix = prefixes.join(".");
+                    const e = doc[strPrefix + "." + name];
+                    if (e) {
+                        return {
+                            range: new monaco.Range(line$, column$ + 1, line$, wordAtPosition.endColumn),
+                            contents: [
+                                { value: `(${strPrefix}.)**${e.name}**` },
+                                { value: e.doc.replace(/#+/, "######") },
+                                { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${strPrefix}.${e.name})` }
+                            ]
+                        };
+                    }
+                    prefixes = prefixes.splice(1);
+                }
+                return null;
+            }
+        });
     });
     const editor = monaco.editor.create($("#editor")[0], {
         value: localStorage.getItem("faust_editor_code") || code,
