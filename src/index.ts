@@ -1,7 +1,5 @@
 // import { Faust } from "faust2webaudio";
 // TODO
-// documentation hover + Ctrl+D
-// Faust2MD
 // File Name
 // Real-Time compile
 // SVG Zoom
@@ -10,7 +8,6 @@ import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
 import { Key2Midi } from "./Key2Midi";
-import { Faust2Doc } from "./Faust2Doc";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as faustlang from "./monaco-faust";
@@ -691,8 +688,10 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     const h = 100;
     let iT = new Uint8Array(iNode.fftSize);
     let iF = new Uint8Array(iNode.frequencyBinCount);
+    let iFF = new Float32Array(iNode.frequencyBinCount);
     let oT = new Uint8Array(oNode.fftSize);
     let oF = new Uint8Array(oNode.frequencyBinCount);
+    let oFF = new Float32Array(oNode.frequencyBinCount);
     const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
     iCanvas.width = 170;
     iCanvas.height = 100;
@@ -709,6 +708,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         iNode.fftSize = size;
         iT = new Uint8Array(iNode.fftSize);
         iF = new Uint8Array(iNode.frequencyBinCount);
+        iFF = new Float32Array(iNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
     $("#btn-output-analyser-size").on("click", (e) => {
@@ -716,6 +716,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         oNode.fftSize = size;
         oT = new Uint8Array(oNode.fftSize);
         oF = new Uint8Array(oNode.frequencyBinCount);
+        oFF = new Float32Array(oNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
     $("#btn-input-analyser-ch").on("click", (e) => {
@@ -744,8 +745,13 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             if (uiEnv.inputAnalyser === 0) {
                 const l = iT.length;
                 iNode.getByteTimeDomainData(iT);
+                iNode.getFloatFrequencyData(iFF);
+                const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * audioCtx.sampleRate / 2;
                 iCtx.fillStyle = "#000000";
                 iCtx.fillRect(0, 0, w, h);
+                iCtx.fillStyle = "#FFFFFF";
+                iCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 50, 15, 50);
+                oCtx.strokeStyle = "#FFFFFF";
                 iCtx.beginPath();
                 for (let i = 0; i < l; i++) {
                     const x = w * i / (l - 1);
@@ -757,9 +763,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             } else if (uiEnv.inputAnalyser === 1) {
                 const l = iF.length;
                 iNode.getByteFrequencyData(iF);
+                iNode.getFloatFrequencyData(iFF);
+                const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * audioCtx.sampleRate / 2;
                 iCtx.fillStyle = "#000000";
                 iCtx.fillRect(0, 0, w, h);
                 iCtx.fillStyle = "#FFFFFF";
+                iCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 50, 15, 50);
                 for (let i = 0; i < l; i++) {
                     const x = w * i / l;
                     const y = iF[i] / 128.0 * h;
@@ -771,8 +780,13 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             if (uiEnv.outputAnalyser === 0) {
                 const l = oT.length;
                 oNode.getByteTimeDomainData(oT);
+                oNode.getFloatFrequencyData(oFF);
+                const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * audioCtx.sampleRate / 2;
                 oCtx.fillStyle = "#000000";
                 oCtx.fillRect(0, 0, w, h);
+                oCtx.fillStyle = "#FFFFFF";
+                oCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 50, 15, 50);
+                oCtx.strokeStyle = "#FFFFFF";
                 oCtx.beginPath();
                 for (let i = 0; i < l; i++) {
                     const x = w * i / (l - 1);
@@ -784,9 +798,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             } else if (uiEnv.outputAnalyser === 1) {
                 const l = oF.length;
                 oNode.getByteFrequencyData(oF);
+                oNode.getFloatFrequencyData(oFF);
+                const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * audioCtx.sampleRate / 2;
                 oCtx.fillStyle = "#000000";
                 oCtx.fillRect(0, 0, w, h);
                 oCtx.fillStyle = "#FFFFFF";
+                oCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 50, 15, 50);
                 for (let i = 0; i < l; i++) {
                     const x = w * i / l;
                     const y = oF[i] / 128.0 * h;
