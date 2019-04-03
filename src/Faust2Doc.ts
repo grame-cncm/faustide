@@ -22,7 +22,8 @@ The format of a comment is :
 everything else is considered Faust code.
 --------------------------------------------------------
 */
-type FaustDoc = { [key: string]: { path: string[], name: string, doc: string } };
+export type TFaustDocs = { [key: string]: TFaustDoc };
+export type TFaustDoc = { path: string[], name: string, doc: string };
 /**
  *
  * @class Faust2Doc
@@ -132,14 +133,14 @@ export class Faust2Doc {
      * @param {string[]} [depthIn] current Depth, stop when 0;
      * @param {string[]} [pathIn] path of current namespace
      * @param {string} [docIn] recursive accum object for output
-     * @returns {Promise<FaustDoc>}
+     * @returns {Promise<TFaustDocs>}
      * @memberof Faust2MD
      */
-    static async parse(fileName: string, getFile: (fileName: string) => Promise<string>, depthIn?: number, pathIn?: string[], docIn?: FaustDoc): Promise<FaustDoc> {
+    static async parse(fileName: string, getFile: (fileName: string) => Promise<string>, depthIn?: number, pathIn?: string[], docIn?: TFaustDocs): Promise<TFaustDocs> {
         if (depthIn === 0) return docIn;
         const depth = depthIn || 2;
         const strIn = await getFile(fileName);
-        const doc = docIn || {} as FaustDoc;
+        const doc = docIn || {} as TFaustDocs;
         const path = pathIn || [];
         let inComment = false; // false: in code; true: in md-comment
         let idt = 0; // indentation retained to outdent comment lines

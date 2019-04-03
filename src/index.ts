@@ -563,6 +563,7 @@ $(async () => {
                     }
                 }
             };
+            $("#alert-faust-code").css("visibility", "hidden");
             $("#diagram-svg").empty().html(svg);
             $("#faust-ui-default").add("#diagram-default").hide();
             $("#iframe-faust-ui").add("#diagram-svg").show();
@@ -599,6 +600,23 @@ $(async () => {
     });
     // Analysers
     $("#output-analyser-ui").hide();
+    // Keys
+    $(document).on("keydown", (e) => {
+        if (e.ctrlKey) {
+            if (e.key === "d") {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#btn-docs")[0].click();
+                return;
+            }
+            if (e.key === "r") {
+                e.preventDefault();
+                e.stopPropagation();
+                $("#btn-run").click();
+                return;
+            }
+        }
+    });
     window.faustEnv = faustEnv;
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
@@ -813,11 +831,6 @@ effect = dm.freeverb_demo;`;
     monaco.languages.register(faustlang.language);
     monaco.languages.setLanguageConfiguration("faust", faustlang.config);
     monaco.editor.defineTheme("vs-dark", faustlang.theme);
-    faustlang.getProviders().then((providers) => {
-        monaco.languages.registerHoverProvider("faust", providers.hoverProvider);
-        monaco.languages.setMonarchTokensProvider("faust", providers.tokensProvider);
-        monaco.languages.registerCompletionItemProvider("faust", providers.completionItemProvider);
-    });
     const editor = monaco.editor.create($("#editor")[0], {
         value: localStorage.getItem("faust_editor_code") || code,
         language: "faust",
@@ -825,6 +838,24 @@ effect = dm.freeverb_demo;`;
         dragAndDrop: true,
         mouseWheelZoom: true,
         wordWrap: "on"
+    });
+    faustlang.getProviders().then((providers) => {
+        monaco.languages.registerHoverProvider("faust", providers.hoverProvider);
+        monaco.languages.setMonarchTokensProvider("faust", providers.tokensProvider);
+        monaco.languages.registerCompletionItemProvider("faust", providers.completionItemProvider);
+        const faustDocURL = "https://faust.grame.fr/tools/editor/libraries/doc/library.html";
+        const showDoc = () => {
+            const matched = faustlang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
+            if (matched) {
+                const prefix = matched.nameArray.slice();
+                const name = prefix.pop();
+                const doc = matched.doc;
+                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "")}`)[0].click();
+                return;
+            }
+            $("#a-docs").attr("href", faustDocURL)[0].click();
+        };
+        $("#btn-docs").off("click").on("click", showDoc);
     });
     $(window).on("resize", () => editor.layout());
     return editor;

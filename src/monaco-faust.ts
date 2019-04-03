@@ -1,9 +1,10 @@
 import * as monaco from "monaco-editor";
-import { Faust2Doc } from "./Faust2Doc";
+import { Faust2Doc, TFaustDocs, TFaustDoc } from "./Faust2Doc";
 export type FaustLanguageProviders = {
     hoverProvider: monaco.languages.HoverProvider,
     tokensProvider: monaco.languages.IMonarchLanguage,
-    completionItemProvider: monaco.languages.CompletionItemProvider
+    completionItemProvider: monaco.languages.CompletionItemProvider,
+    docs: TFaustDocs
 };
 export const language: monaco.languages.ILanguageExtensionPoint = {
     id: "faust",
@@ -60,38 +61,63 @@ const getFile = async (fileName: string) => {
     const res = await fetch(libPath + fileName);
     return await res.text();
 };
+type TMatchedFaustDoc = { nameArray: string[], name: string, range: monaco.Range, doc: TFaustDoc };
+/**
+ * Match an available doc key from monaco editor
+ *
+ * @param {TFaustDocs} doc
+ * @param {monaco.editor.ITextModel} model
+ * @param {monaco.Position} position
+ * @returns {TMatchedFaustDoc} full: [...prefixes, name], range: a monaco range object, doc: a FaustDoc object
+ */
+export const matchDocKey = (doc: TFaustDocs, model: monaco.editor.ITextModel, position: monaco.Position): TMatchedFaustDoc => {
+    const line$ = position.lineNumber;
+    const line = model.getLineContent(line$);
+    const wordAtPosition = model.getWordAtPosition(position);
+    if (!wordAtPosition) return null;
+    let column$ = wordAtPosition.startColumn - 1;
+    const name = wordAtPosition.word;
+    const prefixes = [] as string[];
+    while (column$ - 2 >= 0 && line[column$ - 1] === ".") {
+        column$ -= 2;
+        const prefixWord = model.getWordAtPosition(new monaco.Position(line$, column$));
+        prefixes.splice(0, 0, prefixWord.word);
+        column$ = prefixWord.startColumn - 1;
+    }
+    const nameArray = [...prefixes, name];
+    while (nameArray.length) {
+        const name = nameArray.join(".");
+        const e = doc[name];
+        if (e) {
+            return {
+                nameArray,
+                name,
+                range: new monaco.Range(line$, column$ + 1, line$, wordAtPosition.endColumn),
+                doc: e
+            };
+        }
+        column$ += nameArray.splice(0, 1)[0].length + 1;
+    }
+    return null;
+};
 export const getProviders = () => {
-    return Faust2Doc.parse("stdfaust.lib", getFile).then((doc) => {
-        const faustLib = Object.keys(doc);
+    return Faust2Doc.parse("stdfaust.lib", getFile).then((docs) => {
+        const faustLib = Object.keys(docs);
         const hoverProvider: monaco.languages.HoverProvider = {
             provideHover: (model, position, token) => {
-                const line$ = position.lineNumber;
-                const line = model.getLineContent(line$);
-                const wordAtPosition = model.getWordAtPosition(position);
-                if (!wordAtPosition) return null;
-                let column$ = wordAtPosition.startColumn - 1;
-                const name = wordAtPosition.word;
-                const prefixes = [] as string[];
-                while (column$ - 2 >= 0 && line[column$ - 1] === ".") {
-                    column$ -= 2;
-                    const prefixWord = model.getWordAtPosition(new monaco.Position(line$, column$));
-                    prefixes.splice(0, 0, prefixWord.word);
-                    column$ = prefixWord.startColumn - 1;
-                }
-                while (prefixes.length) {
-                    const strPrefix = prefixes.join(".");
-                    const e = doc[strPrefix + "." + name];
-                    if (e) {
-                        return {
-                            range: new monaco.Range(line$, column$ + 1, line$, wordAtPosition.endColumn),
-                            contents: [
-                                { value: `(${strPrefix}.)**${e.name}**` },
-                                { value: e.doc.replace(/#+/, "######") },
-                                { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${strPrefix}.${e.name.replace(/[\[\]\|]/g, "")})` }
-                            ]
-                        };
-                    }
-                    prefixes.splice(0, 1);
+                const matched = matchDocKey(docs, model, position);
+                if (matched) {
+                    const prefix = matched.nameArray.slice();
+                    const name = prefix.pop();
+                    const doc = matched.doc;
+                    return {
+                        range: matched.range,
+                        contents: [
+                            { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
+                            { value: doc.doc.replace(/#+/g, "######") },
+                            { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "")})` }
+                        ]
+                    };
                 }
                 return null;
             }
@@ -181,6 +207,6 @@ export const getProviders = () => {
                 return { suggestions };
             }
         };
-        return { hoverProvider, tokensProvider, completionItemProvider } as FaustLanguageProviders;
+        return { hoverProvider, tokensProvider, completionItemProvider, docs } as FaustLanguageProviders;
     });
 };

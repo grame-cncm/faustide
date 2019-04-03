@@ -198,6 +198,11 @@ body {
                     outline: none;
                 }
             }
+            & > #modal-alert-faust-code-detail {
+                & .modal-body {
+                    font-size: 0.75rem;
+                }
+            }
         }
         & > #right {
             padding: 0px;
