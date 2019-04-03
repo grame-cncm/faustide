@@ -30,9 +30,10 @@ type FaustDoc = { [key: string]: { path: string[], name: string, doc: string } }
 export class Faust2Doc {
     private static readonly REGEX_DEF_LIB = /\b(\w+)\s*=\s*library\("(.+)"\);/;
     private static readonly REGEX_DEF_IMP = /\bimport\("(.+)"\);/;
-    private static readonly REGEX_FUNC_NAME = /`.*?(\w+)`/;
+    private static readonly REGEX_FUNC_NAME = /`.*?([\w\[\]\|]+)`/;
+    private static readonly REGEX_FUNC_NAME_COND = /\[(.+?)(\|.+?)*?]/;
     /**
-     * Retrive a library definition
+     * Retrieve a library definition
      *
      * @static
      * @param {string} line
@@ -51,7 +52,7 @@ export class Faust2Doc {
         return libs;
     }
     /**
-     * Retrive an import expression
+     * Retrieve an import expression
      *
      * @static
      * @param {string} line
@@ -81,6 +82,46 @@ export class Faust2Doc {
     static matchFuncName(str: string): string {
         const matched = str.match(this.REGEX_FUNC_NAME);
         return matched ? matched[1] : null;
+    }
+    /**
+     * Get all conditions in func name like `[third|half]_octave_[analyzer|filterbank][n]`
+     *
+     * @static
+     * @param {string} str
+     * @returns {string[]}
+     * @memberof Faust2Doc
+     */
+    static getAllConditions(str: string): string[] {
+        return this.getCondition([str]);
+    }
+    /**
+     * getAllConditions Recursive body
+     *
+     * @static
+     * @param {string[]} [condsIn]
+     * @param {RegExp} [regexp]
+     * @returns {string[]}
+     * @memberof Faust2Doc
+     */
+    private static getCondition(condsIn?: string[]): string[] {
+        const conds = [] as string[];
+        condsIn.forEach((cond) => {
+            const regexp = new RegExp(this.REGEX_FUNC_NAME_COND, "g");
+            const result = regexp.exec(cond);
+            if (!result) return;
+            const found = result[0];
+            const index = result.index;
+            const subConds = result.splice(1).filter(el => typeof el === "string").map(str => str.replace(/^\|/, ""));
+            const before = cond.substring(0, index);
+            const after = cond.substring(index + found.length);
+            if (subConds.length === 1) {
+                conds.push(before + after);
+                conds.push(before + subConds + after);
+            } else {
+                subConds.forEach(subCond => conds.push(before + subCond + after));
+            }
+        });
+        return conds.length ? this.getCondition(conds) : condsIn;
     }
     /**
      * Process the file
@@ -125,7 +166,7 @@ export class Faust2Doc {
                 if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
                 else strBuffer += Faust2MD.outdent(line, idt) + "\n";
                 if (endC) { // pop buffer
-                    if (curName) doc[path.join(".") + "." + curName] = { path: [...path], name: curName, doc: strBuffer };
+                    if (curName) this.getAllConditions(curName).forEach(name => doc[path.join(".") + "." + name] = { name: curName, path: [...path], doc: strBuffer });
                     curName = "";
                     strBuffer = "";
                 }
@@ -133,7 +174,7 @@ export class Faust2Doc {
             }
             // check begin of md-comment
             const { c, s, t } = { c: Faust2MD.matchBeginComment(line), s: Faust2MD.matchBeginSection(line), t: Faust2MD.matchBeginTitle(line) };
-            if (c) curName = this.matchFuncName(c);
+            if (c) curName = this.matchFuncName(c); // TODO "[a|b]" in names
             if (c || s || t) {
                 inComment = true;
                 idt = 0;
