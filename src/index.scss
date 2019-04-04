@@ -213,12 +213,13 @@ body {
             }
         }
         & > #right {
+            position: relative;
+            display: flex;
             padding: 0px;
             margin: 0px;
             width: 200px;
-            flex: 0 0 200px;
+            flex: 1 0 auto;
             font-size: 0.8em;
-            display: flex;
             flex-direction: column;
             & .form-row {
                 margin-right: 0px;
@@ -254,7 +255,6 @@ body {
             }
             & .analyser-ui {
                 position: relative;
-                height: 100px;
                 & > .analyser-controller {
                     position: absolute;
                     display: flex;
@@ -267,6 +267,10 @@ body {
                     & > .analyser-controller {
                         opacity: 1;
                     }
+                }
+                & > canvas {
+                    width: 100%;
+                    height: auto;
                 }
             }
             & > #input-ui {
@@ -338,6 +342,35 @@ body {
             & #export-error {
                 display: none;
             }
+        }
+    }
+    .resizable {
+        position: absolute;
+        display: block;
+        padding: 5px;
+        &.resizable-left {
+            height: 100%;
+            width: 0px;
+            left: 0;
+            cursor: w-resize;
+        }
+        &.resizable-right {
+            height: 100%;
+            width: 0px;
+            right: 0;
+            cursor: e-resize;
+        }
+        &.resizable-top {
+            height: 0px;
+            width: 100%;
+            top: 0;
+            cursor: n-resize;
+        }
+        &.resizable-bottom {
+            height: 0px;
+            width: 100%;
+            bottom: 0;
+            cursor: s-resize;
         }
     }
 }

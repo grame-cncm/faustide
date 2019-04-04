@@ -681,11 +681,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             $(e.currentTarget).children(".fa-chart-bar").removeClass("fa-chart-bar").addClass("fa-wave-square");
         }
     });
+    let iRAF: number, oRAF: number;
+    let iPaused = false;
+    let oPaused = false;
     const audioCtx = audioEnv.audioCtx;
     const iNode = audioEnv.analyserInput;
     const oNode = audioEnv.analyserOutput;
-    const w = 170;
-    const h = 100;
     let iT = new Uint8Array(iNode.fftSize);
     let iF = new Uint8Array(iNode.frequencyBinCount);
     let iFF = new Float32Array(iNode.frequencyBinCount);
@@ -693,15 +694,9 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     let oF = new Uint8Array(oNode.frequencyBinCount);
     let oFF = new Float32Array(oNode.frequencyBinCount);
     const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
-    iCanvas.width = 170;
-    iCanvas.height = 100;
     const iCtx = iCanvas.getContext("2d");
-    iCtx.strokeStyle = "#FFFFFF";
     const oCanvas = $("#output-analyser")[0] as HTMLCanvasElement;
-    oCanvas.width = 170;
-    oCanvas.height = 100;
     const oCtx = oCanvas.getContext("2d");
-    oCtx.strokeStyle = "#FFFFFF";
     const sizes = [128, 512, 2048, 8192];
     $("#btn-input-analyser-size").on("click", (e) => {
         const size = sizes[(sizes.indexOf(iNode.fftSize) + 1) % 4];
@@ -739,82 +734,135 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         audioEnv.analyserOutputI = i;
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
-    const draw = () => {
-        if (!audioCtx || audioCtx.state !== "running") return requestAnimationFrame(draw);
-        if (iNode && audioEnv.inputEnabled) {
+    const iDraw = () => {
+        if (audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
+            const ctx = iCtx;
+            const w = $("#input-analyser-ui").innerWidth();
+            const h = w * 0.75;
+            iCanvas.width = w;
+            iCanvas.height = h;
             iNode.getFloatFrequencyData(iFF);
             const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * audioCtx.sampleRate / 2;
             if (uiEnv.inputAnalyser === 0) {
                 const l = iT.length;
                 iNode.getByteTimeDomainData(iT);
-                iCtx.fillStyle = "#000000";
-                iCtx.fillRect(0, 0, w, h);
-                iCtx.fillStyle = "#FFFFFF";
-                iCtx.textAlign = "right";
-                iCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                iCtx.strokeStyle = "#FFFFFF";
-                iCtx.beginPath();
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "right";
+                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
                 for (let i = 0; i < l; i++) {
                     const x = w * i / (l - 1);
                     const y = h - iT[i] / 128.0 * (h / 2);
-                    if (i === 0) iCtx.moveTo(x, y);
-                    else iCtx.lineTo(x, y);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
                 }
-                iCtx.stroke();
+                ctx.stroke();
             } else if (uiEnv.inputAnalyser === 1) {
                 const l = iF.length;
                 iNode.getByteFrequencyData(iF);
-                iCtx.fillStyle = "#000000";
-                iCtx.fillRect(0, 0, w, h);
-                iCtx.fillStyle = "#FFFFFF";
-                iCtx.textAlign = "right";
-                iCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "right";
+                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
                 for (let i = 0; i < l; i++) {
                     const x = w * i / l;
                     const y = iF[i] / 128.0 * h;
-                    iCtx.fillRect(x, h - y, w / l, y);
+                    ctx.fillRect(x, h - y, w / l, y);
                 }
             }
         }
-        if (oNode && audioEnv.dsp) {
+        iRAF = requestAnimationFrame(iDraw);
+        return iRAF;
+    };
+    const oDraw = () => {
+        if (audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
+            const ctx = oCtx;
+            const w = $("#output-analyser-ui").innerWidth();
+            const h = w * 0.75;
+            oCanvas.width = w;
+            oCanvas.height = h;
             oNode.getFloatFrequencyData(oFF);
             const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * audioCtx.sampleRate / 2;
             if (uiEnv.outputAnalyser === 0) {
                 const l = oT.length;
                 oNode.getByteTimeDomainData(oT);
-                oCtx.fillStyle = "#000000";
-                oCtx.fillRect(0, 0, w, h);
-                oCtx.fillStyle = "#FFFFFF";
-                oCtx.textAlign = "right";
-                oCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                oCtx.strokeStyle = "#FFFFFF";
-                oCtx.beginPath();
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "right";
+                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.beginPath();
                 for (let i = 0; i < l; i++) {
                     const x = w * i / (l - 1);
                     const y = h - oT[i] / 128.0 * (h / 2);
-                    if (i === 0) oCtx.moveTo(x, y);
-                    else oCtx.lineTo(x, y);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
                 }
-                oCtx.stroke();
+                ctx.stroke();
             } else if (uiEnv.outputAnalyser === 1) {
                 const l = oF.length;
                 oNode.getByteFrequencyData(oF);
-                oCtx.fillStyle = "#000000";
-                oCtx.fillRect(0, 0, w, h);
-                oCtx.fillStyle = "#FFFFFF";
-                oCtx.textAlign = "right";
-                oCtx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, w, h);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.textAlign = "right";
+                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
                 for (let i = 0; i < l; i++) {
                     const x = w * i / l;
                     const y = oF[i] / 128.0 * h;
-                    oCtx.fillRect(x, h - y, w / l, y);
+                    ctx.fillRect(x, h - y, w / l, y);
                 }
             }
         }
-        return requestAnimationFrame(draw);
+        oRAF = requestAnimationFrame(oDraw);
+        return oRAF;
     };
+    const iDrawPause = () => {
+        const ctx = iCtx;
+        const w = iCanvas.width;
+        const h = iCanvas.height;
+        ctx.fillStyle = "#00000080";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
+        ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
+    };
+    const oDrawPause = () => {
+        const ctx = oCtx;
+        const w = oCanvas.width;
+        const h = oCanvas.height;
+        ctx.fillStyle = "#00000080";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
+        ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
+    };
+    $("#input-analyser").on("click", (e) => {
+        if (iPaused) {
+            requestAnimationFrame(iDraw);
+        } else {
+            cancelAnimationFrame(iRAF);
+            requestAnimationFrame(iDrawPause);
+        }
+        iPaused = !iPaused;
+    });
+    $("#output-analyser").on("click", (e) => {
+        if (oPaused) {
+            requestAnimationFrame(oDraw);
+        } else {
+            cancelAnimationFrame(oRAF);
+            requestAnimationFrame(oDrawPause);
+        }
+        oPaused = !oPaused;
+    });
     uiEnv.analysersInited = true;
-    draw();
+    iDraw();
+    oDraw();
 };
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {
