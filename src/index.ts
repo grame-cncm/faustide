@@ -594,9 +594,11 @@ $(async () => {
         if (data.type === "keydown") return key2Midi.handleKeyDown(data.key);
         if (data.type === "keyup") return key2Midi.handleKeyUp(data.key);
     });
+    let svgDragged = false;
     // svg inject
     $("#diagram-svg").on("click", "a", (e) => {
         e.preventDefault();
+        if (svgDragged) return;
         const fileName = (e.currentTarget as SVGAElement).href.baseVal;
         const svg = faust.readFile("FaustDSP-svg/" + fileName);
         $("#diagram-svg").empty().html(svg);
@@ -605,14 +607,14 @@ $(async () => {
     $("#diagram-svg").on("mousedown", "svg", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        let dragged = false;
+        svgDragged = false;
         const $div = $(e.currentTarget).parent();
         const x = e.pageX;
         const y = e.pageY;
         const sL = $div.scrollLeft();
         const sT = $div.scrollTop();
         const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
-            dragged = true;
+            svgDragged = true;
             const dX = e.pageX - x;
             const dY = e.pageY - y;
             $div.scrollLeft(sL - dX);
@@ -621,11 +623,11 @@ $(async () => {
             e.stopPropagation();
         };
         const handleMouseUp = (e: JQuery.MouseUpEvent) => {
-            if (!dragged) return;
-            e.preventDefault();
-            e.stopPropagation();
             $(document).off("mousemove", handleMouseMove);
             $(document).off("mouseup", handleMouseUp);
+            if (!svgDragged) return;
+            e.preventDefault();
+            e.stopPropagation();
         };
         $(document).on("mousemove", handleMouseMove);
         $(document).on("mouseup", handleMouseUp);
