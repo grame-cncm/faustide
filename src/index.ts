@@ -630,12 +630,14 @@ $(async () => {
         $(document).on("mousemove", handleMouseMove);
         $(document).on("mouseup", handleMouseUp);
     });
-    $("#diagram").on("wheel", "svg", (e) => {
+    $("#diagram").on("wheel", (e) => {
+        const $svg = $(e.currentTarget).find("svg");
+        if (!$svg.length) return;
         e.preventDefault();
         e.stopPropagation();
         const d = (e.originalEvent as WheelEvent).deltaY / 100;
-        const w = $(e.currentTarget).width();
-        $(e.currentTarget).width(w * (1 - d * 0.25));
+        const w = $svg.width();
+        $svg.width(w * (1 - d * 0.25));
     });
     // Analysers
     $("#output-analyser-ui").hide();
