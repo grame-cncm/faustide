@@ -251,9 +251,12 @@ $(async () => {
         $(e.currentTarget).toggleClass("active");
     });
     $("#source-waveform").on("dragenter dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        $("#source-overlay").show();
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#source-overlay").show();
+        }
     });
     $("#source-overlay").on("dragleave dragend", (e) => {
         e.preventDefault();
@@ -447,9 +450,12 @@ $(async () => {
     editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
     $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
     $("#center").on("dragenter dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        $("#editor-overlay").show();
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#editor-overlay").show();
+        }
     });
     $("#editor-overlay").on("dragleave dragend", (e) => {
         e.preventDefault();
@@ -595,6 +601,42 @@ $(async () => {
         const svg = faust.readFile("FaustDSP-svg/" + fileName);
         $("#diagram-svg").empty().html(svg);
     });
+    // svg zoom
+    $("#diagram-svg").on("mousedown", "svg", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        let dragged = false;
+        const $div = $(e.currentTarget).parent();
+        const x = e.pageX;
+        const y = e.pageY;
+        const sL = $div.scrollLeft();
+        const sT = $div.scrollTop();
+        const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
+            dragged = true;
+            const dX = e.pageX - x;
+            const dY = e.pageY - y;
+            $div.scrollLeft(sL - dX);
+            $div.scrollTop(sT - dY);
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        const handleMouseUp = (e: JQuery.MouseUpEvent) => {
+            if (!dragged) return;
+            e.preventDefault();
+            e.stopPropagation();
+            $(document).off("mousemove", handleMouseMove);
+            $(document).off("mouseup", handleMouseUp);
+        };
+        $(document).on("mousemove", handleMouseMove);
+        $(document).on("mouseup", handleMouseUp);
+    });
+    $("#diagram").on("wheel", "svg", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const d = (e.originalEvent as WheelEvent).deltaY / 100;
+        const w = $(e.currentTarget).width();
+        $(e.currentTarget).width(w * (1 - d * 0.25));
+    });
     // Analysers
     $("#output-analyser-ui").hide();
     // Keys
@@ -635,8 +677,8 @@ $(async () => {
         const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
             e.preventDefault();
             e.stopPropagation();
-            const dX = e.originalEvent.pageX - x;
-            const dY = e.originalEvent.pageY - y;
+            const dX = e.pageX - x;
+            const dY = e.pageY - y;
             if (mode === "left") $div.width(w - dX);
             else if (mode === "right") $div.width(w + dX);
             else if (mode === "top") $div.height(h - dY);
