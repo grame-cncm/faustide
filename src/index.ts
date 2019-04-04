@@ -588,7 +588,7 @@ $(async () => {
         if (data.type === "keydown") return key2Midi.handleKeyDown(data.key);
         if (data.type === "keyup") return key2Midi.handleKeyUp(data.key);
     });
-    // svg hook
+    // svg inject
     $("#diagram-svg").on("click", "a", (e) => {
         e.preventDefault();
         const fileName = (e.currentTarget as SVGAElement).href.baseVal;
@@ -613,6 +613,48 @@ $(async () => {
                 return;
             }
         }
+    });
+    // Resizables
+    $(".resizable").on("mousedown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const $div = $(e.currentTarget).parent();
+        const x = e.pageX;
+        const y = e.pageY;
+        const w = $div.width();
+        const h = $div.height();
+        const mode = $(e.currentTarget).hasClass("resizable-left")
+            ? "left"
+            : $(e.currentTarget).hasClass("resizable-right")
+            ? "right"
+            : $(e.currentTarget).hasClass("resizable-top")
+            ? "top"
+            : $(e.currentTarget).hasClass("resizable-bottom")
+            ? "bottom"
+            : undefined;
+        const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dX = e.originalEvent.pageX - x;
+            const dY = e.originalEvent.pageY - y;
+            if (mode === "left") $div.width(w - dX);
+            else if (mode === "right") $div.width(w + dX);
+            else if (mode === "top") $div.height(h - dY);
+            else if (mode === "bottom") $div.height(h + dY);
+            if (editor) editor.layout();
+            if (wavesurfer.isReady) {
+                wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
+                wavesurfer.drawBuffer();
+            }
+        };
+        const handleMouseUp = (e: JQuery.MouseUpEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            $(document).off("mousemove", handleMouseMove);
+            $(document).off("mouseup", handleMouseUp);
+        };
+        $(document).on("mousemove", handleMouseMove);
+        $(document).on("mouseup", handleMouseUp);
     });
     window.faustEnv = faustEnv;
 });
@@ -738,7 +780,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         if (audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
             const ctx = iCtx;
             const w = $("#input-analyser-ui").innerWidth();
-            const h = w * 0.75;
+            const h = Math.min(w * 0.75, $("#input-analyser-ui").innerHeight());
             iCanvas.width = w;
             iCanvas.height = h;
             iNode.getFloatFrequencyData(iFF);
@@ -782,7 +824,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         if (audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
             const ctx = oCtx;
             const w = $("#output-analyser-ui").innerWidth();
-            const h = w * 0.75;
+            const h = Math.min(w * 0.75, $("#output-analyser-ui").innerHeight());
             oCanvas.width = w;
             oCanvas.height = h;
             oNode.getFloatFrequencyData(oFF);
