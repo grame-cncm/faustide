@@ -116,23 +116,22 @@ body {
             flex-direction: column;
             padding: 0px;
             margin: 0px;
-            flex: 1 1 auto;
+            flex: 0 1 auto;
+            height: 100%;
             min-width: 400px;
             max-width: unset;
-            & > #center-tab {
-                & a.nav-link:not(.active) {
-                    color: whitesmoke;
-                    &:hover {
-                        background-color: black;
-                        border-color: black black #dee2e6 black;
-                    }
-                }
-            }
-            & > #center-content {
+            & > #top {
                 position: relative;
-                flex: 1 1 auto;
                 display: flex;
+                flex: 0 0 auto;
+                height: 75%;
                 flex-direction: column;
+                min-height: 100px;
+                max-height: calc(100% - 200px);
+                & > #editor-top {
+                    position: relative;
+                    flex: 0 0 auto;
+                }
                 & > #editor-overlay {
                     position: absolute;
                     width: 100%;
@@ -141,47 +140,75 @@ body {
                     display: none;
                     z-index: 1;
                 }
-                & > #editor {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                }
-                & > #faust-ui {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    & > #iframe-faust-ui {
-                        display: none;
-                        border: none;
+                & > #editor-container {
+                    position: relative;
+                    flex: 1 0 auto;
+                    & > #editor {
+                        position: absolute;
                         width: 100%;
-                        height: 99%;
-                    }
-                    & > #faust-ui-default {
-                        top: 20%;
+                        height: 100%;
                     }
                 }
-                & > #diagram {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    overflow: auto;
-                    & > #diagram-svg {
-                        position: relative;
-                        display: none;
-                        margin: auto;
-                        flex: 1 0 auto;
-                        max-width: 100%;
-                        max-height: 100%;
-                        overflow: auto;
-                        text-align: center;
-                        & > svg {
-                            height: auto;
-                            width: 100%;
-                            cursor: grab;
+            }
+            & > #bottom {
+                position: relative;
+                display: flex;
+                flex: 1 0 auto;
+                min-height: 200px;
+                flex-direction: column;
+                & > #bottom-tab {
+                    flex: 0 0 auto;
+                    position: relative;
+                    & a.nav-link:not(.active) {
+                        color: whitesmoke;
+                        &:hover {
+                            background-color: black;
+                            border-color: black black #dee2e6 black;
                         }
                     }
-                    & > #diagram-default {
-                        top: 20%;
+                }
+                & > #bottom-content {
+                    position: relative;
+                    flex: 1 1 auto;
+                    display: flex;
+                    flex-direction: column;
+                    & > #faust-ui {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        & > #iframe-faust-ui {
+                            display: none;
+                            border: none;
+                            width: 100%;
+                            height: 99%;
+                        }
+                        & > #faust-ui-default {
+                            top: 20%;
+                        }
+                    }
+                    & > #diagram {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        overflow: auto;
+                        & > #diagram-svg {
+                            position: relative;
+                            display: none;
+                            margin: auto;
+                            flex: 1 0 auto;
+                            max-width: 100%;
+                            max-height: 100%;
+                            overflow: auto;
+                            text-align: center;
+                            & > svg {
+                                height: 100%;
+                                width: auto;
+                                cursor: grab;
+                            }
+                        }
+                        & > #diagram-default {
+                            top: 20%;
+                        }
                     }
                 }
             }
@@ -358,31 +385,34 @@ body {
     .resizable {
         position: absolute;
         display: block;
-        padding: 5px;
         z-index: 1;
+        background-repeat: no-repeat;
+        background-origin: content-box;
+        &.resizable-left, &.resizable-right {
+            cursor: ew-resize;
+            height: 40px;
+            width: 10px;
+            top: calc(50% - 20px);
+            background-image: linear-gradient(90deg, transparent, transparent 3px, #FFF8 3px, #FFF8 4px, transparent 4px, transparent 6px, #FFF8 6px, #FFF8 7px, transparent 7px);
+        }
         &.resizable-left {
-            height: 100%;
-            width: 0px;
             left: 0;
-            cursor: w-resize;
         }
         &.resizable-right {
-            height: 100%;
-            width: 0px;
             right: 0;
-            cursor: e-resize;
+        }
+        &.resizable-top, &.resizable-bottom {
+            cursor: ns-resize;
+            height: 10px;
+            width: 40px;
+            left: calc(50% - 20px);
+            background-image: linear-gradient(0deg, transparent, transparent 3px, #FFF8 3px, #FFF8 4px, transparent 4px, transparent 6px, #FFF8 6px, #FFF8 7px, transparent 7px);
         }
         &.resizable-top {
-            height: 0px;
-            width: 100%;
             top: 0;
-            cursor: n-resize;
         }
         &.resizable-bottom {
-            height: 0px;
-            width: 100%;
             bottom: 0;
-            cursor: s-resize;
         }
     }
 }

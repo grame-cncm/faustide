@@ -84,33 +84,40 @@
 			</div>
 		</div>
 		<div id="center" class="container">
-			<ul id="center-tab" class="nav nav-tabs" role="tablist">
-				<li class="nav-item">
-					<a id="tab-editor" class="nav-link active" data-toggle="tab" href="#editor" role="tab" aria-controls="editor" aria-selected="true">Editor</a>
-				</li>
-				<li class="nav-item">
-					<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="false">DSP</a>
-				</li>
-				<li class="nav-item">
-					<a id="tab-diagram" class="nav-link" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
-				</li>
-			</ul>
-			<div id="center-content" class="tab-content">
-				<div id="editor-overlay"></div>
-				<div id="editor" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-editor"></div>
-				<div id="faust-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-faust-ui">
-					<div id="faust-ui-default" class="alert alert-info" role="alert">
-						<h5>DSP not running</h5>
-						<p>Click Compile to run a dsp with your faust code.</p>
-					</div>
-					<iframe id="iframe-faust-ui" src="./faust_ui.html"></iframe>
+			<div id="top">
+				<div id="editor-top" class="mt-1 ml-2 mb-1">
+					<span>Code Editor</span>
 				</div>
-				<div id="diagram" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-diagram">
-					<div id="diagram-default" class="alert alert-info" role="alert">
-						<h5>DSP not running</h5>
-						<p>Click Compile to run a dsp with your faust code.</p>
+				<div id="editor-overlay"></div>
+				<div id="editor-container" class="mb-2">
+					<div id="editor"></div>
+				</div>
+				<div id="editor-resizable" class="resizable resizable-bottom"></div>
+			</div>
+			<div id="bottom">
+				<ul id="bottom-tab" class="nav nav-tabs" role="tablist">
+					<li class="nav-item">
+						<a id="tab-diagram" class="nav-link active" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
+					</li>
+					<li class="nav-item">
+						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">DSP</a>
+					</li>
+				</ul>
+				<div id="bottom-content" class="tab-content">
+					<div id="diagram" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-diagram">
+						<div id="diagram-default" class="alert alert-info" role="alert">
+							<h5>DSP not running</h5>
+							<p>Click Compile to run a dsp with your faust code.</p>
+						</div>
+						<div id="diagram-svg"></div>
 					</div>
-					<div id="diagram-svg"></div>
+					<div id="faust-ui" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-faust-ui">
+						<div id="faust-ui-default" class="alert alert-info" role="alert">
+							<h5>DSP not running</h5>
+							<p>Click Compile to run a dsp with your faust code.</p>
+						</div>
+						<iframe id="iframe-faust-ui" src="./faust_ui.html"></iframe>
+					</div>
 				</div>
 			</div>
 			<div id="alert-faust-code" class="alert alert-danger alert-dismissible fade show ml-4 mr-4 mb-4" role="alert">

@@ -2,7 +2,6 @@
 // TODO
 // File Name
 // Real-Time compile
-// SVG Zoom
 // better oscilloscope
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
@@ -449,7 +448,7 @@ $(async () => {
     // Editor
     editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
     $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
-    $("#center").on("dragenter dragover", (e) => {
+    $("#top").on("dragenter dragover", (e) => {
         const event = e.originalEvent as DragEvent;
         if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
             e.preventDefault();
@@ -688,7 +687,7 @@ $(async () => {
             else if (mode === "top") $div.height(h - dY);
             else if (mode === "bottom") $div.height(h + dY);
             if (editor) editor.layout();
-            if (wavesurfer.isReady) {
+            if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
                 wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
                 wavesurfer.drawBuffer();
             }
