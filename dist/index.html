@@ -70,7 +70,7 @@
 			</form>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="(recommended) Chrome supports AudioWorklet">
 				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled>
-				<label class="form-check-label" for="useWorklet">Use AudioWorklet</label>
+				<label class="form-check-label" for="check-worklet">Use AudioWorklet</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP parameters">
 				<input id="check-save-params" class="form-check-input" type="checkbox" value="">
@@ -78,8 +78,14 @@
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
 				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="">
-				<label class="form-check-label" for="saveDsp">
+				<label class="form-check-label" for="check-save-params">
 					Save DSP Source
+				</label>
+			</div>
+			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Real-time Diagram">
+				<input id="check-realtime-diagram" class="form-check-input" type="checkbox" value="" checked>
+				<label class="form-check-label" for="check-realtime-diagram">
+					Real-time Diagram
 				</label>
 			</div>
 		</div>
@@ -104,14 +110,23 @@
 					</li>
 				</ul>
 				<div id="bottom-content" class="tab-content">
-					<div id="diagram" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-diagram">
+					<div id="diagram" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-diagram">
 						<div id="diagram-default" class="alert alert-info" role="alert">
 							<h5>DSP not running</h5>
 							<p>Click Compile to run a dsp with your faust code.</p>
 						</div>
+						<div id="diagram-error" class="alert alert-warning" role="alert">
+							<h5>Unable to Generate Diagram</h5>
+							<span>Please check your faust code.</span>
+							<br />
+							<div class="alert-faust-code">
+								<span>Error in faust code</span>
+								<a class="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal" data-target="#modal-alert-faust-code-detail">Detail</a>
+							</div>
+						</div>
 						<div id="diagram-svg"></div>
 					</div>
-					<div id="faust-ui" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-faust-ui">
+					<div id="faust-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-faust-ui">
 						<div id="faust-ui-default" class="alert alert-info" role="alert">
 							<h5>DSP not running</h5>
 							<p>Click Compile to run a dsp with your faust code.</p>
@@ -120,8 +135,9 @@
 					</div>
 				</div>
 			</div>
-			<div id="alert-faust-code" class="alert alert-danger alert-dismissible fade show ml-4 mr-4 mb-4" role="alert">
-				<span>Error in faust code</span><a id="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal" data-target="#modal-alert-faust-code-detail">Detail</a>
+			<div id="alert-faust-code" class="alert-faust-code alert alert-danger alert-dismissible fade show ml-4 mr-4 mb-4" role="alert">
+				<span>Error in faust code</span>
+				<a class="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal" data-target="#modal-alert-faust-code-detail">Detail</a>
 				<button id="alert-faust-code-dismiss" type="button" class="close" data-dismiss="alert" aria-label="Close">
 				  	<span aria-hidden="true">&times;</span>
 				</button>
@@ -259,7 +275,7 @@
 					<div class="modal-footer">
 						<canvas id="qr-code" width="200px" height="200px"></canvas>
 						<div id="export-error" class="alert alert-danger" role="alert">
-								This is a danger alert—check it out!
+							Export error
 						</div>
 					</div>
 				</div>

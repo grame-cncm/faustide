@@ -209,6 +209,13 @@ body {
                         & > #diagram-default {
                             top: 20%;
                         }
+                        & > #diagram-error {
+                            top: 20%;
+                            display: none;
+                            & > .alert-faust-code {
+                                width: 100%;
+                            }
+                        }
                     }
                 }
             }
@@ -217,8 +224,10 @@ body {
                 bottom: 0px;
                 left: 0px;
                 right: 0px;
-                display: inline-flex;
                 visibility: hidden;
+            }
+            & .alert-faust-code {
+                display: inline-flex;
                 & > span {
                     text-overflow: ellipsis;
                     width: 100%;
@@ -415,4 +424,9 @@ body {
             bottom: 0;
         }
     }
+}
+.monaco-decoration-error {
+	background: red;
+	width: 5px !important;
+	margin-left: 3px;
 }

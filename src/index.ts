@@ -64,6 +64,7 @@ type FaustEditorCompileOptions = {
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096,
     saveParams: boolean,
     saveDsp: boolean,
+    realtimeDiagram: boolean,
     voices: number,
     args: { [key: string]: any }
 };
@@ -94,24 +95,60 @@ $(async () => {
         }
     };
     const showError = (str: string) => {
-        $("#alert-faust-code>span").text(str);
+        $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
     // Async load Monaco Editor
     const editor = await initEditor();
     editor.layout();
+    // Editor and Diagram
+    let editorDecoration = [] as string[];
+    const getDiagram = (code: string): {success: boolean, error?: Error} => {
+        let svg: string;
+        editorDecoration = editor.deltaDecorations(editorDecoration, []);
+        try {
+            svg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
+        } catch (e) {
+            const matchLine = e.toString().match(/FaustDSP : (\d+)/);
+            if (matchLine) {
+                const line = matchLine[1];
+                editorDecoration = editor.deltaDecorations(editorDecoration, [
+                    {
+                        range: new monaco.Range(line, 1, line, 1),
+                        options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
+                    }
+                ]);
+            }
+            $(".alert-faust-code>span").text(e);
+            $("#diagram-default").add(("#diagram-svg")).hide();
+            $("#diagram-error").show();
+            return { error: e, success: false };
+        }
+        $("#diagram-svg").empty().html(svg);
+        $("#diagram-default").add(("#diagram-error")).hide();
+        $("#diagram-svg").show();
+        return { success: true };
+    };
+    let getDiagramTimer: NodeJS.Timeout;
+    editor.onKeyUp(() => {
+        const code = editor.getValue();
+        if (localStorage.getItem("faust_editor_code") === code) return;
+        localStorage.setItem("faust_editor_code", code);
+        clearTimeout(getDiagramTimer);
+        if (compileOptions.realtimeDiagram) getDiagramTimer = setTimeout(getDiagram, 1000, code);
+    });
 
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
-    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
+    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeDiagram: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
     const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     faustEnv.editor = editor;
     faustEnv.faust = faust;
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Alerts
     $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
-    $("#a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
+    $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     $("#btn-export").tooltip({ trigger: "hover" });
@@ -144,6 +181,14 @@ $(async () => {
         loadEditorDspTable();
         saveEditorParams();
     })[0] as HTMLInputElement).checked = compileOptions.saveDsp;
+    if (compileOptions.saveDsp) loadEditorDspTable();
+    // Real-time Diagram
+    ($("#check-realtime-diagram").on("change", (e) => {
+        compileOptions.realtimeDiagram = (e.currentTarget as HTMLInputElement).checked;
+        if (compileOptions.realtimeDiagram) getDiagram(editor.getValue());
+        saveEditorParams();
+    })[0] as HTMLInputElement).checked = compileOptions.realtimeDiagram;
+    if (compileOptions.realtimeDiagram) getDiagram(editor.getValue());
     // MIDI Devices
     const key2Midi = new Key2Midi({ enabled: false });
     document.addEventListener("keydown", (e) => {
@@ -445,9 +490,6 @@ $(async () => {
             });
         });
     });
-    // Editor
-    editor.onKeyUp(() => localStorage.setItem("faust_editor_code", editor.getValue()));
-    $("#tab-editor").tab("show").on("shown.bs.tab", () => editor.layout());
     $("#top").on("dragenter dragover", (e) => {
         const event = e.originalEvent as DragEvent;
         if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
@@ -505,15 +547,15 @@ $(async () => {
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         const code = editor.getValue();
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
-        let svg: string;
         try {
+            const getDiagramResult = getDiagram(code);
+            if (!getDiagramResult.success) throw getDiagramResult.error;
             node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args });
-            svg = faust.getDiagram(code, ["-I", args["-I"]]);
         } catch (e) {
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
-            $("#faust-ui-default").add("#diagram-default").show();
-            $("#iframe-faust-ui").add("#diagram-svg").hide();
+            $("#faust-ui-default").show();
+            $("#iframe-faust-ui").hide();
             $("#output-analyser-ui").hide();
             refreshDspUI();
             showError(e);
@@ -566,9 +608,8 @@ $(async () => {
                 }
             };
             $("#alert-faust-code").css("visibility", "hidden");
-            $("#diagram-svg").empty().html(svg);
-            $("#faust-ui-default").add("#diagram-default").hide();
-            $("#iframe-faust-ui").add("#diagram-svg").show();
+            $("#faust-ui-default").hide();
+            $("#iframe-faust-ui").show();
             $("#output-analyser-ui").show();
             if ($("#tab-faust-ui").hasClass("active")) bindUI();
             else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
