@@ -124,7 +124,7 @@ body {
                 position: relative;
                 display: flex;
                 flex: 0 0 auto;
-                height: 75%;
+                height: 50%;
                 flex-direction: column;
                 min-height: 100px;
                 max-height: calc(100% - 200px);
@@ -180,7 +180,7 @@ body {
                             display: none;
                             border: none;
                             width: 100%;
-                            height: 99%;
+                            height: calc(100% - 10px);
                         }
                         & > #faust-ui-default {
                             top: 20%;

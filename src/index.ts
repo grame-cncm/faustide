@@ -613,6 +613,7 @@ $(async () => {
         const sL = $div.scrollLeft();
         const sT = $div.scrollTop();
         const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
+            if (!e.originalEvent.movementX && !e.originalEvent.movementY) return;
             svgDragged = true;
             const dX = e.pageX - x;
             const dY = e.pageY - y;
