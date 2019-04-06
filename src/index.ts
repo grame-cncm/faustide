@@ -705,6 +705,7 @@ $(async () => {
     $(".resizable").on("mousedown", (e) => {
         e.preventDefault();
         e.stopPropagation();
+        $("#iframe-faust-ui").css("pointer-events", "none");
         const $div = $(e.currentTarget).parent();
         const x = e.pageX;
         const y = e.pageY;
@@ -737,6 +738,7 @@ $(async () => {
         const handleMouseUp = (e: JQuery.MouseUpEvent) => {
             e.preventDefault();
             e.stopPropagation();
+            $("#iframe-faust-ui").css("pointer-events", "");
             $(document).off("mousemove", handleMouseMove);
             $(document).off("mouseup", handleMouseUp);
         };
