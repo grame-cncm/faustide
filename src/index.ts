@@ -1046,7 +1046,7 @@ effect = dm.freeverb_demo;`;
                 const prefix = matched.nameArray.slice();
                 const name = prefix.pop();
                 const doc = matched.doc;
-                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "")}`)[0].click();
+                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()}`)[0].click();
                 return;
             }
             $("#a-docs").attr("href", faustDocURL)[0].click();

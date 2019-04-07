@@ -115,7 +115,7 @@ export const getProviders = () => {
                         contents: [
                             { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                             { value: doc.doc.replace(/#+/g, "######") },
-                            { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "")})` }
+                            { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` }
                         ]
                     };
                 }
