@@ -203,6 +203,8 @@ body {
                             & > svg {
                                 height: 100%;
                                 width: 100%;
+                                min-width: 20%;
+                                max-width: 500%;
                                 cursor: grab;
                             }
                         }
@@ -402,7 +404,8 @@ body {
             height: 40px;
             width: 10px;
             top: calc(50% - 20px);
-            background-image: linear-gradient(90deg, transparent, transparent 3px, #FFF8 3px, #FFF8 4px, transparent 4px, transparent 6px, #FFF8 6px, #FFF8 7px, transparent 7px);
+            $strip: rgba(255, 255, 255, 0.5);
+            background-image: linear-gradient(90deg, transparent, transparent 3px, $strip 3px, $strip 4px, transparent 4px, transparent 6px, $strip 6px, $strip 7px, transparent 7px);
         }
         &.resizable-left {
             left: 0;
@@ -415,7 +418,8 @@ body {
             height: 10px;
             width: 40px;
             left: calc(50% - 20px);
-            background-image: linear-gradient(0deg, transparent, transparent 3px, #FFF8 3px, #FFF8 4px, transparent 4px, transparent 6px, #FFF8 6px, #FFF8 7px, transparent 7px);
+            $strip: rgba(255, 255, 255, 0.5);
+            background-image: linear-gradient(0deg, transparent, transparent 3px, $strip 3px, $strip 4px, transparent 4px, transparent 6px, $strip 6px, $strip 7px, transparent 7px);
         }
         &.resizable-top {
             top: 0;

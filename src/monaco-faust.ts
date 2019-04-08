@@ -26,8 +26,7 @@ export const config: monaco.languages.LanguageConfiguration = {
         { open: "[", close: "]" },
         { open: "(", close: ")" },
         { open: '"', close: '"', notIn: ["string"] },
-        { open: "/*", close: "*/", notIn: ["string"] },
-        { open: "/**", close: " */", notIn: ["string"] }
+        { open: "/*", close: "*/", notIn: ["string"] }
     ],
 };
 export const theme: monaco.editor.IStandaloneThemeData = {
@@ -115,7 +114,7 @@ export const getProviders = () => {
                         contents: [
                             { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                             { value: doc.doc.replace(/#+/g, "######") },
-                            { value: `[Detail...](https://faust.grame.fr/tools/editor/libraries/doc/library.html#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` }
+                            prefix.length ? { value: `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` } : undefined
                         ]
                     };
                 }

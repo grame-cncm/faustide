@@ -35,6 +35,29 @@ class Key2Midi {
         c: "VELUP",
         v: "VELDOWN"
     };
+    static KEY_MAP_FR: TKeyMap = {
+        q: 0,
+        z: 1,
+        s: 2,
+        e: 3,
+        d: 4,
+        f: 5,
+        t: 6,
+        g: 7,
+        y: 8,
+        h: 9,
+        u: 10,
+        j: 11,
+        k: 12,
+        o: 13,
+        l: 14,
+        p: 15,
+        m: 16,
+        w: "PREV",
+        x: "NEXT",
+        c: "VELUP",
+        v: "VELDOWN"
+    };
     /**
      * Current key map
      *
