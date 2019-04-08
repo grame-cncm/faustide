@@ -82,7 +82,7 @@
 					Save DSP Source
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Real-time Diagram">
+			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Try to compile diagram in real-time">
 				<input id="check-realtime-diagram" class="form-check-input" type="checkbox" value="" checked>
 				<label class="form-check-label" for="check-realtime-diagram">
 					Real-time Diagram
@@ -105,8 +105,11 @@
 					<li class="nav-item">
 						<a id="tab-diagram" class="nav-link active" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
 					</li>
-					<li class="nav-item">
-						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">DSP</a>
+					<li id="nav-item-faust-ui" class="nav-item">
+						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">
+							<span>DSP</span>
+							<button type="button" class="btn btn-outline-light btn-close-tab">&times;</button>
+						</a>
 					</li>
 				</ul>
 				<div id="bottom-content" class="tab-content">

@@ -159,6 +159,21 @@ body {
                 & > #bottom-tab {
                     flex: 0 0 auto;
                     position: relative;
+                    & > #nav-item-faust-ui {
+                        display: none;
+                    }
+                    & button.btn-close-tab {
+                        font-size: 18px;
+                        border-color: transparent;
+                        border-radius: 50%;
+                        padding: 0rem 0.2rem 0.1rem 0.2rem;
+                        line-height: 1;
+                        margin-bottom: 2px;
+                        color: inherit;
+                        &:hover {
+                            background-color: rgba(192, 192, 192, 0.75);
+                        }
+                    }
                     & a.nav-link:not(.active) {
                         color: whitesmoke;
                         &:hover {

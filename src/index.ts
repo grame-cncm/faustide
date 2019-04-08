@@ -2,11 +2,9 @@
 // TODO
 // File Name
 // DSP closing (Real-time compiling)
-// don't stop thing on error
-// show errors slightly
-// limit and save diagram zoom
 // primitives doc
 // better oscilloscope
+// bargraph in scopes
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
@@ -29,24 +27,24 @@ declare global {
     }
 }
 type FaustEditorEnv = {
-    audioEnv: FaustEditorAudioEnv;
-    midiEnv: FaustEditorMIDIEnv;
-    uiEnv: FaustEditorUIEnv;
-    compileOptions: FaustEditorCompileOptions;
-    editor?: monaco.editor.IStandaloneCodeEditor;
-    jQuery: JQueryStatic;
-    faust: Faust;
+    audioEnv: FaustEditorAudioEnv,
+    midiEnv: FaustEditorMIDIEnv,
+    uiEnv: FaustEditorUIEnv,
+    compileOptions: FaustEditorCompileOptions,
+    editor?: monaco.editor.IStandaloneCodeEditor,
+    jQuery: JQueryStatic,
+    faust: Faust
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext,
-    splitterInput?: ChannelSplitterNode;
-    analyserInputI: number;
+    splitterInput?: ChannelSplitterNode,
+    analyserInputI: number,
     analyserInput?: AnalyserNode,
-    splitterOutput?: ChannelSplitterNode;
-    analyserOutputI: number;
+    splitterOutput?: ChannelSplitterNode,
+    analyserOutputI: number,
     analyserOutput?: AnalyserNode,
     inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode },
-    currentInput?: string;
+    currentInput?: string,
     mediaDestination?: MediaStreamAudioDestinationNode,
     dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode,
     dspConnectedToOutput: boolean,
@@ -134,13 +132,13 @@ $(async () => {
         $("#diagram-svg").show();
         return { success: true };
     };
-    let getDiagramTimer: NodeJS.Timeout;
+    let rtCompileTimer: NodeJS.Timeout;
     editor.onKeyUp(() => {
         const code = editor.getValue();
         if (localStorage.getItem("faust_editor_code") === code) return;
         localStorage.setItem("faust_editor_code", code);
-        clearTimeout(getDiagramTimer);
-        if (compileOptions.realtimeDiagram) getDiagramTimer = setTimeout(getDiagram, 1000, code);
+        clearTimeout(rtCompileTimer);
+        if (compileOptions.realtimeDiagram) rtCompileTimer = setTimeout(getDiagram, 1000, code);
     });
 
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
@@ -615,6 +613,7 @@ $(async () => {
         };
         $("#alert-faust-code").css("visibility", "hidden");
         $("#faust-ui-default").hide();
+        $("#nav-item-faust-ui").show();
         $("#iframe-faust-ui").show();
         $("#output-analyser-ui").show();
         if ($("#tab-faust-ui").hasClass("active")) bindUI();
@@ -638,6 +637,28 @@ $(async () => {
         }
         if (data.type === "keydown") return key2Midi.handleKeyDown(data.key);
         if (data.type === "keyup") return key2Midi.handleKeyUp(data.key);
+    });
+    $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (audioEnv.dsp) { // Disconnect current
+            const input = audioEnv.inputs[audioEnv.currentInput];
+            const dsp = audioEnv.dsp;
+            if (audioEnv.dspConnectedToInput) {
+                input.disconnect(dsp);
+                audioEnv.dspConnectedToInput = false;
+            }
+            dsp.disconnect();
+            audioEnv.dspConnectedToOutput = false;
+        }
+        const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+        uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
+        $("#faust-ui-default").show();
+        $("#iframe-faust-ui").hide();
+        $("#output-analyser-ui").hide();
+        refreshDspUI();
+        if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
+        $("#nav-item-faust-ui").hide();
     });
     let svgDragged = false;
     // svg inject
