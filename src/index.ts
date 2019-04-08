@@ -1,6 +1,5 @@
 // import { Faust } from "faust2webaudio";
 // TODO
-// File Name
 // primitives doc
 // better oscilloscope
 // bargraph in scopes
@@ -500,8 +499,15 @@ $(async () => {
         const reader = new FileReader();
         reader.onload = () => {
             compileOptions.name = file.name.split(".").slice(0, -1).join(".");
-            editor.setValue(reader.result.toString());
+            $("#input-filename").val(compileOptions.name);
+            const code = reader.result.toString();
+            editor.setValue(code);
+            localStorage.setItem("faust_editor_code", code);
             saveEditorParams();
+            if (compileOptions.realtimeDiagram) {
+                if (audioEnv.dsp) runDsp(code);
+                else getDiagram(code);
+            }
         };
         reader.onerror = () => undefined;
         reader.readAsText(file);
@@ -583,6 +589,8 @@ $(async () => {
                 $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
             });
         });
+    }).catch((r) => {
+        $("#btn-export").prop("disabled", "true");
     });
     $("#top").on("dragenter dragover", (e) => {
         const event = e.originalEvent as DragEvent;
@@ -612,15 +620,23 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 compileOptions.name = file.name.split(".").slice(0, -1).join(".");
+                $("#input-filename").val(compileOptions.name);
                 const code = reader.result.toString();
                 editor.setValue(code);
                 localStorage.setItem("faust_editor_code", code);
                 saveEditorParams();
-                if (compileOptions.realtimeDiagram) getDiagram(code);
+                if (compileOptions.realtimeDiagram) {
+                    if (audioEnv.dsp) runDsp(code);
+                    else getDiagram(code);
+                }
             };
             reader.onerror = () => undefined;
             reader.readAsText(file);
         }
+    });
+    $("#input-filename").val(compileOptions.name).on("keyup", (e) => {
+        compileOptions.name = $(e.currentTarget).val() as string;
+        saveEditorParams();
     });
     // Run Dsp Button
     $("#btn-run").prop("disabled", false).on("click", async (e) => {

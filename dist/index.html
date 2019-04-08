@@ -91,9 +91,19 @@
 		</div>
 		<div id="center" class="container">
 			<div id="top">
-				<div id="editor-top" class="mt-1 ml-2 mb-1">
-					<span>Code Editor</span>
-				</div>
+				<ul id="editor-top" class="nav nav-tabs" role="tablist">
+					<li class="nav-item">
+						<div id="tab-editor" class="nav-link active" data-toggle="tab" href="#" role="tab" aria-selected="true">
+							<div class="input-group">
+								<input id="input-filename" type="text" class="form-control" aria-label="File Name">
+								<div class="input-group-append">
+									<span class="input-group-text">.dsp</span>
+								</div>
+							</div>
+						</div>
+					</li>
+				</ul>
+				<div class="tab-content"></div>
 				<div id="editor-overlay"></div>
 				<div id="editor-container" class="mb-2">
 					<div id="editor"></div>
