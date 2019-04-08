@@ -105,7 +105,7 @@ $(async () => {
     editor.layout();
     // Editor and Diagram
     let editorDecoration = [] as string[];
-    const getDiagram = (code: string): {success: boolean, error?: Error} => {
+    const getDiagram = (code: string): { success: boolean, error?: Error } => {
         let svg: string;
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
@@ -132,13 +132,105 @@ $(async () => {
         $("#diagram-svg").show();
         return { success: true };
     };
+    // dsp Compiler
+    const runDsp = async (code: string): Promise<{ success: boolean, error?: Error }> => {
+        const audioCtx = audioEnv.audioCtx;
+        const input = audioEnv.inputs[audioEnv.currentInput];
+        let splitter = audioEnv.splitterOutput;
+        const analyser = audioEnv.analyserOutput;
+        if (!audioCtx) {
+            await initAudioCtx(audioEnv);
+            initAnalysersUI(uiEnv, audioEnv);
+        }
+        const { useWorklet, bufferSize, voices, args } = compileOptions;
+        let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        try {
+            const getDiagramResult = getDiagram(code);
+            if (!getDiagramResult.success) throw getDiagramResult.error;
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args });
+            if (!node) throw "Unknown Error in WebAudio Node.";
+        } catch (e) {/*
+            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
+            $("#faust-ui-default").show();
+            $("#iframe-faust-ui").css("visibility", "hidden");
+            $("#output-analyser-ui").hide();
+            refreshDspUI(); */
+            showError(e);
+            return { success: false, error: e };
+        }
+        if (audioEnv.dsp) { // Disconnect current
+            const dsp = audioEnv.dsp;
+            if (audioEnv.dspConnectedToInput) {
+                input.disconnect(dsp);
+                audioEnv.dspConnectedToInput = false;
+            }
+            dsp.disconnect();
+            audioEnv.dspConnectedToOutput = false;
+            delete audioEnv.dsp;
+        }
+        let dspParams = {} as { [path: string]: number };
+        if (compileOptions.saveParams) {
+            const strDspParams = localStorage.getItem("faust_editor_dsp_params");
+            if (strDspParams) {
+                dspParams = JSON.parse(strDspParams);
+                for (const path in dspParams) {
+                    if (node.getParams().indexOf(path) !== -1) {
+                        node.setParamValue(path, dspParams[path]);
+                    }
+                }
+            }
+        }
+        audioEnv.dsp = node;
+        const channelsCount = node.getNumOutputs();
+        if (!splitter || splitter.numberOfOutputs !== channelsCount) {
+            if (splitter) splitter.disconnect(analyser);
+            splitter = audioCtx.createChannelSplitter(channelsCount);
+            delete audioEnv.splitterOutput;
+            audioEnv.splitterOutput = splitter;
+            if (audioEnv.analyserOutputI > channelsCount - 1) {
+                audioEnv.analyserOutputI = channelsCount - 1;
+                $("#btn-output-analyser-ch").html("ch " + (audioEnv.analyserOutputI + 1).toString());
+            }
+            splitter.connect(analyser, audioEnv.analyserOutputI);
+        }
+        if (audioEnv.inputEnabled && node.getNumInputs()) {
+            audioEnv.inputs[audioEnv.currentInput].connect(node);
+            audioEnv.dspConnectedToInput = true;
+        }
+        node.connect(splitter);
+        if (audioEnv.outputEnabled) {
+            node.connect(audioEnv.audioCtx.destination);
+            audioEnv.dspConnectedToOutput = true;
+        }
+        const bindUI = () => {
+            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            uiWindow.postMessage(JSON.stringify({ type: "ui", json: node.getJSON() }), "*");
+            node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value, type: "param" }), "*"));
+            if (compileOptions.saveParams) {
+                const params = node.getParams();
+                for (const path in dspParams) {
+                    if (params.indexOf(path) !== -1) uiWindow.postMessage(JSON.stringify({ path, value: dspParams[path], type: "param" }), "*");
+                }
+            }
+        };
+        bindUI();
+        $("#alert-faust-code").css("visibility", "hidden");
+        $("#faust-ui-default").hide();
+        $("#nav-item-faust-ui").show();
+        $("#iframe-faust-ui").css("visibility", "visible");
+        $("#output-analyser-ui").show();
+        refreshDspUI(node);
+        saveEditorDspTable();
+        return { success: true };
+    };
     let rtCompileTimer: NodeJS.Timeout;
     editor.onKeyUp(() => {
         const code = editor.getValue();
         if (localStorage.getItem("faust_editor_code") === code) return;
         localStorage.setItem("faust_editor_code", code);
         clearTimeout(rtCompileTimer);
-        if (compileOptions.realtimeDiagram) rtCompileTimer = setTimeout(getDiagram, 1000, code);
+        if (compileOptions.realtimeDiagram) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
     });
 
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
@@ -521,105 +613,21 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 compileOptions.name = file.name.split(".").slice(0, -1).join(".");
-                editor.setValue(reader.result.toString());
-                localStorage.setItem("faust_editor_code", editor.getValue());
+                const code = reader.result.toString();
+                editor.setValue(code);
+                localStorage.setItem("faust_editor_code", code);
                 saveEditorParams();
+                if (compileOptions.realtimeDiagram) getDiagram(code);
             };
             reader.onerror = () => undefined;
             reader.readAsText(file);
         }
     });
-    // Faust Core
+    // Run Dsp Button
     $("#btn-run").prop("disabled", false).on("click", async (e) => {
-        const audioCtx = audioEnv.audioCtx;
-        const input = audioEnv.inputs[audioEnv.currentInput];
-        let splitter = audioEnv.splitterOutput;
-        const analyser = audioEnv.analyserOutput;
-        if (!audioCtx) {
-            await initAudioCtx(audioEnv);
-            initAnalysersUI(uiEnv, audioEnv);
-        }
-        const { useWorklet, bufferSize, voices, args } = compileOptions;
-        const code = editor.getValue();
-        let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
-        try {
-            const getDiagramResult = getDiagram(code);
-            if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args });
-            if (!node) throw "Unknown Error in WebAudio Node.";
-        } catch (e) {/*
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
-            $("#faust-ui-default").show();
-            $("#iframe-faust-ui").hide();
-            $("#output-analyser-ui").hide();
-            refreshDspUI(); */
-            showError(e);
-            throw e;
-        }
-        if (audioEnv.dsp) { // Disconnect current
-            const dsp = audioEnv.dsp;
-            if (audioEnv.dspConnectedToInput) {
-                input.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
-            }
-            dsp.disconnect();
-            audioEnv.dspConnectedToOutput = false;
-        }
-        let dspParams = {} as { [path: string]: number };
-        if (compileOptions.saveParams) {
-            const strDspParams = localStorage.getItem("faust_editor_dsp_params");
-            if (strDspParams) {
-                dspParams = JSON.parse(strDspParams);
-                for (const path in dspParams) {
-                    if (node.getParams().indexOf(path) !== -1) {
-                        node.setParamValue(path, dspParams[path]);
-                    }
-                }
-            }
-        }
-        audioEnv.dsp = node;
-        const channelsCount = node.getNumOutputs();
-        if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-            if (splitter) splitter.disconnect(analyser);
-            splitter = audioCtx.createChannelSplitter(channelsCount);
-            delete audioEnv.splitterOutput;
-            audioEnv.splitterOutput = splitter;
-            if (audioEnv.analyserOutputI > channelsCount - 1) {
-                audioEnv.analyserOutputI = channelsCount - 1;
-                $("#btn-output-analyser-ch").html("ch " + (audioEnv.analyserOutputI + 1).toString());
-            }
-            splitter.connect(analyser, audioEnv.analyserOutputI);
-        }
-        if (audioEnv.inputEnabled && node.getNumInputs()) {
-            audioEnv.inputs[audioEnv.currentInput].connect(node);
-            audioEnv.dspConnectedToInput = true;
-        }
-        node.connect(splitter);
-        if (audioEnv.outputEnabled) {
-            node.connect(audioEnv.audioCtx.destination);
-            audioEnv.dspConnectedToOutput = true;
-        }
-        const bindUI = () => {
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            uiWindow.postMessage(JSON.stringify({ type: "ui", json: node.getJSON() }), "*");
-            node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value, type: "param" }), "*"));
-            if (compileOptions.saveParams) {
-                const params = node.getParams();
-                for (const path in dspParams) {
-                    if (params.indexOf(path) !== -1) uiWindow.postMessage(JSON.stringify({ path, value: dspParams[path], type: "param" }), "*");
-                }
-            }
-        };
-        $("#alert-faust-code").css("visibility", "hidden");
-        $("#faust-ui-default").hide();
-        $("#nav-item-faust-ui").show();
-        $("#iframe-faust-ui").show();
-        $("#output-analyser-ui").show();
-        if ($("#tab-faust-ui").hasClass("active")) bindUI();
-        else $("#tab-faust-ui").tab("show").one("shown.bs.tab", bindUI);
-        refreshDspUI(node);
-        saveEditorDspTable();
+        const compileResult = await runDsp(editor.getValue());
+        if (!compileResult.success) return;
+        if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
@@ -650,15 +658,16 @@ $(async () => {
             }
             dsp.disconnect();
             audioEnv.dspConnectedToOutput = false;
+            delete audioEnv.dsp;
         }
+        if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
+        $("#nav-item-faust-ui").hide();
         const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
         uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
         $("#faust-ui-default").show();
-        $("#iframe-faust-ui").hide();
+        $("#iframe-faust-ui").css("visibility", "hidden");
         $("#output-analyser-ui").hide();
         refreshDspUI();
-        if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
-        $("#nav-item-faust-ui").hide();
     });
     let svgDragged = false;
     // svg inject
