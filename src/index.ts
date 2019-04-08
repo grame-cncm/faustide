@@ -1,7 +1,6 @@
 // import { Faust } from "faust2webaudio";
 // TODO
 // File Name
-// DSP closing (Real-time compiling)
 // primitives doc
 // better oscilloscope
 // bargraph in scopes

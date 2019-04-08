@@ -454,8 +454,10 @@ body {
 .tab-content > .tab-pane.active {
     display: unset;
     visibility: visible;
+    z-index: 0;
 }
 .tab-content > .tab-pane {
     display: unset;
     visibility: hidden;
+    z-index: -1;
 }
