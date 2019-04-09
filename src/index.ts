@@ -1,7 +1,6 @@
 // import { Faust } from "faust2webaudio";
 // TODO
 // primitives doc
-// better oscilloscope
 // bargraph in scopes
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
@@ -248,12 +247,13 @@ $(async () => {
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
-        saveEditorParams();
+        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
     }).children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     // BufferSize
     $("#select-buffer-size").on("change", (e) => {
         compileOptions.bufferSize = +(e.currentTarget as HTMLInputElement).value as 128 | 256 | 512 | 1024 | 2048 | 4096;
         saveEditorParams();
+        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
     }).children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     // AudioWorklet
     $("#check-worklet").on("change", (e) => {
@@ -261,6 +261,7 @@ $(async () => {
         if (compileOptions.useWorklet) $("#select-buffer-size").prop("disabled", true).children("option").eq(0).prop("selected", true);
         else $("#select-buffer-size").prop("disabled", false).children("option").eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
         saveEditorParams();
+        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
     });
     if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     // Save Params

@@ -21,7 +21,7 @@
 				<button id="btn-upload" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
 					<i class="fas fa-upload fa-sm"></i>
 					<span>Upload</span>
-					<input id="input-upload" type="file" type="file">
+					<input id="input-upload" type="file" type="file" />
 				</button>
 				<button id="btn-save" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Download/Save as a local file">
 					<i class="fas fa-save fa-sm"></i>
@@ -69,21 +69,21 @@
 				</select>
 			</form>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="(recommended) Chrome supports AudioWorklet">
-				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled>
+				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
 				<label class="form-check-label" for="check-worklet">Use AudioWorklet</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP parameters">
-				<input id="check-save-params" class="form-check-input" type="checkbox" value="">
+				<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-params">Save Params State</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
-				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="">
+				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-dsp">
 					Save DSP Source
 				</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Try to compile diagram in real-time">
-				<input id="check-realtime-diagram" class="form-check-input" type="checkbox" value="" checked>
+				<input id="check-realtime-diagram" class="form-check-input" type="checkbox" value="" checked />
 				<label class="form-check-label" for="check-realtime-diagram">
 					Real-time Diagram
 				</label>
@@ -94,8 +94,8 @@
 				<ul id="editor-top" class="nav nav-tabs" role="tablist">
 					<li class="nav-item">
 						<div id="tab-editor" class="nav-link active" data-toggle="tab" href="#" role="tab" aria-selected="true">
-							<div class="input-group">
-								<input id="input-filename" type="text" class="form-control" aria-label="File Name">
+							<div class="input-group" data-toggle="tooltip" data-placement="right" title="File Name">
+								<input id="input-filename" type="text" class="form-control" aria-label="File Name" placeholder="Name" />
 								<div class="input-group-append">
 									<span class="input-group-text">.dsp</span>
 								</div>
@@ -259,7 +259,7 @@
 					<div class="modal-body">
 						<div class="form-group">
 							<label for="export-name">Name</label>
-							<input id="export-name" type="text" class="form-control form-control-sm" />
+							<input id="export-name" type="text" class="form-control form-control-sm" placeholder="Name" />
 						</div>
 						<div class="form-group">
 							<label for="export-platform" class="col-form-label">Platform</label>
