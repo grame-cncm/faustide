@@ -915,7 +915,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         audioEnv.analyserOutputI = i;
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
-    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, iT: Uint8Array, freq: number) => {
+    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Uint8Array, freq: number, sr: number) => {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "#FFFFFF";
@@ -925,24 +925,27 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         ctx.beginPath();
         let $zerox = 0;
         const thresh = 1;
-        while (iT[$zerox++] > 128 && $zerox <= l);
-        if ($zerox >= l) {
+        const period = sr / freq;
+        const times = Math.floor(l / period) - 1;
+        while (d[$zerox++] > 128 && $zerox < l);
+        if ($zerox >= l - 1) {
             $zerox = 0;
         } else {
-            while (iT[$zerox++] < 128 + thresh && $zerox <= l);
-            if ($zerox >= l) {
+            while (d[$zerox++] < 128 + thresh && $zerox < l);
+            if ($zerox >= l - 1) {
                 $zerox = 0;
             }
         }
-        for (let i = $zerox; i < l; i++) {
-            const x = w * (i - $zerox) / (l - $zerox - 1);
-            const y = h - iT[i] / 128.0 * (h / 2);
+        const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
+        for (let i = $zerox; i < $zerox + drawL; i++) {
+            const x = w * (i - $zerox) / (drawL - 1);
+            const y = h - d[i] / 128.0 * (h / 2);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
     };
-    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, iF: Uint8Array, freq: number) => {
+    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Uint8Array, freq: number) => {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "#FFFFFF";
@@ -950,23 +953,24 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
         for (let i = 0; i < l; i++) {
             const x = w * i / l;
-            const y = iF[i] / 128.0 * h;
+            const y = d[i] / 128.0 * h;
             ctx.fillRect(x, h - y, w / l, y);
         }
     };
     const iDraw = () => {
         if (audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
             const ctx = iCtx;
+            const sr = audioCtx.sampleRate;
             const w = $("#input-analyser-ui").innerWidth();
             const h = Math.min(w * 0.75, $("#input-analyser-ui").innerHeight());
             iCanvas.width = w;
             iCanvas.height = h;
             iNode.getFloatFrequencyData(iFF);
-            const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * audioCtx.sampleRate / 2;
+            const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * sr / 2;
             if (uiEnv.inputAnalyser === 0) {
                 const l = iT.length;
                 iNode.getByteTimeDomainData(iT);
-                drawOsc(ctx, l, w, h, iT, freq);
+                drawOsc(ctx, l, w, h, iT, freq, sr);
             } else if (uiEnv.inputAnalyser === 1) {
                 const l = iF.length;
                 iNode.getByteFrequencyData(iF);
@@ -979,16 +983,17 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     const oDraw = () => {
         if (audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
             const ctx = oCtx;
+            const sr = audioCtx.sampleRate;
             const w = $("#output-analyser-ui").innerWidth();
             const h = Math.min(w * 0.75, $("#output-analyser-ui").innerHeight());
             oCanvas.width = w;
             oCanvas.height = h;
             oNode.getFloatFrequencyData(oFF);
-            const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * audioCtx.sampleRate / 2;
+            const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * sr / 2;
             if (uiEnv.outputAnalyser === 0) {
                 const l = oT.length;
                 oNode.getByteTimeDomainData(oT);
-                drawOsc(ctx, l, w, h, oT, freq);
+                drawOsc(ctx, l, w, h, oT, freq, sr);
             } else if (uiEnv.outputAnalyser === 1) {
                 const l = oF.length;
                 oNode.getByteFrequencyData(oF);
