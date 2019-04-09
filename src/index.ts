@@ -915,6 +915,45 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         audioEnv.analyserOutputI = i;
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
+    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, iT: Uint8Array, freq: number) => {
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.textAlign = "right";
+        ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.beginPath();
+        let $zerox = 0;
+        const thresh = 1;
+        while (iT[$zerox++] > 128 && $zerox <= l);
+        if ($zerox >= l) {
+            $zerox = 0;
+        } else {
+            while (iT[$zerox++] < 128 + thresh && $zerox <= l);
+            if ($zerox >= l) {
+                $zerox = 0;
+            }
+        }
+        for (let i = $zerox; i < l; i++) {
+            const x = w * (i - $zerox) / (l - $zerox - 1);
+            const y = h - iT[i] / 128.0 * (h / 2);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    };
+    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, iF: Uint8Array, freq: number) => {
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, w, h);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.textAlign = "right";
+        ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
+        for (let i = 0; i < l; i++) {
+            const x = w * i / l;
+            const y = iF[i] / 128.0 * h;
+            ctx.fillRect(x, h - y, w / l, y);
+        }
+    };
     const iDraw = () => {
         if (audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
             const ctx = iCtx;
@@ -927,33 +966,11 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             if (uiEnv.inputAnalyser === 0) {
                 const l = iT.length;
                 iNode.getByteTimeDomainData(iT);
-                ctx.fillStyle = "#000000";
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = "#FFFFFF";
-                ctx.textAlign = "right";
-                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                ctx.strokeStyle = "#FFFFFF";
-                ctx.beginPath();
-                for (let i = 0; i < l; i++) {
-                    const x = w * i / (l - 1);
-                    const y = h - iT[i] / 128.0 * (h / 2);
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.stroke();
+                drawOsc(ctx, l, w, h, iT, freq);
             } else if (uiEnv.inputAnalyser === 1) {
                 const l = iF.length;
                 iNode.getByteFrequencyData(iF);
-                ctx.fillStyle = "#000000";
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = "#FFFFFF";
-                ctx.textAlign = "right";
-                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                for (let i = 0; i < l; i++) {
-                    const x = w * i / l;
-                    const y = iF[i] / 128.0 * h;
-                    ctx.fillRect(x, h - y, w / l, y);
-                }
+                drawSpe(ctx, l, w, h, iF, freq);
             }
         }
         iRAF = requestAnimationFrame(iDraw);
@@ -971,33 +988,11 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             if (uiEnv.outputAnalyser === 0) {
                 const l = oT.length;
                 oNode.getByteTimeDomainData(oT);
-                ctx.fillStyle = "#000000";
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = "#FFFFFF";
-                ctx.textAlign = "right";
-                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                ctx.strokeStyle = "#FFFFFF";
-                ctx.beginPath();
-                for (let i = 0; i < l; i++) {
-                    const x = w * i / (l - 1);
-                    const y = h - oT[i] / 128.0 * (h / 2);
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.stroke();
+                drawOsc(ctx, l, w, h, oT, freq);
             } else if (uiEnv.outputAnalyser === 1) {
                 const l = oF.length;
                 oNode.getByteFrequencyData(oF);
-                ctx.fillStyle = "#000000";
-                ctx.fillRect(0, 0, w, h);
-                ctx.fillStyle = "#FFFFFF";
-                ctx.textAlign = "right";
-                ctx.fillText("~" + freq.toFixed(1) + "Hz", w - 2, 15, 50);
-                for (let i = 0; i < l; i++) {
-                    const x = w * i / l;
-                    const y = oF[i] / 128.0 * h;
-                    ctx.fillRect(x, h - y, w / l, y);
-                }
+                drawSpe(ctx, l, w, h, oF, freq);
             }
         }
         oRAF = requestAnimationFrame(oDraw);

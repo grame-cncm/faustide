@@ -32,8 +32,8 @@ class Key2Midi {
         ";": 16,
         z: "PREV",
         x: "NEXT",
-        c: "VELUP",
-        v: "VELDOWN"
+        c: "VELDOWN",
+        v: "VELUP"
     };
     static KEY_MAP_FR: TKeyMap = {
         q: 0,
@@ -55,8 +55,8 @@ class Key2Midi {
         m: 16,
         w: "PREV",
         x: "NEXT",
-        c: "VELUP",
-        v: "VELDOWN"
+        c: "VELDOWN",
+        v: "VELUP"
     };
     /**
      * Current key map
