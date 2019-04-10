@@ -2,7 +2,6 @@
 // TODO
 // primitives doc
 // bargraph in scopes
-// exemples
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
@@ -286,7 +285,7 @@ $(async () => {
         if (compileOptions.realtimeCompile) getDiagram(editor.getValue());
         saveEditorParams();
     })[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
-    if (compileOptions.realtimeCompile) getDiagram(editor.getValue());
+    if (compileOptions.realtimeCompile) setTimeout(getDiagram, 0, editor.getValue());
     // MIDI Devices
     const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
     document.addEventListener("keydown", (e) => {
