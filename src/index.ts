@@ -64,7 +64,7 @@ type FaustEditorCompileOptions = {
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096,
     saveParams: boolean,
     saveDsp: boolean,
-    realtimeDiagram: boolean,
+    realtimeCompile: boolean,
     voices: number,
     args: { [key: string]: any }
 };
@@ -157,7 +157,8 @@ $(async () => {
             showError(e);
             return { success: false, error: e };
         }
-        setTimeout(getDiagram, 0, code);
+        if ($("#tab-diagram").hasClass("active")) setTimeout(getDiagram, 0, code);
+        $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => getDiagram(code));
         if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
@@ -229,13 +230,13 @@ $(async () => {
         if (localStorage.getItem("faust_editor_code") === code) return;
         localStorage.setItem("faust_editor_code", code);
         clearTimeout(rtCompileTimer);
-        if (compileOptions.realtimeDiagram) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
+        if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
     });
 
     const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { input: null } as FaustEditorMIDIEnv;
     const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
-    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeDiagram: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
+    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
     const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     faustEnv.editor = editor;
     faustEnv.faust = faust;
@@ -249,13 +250,13 @@ $(async () => {
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
-        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     }).children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     // BufferSize
     $("#select-buffer-size").on("change", (e) => {
         compileOptions.bufferSize = +(e.currentTarget as HTMLInputElement).value as 128 | 256 | 512 | 1024 | 2048 | 4096;
         saveEditorParams();
-        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     }).children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     // AudioWorklet
     $("#check-worklet").on("change", (e) => {
@@ -263,7 +264,7 @@ $(async () => {
         if (compileOptions.useWorklet) $("#select-buffer-size").prop("disabled", true).children("option").eq(0).prop("selected", true);
         else $("#select-buffer-size").prop("disabled", false).children("option").eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
         saveEditorParams();
-        if (compileOptions.realtimeDiagram && audioEnv.dsp) runDsp(editor.getValue());
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
     if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     // Save Params
@@ -279,12 +280,12 @@ $(async () => {
     })[0] as HTMLInputElement).checked = compileOptions.saveDsp;
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Real-time Diagram
-    ($("#check-realtime-diagram").on("change", (e) => {
-        compileOptions.realtimeDiagram = (e.currentTarget as HTMLInputElement).checked;
-        if (compileOptions.realtimeDiagram) getDiagram(editor.getValue());
+    ($("#check-realtime-compile").on("change", (e) => {
+        compileOptions.realtimeCompile = (e.currentTarget as HTMLInputElement).checked;
+        if (compileOptions.realtimeCompile) getDiagram(editor.getValue());
         saveEditorParams();
-    })[0] as HTMLInputElement).checked = compileOptions.realtimeDiagram;
-    if (compileOptions.realtimeDiagram) getDiagram(editor.getValue());
+    })[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
+    if (compileOptions.realtimeCompile) getDiagram(editor.getValue());
     // MIDI Devices
     const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
     document.addEventListener("keydown", (e) => {
@@ -507,7 +508,7 @@ $(async () => {
             editor.setValue(code);
             localStorage.setItem("faust_editor_code", code);
             saveEditorParams();
-            if (compileOptions.realtimeDiagram) {
+            if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(code);
                 else getDiagram(code);
             }
@@ -628,7 +629,7 @@ $(async () => {
                 editor.setValue(code);
                 localStorage.setItem("faust_editor_code", code);
                 saveEditorParams();
-                if (compileOptions.realtimeDiagram) {
+                if (compileOptions.realtimeCompile) {
                     if (audioEnv.dsp) runDsp(code);
                     else getDiagram(code);
                 }
