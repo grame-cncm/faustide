@@ -2,6 +2,7 @@
 // TODO
 // primitives doc
 // bargraph in scopes
+// exemples
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
@@ -142,8 +143,8 @@ $(async () => {
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
         try {
-            const getDiagramResult = getDiagram(code);
-            if (!getDiagramResult.success) throw getDiagramResult.error;
+            // const getDiagramResult = getDiagram(code);
+            // if (!getDiagramResult.success) throw getDiagramResult.error;
             node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args });
             if (!node) throw "Unknown Error in WebAudio Node.";
         } catch (e) {/*
@@ -156,6 +157,7 @@ $(async () => {
             showError(e);
             return { success: false, error: e };
         }
+        setTimeout(getDiagram, 0, code);
         if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
