@@ -9,6 +9,7 @@ body {
         position: absolute;
         display: flex;
         flex-direction: row;
+        overflow: hidden;
         & > #left {
             width: 200px;
             margin: 0px;
@@ -120,6 +121,22 @@ body {
             height: 100%;
             min-width: 400px;
             max-width: unset;
+            & a.nav-link:not(.active) {
+                color: whitesmoke;
+                &:hover {
+                    background-color: black;
+                    border-color: black black #dee2e6 black;
+                }
+                &:focus {
+                    border-color: black black #dee2e6 black;
+                }
+            }
+            & li.nav-item.show a.nav-link {
+                color: black;
+                &:hover {
+                    color: whitesmoke;
+                }
+            }
             & > #top {
                 position: relative;
                 display: flex;
@@ -134,9 +151,12 @@ body {
                     & #tab-editor {
                         padding: 0px;
                         border: 0px;
-                        & input, & span {
-                            font-size: 12px;
-                        } 
+                    }
+                    & * {
+                        font-size: 12px;
+                    }
+                    & .nav-link {
+                        line-height: 1.2;
                     }
                 }
                 & > #editor-overlay {
@@ -176,15 +196,9 @@ body {
                         padding: 0rem 0.2rem 0.1rem 0.2rem;
                         line-height: 1;
                         color: inherit;
+                        margin-right: -6px;
                         &:hover {
                             background-color: rgba(192, 192, 192, 0.75);
-                        }
-                    }
-                    & a.nav-link:not(.active) {
-                        color: whitesmoke;
-                        &:hover {
-                            background-color: black;
-                            border-color: black black #dee2e6 black;
                         }
                     }
                 }
@@ -467,4 +481,14 @@ body {
     display: unset;
     visibility: hidden;
     z-index: -1;
+}
+.dropright .dropdown-toggle.submenu-toggle::after {
+    right: 0;
+    position: absolute;
+    padding-right: 0.8em;
+    margin-top: 0.6em;
+}
+.dropright.submenu:hover > .dropdown-menu {
+    display: block;
+    margin-left: -1px;
 }

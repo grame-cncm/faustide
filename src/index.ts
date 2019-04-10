@@ -10,6 +10,7 @@ import { Key2Midi } from "./Key2Midi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as faustlang from "./monaco-faust";
+import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
 import "bootstrap/js/dist/modal";
@@ -641,6 +642,57 @@ $(async () => {
     $("#input-filename").val(compileOptions.name).on("keyup", (e) => {
         compileOptions.name = $(e.currentTarget).val() as string;
         saveEditorParams();
+    });
+    // Examples
+    type DirectoryTree = {
+        path: string,
+        name: string,
+        size: number,
+        type: "directory" | "file",
+        children?: DirectoryTree[],
+        extension?: string
+    };
+    fetch("./examples.json")
+    .then(response => response.json())
+    .then((tree: DirectoryTree) => {
+        const $menu = $("#tab-examples");
+        const parseTree = (treeIn: DirectoryTree, $menu: JQuery<HTMLElement>) => {
+            if (treeIn.type === "file") {
+                const $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
+                $menu.append($item);
+            } else {
+                const $item = $("<div>").addClass(["dropright", "submenu"]);
+                const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
+                const $submenu = $("<div>").addClass("dropdown-menu");
+                $item.append($a, $submenu);
+                treeIn.children.forEach(v => parseTree(v, $submenu));
+                $menu.append($item);
+                $a.dropdown();
+            }
+        };
+        if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
+    });
+    $("#tab-examples").on("click", ".faust-example", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const path = $(e.currentTarget).data("path");
+        const name = $(e.currentTarget).text();
+        if (path) {
+            fetch("../" + path)
+            .then(response => response.text())
+            .then((code) => {
+                compileOptions.name = name.split(".").slice(0, -1).join(".");
+                $("#input-filename").val(compileOptions.name);
+                editor.setValue(code);
+                localStorage.setItem("faust_editor_code", code);
+                saveEditorParams();
+                if (compileOptions.realtimeCompile) {
+                    if (audioEnv.dsp) runDsp(code);
+                    else getDiagram(code);
+                }
+            });
+        }
+        $("#tab-examples").dropdown("toggle");
     });
     // Run Dsp Button
     $("#btn-run").prop("disabled", false).on("click", async (e) => {

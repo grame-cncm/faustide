@@ -4,8 +4,8 @@
   "description": "Faust Editor",
   "main": "src/index.ts",
   "scripts": {
-    "build": "webpack --mode development",
-    "dist": "webpack --mode production"
+    "build": "node ./src/listEx.js && webpack --mode development",
+    "dist": "npm run build && webpack --mode production"
   },
   "repository": {
     "type": "git",
@@ -39,6 +39,7 @@
     "babel-loader": "^8.0.5",
     "bootstrap": "^4.3.1",
     "css-loader": "^2.1.1",
+    "directory-tree": "^2.2.1",
     "faust2webaudio": "github:fr0stbyter/faust2webaudio",
     "file-loader": "^3.0.1",
     "jquery": "^3.3.1",
