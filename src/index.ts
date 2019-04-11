@@ -927,35 +927,29 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     const audioCtx = audioEnv.audioCtx;
     const iNode = audioEnv.analyserInput;
     const oNode = audioEnv.analyserOutput;
-    let iT = new Uint8Array(iNode.fftSize);
-    let iF = new Uint8Array(iNode.frequencyBinCount);
-    let iTF = new Float32Array(iNode.fftSize);
-    let iFF = new Float32Array(iNode.frequencyBinCount);
-    let oT = new Uint8Array(oNode.fftSize);
-    let oF = new Uint8Array(oNode.frequencyBinCount);
-    let oTF = new Float32Array(oNode.fftSize);
-    let oFF = new Float32Array(oNode.frequencyBinCount);
+    let iT = new Float32Array(iNode.fftSize);
+    let iF = new Float32Array(iNode.frequencyBinCount);
+    let oT = new Float32Array(oNode.fftSize);
+    let oF = new Float32Array(oNode.frequencyBinCount);
     const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
     const iCtx = iCanvas.getContext("2d");
     const oCanvas = $("#output-analyser")[0] as HTMLCanvasElement;
     const oCtx = oCanvas.getContext("2d");
     const sizes = [128, 512, 2048, 8192];
+    let iFrame = 0;
+    let oFrame = 0;
     $("#btn-input-analyser-size").on("click", (e) => {
         const size = sizes[(sizes.indexOf(iNode.fftSize) + 1) % 4];
         iNode.fftSize = size;
-        iT = new Uint8Array(iNode.fftSize);
-        iF = new Uint8Array(iNode.frequencyBinCount);
-        iTF = new Float32Array(iNode.fftSize);
-        iFF = new Float32Array(iNode.frequencyBinCount);
+        iT = new Float32Array(iNode.fftSize);
+        iF = new Float32Array(iNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
     $("#btn-output-analyser-size").on("click", (e) => {
         const size = sizes[(sizes.indexOf(oNode.fftSize) + 1) % 4];
         oNode.fftSize = size;
-        oT = new Uint8Array(oNode.fftSize);
-        oF = new Uint8Array(oNode.frequencyBinCount);
-        oTF = new Float32Array(oNode.fftSize);
-        oFF = new Float32Array(oNode.frequencyBinCount);
+        oT = new Float32Array(oNode.fftSize);
+        oF = new Float32Array(oNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
     $("#btn-input-analyser-ch").on("click", (e) => {
@@ -978,7 +972,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         audioEnv.analyserOutputI = i;
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
-    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, samp: number, rms: number, sr: number) => {
+    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number) => {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, w, h);
         ctx.strokeStyle = "#FFFFFF";
@@ -1004,18 +998,16 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
-        drawStats(ctx, w, freq, samp, rms);
     };
-    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Uint8Array, freq: number, samp: number, rms: number) => {
+    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array) => {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, w, h);
         ctx.fillStyle = "#FFFFFF";
         for (let i = 0; i < l; i++) {
             const x = w * i / l;
-            const y = d[i] / 128.0 * h;
+            const y = ((d[i] + 10) / 100 + 1) * h;
             ctx.fillRect(x, h - y, w / l, y);
         }
-        drawStats(ctx, w, freq, samp, rms);
     };
     const drawStats = (ctx: CanvasRenderingContext2D, w: number, freq: number, samp: number, rms: number) => {
         ctx.save();
@@ -1028,53 +1020,55 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         ctx.fillText("~" + freq.toFixed(0) + "Hz", w - 2, 30, 50);
         ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
         ctx.restore();
-    }
+    };
     const iDraw = () => {
-        if (audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
+        iFrame++; // Reduce frame rate
+        if (iFrame % 2 === 0 && audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
             const ctx = iCtx;
             const sr = audioCtx.sampleRate;
             const w = $("#input-analyser-ui").innerWidth();
             const h = Math.min(w * 0.75, $("#input-analyser-ui").innerHeight());
             iCanvas.width = w;
             iCanvas.height = h;
-            iNode.getFloatFrequencyData(iFF);
-            iNode.getFloatTimeDomainData(iTF);
-            const freq = iFF.indexOf(Math.max(...iFF)) / iFF.length * sr / 2;
-            const samp = iTF[iTF.length - 1];
-            const rms = (iTF.reduce((a, v) => a += v ** 2, 0) / iTF.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
+            iNode.getFloatFrequencyData(iF);
+            iNode.getFloatTimeDomainData(iT);
+            const freq = iF.indexOf(Math.max(...iF)) / iF.length * sr / 2;
+            const samp = iT[iT.length - 1];
+            const rms = (iT.reduce((a, v) => a += v ** 2, 0) / iT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
             if (uiEnv.inputAnalyser === 0) {
-                const l = iTF.length;
-                drawOsc(ctx, l, w, h, iTF, freq, samp, rms, sr);
+                const l = iT.length;
+                drawOsc(ctx, l, w, h, iT, freq, sr);
             } else if (uiEnv.inputAnalyser === 1) {
                 const l = iF.length;
-                iNode.getByteFrequencyData(iF);
-                drawSpe(ctx, l, w, h, iF, freq, samp, rms);
+                drawSpe(ctx, l, w, h, iF);
             }
+            drawStats(ctx, w, freq, samp, rms);
         }
         iRAF = requestAnimationFrame(iDraw);
         return iRAF;
     };
     const oDraw = () => {
-        if (audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
+        oFrame++; // Reduce frame rate
+        if (oFrame % 2 === 0 && audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
             const ctx = oCtx;
             const sr = audioCtx.sampleRate;
             const w = $("#output-analyser-ui").innerWidth();
             const h = Math.min(w * 0.75, $("#output-analyser-ui").innerHeight());
             oCanvas.width = w;
             oCanvas.height = h;
-            oNode.getFloatFrequencyData(oFF);
-            oNode.getFloatTimeDomainData(oTF);
-            const freq = oFF.indexOf(Math.max(...oFF)) / oFF.length * sr / 2;
-            const samp = oTF[oTF.length - 1];
-            const rms = (oTF.reduce((a, v) => a += v ** 2, 0) / oTF.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
+            oNode.getFloatFrequencyData(oF);
+            oNode.getFloatTimeDomainData(oT);
+            const freq = oF.indexOf(Math.max(...oF)) / oF.length * sr / 2;
+            const samp = oT[oT.length - 1];
+            const rms = (oT.reduce((a, v) => a += v ** 2, 0) / oT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
             if (uiEnv.outputAnalyser === 0) {
-                const l = oTF.length;
-                drawOsc(ctx, l, w, h, oTF, freq, samp, rms, sr);
+                const l = oT.length;
+                drawOsc(ctx, l, w, h, oT, freq, sr);
             } else if (uiEnv.outputAnalyser === 1) {
                 const l = oF.length;
-                oNode.getByteFrequencyData(oF);
-                drawSpe(ctx, l, w, h, oF, freq, samp, rms);
+                drawSpe(ctx, l, w, h, oF);
             }
+            drawStats(ctx, w, freq, samp, rms);
         }
         oRAF = requestAnimationFrame(oDraw);
         return oRAF;
