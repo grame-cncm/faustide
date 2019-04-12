@@ -45,7 +45,7 @@ export class Faust2MD {
     private static readonly REGEX_END_SECTION = /^\s*((\/\/={3,})|(\s*))$/;
     private static readonly REGEX_BEG_COMMENT = /^\s*\/\/-{3,}\s*([^-]*[^=\s])\s*-{3,}$/;
     private static readonly REGEX_END_COMMENT = /^\s*((\/\/-{3,})|(\s*))$/;
-    private static readonly REGEX_INDENT = /(^\s*\/\/\s*)\w/;
+    private static readonly REGEX_INDENT = /(^\s*\/\/\s*)[^\s]/;
     private static readonly REGEX_COMMENT = /^\s*\/\//;
     /**
      * Print the front matter of the file

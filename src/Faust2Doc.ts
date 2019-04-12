@@ -167,7 +167,7 @@ export class Faust2Doc {
                 if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
                 else strBuffer += Faust2MD.outdent(line, idt) + "\n";
                 if (endC) { // pop buffer
-                    if (curName) this.getAllConditions(curName).forEach(name => doc[path.join(".") + "." + name] = { name: curName, path: [...path], doc: strBuffer });
+                    if (curName) this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = { name: curName, path: [...path], doc: strBuffer });
                     curName = "";
                     strBuffer = "";
                 }
@@ -175,10 +175,11 @@ export class Faust2Doc {
             }
             // check begin of md-comment
             const { c, s, t } = { c: Faust2MD.matchBeginComment(line), s: Faust2MD.matchBeginSection(line), t: Faust2MD.matchBeginTitle(line) };
-            if (c) curName = this.matchFuncName(c); // TODO "[a|b]" in names
+            if (c) curName = this.matchFuncName(c);
             if (c || s || t) {
                 inComment = true;
                 idt = 0;
+                strBuffer = "";
             }
         }
         return doc;

@@ -99,113 +99,121 @@ export const matchDocKey = (doc: TFaustDocs, model: monaco.editor.ITextModel, po
     }
     return null;
 };
-export const getProviders = () => {
-    return Faust2Doc.parse("stdfaust.lib", getFile).then((docs) => {
-        const faustLib = Object.keys(docs);
-        const hoverProvider: monaco.languages.HoverProvider = {
-            provideHover: (model, position, token) => {
-                const matched = matchDocKey(docs, model, position);
-                if (matched) {
-                    const prefix = matched.nameArray.slice();
-                    const name = prefix.pop();
-                    const doc = matched.doc;
-                    return {
-                        range: matched.range,
-                        contents: [
-                            { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
-                            { value: doc.doc.replace(/#+/g, "######") },
-                            prefix.length ? { value: `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` } : undefined
-                        ]
-                    };
-                }
-                return null;
+export const getProviders = async () => {
+    const libDocs = await Faust2Doc.parse("stdfaust.lib", getFile);
+    const primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => {
+        const libPath = "./";
+        const res = await fetch(libPath + fileName);
+        return await res.text();
+    });
+    const faustLib = Object.keys(libDocs);
+    const hoverProvider: monaco.languages.HoverProvider = {
+        provideHover: (model, position, token) => {
+            const matched = matchDocKey({ ...primDocs, ...libDocs }, model, position);
+            if (matched) {
+                const prefix = matched.nameArray.slice();
+                const name = prefix.pop();
+                const doc = matched.doc;
+                return {
+                    range: matched.range,
+                    contents: [
+                        { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
+                        { value: doc.doc.replace(/#+/g, "######") },
+                        prefix.length ? { value: `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` } : undefined
+                    ]
+                };
             }
-        };
-        const tokensProvider: monaco.languages.IMonarchLanguage = {
-            faustKeywords,
-            faustFunctions,
-            faustLib,
-            defaultToken: "invalid",
-            tokenPostfix: ".dsp",
-            faustCompOperators: [
-                "~", ",", ":", "<:", ":>"
-            ],
-            operators: [
-                "=",
-                "+", "-", "*", "/", "%", "^",
-                "&", "|", "xor", "<<", ">>",
-                ">", "<", "==", "<=", ">=", "!=",
-                "@", "'"
-            ],
-            // we include these common regular expressions
-            symbols:  /[=><!~?:&|+\-*\/\^%]+/,
-            // C# style strings
-            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
-            // The main tokenizer for our languages
-            tokenizer: {
-                root: [
-                    // identifiers and keywords
-                    [/!|_/, "keyword"], // Wire
-                    [/[a-z_$]([\w\.$]*[\w$])?/, { cases: {
+            return null;
+        }
+    };
+    const tokensProvider: monaco.languages.IMonarchLanguage = ({
+        faustKeywords,
+        faustFunctions,
+        faustLib,
+        defaultToken: "invalid",
+        tokenPostfix: ".dsp",
+        faustCompOperators: [
+            "~", ",", ":", "<:", ":>"
+        ],
+        operators: [
+            "=",
+            "+", "-", "*", "/", "%", "^",
+            "&", "|", "xor", "<<", ">>",
+            ">", "<", "==", "<=", ">=", "!=",
+            "@", "'"
+        ],
+        // we include these common regular expressions
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        // C# style strings
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        // The main tokenizer for our languages
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [/!|_/, "keyword"],
+                [/[a-z_$]([\w\.$]*[\w$])?/, {
+                    cases: {
                         "@faustFunctions": "faustFunctions",
                         "@faustKeywords": "faustKeywords",
                         "@faustLib": "faustLib",
                         "@default": "identifier"
-                    } }],
-                    [/[A-Z][\w\$]*/, "type.identifier"],  // to show class names nicely
-                    // whitespace
-                    { include: "@whitespace" },
-                    // delimiters and operators
-                    [/[{}()\[\]]/, "@brackets"],
-                    [/~|,|<:|:>|:/, "faustCompOperators"],
-                    [/[<>](?!@symbols)/, "@brackets"],
-                    [/=|\+|\-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, { cases: {
+                    }
+                }],
+                [/[A-Z][\w\$]*/, "type.identifier"],
+                // whitespace
+                { include: "@whitespace" },
+                // delimiters and operators
+                [/[{}()\[\]]/, "@brackets"],
+                [/~|,|<:|:>|:/, "faustCompOperators"],
+                [/[<>](?!@symbols)/, "@brackets"],
+                [/=|\+|\-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
+                    cases: {
                         "@operators": "operators",
-                        "@default"  : ""
-                    } }],
-                    // numbers
-                    [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
-                    [/0[xX][0-9a-fA-F]+/, "number.hex"],
-                    [/\d+/, "number"],
-                    // delimiter: after number because of .\d floats
-                    [/[;.]/, "delimiter"],
-                    // strings
-                    [/"([^"\\]|\\.)*$/, "string.invalid"],  // non-teminated string
-                    [/"/,  { token: "string.quote", bracket: "@open", next: "@string" }]
-                ],
-                comment: [
-                    [/[^\/*]+/, "comment"],
-                    [/\/\*/, "comment", "@push"],    // nested comment
-                    [/\*\//, "comment", "@pop"],
-                    [/[\/*]/, "comment"]
-                ],
-                string: [
-                    [/[^\\"]+/, "string"],
-                    [/@escapes/, "string.escape"],
-                    [/\\./, "string.escape.invalid"],
-                    [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }]
-                ],
-                whitespace: [
-                    [/[ \t\r\n]+/, "white"],
-                    [/\/\*/, "comment", "@comment"],
-                    [/\/\/.*$/, "comment"]
-                ]
-            }
-        } as any;
-        const completionItemProvider: monaco.languages.CompletionItemProvider = {
-            provideCompletionItems: () => {
-                const suggestions = [] as monaco.languages.CompletionItem[];
-                [...faustKeywords, ...faustFunctions, ...faustLib].forEach((e) => {
-                    suggestions.push({
-                        label: e,
-                        kind: monaco.languages.CompletionItemKind.Text,
-                        insertText: e,
-                        range: null
-                    });
+                        "@default": ""
+                    }
+                }],
+                // numbers
+                [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+                [/0[xX][0-9a-fA-F]+/, "number.hex"],
+                [/\d+/, "number"],
+                // delimiter: after number because of .\d floats
+                [/[;.]/, "delimiter"],
+                // strings
+                [/"([^"\\]|\\.)*$/, "string.invalid"],
+                [/"/, { token: "string.quote", bracket: "@open", next: "@string" }]
+            ],
+            comment: [
+                [/[^\/*]+/, "comment"],
+                [/\/\*/, "comment", "@push"],
+                [/\*\//, "comment", "@pop"],
+                [/[\/*]/, "comment"]
+            ],
+            string: [
+                [/[^\\"]+/, "string"],
+                [/@escapes/, "string.escape"],
+                [/\\./, "string.escape.invalid"],
+                [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }]
+            ],
+            whitespace: [
+                [/[ \t\r\n]+/, "white"],
+                [/\/\*/, "comment", "@comment"],
+                [/\/\/.*$/, "comment"]
+            ]
+        }
+    } as any);
+    const completionItemProvider: monaco.languages.CompletionItemProvider = {
+        provideCompletionItems: () => {
+            const suggestions = ([] as monaco.languages.CompletionItem[]);
+            [...faustKeywords, ...faustFunctions, ...faustLib].forEach((e) => {
+                suggestions.push({
+                    label: e,
+                    kind: monaco.languages.CompletionItemKind.Text,
+                    insertText: e,
+                    range: null
                 });
-                return { suggestions };
-            }
-        };
-        return { hoverProvider, tokensProvider, completionItemProvider, docs } as FaustLanguageProviders;
-    });
+            });
+            return { suggestions };
+        }
+    };
+    return { hoverProvider, tokensProvider, completionItemProvider, docs: libDocs } as FaustLanguageProviders;
 };
