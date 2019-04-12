@@ -119,7 +119,7 @@ export const getProviders = async () => {
                     contents: [
                         { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                         { value: doc.doc.replace(/#+/g, "######") },
-                        prefix.length ? { value: `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` } : undefined
+                        { value: prefix.length ? `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.join(".") + "."}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` : `[Detail...](https://faust.grame.fr/doc/manual/index.html#faust-syntax)` }
                     ]
                 };
             }

@@ -102,7 +102,7 @@
 							</div>
 						</div>
 					</li>
-					<li class="nav-item dropdown">
+					<li class="nav-item dropdown" data-toggle="tooltip" data-placement="right" title="Try an example">
 						<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Exemples</a>
 						<div id="tab-examples" class="dropdown-menu"><!-- 
 							<a class="dropdown-item" href="#">Action</a>
@@ -131,7 +131,7 @@
 					<li id="nav-item-faust-ui" class="nav-item">
 						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">
 							<span>DSP</span>
-							<button type="button" class="btn btn-outline-light btn-close-tab">&times;</button>
+							<button type="button" class="btn btn-outline-light btn-close-tab" data-toggle="tooltip" data-placement="top" title="Stop DSP">&times;</button>
 						</a>
 					</li>
 				</ul>
@@ -222,7 +222,7 @@
 					</div>
 				</div>
 				<div id="input-analyser-ui" class="analyser-ui mt-2">
-					<canvas id="input-analyser"></canvas>
+					<canvas id="input-analyser" data-toggle="tooltip" data-placement="left" title="Input analyser"></canvas>
 					<div id="input-analyser-controller" class="analyser-controller">
 						<button id="btn-input-analyser-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
@@ -243,7 +243,7 @@
 					</ul>
 				</div>
 				<div id="output-analyser-ui" class="analyser-ui mt-2">
-					<canvas id="output-analyser"></canvas>
+					<canvas id="output-analyser" data-toggle="tooltip" data-placement="left" title="Output Analyser"></canvas>
 					<div id="output-analyser-controller" class="analyser-controller">
 						<button id="btn-output-analyser-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
