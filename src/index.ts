@@ -661,6 +661,28 @@ $(async () => {
     }).catch((r) => {
         $("#btn-export").prop("disabled", "true");
     });
+    // Share
+    const makeURL = () => {
+        const base = window.location.origin + window.location.pathname;
+        const urlParams = new URLSearchParams();
+        urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
+        urlParams.set("voices", compileOptions.voices.toString());
+        urlParams.set("name", compileOptions.name);
+        urlParams.set("inline", btoa(editor.getValue().replace("+", "-").replace("/", "_")));
+        return base + "?" + urlParams.toString();
+    };
+    $("#modal-share").on("shown.bs.modal", () => $("#share-url").val(makeURL()));
+    $("#share-autorun").on("change", () => $("#share-url").val(makeURL()));
+    $("#share-btn-copy").on("click", (e) => {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText($("#share-url").val() as string);
+        } else {
+            $("#share-url").focus().select();
+            document.execCommand("copy");
+        }
+        $(e.currentTarget).html('<i class="fas fa-check"></i>');
+    });
+    // File Drag and drop
     $("#top").on("dragenter dragover", (e) => {
         const event = e.originalEvent as DragEvent;
         if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {

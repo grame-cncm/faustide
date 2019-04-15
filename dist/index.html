@@ -328,9 +328,13 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<canvas id="qr-code" width="200px" height="200px"></canvas>
-						<div id="export-error" class="alert alert-danger" role="alert">
-							Export error
+						<div class="input-group">
+							<input id="share-url" type="text" class="form-control" />
+							<div class="input-group-append">
+							<button id="share-btn-copy" class="input-group-text btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Copy to Clipboard">
+								Copy
+							</button>
+							</div>
 						</div>
 					</div>
 				</div>
