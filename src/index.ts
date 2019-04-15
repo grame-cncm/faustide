@@ -669,7 +669,7 @@ $(async () => {
         urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
         urlParams.set("voices", compileOptions.voices.toString());
         urlParams.set("name", compileOptions.name);
-        urlParams.set("inline", btoa(editor.getValue().replace("+", "-").replace("/", "_")));
+        urlParams.set("inline", btoa(editor.getValue()).replace("+", "-").replace("/", "_"));
         return base + "?" + urlParams.toString();
     };
     $("#modal-share").on("shown.bs.modal", () => {
