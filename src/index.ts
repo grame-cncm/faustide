@@ -1,5 +1,6 @@
 // import { Faust } from "faust2webaudio";
 // TODO
+// webworkerify
 // bargraph in scopes
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
@@ -671,8 +672,14 @@ $(async () => {
         urlParams.set("inline", btoa(editor.getValue().replace("+", "-").replace("/", "_")));
         return base + "?" + urlParams.toString();
     };
-    $("#modal-share").on("shown.bs.modal", () => $("#share-url").val(makeURL()));
-    $("#share-autorun").on("change", () => $("#share-url").val(makeURL()));
+    $("#modal-share").on("shown.bs.modal", () => {
+        $("#share-btn-copy").html("Copy");
+        $("#share-url").val(makeURL());
+    });
+    $("#share-autorun").on("change", () => {
+        $("#share-btn-copy").html("Copy");
+        $("#share-url").val(makeURL());
+    });
     $("#share-btn-copy").on("click", (e) => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText($("#share-url").val() as string);
@@ -1064,9 +1071,9 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         $(e.currentTarget).html("ch " + (i + 1).toString());
     });
     const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number) => {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
+        drawBackground(ctx, w, h);
         ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 2;
         ctx.beginPath();
         let $zerox = 0;
         const thresh = 0.01;
@@ -1091,14 +1098,28 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         ctx.stroke();
     };
     const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array) => {
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
+        drawBackground(ctx, w, h);
         ctx.fillStyle = "#FFFFFF";
         for (let i = 0; i < l; i++) {
             const x = w * i / l;
             const y = ((d[i] + 10) / 100 + 1) * h;
             ctx.fillRect(x, h - y, w / l, y);
         }
+    };
+    const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+        ctx.save();
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, w, h);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#404040";
+        for (let i = 0; i < 4; i++) {
+            ctx.moveTo(w * i / 4, 0);
+            ctx.lineTo(w * i / 4, h);
+            ctx.moveTo(0, h * i / 4);
+            ctx.lineTo(w, h * i / 4);
+        }
+        ctx.stroke();
+        ctx.restore();
     };
     const drawStats = (ctx: CanvasRenderingContext2D, w: number, freq: number, samp: number, rms: number) => {
         ctx.save();
