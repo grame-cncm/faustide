@@ -179,8 +179,7 @@ export const getProviders = async () => {
                 // delimiter: after number because of .\d floats
                 [/[;.]/, "delimiter"],
                 // strings
-                [/"([^"\\]|\\.)*$/, "string.invalid"],
-                [/"/, { token: "string.quote", bracket: "@open", next: "@string" }]
+                [/"/, { token: "string", next: "@string" }]
             ],
             comment: [
                 [/[^\/*]+/, "comment"],
@@ -189,10 +188,10 @@ export const getProviders = async () => {
                 [/[\/*]/, "comment"]
             ],
             string: [
-                [/[^\\"]+/, "string"],
+                [/[^\\"$]+/, "string"],
                 [/@escapes/, "string.escape"],
                 [/\\./, "string.escape.invalid"],
-                [/"/, { token: "string.quote", bracket: "@close", next: "@pop" }]
+                [/"/, "string", "@pop"]
             ],
             whitespace: [
                 [/[ \t\r\n]+/, "white"],
