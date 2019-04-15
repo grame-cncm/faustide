@@ -246,17 +246,18 @@ $(async () => {
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     $("#btn-export").tooltip({ trigger: "hover" });
+    $("#btn-share").tooltip({ trigger: "hover" });
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
-    }).children(`option[value=${compileOptions.voices}]`).prop("selected", true);
+    });
     // BufferSize
     $("#select-buffer-size").on("change", (e) => {
         compileOptions.bufferSize = +(e.currentTarget as HTMLInputElement).value as 128 | 256 | 512 | 1024 | 2048 | 4096;
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
-    }).children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
+    });
     // AudioWorklet
     $("#check-worklet").on("change", (e) => {
         compileOptions.useWorklet = (e.currentTarget as HTMLInputElement).checked;
@@ -265,7 +266,6 @@ $(async () => {
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
-    if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     // Save Params
     ($("#check-save-params").on("change", (e) => {
         compileOptions.saveParams = (e.currentTarget as HTMLInputElement).checked;
@@ -279,16 +279,78 @@ $(async () => {
     })[0] as HTMLInputElement).checked = compileOptions.saveDsp;
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Real-time Diagram
-    ($("#check-realtime-compile").on("change", (e) => {
+    $("#check-realtime-compile").on("change", (e) => {
         compileOptions.realtimeCompile = (e.currentTarget as HTMLInputElement).checked;
         saveEditorParams();
-        const code = editor.getValue();
         if (compileOptions.realtimeCompile) {
+            const code = editor.getValue();
             if (audioEnv.dsp) runDsp(code);
             else getDiagram(code);
         }
-    })[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
-    if (compileOptions.realtimeCompile) setTimeout(getDiagram, 0, editor.getValue());
+    });
+    /**
+     * Load stuffs from URL
+     * Available params:
+     * {boolean} autorun
+     * {boolean} realtime_compile
+     * {string} name - as string
+     * {string} code - as URL to fetch
+     * {string} inline - as Base64URL (should be url safe version)
+     * {string} code_string - as string
+     * {number} voices - poly voices
+     * {number} buffer_size - buffer size
+     *
+     * @param {string} url
+     * @returns
+     */
+    const loadURLParams = async (url: string) => {
+        const urlParams = new URLSearchParams(url);
+        if (urlParams.has("realtime_compile")) {
+            compileOptions.realtimeCompile = +urlParams.get("realtime_compile") ? true : false;
+            saveEditorParams();
+        }
+        if (urlParams.has("voices")) {
+            const voices = +urlParams.get("voices");
+            compileOptions.voices = [1, 2, 4, 8, 16, 32, 64, 128].indexOf(voices) === -1 ? 0 : voices;
+            saveEditorParams();
+        }
+        if (urlParams.has("buffer_size")) {
+            const bufferSize = +urlParams.get("buffer_size");
+            compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : (bufferSize as 128 | 256 | 512 | 1024 | 2048 | 4096);
+            saveEditorParams();
+        }
+        let code;
+        if (urlParams.has("code")) {
+            const codeURL = urlParams.get("code");
+            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".");
+            $("#input-filename").val(compileOptions.name);
+            const response = await fetch(codeURL);
+            code = await response.text();
+        }
+        if (urlParams.has("code_string")) {
+            code = urlParams.get("code_string");
+        }
+        if (urlParams.has("inline")) {
+            const b64Code = urlParams.get("inline").replace("-", "+").replace("_", "/");
+            code = atob(b64Code);
+        }
+        if (urlParams.has("name")) {
+            const name = urlParams.get("name");
+            compileOptions.name = name;
+            $("#input-filename").val(compileOptions.name);
+            saveEditorParams();
+        }
+        if (code) {
+            editor.setValue(code);
+            localStorage.setItem("faust_editor_code", code);
+            saveEditorParams();
+            if (urlParams.has("autorun") && urlParams.get("autorun")) {
+                const compileResult = await runDsp(code);
+                if (!compileResult.success) return;
+                if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
+            }
+        }
+    };
     // MIDI Devices
     const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
     document.addEventListener("keydown", (e) => {
@@ -782,6 +844,7 @@ $(async () => {
         $(document).on("mouseup", handleMouseUp);
     });
     $("#diagram").on("wheel", (e) => {
+        if (!e.ctrlKey) return;
         const $svg = $(e.currentTarget).find("svg");
         if (!$svg.length) return;
         e.preventDefault();
@@ -853,6 +916,13 @@ $(async () => {
         $(document).on("mousemove", handleMouseMove);
         $(document).on("mouseup", handleMouseUp);
     });
+    // autorunning
+    await loadURLParams(window.location.search);
+    $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
+    $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
+    if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
+    ($("#check-realtime-compile")[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
+    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, editor.getValue());
     window.faustEnv = faustEnv;
 });
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {

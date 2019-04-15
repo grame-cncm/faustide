@@ -18,6 +18,10 @@
 					<i class="fas fa-play fa-sm"></i>
 					<span>Run</span>
 				</button>
+				<button id="btn-share" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="modal" data-target="#modal-share" data-placement="right" title="Share your code">
+					<i class="fas fa-share-alt fa-sm"></i>
+					<span>Share</span>
+				</button>
 				<button id="btn-upload" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
 					<i class="fas fa-upload fa-sm"></i>
 					<span>Upload</span>
@@ -260,11 +264,11 @@
 				</button>
 			</div>
 		</div>
-		<div id="modal-export" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-export" aria-hidden="true">
+		<div id="modal-export" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-export-label" aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title">Export as</h5>
+						<h5 class="modal-title" id="faust-export-label">Export as</h5>
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
@@ -296,6 +300,32 @@
 							<span>Download</span>
 							<a id="a-export-download" target="_blank"></a>
 						</button>
+					</div>
+					<div class="modal-footer">
+						<canvas id="qr-code" width="200px" height="200px"></canvas>
+						<div id="export-error" class="alert alert-danger" role="alert">
+							Export error
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="modal-share" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-share-label" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="faust-share-label">Share your code</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" value="" id="share-autorun" checked>
+							<label class="form-check-label" for="share-autorun">
+								Autorun your code
+							</label>
+						</div>
 					</div>
 					<div class="modal-footer">
 						<canvas id="qr-code" width="200px" height="200px"></canvas>

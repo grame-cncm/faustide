@@ -53,6 +53,14 @@ body {
                         border-color: $color;
                     }
                 }
+                & > #btn-share {
+                    $color: #aaff77;
+                    border-color: $color;
+                    &:hover {
+                        background-color: darken($color, 50%);
+                        border-color: $color;
+                    }
+                }
                 & > #btn-upload {
                     $color: #ff88aa;
                     border-color: $color;
