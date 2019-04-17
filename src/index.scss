@@ -481,7 +481,7 @@ body {
 }
 // override bootstrap display none for iframe offscreen display
 .tab-content > .tab-pane.active {
-    display: unset;
+    display: block;
     visibility: visible;
     z-index: 0;
 }
