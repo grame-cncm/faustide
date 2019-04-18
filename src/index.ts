@@ -1026,8 +1026,10 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     const iNode = audioEnv.analyserInput;
     const oNode = audioEnv.analyserOutput;
     let iT = new Float32Array(iNode.fftSize);
+    let iTI = new Uint8Array(iNode.fftSize);
     let iF = new Float32Array(iNode.frequencyBinCount);
     let oT = new Float32Array(oNode.fftSize);
+    let oTI = new Uint8Array(oNode.fftSize);
     let oF = new Float32Array(oNode.frequencyBinCount);
     const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
     const iCtx = iCanvas.getContext("2d");
@@ -1040,6 +1042,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         const size = sizes[(sizes.indexOf(iNode.fftSize) + 1) % 4];
         iNode.fftSize = size;
         iT = new Float32Array(iNode.fftSize);
+        iTI = new Uint8Array(iNode.fftSize);
         iF = new Float32Array(iNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
@@ -1047,6 +1050,7 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         const size = sizes[(sizes.indexOf(oNode.fftSize) + 1) % 4];
         oNode.fftSize = size;
         oT = new Float32Array(oNode.fftSize);
+        oTI = new Uint8Array(oNode.fftSize);
         oF = new Float32Array(oNode.frequencyBinCount);
         $(e.currentTarget).html(size.toString() + " samps");
     });
@@ -1143,7 +1147,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             iCanvas.width = w;
             iCanvas.height = h;
             iNode.getFloatFrequencyData(iF);
-            iNode.getFloatTimeDomainData(iT);
+            if (iNode.getFloatTimeDomainData) {
+                iNode.getFloatTimeDomainData(iT);
+            } else { // This is for Safari, what a shame
+                iNode.getByteTimeDomainData(iTI);
+                iTI.forEach((v, i) => iT[i] = v / 128 - 1);
+            }
             const freq = iF.indexOf(Math.max(...iF)) / iF.length * sr / 2;
             const samp = iT[iT.length - 1];
             const rms = (iT.reduce((a, v) => a += v ** 2, 0) / iT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
@@ -1169,7 +1178,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
             oCanvas.width = w;
             oCanvas.height = h;
             oNode.getFloatFrequencyData(oF);
-            oNode.getFloatTimeDomainData(oT);
+            if (oNode.getFloatTimeDomainData) {
+                oNode.getFloatTimeDomainData(oT);
+            } else { // This is for Safari, what a shame
+                oNode.getByteTimeDomainData(oTI);
+                oTI.forEach((v, i) => oT[i] = v / 128 - 1);
+            }
             const freq = oF.indexOf(Math.max(...oF)) / oF.length * sr / 2;
             const samp = oT[oT.length - 1];
             const rms = (oT.reduce((a, v) => a += v ** 2, 0) / oT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
@@ -1226,6 +1240,14 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     uiEnv.analysersInited = true;
     iDraw();
     oDraw();
+    if (!window.AudioWorklet) {
+        cancelAnimationFrame(iRAF);
+        requestAnimationFrame(iDrawPause);
+        cancelAnimationFrame(oRAF);
+        requestAnimationFrame(oDrawPause);
+        iPaused = true;
+        oPaused = true;
+    }
 };
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {
