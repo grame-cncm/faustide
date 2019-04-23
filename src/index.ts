@@ -1,6 +1,9 @@
 // import { Faust } from "faust2webaudio";
 // TODO
 // webworkerify
+// Spectrogram
+// faust2plot
+// zoom scopes
 // bargraph in scopes
 import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";

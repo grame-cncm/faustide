@@ -269,10 +269,10 @@ export class Scope {
     }
     set paused(pausedIn: boolean) {
         if (pausedIn) {
-            requestAnimationFrame(this.draw);
-        } else {
             cancelAnimationFrame(this.raf);
             requestAnimationFrame(this.drawPause);
+        } else {
+            requestAnimationFrame(this.draw);
         }
         this._paused = pausedIn;
     }
