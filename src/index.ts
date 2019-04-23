@@ -188,6 +188,7 @@ $(async () => {
             delete audioEnv.splitterOutput;
             audioEnv.splitterOutput = splitter;
             uiEnv.outputScope.splitter = splitter;
+            uiEnv.outputScope.channels = channelsCount;
             uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
             splitter.connect(analyser, uiEnv.outputScope.channel);
         }

@@ -286,7 +286,9 @@ export class Scope {
         this.btnCh.innerText = (this._channel + 1).toString() + " ch";
         if (this._channel === oldCh) return;
         this.splitter.connect(this.analyser, this._channel, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
-        setTimeout(() => this.splitter.disconnect(this.analyser, oldCh, 0), 10);
+        setTimeout(() => {
+            try { this.splitter.disconnect(this.analyser, oldCh, 0); } catch {}
+        }, 10);
         this._channel = channelIn;
     }
 }
