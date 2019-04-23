@@ -6,6 +6,7 @@ import * as monaco from "monaco-editor";
 import webmidi, { Input } from "webmidi";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
 import { Key2Midi } from "./Key2Midi";
+import { Scope } from "./Scope";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as faustlang from "./monaco-faust";
@@ -36,10 +37,8 @@ type FaustEditorEnv = {
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext,
     splitterInput?: ChannelSplitterNode,
-    analyserInputI: number,
     analyserInput?: AnalyserNode,
     splitterOutput?: ChannelSplitterNode,
-    analyserOutputI: number,
     analyserOutput?: AnalyserNode,
     inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode },
     currentInput?: string,
@@ -55,8 +54,8 @@ type FaustEditorMIDIEnv = {
 };
 type FaustEditorUIEnv = {
     analysersInited: boolean,
-    inputAnalyser: 0 | 1, // 0 scope, 1 spect
-    outputAnalyser: 0 | 1,
+    inputScope: Scope,
+    outputScope: Scope
 };
 type FaustEditorCompileOptions = {
     name: string,
@@ -188,11 +187,9 @@ $(async () => {
             splitter = audioCtx.createChannelSplitter(channelsCount);
             delete audioEnv.splitterOutput;
             audioEnv.splitterOutput = splitter;
-            if (audioEnv.analyserOutputI > channelsCount - 1) {
-                audioEnv.analyserOutputI = channelsCount - 1;
-                $("#btn-output-analyser-ch").html("ch " + (audioEnv.analyserOutputI + 1).toString());
-            }
-            splitter.connect(analyser, audioEnv.analyserOutputI);
+            uiEnv.outputScope.splitter = splitter;
+            uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
+            splitter.connect(analyser, uiEnv.outputScope.channel);
         }
         if (audioEnv.inputEnabled && node.getNumInputs()) {
             audioEnv.inputs[audioEnv.currentInput].connect(node);
@@ -233,9 +230,9 @@ $(async () => {
         if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
     });
 
-    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, analyserInputI: 0, analyserOutputI: 0, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
+    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
     const midiEnv = { input: null } as FaustEditorMIDIEnv;
-    const uiEnv = { analysersInited: false, inputAnalyser: 0, outputAnalyser: 0 } as FaustEditorUIEnv;
+    const uiEnv = { analysersInited: false, inputScope: null, outputScope: null } as FaustEditorUIEnv;
     const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, ...loadEditorParams() } as FaustEditorCompileOptions;
     const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
     faustEnv.editor = editor;
@@ -365,7 +362,7 @@ $(async () => {
     $("#select-midi-input").on("change", (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-        let keys = [] as number[];
+        const keys = [] as number[];
         const listener = (data: number[] | Uint8Array) => {
             if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
             if (data[0] === 144) {
@@ -1014,253 +1011,21 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
 };
 const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
     if (uiEnv.analysersInited) return;
-    $("#btn-input-analyser-switch").on("click", (e) => {
-        if (uiEnv.inputAnalyser === 0) {
-            uiEnv.inputAnalyser = 1;
-            $(e.currentTarget).children(".fa-wave-square").removeClass("fa-wave-square").addClass("fa-chart-bar");
-        } else {
-            uiEnv.inputAnalyser = 0;
-            $(e.currentTarget).children(".fa-chart-bar").removeClass("fa-chart-bar").addClass("fa-wave-square");
-        }
+    uiEnv.inputScope = new Scope({
+        audioCtx: audioEnv.audioCtx,
+        analyser: audioEnv.analyserInput,
+        splitter: audioEnv.splitterInput,
+        channels: 2,
+        container: $("#input-analyser-ui")[0] as HTMLDivElement
     });
-    $("#btn-output-analyser-switch").on("click", (e) => {
-        if (uiEnv.outputAnalyser === 0) {
-            uiEnv.outputAnalyser = 1;
-            $(e.currentTarget).children(".fa-wave-square").removeClass("fa-wave-square").addClass("fa-chart-bar");
-        } else {
-            uiEnv.outputAnalyser = 0;
-            $(e.currentTarget).children(".fa-chart-bar").removeClass("fa-chart-bar").addClass("fa-wave-square");
-        }
-    });
-    let iRAF: number, oRAF: number;
-    let iPaused = false;
-    let oPaused = false;
-    const audioCtx = audioEnv.audioCtx;
-    const iNode = audioEnv.analyserInput;
-    const oNode = audioEnv.analyserOutput;
-    let iT = new Float32Array(iNode.fftSize);
-    let iTI = new Uint8Array(iNode.fftSize);
-    let iF = new Float32Array(iNode.frequencyBinCount);
-    let oT = new Float32Array(oNode.fftSize);
-    let oTI = new Uint8Array(oNode.fftSize);
-    let oF = new Float32Array(oNode.frequencyBinCount);
-    const iCanvas = $("#input-analyser")[0] as HTMLCanvasElement;
-    const iCtx = iCanvas.getContext("2d");
-    const oCanvas = $("#output-analyser")[0] as HTMLCanvasElement;
-    const oCtx = oCanvas.getContext("2d");
-    const sizes = [128, 512, 2048, 8192];
-    let iFrame = 0;
-    let oFrame = 0;
-    $("#btn-input-analyser-size").on("click", (e) => {
-        const size = sizes[(sizes.indexOf(iNode.fftSize) + 1) % 4];
-        iNode.fftSize = size;
-        iT = new Float32Array(iNode.fftSize);
-        iTI = new Uint8Array(iNode.fftSize);
-        iF = new Float32Array(iNode.frequencyBinCount);
-        $(e.currentTarget).html(size.toString() + " samps");
-    });
-    $("#btn-output-analyser-size").on("click", (e) => {
-        const size = sizes[(sizes.indexOf(oNode.fftSize) + 1) % 4];
-        oNode.fftSize = size;
-        oT = new Float32Array(oNode.fftSize);
-        oTI = new Uint8Array(oNode.fftSize);
-        oF = new Float32Array(oNode.frequencyBinCount);
-        $(e.currentTarget).html(size.toString() + " samps");
-    });
-    $("#btn-input-analyser-ch").on("click", (e) => {
-        const iSplitter = audioEnv.splitterInput;
-        const oldI = audioEnv.analyserInputI;
-        const i = (oldI + 1) % 2;
-        if (i === oldI) return;
-        iSplitter.connect(iNode, i, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
-        setTimeout(() => iSplitter.disconnect(iNode, oldI, 0), 10);
-        audioEnv.analyserInputI = i;
-        $(e.currentTarget).html("ch " + (i + 1).toString());
-    });
-    $("#btn-output-analyser-ch").on("click", (e) => {
-        const oSplitter = audioEnv.splitterOutput;
-        const oldI = audioEnv.analyserOutputI;
-        const i = (oldI + 1) % audioEnv.dsp.getNumOutputs();
-        if (i === oldI) return;
-        oSplitter.connect(oNode, i, 0);
-        setTimeout(() => oSplitter.disconnect(oNode, oldI, 0), 10);
-        audioEnv.analyserOutputI = i;
-        $(e.currentTarget).html("ch " + (i + 1).toString());
-    });
-    const drawOsc = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number) => {
-        drawBackground(ctx, w, h);
-        ctx.strokeStyle = "#FFFFFF";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        let $zerox = 0;
-        const thresh = 0.01;
-        const period = sr / freq;
-        const times = Math.floor(l / period) - 1;
-        while (d[$zerox++] > 0 && $zerox < l);
-        if ($zerox >= l - 1) {
-            $zerox = 0;
-        } else {
-            while (d[$zerox++] < 0 + thresh && $zerox < l);
-            if ($zerox >= l - 1) {
-                $zerox = 0;
-            }
-        }
-        const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
-        for (let i = $zerox; i < $zerox + drawL; i++) {
-            const x = w * (i - $zerox) / (drawL - 1);
-            const y = h - (d[i] * 0.5 + 0.5) * h;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-    };
-    const drawSpe = (ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array) => {
-        drawBackground(ctx, w, h);
-        ctx.fillStyle = "#FFFFFF";
-        for (let i = 0; i < l; i++) {
-            const x = w * i / l;
-            const y = ((d[i] + 10) / 100 + 1) * h;
-            ctx.fillRect(x, h - y, w / l, y);
-        }
-    };
-    const drawBackground = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-        ctx.save();
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "#404040";
-        for (let i = 0; i < 4; i++) {
-            ctx.moveTo(w * i / 4, 0);
-            ctx.lineTo(w * i / 4, h);
-            ctx.moveTo(0, h * i / 4);
-            ctx.lineTo(w, h * i / 4);
-        }
-        ctx.stroke();
-        ctx.restore();
-    };
-    const drawStats = (ctx: CanvasRenderingContext2D, w: number, freq: number, samp: number, rms: number) => {
-        ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-        ctx.fillRect(w - 50, 0, 50, 50);
-        ctx.fillStyle = "#DDDD99";
-        ctx.textAlign = "right";
-        ctx.font = "12px Consolas, monospace";
-        ctx.fillText((samp >= 0 ? "@+" : "@") + samp.toFixed(3), w - 2, 15, 50);
-        ctx.fillText("~" + freq.toFixed(0) + "Hz", w - 2, 30, 50);
-        ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
-        ctx.restore();
-    };
-    const iDraw = () => {
-        iFrame++; // Reduce frame rate
-        if (iFrame % 2 === 0 && audioCtx && audioCtx.state === "running" && iNode && audioEnv.inputEnabled) {
-            const ctx = iCtx;
-            const sr = audioCtx.sampleRate;
-            const w = $("#input-analyser-ui").innerWidth();
-            const h = Math.min(w * 0.75, $("#input-analyser-ui").innerHeight());
-            iCanvas.width = w;
-            iCanvas.height = h;
-            iNode.getFloatFrequencyData(iF);
-            if (iNode.getFloatTimeDomainData) {
-                iNode.getFloatTimeDomainData(iT);
-            } else { // This is for Safari, what a shame
-                iNode.getByteTimeDomainData(iTI);
-                iTI.forEach((v, i) => iT[i] = v / 128 - 1);
-            }
-            const freq = iF.indexOf(Math.max(...iF)) / iF.length * sr / 2;
-            const samp = iT[iT.length - 1];
-            const rms = (iT.reduce((a, v) => a += v ** 2, 0) / iT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
-            if (uiEnv.inputAnalyser === 0) {
-                const l = iT.length;
-                drawOsc(ctx, l, w, h, iT, freq, sr);
-            } else if (uiEnv.inputAnalyser === 1) {
-                const l = iF.length;
-                drawSpe(ctx, l, w, h, iF);
-            }
-            drawStats(ctx, w, freq, samp, rms);
-        }
-        iRAF = requestAnimationFrame(iDraw);
-        return iRAF;
-    };
-    const oDraw = () => {
-        oFrame++; // Reduce frame rate
-        if (oFrame % 2 === 0 && audioCtx && audioCtx.state === "running" && oNode && audioEnv.dsp) {
-            const ctx = oCtx;
-            const sr = audioCtx.sampleRate;
-            const w = $("#output-analyser-ui").innerWidth();
-            const h = Math.min(w * 0.75, $("#output-analyser-ui").innerHeight());
-            oCanvas.width = w;
-            oCanvas.height = h;
-            oNode.getFloatFrequencyData(oF);
-            if (oNode.getFloatTimeDomainData) {
-                oNode.getFloatTimeDomainData(oT);
-            } else { // This is for Safari, what a shame
-                oNode.getByteTimeDomainData(oTI);
-                oTI.forEach((v, i) => oT[i] = v / 128 - 1);
-            }
-            const freq = oF.indexOf(Math.max(...oF)) / oF.length * sr / 2;
-            const samp = oT[oT.length - 1];
-            const rms = (oT.reduce((a, v) => a += v ** 2, 0) / oT.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
-            if (uiEnv.outputAnalyser === 0) {
-                const l = oT.length;
-                drawOsc(ctx, l, w, h, oT, freq, sr);
-            } else if (uiEnv.outputAnalyser === 1) {
-                const l = oF.length;
-                drawSpe(ctx, l, w, h, oF);
-            }
-            drawStats(ctx, w, freq, samp, rms);
-        }
-        oRAF = requestAnimationFrame(oDraw);
-        return oRAF;
-    };
-    const iDrawPause = () => {
-        const ctx = iCtx;
-        const w = iCanvas.width;
-        const h = iCanvas.height;
-        ctx.fillStyle = "#00000080";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
-        ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
-    };
-    const oDrawPause = () => {
-        const ctx = oCtx;
-        const w = oCanvas.width;
-        const h = oCanvas.height;
-        ctx.fillStyle = "#00000080";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
-        ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
-    };
-    $("#input-analyser").on("click", (e) => {
-        if (iPaused) {
-            requestAnimationFrame(iDraw);
-        } else {
-            cancelAnimationFrame(iRAF);
-            requestAnimationFrame(iDrawPause);
-        }
-        iPaused = !iPaused;
-    });
-    $("#output-analyser").on("click", (e) => {
-        if (oPaused) {
-            requestAnimationFrame(oDraw);
-        } else {
-            cancelAnimationFrame(oRAF);
-            requestAnimationFrame(oDrawPause);
-        }
-        oPaused = !oPaused;
+    uiEnv.outputScope = new Scope({
+        audioCtx: audioEnv.audioCtx,
+        analyser: audioEnv.analyserOutput,
+        splitter: audioEnv.splitterOutput,
+        channels: 1,
+        container: $("#output-analyser-ui")[0] as HTMLDivElement
     });
     uiEnv.analysersInited = true;
-    iDraw();
-    oDraw();
-    if (!window.AudioWorklet) {
-        cancelAnimationFrame(iRAF);
-        requestAnimationFrame(iDrawPause);
-        cancelAnimationFrame(oRAF);
-        requestAnimationFrame(oDrawPause);
-        iPaused = true;
-        oPaused = true;
-    }
 };
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {

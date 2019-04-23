@@ -17,7 +17,7 @@ MIDI Input is available for Chrome Browser, you can also use the computer keyboa
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file. 
 
 #### Analyzer
-Both input and output have an audio analyzer. You can switch the visualization between oscilloscope and spectrogram, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
+Both input and output have an audio analyzer. You can switch the visualization between oscilloscope and spectroscope, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
 ### Recommended Browsers
 
