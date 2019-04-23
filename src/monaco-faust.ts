@@ -100,12 +100,16 @@ export const matchDocKey = (doc: TFaustDocs, model: monaco.editor.ITextModel, po
     return null;
 };
 export const getProviders = async () => {
-    const libDocs = await Faust2Doc.parse("stdfaust.lib", getFile);
-    const primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => {
-        const libPath = "./";
-        const res = await fetch(libPath + fileName);
-        return await res.text();
-    });
+    let libDocs = {} as TFaustDocs;
+    let primDocs = {} as TFaustDocs;
+    try {
+        libDocs = await Faust2Doc.parse("stdfaust.lib", getFile);
+        primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => {
+            const libPath = "./";
+            const res = await fetch(libPath + fileName);
+            return await res.text();
+        });
+    } catch (e) {}
     const faustLib = Object.keys(libDocs);
     const hoverProvider: monaco.languages.HoverProvider = {
         provideHover: (model, position, token) => {

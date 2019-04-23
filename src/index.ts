@@ -365,7 +365,20 @@ $(async () => {
     $("#select-midi-input").on("change", (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-        const listener = (data: number[] | Uint8Array) => { if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); };
+        let keys = [] as number[];
+        const listener = (data: number[] | Uint8Array) => {
+            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
+            if (data[0] === 144) {
+                if (data[2]) {
+                    if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
+                    $("#midi-ui-note").text(data[1]).show();
+                } else {
+                    keys.splice(keys.indexOf(data[1]), 1);
+                    if (keys.length === 0) $("#midi-ui-note").hide();
+                    else $("#midi-ui-note").text(keys[keys.length - 1]);
+                }
+            }
+        };
         if (id === "-2") {
             key2Midi.handler = listener;
             key2Midi.enabled = true;
