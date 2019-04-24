@@ -234,6 +234,12 @@ $(async () => {
         $("#faust-ui-default").hide();
         $("#nav-item-faust-ui").show();
         $("#iframe-faust-ui").css("visibility", "visible");
+        if (compileOptions.enablePlot) {
+            $("#nav-item-plot-ui").show();
+        } else {
+            $("#nav-item-plot-ui").hide();
+            $("#plot-ui").empty();
+        }
         $("#output-analyser-ui").show();
         refreshDspUI(node);
         saveEditorDspTable();
@@ -830,7 +836,7 @@ $(async () => {
     $("#btn-run").prop("disabled", false).on("click", async (e) => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
-        if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
+        if ($("#tab-diagram").hasClass("active")) $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
