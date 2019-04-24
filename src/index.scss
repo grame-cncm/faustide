@@ -118,6 +118,12 @@ body {
                     font-size: 0.8em;
                 }
             }
+            & #input-plot-samps {
+                width: 90px;
+                display: inline-block;
+                height: 24px;
+                padding: 2px 8px;
+            }
         }
         & > #center {
             display: flex;
@@ -215,10 +221,12 @@ body {
                     flex: 1 1 auto;
                     display: flex;
                     flex-direction: column;
-                    & > #faust-ui {
+                    & > div {
                         position: absolute;
                         width: 100%;
                         height: 100%;
+                    }
+                    & > #faust-ui {
                         & > #iframe-faust-ui {
                             display: block;
                             position: absolute;
@@ -232,9 +240,6 @@ body {
                         }
                     }
                     & > #diagram {
-                        position: absolute;
-                        width: 100%;
-                        height: 100%;
                         overflow: auto;
                         & > #diagram-svg {
                             position: relative;
@@ -256,12 +261,43 @@ body {
                         & > #diagram-default {
                             top: 20%;
                         }
-                        & > #diagram-error {
-                            top: 20%;
-                            display: none;
-                            & > .alert-faust-code {
-                                width: 100%;
+                    }
+                    & > #plot-ui {
+                        display: flex;
+                        flex-direction: column;
+                        font-size: 0.75em;
+                        font-family: Consolas, monospace;
+                        background-color: #181818;
+                        overflow-x: auto;
+                        & > .plot-channel {
+                            display: grid;
+                            position: relative;
+                            flex: 1 1 auto;
+                            grid-template-columns: repeat(auto-fill, 80px);
+                            grid-template-rows: repeat(auto-fill, 20px);
+                            grid-auto-flow: column;
+                            border-bottom: #505050 dashed 1px;
+                            & > .plot-cell {
+                                display: block;
+                                width: 80px;
+                                height: 20px;
+                                & > span {
+                                    display: inline-block;
+                                    border: #606060 solid 1px;
+                                    text-align: right;
+                                    padding: 0px 1px;
+                                    &:first-child {
+                                        width: 30px;
+                                        color: #ffffa0;
+                                    }
+                                    &:last-child {
+                                        width: 50px;
+                                    }
+                                }
                             }
+                        }
+                        & > #plot-default {
+                            top: 20%;
                         }
                     }
                 }

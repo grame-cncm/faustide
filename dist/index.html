@@ -92,6 +92,13 @@
 					Real-time Compile
 				</label>
 			</div>
+			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Plot samples">
+				<input id="check-plot" class="form-check-input" type="checkbox" value="" />
+				<label class="form-plot" for="check-plot">
+					Plot
+				</label>
+				<input id="input-plot-samps" type="number" class="form-control ml-2" placeholder="Samps" value="256" />
+			</div>
 		</div>
 		<div id="center" class="container">
 			<div id="top">
@@ -138,20 +145,16 @@
 							<button type="button" class="btn btn-outline-light btn-close-tab" data-toggle="tooltip" data-placement="top" title="Stop DSP">&times;</button>
 						</a>
 					</li>
+					<li id="nav-item-plot-ui" class="nav-item">
+						<a id="tab-plot-ui" class="nav-link" data-toggle="tab" href="#plot-ui" role="tab" aria-controls="plot-ui" aria-selected="true">
+							<span>Plot</span>
+						</a>
+					</li>
 				</ul>
 				<div id="bottom-content" class="tab-content">
 					<div id="diagram" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-diagram">
 						<div id="diagram-default" class="alert alert-info" role="alert">
 							<h5>Diagram not available</h5>
-						</div>
-						<div id="diagram-error" class="alert alert-warning" role="alert">
-							<h5>Unable to Generate Diagram</h5>
-							<span>Please check your faust code.</span>
-							<br />
-							<div class="alert-faust-code">
-								<span>Error in faust code</span>
-								<a class="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal" data-target="#modal-alert-faust-code-detail">Detail</a>
-							</div>
 						</div>
 						<div id="diagram-svg"></div>
 					</div>
@@ -161,6 +164,19 @@
 							<h5>DSP not running</h5>
 							<span>Click Run to compile your faust code.</span>
 						</div>
+					</div>
+					<div id="plot-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-plot-ui">
+						<div id="plot-default" class="alert alert-info" role="alert">
+							<h5>No Data</h5>
+						</div>
+						<!-- 
+						<div class="plot-channel">
+							<div class="plot-cell"><span>0</span><span>0.00000</span></div>
+						</div>
+						<div class="plot-channel">
+							<div class="plot-cell"><span>0</span><span>0.00000</span></div>
+						</div>
+						 -->
 					</div>
 				</div>
 			</div>
