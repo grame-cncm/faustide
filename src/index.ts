@@ -318,7 +318,11 @@ $(async () => {
         if (compileOptions.enablePlot && audioEnv.dsp) runDsp(editor.getValue());
     })[0] as HTMLInputElement).checked = compileOptions.enablePlot;
     ($("#input-plot-samps").on("change", (e) => {
-        compileOptions.plot = +(e.currentTarget as HTMLInputElement).value;
+        const v = +(e.currentTarget as HTMLInputElement).value;
+        const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
+        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / bufferSize) : Math.ceil(v / bufferSize)) * bufferSize, 0); // Spinner
+        compileOptions.plot = v1;
+        (e.currentTarget as HTMLInputElement).value = v1.toString();
         saveEditorParams();
     })[0] as HTMLSelectElement).value = compileOptions.plot.toString();
     /**
