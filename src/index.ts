@@ -840,7 +840,7 @@ $(async () => {
     $("#btn-run").prop("disabled", false).on("click", async (e) => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
-        if ($("#tab-diagram").hasClass("active")) $("#tab-faust-ui").tab("show");
+        if ($("#tab-diagram").hasClass("active") || !compileOptions.enablePlot) $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
