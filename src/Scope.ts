@@ -172,7 +172,7 @@ export class Scope {
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Current Channel");
-            btn.innerText = (this._channel + 1).toString() + " ch";
+            btn.innerText = "ch " + (this._channel + 1).toString();
             ctrl.appendChild(btn);
             this.btnCh = btn;
             try {
@@ -283,7 +283,7 @@ export class Scope {
         if (channelIn >= this.channels) return;
         const oldCh = this._channel;
         this._channel = channelIn;
-        this.btnCh.innerText = (this._channel + 1).toString() + " ch";
+        this.btnCh.innerText = "ch " + (this._channel + 1).toString();
         if (this._channel === oldCh) return;
         this.splitter.connect(this.analyser, this._channel, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
         setTimeout(() => {

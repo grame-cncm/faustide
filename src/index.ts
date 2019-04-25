@@ -3,6 +3,7 @@
 // webworkerify
 // Spectrogram
 // faust2plot
+// replot
 // zoom scopes
 // bargraph in scopes
 import * as monaco from "monaco-editor";
@@ -316,7 +317,13 @@ $(async () => {
         compileOptions.enablePlot = (e.currentTarget as HTMLInputElement).checked;
         saveEditorParams();
         if (compileOptions.enablePlot && audioEnv.dsp) runDsp(editor.getValue());
+        $("#btn-replot").prop("disabled", !compileOptions.enablePlot);
     })[0] as HTMLInputElement).checked = compileOptions.enablePlot;
+    $("#btn-replot").on("click", (e) => {
+        if (!compileOptions.enablePlot) return;
+        if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(plotHandler);
+        else runDsp(editor.getValue());
+    }).prop("disabled", !compileOptions.enablePlot);
     ($("#input-plot-samps").on("change", (e) => {
         const v = +(e.currentTarget as HTMLInputElement).value;
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);

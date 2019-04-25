@@ -118,11 +118,13 @@ body {
                     font-size: 0.8em;
                 }
             }
-            & #input-plot-samps {
-                width: 90px;
-                display: inline-block;
-                height: 24px;
-                padding: 2px 8px;
+            & #btn-replot {
+                color: white;
+                height: 28px;
+                padding: 0px 10px;
+                font-size: 0.75em;
+                right: 0;
+                position: absolute;
             }
         }
         & > #center {
@@ -538,4 +540,7 @@ body {
 .dropright.submenu:hover > .dropdown-menu {
     display: block;
     margin-left: -1px;
+}
+.btn:focus {
+    box-shadow: none;
 }

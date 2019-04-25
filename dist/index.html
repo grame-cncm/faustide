@@ -97,7 +97,16 @@
 				<label class="form-plot" for="check-plot">
 					Plot
 				</label>
-				<input id="input-plot-samps" type="number" class="form-control ml-2" placeholder="Samps" value="256" />
+				<button id="btn-replot" type="button" class="btn btn-outline-secondary btn-sm ml-4">
+					<i class="fas fa-drafting-compass fa-sm"></i>
+					<span>Replot</span>
+				</button>
+			</div>
+			<div class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Samples to plot">
+			  <div class="input-group-prepend">
+				<div class="input-group-text">Samples</div>
+			  </div>
+			  <input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" />
 			</div>
 		</div>
 		<div id="center" class="container">
