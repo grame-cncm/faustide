@@ -40,7 +40,7 @@ export class Scope {
     ti: Uint8Array;
     f: Float32Array;
 
-    static drawOscilloscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number) {
+    static drawOscilloscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
@@ -59,21 +59,25 @@ export class Scope {
             }
         }
         const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
-        for (let i = $zerox; i < $zerox + drawL; i++) {
-            const x = w * (i - $zerox) / (drawL - 1);
+        const $0 = Math.round($zerox + drawL * zoomOffset);
+        const $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
+        for (let i = $0; i < $1; i++) {
+            const x = w * (i - $0) / ($1 - $0 - 1);
             const y = h - (d[i] * 0.5 + 0.5) * h;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
     }
-    static drawSpectroscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array) {
+    static drawSpectroscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
+        const $0 = Math.round(l * zoomOffset);
+        const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
-        for (let i = 0; i < l; i++) {
-            const x = w * i / l;
+        for (let i = $0; i < $1; i++) {
+            const x = w * (i - $0) / ($1 - $0);
             const y = ((d[i] + 10) / 100 + 1) * h;
-            ctx.fillRect(x, h - y, w / l, y);
+            ctx.fillRect(x, h - y, w / ($1 - $0), y);
         }
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -253,11 +257,11 @@ export class Scope {
             const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
             if (this.type === TScopeType.Oscilloscope) {
                 const l = this.t.length;
-                Scope.drawOscilloscope(ctx, l, w, h, this.t, freq, sr);
+                Scope.drawOscilloscope(ctx, l, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, l * this.zoomOffset, l / this.zoom + l * this.zoomOffset);
             } else if (this.type === TScopeType.Spectroscope) {
                 const l = this.f.length;
-                Scope.drawSpectroscope(ctx, l, w, h, this.f);
+                Scope.drawSpectroscope(ctx, l, w, h, this.f, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, sr / 2 * this.zoomOffset, sr / 2 / this.zoom + sr / 2 * this.zoomOffset);
             }
         }
