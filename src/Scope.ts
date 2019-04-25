@@ -33,6 +33,8 @@ export class Scope {
     btnCh: HTMLButtonElement;
     iSwitch: HTMLElement;
     type = TScopeType.Oscilloscope;
+    _zoom = 1;
+    _zoomOffset = 0;
     _size = 2048;
     t: Float32Array;
     ti: Uint8Array;
@@ -89,13 +91,21 @@ export class Scope {
         ctx.stroke();
         ctx.restore();
     }
-    static drawStats(ctx: CanvasRenderingContext2D, w: number, freq: number, samp: number, rms: number) {
+    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, freq: number, samp: number, rms: number, zoom: number, zoomMin: number, zoomMax: number) {
         ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         ctx.fillRect(w - 50, 0, 50, 50);
+        ctx.fillRect(0, h - 16, 30, 16);
+        ctx.fillRect(w - 30, h - 16, 30, 16);
+        ctx.fillRect(w / 2 - 15, h - 16, 30, 16);
         ctx.fillStyle = "#DDDD99";
-        ctx.textAlign = "right";
         ctx.font = "12px Consolas, monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(zoomMin.toFixed(0), 2, h - 2, 40);
+        ctx.textAlign = "center";
+        ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
+        ctx.textAlign = "right";
+        ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
         ctx.fillText((samp >= 0 ? "@+" : "@") + samp.toFixed(3), w - 2, 15, 50);
         ctx.fillText("~" + freq.toFixed(0) + "Hz", w - 2, 30, 50);
         ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
@@ -191,10 +201,14 @@ export class Scope {
     }
     bind() {
         this.btnSwitch.addEventListener("click", (e) => {
+            this.zoom = 1;
+            this.zoomOffset = 0;
             this.type = (this.type + 1) % 3;
             this.iSwitch.className = this.getIconClassName();
         });
         this.btnSize.addEventListener("click", (e) => {
+            this.zoom = 1;
+            this.zoomOffset = 0;
             this.size = Scope.sizes[(Scope.sizes.indexOf(this.size) + 1) % 4];
         });
         this.btnCh.addEventListener("click", (e) => {
@@ -202,6 +216,12 @@ export class Scope {
         });
         this.canvas.addEventListener("click", (e) => {
             this.paused = !this.paused;
+        });
+        this.canvas.addEventListener("wheel", (e) => {
+            const multiplier = 1.5 ** (e.deltaY * -0.01);
+            const zoom = this.zoom;
+            this.zoom *= multiplier;
+            this.zoomOffset += e.deltaX * 0.01 * 0.1 + (zoom === this.zoom ? 0 : 1 / zoom * (1 - 1 / multiplier) / 2);
         });
     }
     getIconClassName() {
@@ -234,11 +254,12 @@ export class Scope {
             if (this.type === TScopeType.Oscilloscope) {
                 const l = this.t.length;
                 Scope.drawOscilloscope(ctx, l, w, h, this.t, freq, sr);
+                Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, l * this.zoomOffset, l / this.zoom + l * this.zoomOffset);
             } else if (this.type === TScopeType.Spectroscope) {
                 const l = this.f.length;
                 Scope.drawSpectroscope(ctx, l, w, h, this.f);
+                Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, sr / 2 * this.zoomOffset, sr / 2 / this.zoom + sr / 2 * this.zoomOffset);
             }
-            Scope.drawStats(ctx, w, freq, samp, rms);
         }
         this.raf = requestAnimationFrame(this.draw);
         return this.raf;
@@ -267,7 +288,7 @@ export class Scope {
     get paused() {
         return this._paused;
     }
-    set paused(pausedIn: boolean) {
+    set paused(pausedIn) {
         if (pausedIn) {
             cancelAnimationFrame(this.raf);
             requestAnimationFrame(this.drawPause);
@@ -290,5 +311,18 @@ export class Scope {
             try { this.splitter.disconnect(this.analyser, oldCh, 0); } catch {}
         }, 10);
         this._channel = channelIn;
+    }
+    get zoom() {
+        return this._zoom;
+    }
+    set zoom(zoomIn) {
+        this._zoom = Math.min(16, Math.max(1, zoomIn));
+        this.zoomOffset = this.zoomOffset;
+    }
+    get zoomOffset() {
+        return this._zoomOffset;
+    }
+    set zoomOffset(zoomOffsetIn) {
+        this._zoomOffset = Math.max(0, Math.min(1 - 1 / this._zoom, zoomOffsetIn));
     }
 }
