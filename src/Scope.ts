@@ -22,12 +22,12 @@ export class Scope {
     spectTempCtx: CanvasRenderingContext2D;
     spectColCtx: CanvasRenderingContext2D;
     spectCol$ = 0;
-    _paused = false;
+    private _paused = false;
     frame = 0;
-    audioCtx: AudioContext;
-    analyser: AnalyserNode;
+    readonly audioCtx: AudioContext;
+    readonly analyser: AnalyserNode;
     splitter: ChannelSplitterNode;
-    _channel = 0;
+    private _channel = 0;
     channels: number;
     container: HTMLDivElement;
     canvas: HTMLCanvasElement;
@@ -36,9 +36,9 @@ export class Scope {
     btnCh: HTMLButtonElement;
     iSwitch: HTMLElement;
     type = TScopeType.Oscilloscope;
-    _zoom = 1;
-    _zoomOffset = 0;
-    _size = 2048;
+    private _zoom = 1;
+    private _zoomOffset = 0;
+    private _size = 2048;
     t: Float32Array;
     ti: Uint8Array;
     f: Float32Array;
@@ -99,7 +99,7 @@ export class Scope {
         }
         tempCtx.drawImage(colCtx.canvas, $, 0, 1, tempCtx.canvas.height);
         if ($ + 1 < tempCtx.canvas.width) {
-            const d$ = Math.round(($ + 1) / tempCtx.canvas.width * w * zoom);
+            const d$ = Math.round($ / tempCtx.canvas.width * w * zoom);
             if (d$ < w) ctx.drawImage(tempCtx.canvas, $, 0, tempCtx.canvas.width - $, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
             ctx.drawImage(tempCtx.canvas, 0, 0, $, tempCtx.canvas.height, w - d$, 0, d$, h);
         } else {
@@ -128,25 +128,25 @@ export class Scope {
     }
     static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, freq: number, samp: number, rms: number, zoom?: number, zoomMin?: number, zoomMax?: number) {
         ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(w - 50, 0, 50, 50);
-        if (zoomMin) ctx.fillRect(0, h - 16, 30, 16);
-        if (zoomMax) ctx.fillRect(w - 30, h - 16, 30, 16);
-        if (zoom) ctx.fillRect(w / 2 - 15, h - 16, 30, 16);
+        if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
+        if (typeof zoomMax === "number") ctx.fillRect(w - 40, h - 16, 40, 16);
+        if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
         ctx.fillStyle = "#DDDD99";
-        ctx.font = "12px Consolas, monospace";
-        if (zoom) {
+        ctx.font = "bold 12px Consolas, monospace";
+        if (typeof zoom === "number") {
             ctx.textAlign = "center";
             ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
         }
-        if (zoomMin) {
+        if (typeof zoomMin === "number") {
             ctx.textAlign = "left";
             ctx.fillText(zoomMin.toFixed(0), 2, h - 2, 40);
         }
         ctx.textAlign = "right";
-        if (zoomMax) ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
+        if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
         ctx.fillText((samp >= 0 ? "@+" : "@") + samp.toFixed(3), w - 2, 15, 50);
-        ctx.fillText("~" + freq.toFixed(0) + "Hz", w - 2, 30, 50);
+        ctx.fillText(freq.toFixed(0) + "Hz", w - 2, 30, 50);
         ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
         ctx.restore();
     }
@@ -265,10 +265,15 @@ export class Scope {
             this.paused = !this.paused;
         });
         this.canvas.addEventListener("wheel", (e) => {
-            const multiplier = 1.5 ** (e.deltaY * -0.01);
+            const multiplier = 1.5 ** (e.deltaY > 0 ? -1 : 1);
             const zoom = this.zoom;
-            this.zoom *= multiplier;
-            this.zoomOffset += e.deltaX * 0.01 * 0.1 + (zoom === this.zoom ? 0 : 1 / zoom * (1 - 1 / multiplier) / 2);
+            const rect = this.canvas.getBoundingClientRect();
+            const center = (e.pageX - rect.left) / rect.width / zoom + this.zoomOffset;
+            if (e.deltaY !== 0) {
+                this.zoom *= multiplier;
+                this.zoomOffset = center - center / this.zoom;
+            }
+            if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
         });
     }
     getIconClassName() {
