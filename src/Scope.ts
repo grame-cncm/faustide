@@ -101,7 +101,7 @@ export class Scope {
         if ($ + 1 < tempCtx.canvas.width) {
             const d$ = Math.round($ / tempCtx.canvas.width * w * zoom);
             if (d$ < w) ctx.drawImage(tempCtx.canvas, $, 0, tempCtx.canvas.width - $, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
-            ctx.drawImage(tempCtx.canvas, 0, 0, $, tempCtx.canvas.height, w - d$, 0, d$, h);
+            if (d$) ctx.drawImage(tempCtx.canvas, 0, 0, $, tempCtx.canvas.height, w - d$, 0, d$, h);
         } else {
             ctx.drawImage(tempCtx.canvas, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height, w - w * zoom, 0, w * zoom, h);
         }
@@ -290,7 +290,7 @@ export class Scope {
             const ctx = this.ctx;
             const sr = this.audioCtx.sampleRate;
             const w = this.container.clientWidth;
-            const h = Math.min(w * 0.75, this.container.clientHeight);
+            const h = Math.floor(Math.min(w * 0.75, this.container.clientHeight));
             this.canvas.width = w;
             this.canvas.height = h;
             this.analyser.getFloatFrequencyData(this.f);
