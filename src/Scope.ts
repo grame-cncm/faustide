@@ -43,9 +43,10 @@ export class Scope {
     ti: Uint8Array;
     f: Float32Array;
 
-    static drawOscilloscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
+    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
         this.drawGrid(ctx, w, h);
+        const l = d.length;
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -73,9 +74,10 @@ export class Scope {
         }
         ctx.stroke();
     }
-    static drawSpectroscope(ctx: CanvasRenderingContext2D, l: number, w: number, h: number, d: Float32Array, zoom: number, zoomOffset: number) {
+    static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
         this.drawGrid(ctx, w, h);
+        const l = d.length;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
@@ -85,11 +87,8 @@ export class Scope {
             ctx.fillRect(x, h - y, w / ($1 - $0), y);
         }
     }
-    static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, colCtx: CanvasRenderingContext2D, $: number, l: number, w: number, h: number, d: Float32Array, zoom: number) {
-        this.drawBackground(ctx, w, h);
-        this.drawGrid(ctx, w, h);
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
+    static drawOfflineSpectrogram(tempCtx: CanvasRenderingContext2D, colCtx: CanvasRenderingContext2D, $: number, d: Float32Array) {
+        const l = d.length;
         const normalized = d.map(f => Math.min(1, Math.max(0, (f + 10) / 100 + 1)));
         for (let i = 0; i < l; i++) {
             const hue = (normalized[i] * 180 + 240) % 360;
@@ -98,10 +97,16 @@ export class Scope {
             colCtx.fillRect(0, l - i - 1, 1, 1);
         }
         tempCtx.drawImage(colCtx.canvas, $, 0, 1, tempCtx.canvas.height);
+    }
+    static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, $: number, w: number, h: number, d: Float32Array, zoom: number) {
+        this.drawBackground(ctx, w, h);
+        this.drawGrid(ctx, w, h);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
         if ($ + 1 < tempCtx.canvas.width) {
             const d$ = Math.round($ / tempCtx.canvas.width * w * zoom);
-            if (d$ < w) ctx.drawImage(tempCtx.canvas, $, 0, tempCtx.canvas.width - $, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
-            if (d$) ctx.drawImage(tempCtx.canvas, 0, 0, $, tempCtx.canvas.height, w - d$, 0, d$, h);
+            if (d$ < w) ctx.drawImage(tempCtx.canvas, $ + 1, 0, tempCtx.canvas.width - $ - 1, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
+            if (d$) ctx.drawImage(tempCtx.canvas, 0, 0, $ + 1, tempCtx.canvas.height, w - d$, 0, d$, h);
         } else {
             ctx.drawImage(tempCtx.canvas, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height, w - w * zoom, 0, w * zoom, h);
         }
@@ -156,12 +161,12 @@ export class Scope {
         this.t = new Float32Array(this.analyser.fftSize);
         this.ti = new Uint8Array(this.analyser.fftSize);
         this.f = new Float32Array(this.analyser.frequencyBinCount);
-        this.getChildrens();
+        this.getChildren();
         this.bind();
         this.draw();
         if (!window.AudioWorklet) this.paused = true;
     }
-    getChildrens() {
+    getChildren() {
         const tempCanvas = document.createElement("canvas");
         tempCanvas.width = 1024;
         tempCanvas.height = 1024;
@@ -303,20 +308,18 @@ export class Scope {
             const freq = this.f.indexOf(Math.max(...this.f)) / this.f.length * sr / 2;
             const samp = this.t[this.t.length - 1];
             const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
+            Scope.drawOfflineSpectrogram(this.spectTempCtx, this.spectColCtx, this.spectCol$, this.f);
             if (this.type === TScopeType.Oscilloscope) {
-                const l = this.t.length;
-                Scope.drawOscilloscope(ctx, l, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
+                Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
             } else if (this.type === TScopeType.Spectroscope) {
-                const l = this.f.length;
-                Scope.drawSpectroscope(ctx, l, w, h, this.f, this.zoom, this.zoomOffset);
+                Scope.drawSpectroscope(ctx, w, h, this.f, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, sr / 2 * this.zoomOffset, sr / 2 / this.zoom + sr / 2 * this.zoomOffset);
             } else if (this.type === TScopeType.Spectrogram) {
-                const l = this.f.length;
-                Scope.drawSpectrogram(ctx, this.spectTempCtx, this.spectColCtx, this.spectCol$, l, w, h, this.f, this.zoom);
+                Scope.drawSpectrogram(ctx, this.spectTempCtx, this.spectCol$, w, h, this.f, this.zoom);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
-                this.spectCol$ = (this.spectCol$ + 1) % this.spectTempCtx.canvas.width;
             }
+            this.spectCol$ = (this.spectCol$ + 1) % this.spectTempCtx.canvas.width;
         }
         this.raf = requestAnimationFrame(this.draw);
         return this.raf;
