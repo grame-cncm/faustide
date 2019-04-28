@@ -277,6 +277,7 @@ body {
                         & > .plot-channel {
                             display: grid;
                             position: relative;
+                            width: 1px; // for Safari
                             flex: 1 1 auto;
                             grid-template-columns: repeat(auto-fill, 80px);
                             grid-template-rows: repeat(auto-fill, 20px);
