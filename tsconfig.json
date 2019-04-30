@@ -23,7 +23,7 @@
     "downlevelIteration": true
   },
   "include": [
-    "src/*.ts", "src/**/*.ts", "src/listEx.js"
+    "src/**/*"
   ],
   "exclude": [
     "dist",

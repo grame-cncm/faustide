@@ -3,27 +3,27 @@ import { Faust2MD } from "./Faust2MD";
 Retrive faust2md doc by parsing .dsp file
 
 The format of a title is :
-	//############# Title Name #################
-	//  markdown text....
-	//  markdown text....
-	//##########################################
+    //############# Title Name #################
+    //  markdown text....
+    //  markdown text....
+    //##########################################
 
 The format of a section is :
-	//============== Section Name ==============
-	//  markdown text....
-	//  markdown text....
-	//==========================================
+    //============== Section Name ==============
+    //  markdown text....
+    //  markdown text....
+    //==========================================
 
 The format of a comment is :
-	//-------------- foo(x,y) ------------------
-	//  markdown text....
-	//  markdown text....
-	//------------------------------------------
+    //-------------- foo(x,y) ------------------
+    //  markdown text....
+    //  markdown text....
+    //------------------------------------------
 everything else is considered Faust code.
 --------------------------------------------------------
 */
 export type TFaustDocs = { [key: string]: TFaustDoc };
-export type TFaustDoc = { path: string[], name: string, doc: string };
+export type TFaustDoc = { path: string[]; name: string; doc: string };
 /**
  *
  * @class Faust2Doc
@@ -31,7 +31,7 @@ export type TFaustDoc = { path: string[], name: string, doc: string };
 export class Faust2Doc {
     private static readonly REGEX_DEF_LIB = /\b(\w+)\s*=\s*library\("(.+)"\);/;
     private static readonly REGEX_DEF_IMP = /\bimport\("(.+)"\);/;
-    private static readonly REGEX_FUNC_NAME = /`.*?([\w\[\]\|]+)`/;
+    private static readonly REGEX_FUNC_NAME = /`.*?([\w[\]|]+)`/;
     private static readonly REGEX_FUNC_NAME_COND = /\[(.+?)(\|.+?)*?]/;
     /**
      * Retrieve a library definition
@@ -41,8 +41,8 @@ export class Faust2Doc {
      * @returns {{ namespace: string, fileName: string }[]}
      * @memberof Faust2Doc
      */
-    static matchLibrary(line: string): { namespace: string, fileName: string }[] {
-        const libs = [] as { namespace: string, fileName: string }[];
+    static matchLibrary(line: string): { namespace: string; fileName: string }[] {
+        const libs = [] as { namespace: string; fileName: string }[];
         const exps = line.match(new RegExp(this.REGEX_DEF_LIB, "g"));
         if (exps) {
             exps.forEach((exp) => {
@@ -140,25 +140,21 @@ export class Faust2Doc {
         if (depthIn === 0) return docIn;
         const depth = depthIn || 2;
         const strIn = await getFile(fileName);
-        const doc = docIn || {} as TFaustDocs;
+        const doc: TFaustDocs = docIn || {};
         const path = pathIn || [];
         let inComment = false; // false: in code; true: in md-comment
         let idt = 0; // indentation retained to outdent comment lines
         let curName = ""; // current function name
         let strBuffer = ""; // current function doc
         const lines = strIn.split("\n");
-        for (const line of lines) {
+        lines.forEach((line) => {
             if (!Faust2MD.isComment(line)) {
                 if (inComment) inComment = false; // we are closing a md-comment
                 const libs = this.matchLibrary(line);
                 const imps = this.matchImport(line);
-                for (const lib of libs) {
-                    await this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
-                }
-                for (const imp of imps) {
-                    await this.parse(imp, getFile, depth - 1, path, doc);
-                }
-                continue;
+                libs.forEach(lib => this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc));
+                imps.forEach(imp => this.parse(imp, getFile, depth - 1, path, doc));
+                return;
             }
             if (inComment) { // we are in a md-comment (not first line)
                 if (idt === 0) idt = Faust2MD.indentation(line); // we have to measure the indentation
@@ -171,7 +167,7 @@ export class Faust2Doc {
                     curName = "";
                     strBuffer = "";
                 }
-                continue;
+                return;
             }
             // check begin of md-comment
             const { c, s, t } = { c: Faust2MD.matchBeginComment(line), s: Faust2MD.matchBeginSection(line), t: Faust2MD.matchBeginTitle(line) };
@@ -181,7 +177,7 @@ export class Faust2Doc {
                 idt = 0;
                 strBuffer = "";
             }
-        }
+        });
         return doc;
     }
 }

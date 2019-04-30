@@ -1,10 +1,11 @@
-import * as monaco from "monaco-editor";
+import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import { Faust2Doc, TFaustDocs, TFaustDoc } from "./Faust2Doc";
+
 export type FaustLanguageProviders = {
-    hoverProvider: monaco.languages.HoverProvider,
-    tokensProvider: monaco.languages.IMonarchLanguage,
-    completionItemProvider: monaco.languages.CompletionItemProvider,
-    docs: TFaustDocs
+    hoverProvider: monaco.languages.HoverProvider;
+    tokensProvider: monaco.languages.IMonarchLanguage;
+    completionItemProvider: monaco.languages.CompletionItemProvider;
+    docs: TFaustDocs;
 };
 export const language: monaco.languages.ILanguageExtensionPoint = {
     id: "faust",
@@ -27,7 +28,7 @@ export const config: monaco.languages.LanguageConfiguration = {
         { open: "(", close: ")" },
         { open: '"', close: '"', notIn: ["string"] },
         { open: "/*", close: "*/", notIn: ["string"] }
-    ],
+    ]
 };
 export const theme: monaco.editor.IStandaloneThemeData = {
     base: "vs-dark",
@@ -43,7 +44,7 @@ export const theme: monaco.editor.IStandaloneThemeData = {
 };
 const faustKeywords = [
     "import", "component", "declare", "library", "environment", "int", "float",
-    "letrec", "with", "class", "process", "effect", "inputs", "outputs",
+    "letrec", "with", "class", "process", "effect", "inputs", "outputs"
 ];
 const faustFunctions = [
     "mem", "prefix", "rdtable", "rwtable",
@@ -58,9 +59,9 @@ const faustFunctions = [
 const getFile = async (fileName: string) => {
     const libPath = "https://faust.grame.fr/tools/editor/libraries/";
     const res = await fetch(libPath + fileName);
-    return await res.text();
+    return res.text();
 };
-type TMatchedFaustDoc = { nameArray: string[], name: string, range: monaco.Range, doc: TFaustDoc };
+type TMatchedFaustDoc = { nameArray: string[]; name: string; range: monaco.Range; doc: TFaustDoc };
 /**
  * Match an available doc key from monaco editor
  *
@@ -76,7 +77,7 @@ export const matchDocKey = (doc: TFaustDocs, model: monaco.editor.ITextModel, po
     if (!wordAtPosition) return null;
     let column$ = wordAtPosition.startColumn - 1;
     const name = wordAtPosition.word;
-    const prefixes = [] as string[];
+    const prefixes: string[] = [];
     while (column$ - 2 >= 0 && line[column$ - 1] === ".") {
         column$ -= 2;
         const prefixWord = model.getWordAtPosition(new monaco.Position(line$, column$));
@@ -99,20 +100,20 @@ export const matchDocKey = (doc: TFaustDocs, model: monaco.editor.ITextModel, po
     }
     return null;
 };
-export const getProviders = async () => {
-    let libDocs = {} as TFaustDocs;
-    let primDocs = {} as TFaustDocs;
+export const getProviders = async (): Promise<FaustLanguageProviders> => {
+    let libDocs: TFaustDocs = {};
+    let primDocs: TFaustDocs = {};
     try {
         libDocs = await Faust2Doc.parse("stdfaust.lib", getFile);
         primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => {
             const libPath = "./";
             const res = await fetch(libPath + fileName);
-            return await res.text();
+            return res.text();
         });
-    } catch (e) {}
+    } catch (e) {} // eslint-disable-line no-empty
     const faustLib = Object.keys(libDocs);
     const hoverProvider: monaco.languages.HoverProvider = {
-        provideHover: (model, position, token) => {
+        provideHover: (model, position) => {
             const matched = matchDocKey({ ...primDocs, ...libDocs }, model, position);
             if (matched) {
                 const prefix = matched.nameArray.slice();
@@ -123,7 +124,7 @@ export const getProviders = async () => {
                     contents: [
                         { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                         { value: doc.doc.replace(/#+/g, "######") },
-                        { value: prefix.length ? `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.join(".") + "."}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()})` : `[Detail...](https://faust.grame.fr/doc/manual/index.html#faust-syntax)` }
+                        { value: prefix.length ? `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.join(".") + "."}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faust.grame.fr/doc/manual/index.html#faust-syntax)" }
                     ]
                 };
             }
@@ -147,7 +148,7 @@ export const getProviders = async () => {
             "@", "'"
         ],
         // we include these common regular expressions
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        symbols: /[=><!~?:&|+\-*/^%]+/,
         // C# style strings
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
         // The main tokenizer for our languages
@@ -155,7 +156,7 @@ export const getProviders = async () => {
             root: [
                 // identifiers and keywords
                 [/!|_/, "keyword"],
-                [/[a-z_$]([\w\.$]*[\w$])?/, {
+                [/[a-z_$]([\w.$]*[\w$])?/, {
                     cases: {
                         "@faustFunctions": "faustFunctions",
                         "@faustKeywords": "faustKeywords",
@@ -163,21 +164,21 @@ export const getProviders = async () => {
                         "@default": "identifier"
                     }
                 }],
-                [/[A-Z][\w\$]*/, "type.identifier"],
+                [/[A-Z][\w$]*/, "type.identifier"],
                 // whitespace
                 { include: "@whitespace" },
                 // delimiters and operators
-                [/[{}()\[\]]/, "@brackets"],
+                [/[{}()[\]]/, "@brackets"],
                 [/~|,|<:|:>|:/, "faustCompOperators"],
                 [/[<>](?!@symbols)/, "@brackets"],
-                [/=|\+|\-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
+                [/=|\+|-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
                     cases: {
                         "@operators": "operators",
                         "@default": ""
                     }
                 }],
                 // numbers
-                [/\d*\.\d+([eE][\-+]?\d+)?/, "number.float"],
+                [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"],
                 [/0[xX][0-9a-fA-F]+/, "number.hex"],
                 [/\d+/, "number"],
                 // delimiter: after number because of .\d floats
@@ -186,10 +187,10 @@ export const getProviders = async () => {
                 [/"/, { token: "string", next: "@string" }]
             ],
             comment: [
-                [/[^\/*]+/, "comment"],
+                [/[^/*]+/, "comment"],
                 [/\/\*/, "comment", "@push"],
                 [/\*\//, "comment", "@pop"],
-                [/[\/*]/, "comment"]
+                [/[/*]/, "comment"]
             ],
             string: [
                 [/[^\\"$]+/, "string"],
@@ -206,7 +207,7 @@ export const getProviders = async () => {
     } as any);
     const completionItemProvider: monaco.languages.CompletionItemProvider = {
         provideCompletionItems: () => {
-            const suggestions = ([] as monaco.languages.CompletionItem[]);
+            const suggestions: monaco.languages.CompletionItem[] = [];
             [...faustKeywords, ...faustFunctions, ...faustLib].forEach((e) => {
                 suggestions.push({
                     label: e,
@@ -218,5 +219,5 @@ export const getProviders = async () => {
             return { suggestions };
         }
     };
-    return { hoverProvider, tokensProvider, completionItemProvider, docs: libDocs } as FaustLanguageProviders;
+    return { hoverProvider, tokensProvider, completionItemProvider, docs: libDocs };
 };

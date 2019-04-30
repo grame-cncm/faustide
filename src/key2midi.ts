@@ -105,7 +105,7 @@ class Key2Midi {
      * @param {{ keyMap?: TKeyMap, offset?: number, velocity?: number, handler?: (msg: number[]) => any, enabled?: boolean }} [options]
      * @memberof Key2Midi
      */
-    constructor(options?: { keyMap?: TKeyMap; offset?: number; velocity?: number; handler?: (msg: number[]) => any; enabled?: boolean; }) {
+    constructor(options?: { keyMap?: TKeyMap; offset?: number; velocity?: number; handler?: (msg: number[]) => any; enabled?: boolean }) {
         this.keyMap = options.keyMap || Key2Midi.KEY_MAP;
         this.offset = options.offset || 36;
         this.velocity = options.velocity || 60;
@@ -146,7 +146,6 @@ class Key2Midi {
         }
         if (converted === "VELDOWN") {
             this.velocity = Math.max(20, this.velocity - 20);
-            return;
         }
     }
     /**
@@ -164,7 +163,6 @@ class Key2Midi {
             const note = converted + this.offset;
             this.velMap[note] = 0;
             this.handler([144, converted + this.offset, 0]);
-            return;
         }
     }
     /**

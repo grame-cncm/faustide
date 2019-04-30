@@ -9,30 +9,30 @@ And the option -f can be used to include a YAML front
 matter with the name of the file and the date.
 
 The format of a title is :
-	//############# Title Name #################
-	//  markdown text....
-	//  markdown text....
-	//##########################################
+    //############# Title Name #################
+    //  markdown text....
+    //  markdown text....
+    //##########################################
 
 The format of a section is :
-	//============== Section Name ==============
-	//  markdown text....
-	//  markdown text....
-	//==========================================
+    //============== Section Name ==============
+    //  markdown text....
+    //  markdown text....
+    //==========================================
 
 The format of a comment is :
-	//-------------- foo(x,y) ------------------
-	//  markdown text....
-	//  markdown text....
-	//------------------------------------------
+    //-------------- foo(x,y) ------------------
+    //  markdown text....
+    //  markdown text....
+    //------------------------------------------
 everything else is considered Faust code.
 The translation is the following:
   ## foo(x,y)
-	markdown text....
-	markdown text....
+    markdown text....
+    markdown text....
 --------------------------------------------------------
 */
-type Faust2MDOptions = { tabsize: number, code: boolean, front: boolean };
+type Faust2MDOptions = { tabsize: number; code: boolean; front: boolean };
 /**
  * faust2md ts port
  *
@@ -100,7 +100,7 @@ export class Faust2MD {
      */
     static matchEndTitle(line: string): boolean {
         const matched = line.match(this.REGEX_END_TITLE);
-        return matched ? true : false;
+        return !!matched;
     }
     /**
      * Match the first line of a section
@@ -128,7 +128,7 @@ export class Faust2MD {
      */
     static matchEndSection(line: string): boolean {
         const matched = line.match(this.REGEX_END_SECTION);
-        return matched ? true : false;
+        return !!matched;
     }
     /**
      * Match the first line of a comment
@@ -156,7 +156,7 @@ export class Faust2MD {
      */
     static matchEndComment(line: string): boolean {
         const matched = line.match(this.REGEX_END_COMMENT);
-        return matched ? true : false;
+        return !!matched;
     }
     /**
      * Measure the indentation of a md-comment line
@@ -181,7 +181,7 @@ export class Faust2MD {
      */
     static isComment(line: string): boolean {
         const matched = line.match(this.REGEX_COMMENT);
-        return matched ? true : false;
+        return !!matched;
     }
     /**
      * Process the file
@@ -193,8 +193,8 @@ export class Faust2MD {
      * @returns {string}
      * @memberof Faust2MD
      */
-    static parse(strIn: string, fileName?: string, optionsIn?: { tabsize?: number, code?: boolean, front?: boolean }): string {
-        const options = { tabsize: 4, code: false, front: false, ...optionsIn } as Faust2MDOptions;
+    static parse(strIn: string, fileName?: string, optionsIn?: { tabsize?: number; code?: boolean; front?: boolean }): string {
+        const options: Faust2MDOptions = { tabsize: 4, code: false, front: false, ...optionsIn };
         let strOut = "";
         let inComment = false; // false: in code; true: in md-comment
         let idt = 0; // indentation retained to outdent comment lines

@@ -1,14 +1,18 @@
+/* eslint-disable newline-per-chained-call */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable no-use-before-define */
 // import { Faust } from "faust2webaudio";
 // TODO
 // webworkerify
 // bargraph in scopes
-import * as monaco from "monaco-editor";
+
+import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input } from "webmidi";
+import * as QRCode from "qrcode";
+import * as WaveSurfer from "wavesurfer.js";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
-import * as QRCode from "qrcode";
-import * as WaveSurfer from "wavesurfer.js";
 import * as faustlang from "./monaco-faust";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
@@ -17,57 +21,58 @@ import "bootstrap/js/dist/modal";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
+
 declare global {
     interface Window {
         AudioContext: typeof AudioContext;
         webkitAudioContext: typeof AudioContext;
-        AudioWorklet?: typeof AudioWorklet;
+        AudioWorklet?: typeof AudioWorklet; // eslint-disable-line no-undef
         faustEnv: FaustEditorEnv;
     }
 }
 type FaustEditorEnv = {
-    audioEnv: FaustEditorAudioEnv,
-    midiEnv: FaustEditorMIDIEnv,
-    uiEnv: FaustEditorUIEnv,
-    compileOptions: FaustEditorCompileOptions,
-    editor?: monaco.editor.IStandaloneCodeEditor,
-    jQuery: JQueryStatic,
-    faust: Faust
+    audioEnv: FaustEditorAudioEnv;
+    midiEnv: FaustEditorMIDIEnv;
+    uiEnv: FaustEditorUIEnv;
+    compileOptions: FaustEditorCompileOptions;
+    editor?: monaco.editor.IStandaloneCodeEditor;
+    jQuery: JQueryStatic;
+    faust: Faust;
 };
 type FaustEditorAudioEnv = {
-    audioCtx?: AudioContext,
-    splitterInput?: ChannelSplitterNode,
-    analyserInput?: AnalyserNode,
-    splitterOutput?: ChannelSplitterNode,
-    analyserOutput?: AnalyserNode,
-    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode },
-    currentInput?: string,
-    mediaDestination?: MediaStreamAudioDestinationNode,
-    dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode,
-    dspConnectedToOutput: boolean,
-    dspConnectedToInput: boolean,
-    inputEnabled: boolean,
-    outputEnabled: boolean
+    audioCtx?: AudioContext;
+    splitterInput?: ChannelSplitterNode;
+    analyserInput?: AnalyserNode;
+    splitterOutput?: ChannelSplitterNode;
+    analyserOutput?: AnalyserNode;
+    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode };
+    currentInput?: string;
+    mediaDestination?: MediaStreamAudioDestinationNode;
+    dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode;
+    dspConnectedToOutput: boolean;
+    dspConnectedToInput: boolean;
+    inputEnabled: boolean;
+    outputEnabled: boolean;
 };
 type FaustEditorMIDIEnv = {
-    input: Input
+    input: Input;
 };
 type FaustEditorUIEnv = {
-    analysersInited: boolean,
-    inputScope: Scope,
-    outputScope: Scope
+    analysersInited: boolean;
+    inputScope: Scope;
+    outputScope: Scope;
 };
 type FaustEditorCompileOptions = {
-    name: string,
-    useWorklet: boolean,
-    bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096,
-    saveParams: boolean,
-    saveDsp: boolean,
-    realtimeCompile: boolean,
-    voices: number,
-    enablePlot: boolean,
-    plot: number,
-    args: { [key: string]: any }
+    name: string;
+    useWorklet: boolean;
+    bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096;
+    saveParams: boolean;
+    saveDsp: boolean;
+    realtimeCompile: boolean;
+    voices: number;
+    enablePlot: boolean;
+    plot: number;
+    args: { [key: string]: any };
 };
 type FaustExportTargets = { [platform: string]: string[] };
 $(async () => {
@@ -101,7 +106,7 @@ $(async () => {
     };
     const plotHandler = (plotted: number[][]) => {
         $("#plot-ui").empty();
-        for (const i of plotted) {
+        plotted.forEach((i) => {
             const $div = $("<div>").addClass("plot-channel");
             for (let j = 0; j < i.length; j++) {
                 const $cell = $("<div>").addClass("plot-cell");
@@ -109,14 +114,14 @@ $(async () => {
                 $div.append($cell);
             }
             $("#plot-ui").append($div);
-        }
+        });
     };
     // Async load Monaco Editor
     const editor = await initEditor();
     editor.layout();
     // Editor and Diagram
-    let editorDecoration = [] as string[];
-    const getDiagram = (code: string): { success: boolean, error?: Error } => {
+    let editorDecoration: string[] = [];
+    const getDiagram = (code: string): { success: boolean; error?: Error } => {
         let svg: string;
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
@@ -144,7 +149,7 @@ $(async () => {
         return { success: true };
     };
     // dsp Compiler
-    const runDsp = async (code: string): Promise<{ success: boolean, error?: Error }> => {
+    const runDsp = async (code: string): Promise<{ success: boolean; error?: Error }> => {
         const audioCtx = audioEnv.audioCtx;
         const input = audioEnv.inputs[audioEnv.currentInput];
         let splitter = audioEnv.splitterOutput;
@@ -159,8 +164,8 @@ $(async () => {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
             node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler, plot: enablePlot ? plot : undefined });
-            if (!node) throw "Unknown Error in WebAudio Node.";
-        } catch (e) {/*
+            if (!node) throw new Error("Unknown Error in WebAudio Node.");
+        } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
             $("#faust-ui-default").show();
@@ -182,7 +187,7 @@ $(async () => {
             audioEnv.dspConnectedToOutput = false;
             delete audioEnv.dsp;
         }
-        let dspParams = {} as { [path: string]: number };
+        let dspParams: { [path: string]: number } = {};
         if (compileOptions.saveParams) {
             const strDspParams = localStorage.getItem("faust_editor_dsp_params");
             if (strDspParams) {
@@ -251,11 +256,11 @@ $(async () => {
         if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
     });
 
-    const audioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as FaustEditorAudioEnv;
-    const midiEnv = { input: null } as FaustEditorMIDIEnv;
-    const uiEnv = { analysersInited: false, inputScope: null, outputScope: null } as FaustEditorUIEnv;
-    const compileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enablePlot: false, plot: 256, ...loadEditorParams() } as FaustEditorCompileOptions;
-    const faustEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery } as FaustEditorEnv;
+    const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
+    const midiEnv: FaustEditorMIDIEnv = { input: null };
+    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null };
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enablePlot: false, plot: 256, ...loadEditorParams() };
+    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, faust };
     faustEnv.editor = editor;
     faustEnv.faust = faust;
     if (compileOptions.saveDsp) loadEditorDspTable();
@@ -315,7 +320,7 @@ $(async () => {
         if (compileOptions.enablePlot && audioEnv.dsp) runDsp(editor.getValue());
         $("#btn-replot").prop("disabled", !compileOptions.enablePlot);
     })[0] as HTMLInputElement).checked = compileOptions.enablePlot;
-    $("#btn-replot").on("click", (e) => {
+    $("#btn-replot").on("click", () => {
         if (!compileOptions.enablePlot) return;
         if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(plotHandler);
         else runDsp(editor.getValue());
@@ -346,7 +351,7 @@ $(async () => {
     const loadURLParams = async (url: string) => {
         const urlParams = new URLSearchParams(url);
         if (urlParams.has("realtime_compile")) {
-            compileOptions.realtimeCompile = +urlParams.get("realtime_compile") ? true : false;
+            compileOptions.realtimeCompile = !!+urlParams.get("realtime_compile");
             saveEditorParams();
         }
         if (urlParams.has("voices")) {
@@ -404,7 +409,7 @@ $(async () => {
     $("#select-midi-input").on("change", (e) => {
         const id = (e.currentTarget as HTMLSelectElement).value;
         if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-        const keys = [] as number[];
+        const keys: number[] = [];
         const listener = (data: number[] | Uint8Array) => {
             if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
             if (data[0] === 144) {
@@ -444,7 +449,6 @@ $(async () => {
         if (audioEnv.currentInput === id) return;
         if (audioEnv.audioCtx) {
             const splitter = audioEnv.splitterInput;
-            const analyser = audioEnv.analyserInput;
             const dsp = audioEnv.dsp;
             const input = audioEnv.inputs[audioEnv.currentInput];
             if (splitter) input.disconnect(splitter);
@@ -482,7 +486,6 @@ $(async () => {
         }
         await initAudioCtx(audioEnv, id);
         const splitter = audioEnv.splitterInput;
-        const analyser = audioEnv.analyserInput;
         const dsp = audioEnv.dsp;
         const input = audioEnv.inputs[id];
         audioEnv.currentInput = id;
@@ -494,7 +497,7 @@ $(async () => {
         }
     }).change();
     // Waveform
-    $("#btn-source-play").on("click", (e) => {
+    $("#btn-source-play").on("click", () => {
         if (!wavesurfer || !wavesurfer.isReady) return;
         if (wavesurfer.isPlaying()) {
             wavesurfer.pause();
@@ -502,7 +505,7 @@ $(async () => {
             wavesurfer.play();
         }
     });
-    $("#btn-source-rewind").on("click", (e) => {
+    $("#btn-source-rewind").on("click", () => {
         if (!wavesurfer.isReady) return;
         wavesurfer.seekTo(0);
     });
@@ -549,7 +552,7 @@ $(async () => {
             try {
                 wavesurfer.load(URL.createObjectURL(file));
             } catch (e) {
-                console.error(e);
+                console.error(e); // eslint-disable-line no-console
                 showError("Cannot load sound file: " + e);
                 return;
             }
@@ -593,7 +596,7 @@ $(async () => {
         */
         if (audioEnv.outputEnabled) {
             $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
-            .children("span").html("Output is Off");
+                .children("span").html("Output is Off");
             audioEnv.outputEnabled = false;
             if (audioEnv.dspConnectedToOutput) {
                 audioEnv.dsp.disconnect(audioEnv.audioCtx.destination);
@@ -609,11 +612,11 @@ $(async () => {
                 audioEnv.dspConnectedToOutput = true;
             }
             $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-            .children("span").html("Output is On");
+                .children("span").html("Output is On");
         }
     });
     // Upload
-    $("#btn-upload").on("click", (e) => {
+    $("#btn-upload").on("click", () => {
         $("#input-upload").click();
     });
     $("#input-upload").on("input", (e) => {
@@ -635,85 +638,85 @@ $(async () => {
         reader.readAsText(file);
     }).on("click", e => e.stopPropagation());
     // Save as
-    $("#btn-save").on("click", (e) => {
+    $("#btn-save").on("click", () => {
         const text = editor.getValue();
         const uri = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
         $("#a-save").attr({ href: uri, download: compileOptions.name + ".dsp" })[0].click();
     });
     $("#a-save").on("click", e => e.stopPropagation());
     // Docs
-    $("#btn-docs").on("click", e => $("#a-docs")[0].click());
+    $("#btn-docs").on("click", () => $("#a-docs")[0].click());
     $("#a-docs").on("click", e => e.stopPropagation());
     // Export
     const server = "https://faustservicecloud.grame.fr";
     fetch(`${server}/targets`)
-    .then(response => response.json())
-    .then((targets: FaustExportTargets) => {
-        const plats = Object.keys(targets);
-        if (plats.length) {
-            $("#export-platform").add("#export-arch").empty();
-            plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-            targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-        }
-        $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
-        $("#export-platform").on("change", (e) => {
-            const plat = (e.currentTarget as HTMLSelectElement).value;
-            $("#export-arch").empty();
-            targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-        });
-        $("#export-download").on("click", e => $("#a-export-download")[0].click());
-        $("#a-export-download").on("click", e => e.stopPropagation());
-        $("#export-submit").on("click", () => {
-            $("#export-download").hide();
-            $("#export-loading").css("display", "inline-block");
-            $("#qr-code").hide();
-            $("#export-error").hide();
-            const form = new FormData();
-            form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
-            $.ajax({
-                method: "POST",
-                url: `${server}/filepost`,
-                data: form,
-                contentType: false,
-                processData: false
-            }).done((shaKey) => {
-                const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-                if (matched) {
-                    const plat = $("#export-platform").val();
-                    const arch = $("#export-arch").val();
-                    const path = `${server}/${shaKey}/${plat}/${arch}`;
-                    $.ajax({
-                        method: "GET",
-                        url: `${path}/precompile`
-                    }).done((result) => {
-                        if (result === "DONE") {
-                            const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
-                            $("#a-export-download").attr({ href })[0];
-                            $("#export-download").show();
-                            $("#qr-code").show();
-                            QRCode.toCanvas(
-                                $("#qr-code")[0] as HTMLCanvasElement,
-                                `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
-                            );
-                            return;
-                        }
-                        $("#export-loading").css("display", "none");
-                        $("#export-error").html(result).show();
-                    }).fail((jqXHR, textStatus) => {
-                        $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                    }).always(() => $("#export-loading").css("display", "none"));
-                    return;
-                }
-                $("#export-loading").css("display", "none");
-                $("#export-error").html(shaKey).show();
-            }).fail((jqXHR, textStatus) => {
-                $("#export-loading").css("display", "none");
-                $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+        .then(response => response.json())
+        .then((targets: FaustExportTargets) => {
+            const plats = Object.keys(targets);
+            if (plats.length) {
+                $("#export-platform").add("#export-arch").empty();
+                plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+                targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+            }
+            $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
+            $("#export-platform").on("change", (e) => {
+                const plat = (e.currentTarget as HTMLSelectElement).value;
+                $("#export-arch").empty();
+                targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
             });
+            $("#export-download").on("click", () => $("#a-export-download")[0].click());
+            $("#a-export-download").on("click", e => e.stopPropagation());
+            $("#export-submit").on("click", () => {
+                $("#export-download").hide();
+                $("#export-loading").css("display", "inline-block");
+                $("#qr-code").hide();
+                $("#export-error").hide();
+                const form = new FormData();
+                form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
+                $.ajax({
+                    method: "POST",
+                    url: `${server}/filepost`,
+                    data: form,
+                    contentType: false,
+                    processData: false
+                }).done((shaKey) => {
+                    const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+                    if (matched) {
+                        const plat = $("#export-platform").val();
+                        const arch = $("#export-arch").val();
+                        const path = `${server}/${shaKey}/${plat}/${arch}`;
+                        $.ajax({
+                            method: "GET",
+                            url: `${path}/precompile`
+                        }).done((result) => {
+                            if (result === "DONE") {
+                                const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                                $("#a-export-download").attr({ href });
+                                $("#export-download").show();
+                                $("#qr-code").show();
+                                QRCode.toCanvas(
+                                    $("#qr-code")[0] as HTMLCanvasElement,
+                                    `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
+                                );
+                                return;
+                            }
+                            $("#export-loading").css("display", "none");
+                            $("#export-error").html(result).show();
+                        }).fail((jqXHR, textStatus) => {
+                            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                        }).always(() => $("#export-loading").css("display", "none"));
+                        return;
+                    }
+                    $("#export-loading").css("display", "none");
+                    $("#export-error").html(shaKey).show();
+                }).fail((jqXHR, textStatus) => {
+                    $("#export-loading").css("display", "none");
+                    $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                });
+            });
+        }).catch(() => {
+            $("#btn-export").prop("disabled", "true");
         });
-    }).catch((r) => {
-        $("#btn-export").prop("disabled", "true");
-    });
     // Share
     const makeURL = () => {
         const base = window.location.origin + window.location.pathname;
@@ -790,33 +793,33 @@ $(async () => {
     });
     // Examples
     type DirectoryTree = {
-        path: string,
-        name: string,
-        size: number,
-        type: "directory" | "file",
-        children?: DirectoryTree[],
-        extension?: string
+        path: string;
+        name: string;
+        size: number;
+        type: "directory" | "file";
+        children?: DirectoryTree[];
+        extension?: string;
     };
     fetch("./examples.json")
-    .then(response => response.json())
-    .then((tree: DirectoryTree) => {
-        const $menu = $("#tab-examples");
-        const parseTree = (treeIn: DirectoryTree, $menu: JQuery<HTMLElement>) => {
-            if (treeIn.type === "file") {
-                const $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
-                $menu.append($item);
-            } else {
-                const $item = $("<div>").addClass(["dropright", "submenu"]);
-                const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
-                const $submenu = $("<div>").addClass("dropdown-menu");
-                $item.append($a, $submenu);
-                treeIn.children.forEach(v => parseTree(v, $submenu));
-                $menu.append($item);
-                $a.dropdown();
-            }
-        };
-        if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
-    });
+        .then(response => response.json())
+        .then((tree: DirectoryTree) => {
+            const $menu = $("#tab-examples");
+            const parseTree = (treeIn: DirectoryTree, $menu: JQuery<HTMLElement>) => {
+                if (treeIn.type === "file") {
+                    const $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
+                    $menu.append($item);
+                } else {
+                    const $item = $("<div>").addClass(["dropright", "submenu"]);
+                    const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
+                    const $submenu = $("<div>").addClass("dropdown-menu");
+                    $item.append($a, $submenu);
+                    treeIn.children.forEach(v => parseTree(v, $submenu));
+                    $menu.append($item);
+                    $a.dropdown();
+                }
+            };
+            if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
+        });
     $("#tab-examples").on("click", ".faust-example", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -824,30 +827,30 @@ $(async () => {
         const name = $(e.currentTarget).text();
         if (path) {
             fetch("../" + path)
-            .then(response => response.text())
-            .then((code) => {
-                compileOptions.name = name.split(".").slice(0, -1).join(".");
-                $("#input-filename").val(compileOptions.name);
-                editor.setValue(code);
-                localStorage.setItem("faust_editor_code", code);
-                saveEditorParams();
-                if (compileOptions.realtimeCompile) {
-                    if (audioEnv.dsp) runDsp(code);
-                    else getDiagram(code);
-                }
-            });
+                .then(response => response.text())
+                .then((code) => {
+                    compileOptions.name = name.split(".").slice(0, -1).join(".");
+                    $("#input-filename").val(compileOptions.name);
+                    editor.setValue(code);
+                    localStorage.setItem("faust_editor_code", code);
+                    saveEditorParams();
+                    if (compileOptions.realtimeCompile) {
+                        if (audioEnv.dsp) runDsp(code);
+                        else getDiagram(code);
+                    }
+                });
         }
         $("#tab-examples").dropdown("toggle");
     });
     // Run Dsp Button
-    $("#btn-run").prop("disabled", false).on("click", async (e) => {
+    $("#btn-run").prop("disabled", false).on("click", async () => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
         if ($("#tab-diagram").hasClass("active") || !compileOptions.enablePlot) $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
-    const dspParams = {} as { [path: string]: number };
+    const dspParams: { [path: string]: number } = {};
     window.addEventListener("message", (e) => {
         if (!e.data) return;
         const data = JSON.parse(e.data);
@@ -859,8 +862,8 @@ $(async () => {
             }
             return;
         }
-        if (data.type === "keydown") return key2Midi.handleKeyDown(data.key);
-        if (data.type === "keyup") return key2Midi.handleKeyUp(data.key);
+        if (data.type === "keydown") key2Midi.handleKeyDown(data.key);
+        else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
     });
     $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
         e.stopPropagation();
@@ -949,7 +952,6 @@ $(async () => {
                 e.preventDefault();
                 e.stopPropagation();
                 $("#btn-run").click();
-                return;
             }
         }
     });
@@ -966,12 +968,12 @@ $(async () => {
         const mode = $(e.currentTarget).hasClass("resizable-left")
             ? "left"
             : $(e.currentTarget).hasClass("resizable-right")
-            ? "right"
-            : $(e.currentTarget).hasClass("resizable-top")
-            ? "top"
-            : $(e.currentTarget).hasClass("resizable-bottom")
-            ? "bottom"
-            : undefined;
+                ? "right"
+                : $(e.currentTarget).hasClass("resizable-top")
+                    ? "top"
+                    : $(e.currentTarget).hasClass("resizable-bottom")
+                        ? "bottom"
+                        : undefined;
         const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1015,11 +1017,11 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
             if (audioCtx.state === "running") {
                 audioEnv.outputEnabled = true;
                 $("#btn-dac").removeClass("btn-light").addClass("btn-primary")
-                .children("span").html("Output is On");
+                    .children("span").html("Output is On");
             } else {
                 audioEnv.outputEnabled = false;
                 $("#btn-dac").removeClass("btn-primary").addClass("btn-light")
-                .children("span").html("Output is Off");
+                    .children("span").html("Output is Off");
             }
         });
         const unlockAudioContext = () => {
@@ -1047,7 +1049,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.mediaDestination) {
         try {
             audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
-        } catch (e) {}
+        } catch (e) {} // eslint-disable-line no-empty
     }
     return audioEnv;
 };
@@ -1086,18 +1088,17 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
     $("#dsp-ui-detail-params").html(node.getParams().length.toString());
 };
 const initEditor = async () => {
-    const code =
-`import("stdfaust.lib");
+    const code = `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
-    const polycode =
-`import("stdfaust.lib");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const polycode = `import("stdfaust.lib");
 process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {
     freq = hslider("freq", 440, 40, 8000, 1);
     gain = hslider("gain", 0.5, 0, 1, 0.01);
     gate = button("gate");
 };
 effect = dm.freeverb_demo;`;
-    const monaco = await import("monaco-editor");
+    const monaco = await import("monaco-editor"); // eslint-disable-line import/no-unresolved
     monaco.languages.register(faustlang.language);
     monaco.languages.setLanguageConfiguration("faust", faustlang.config);
     monaco.editor.defineTheme("vs-dark", faustlang.theme);
@@ -1118,9 +1119,8 @@ effect = dm.freeverb_demo;`;
             const matched = faustlang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
             if (matched) {
                 const prefix = matched.nameArray.slice();
-                const name = prefix.pop();
                 const doc = matched.doc;
-                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[\[\]\|]/g, "").toLowerCase()}`)[0].click();
+                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
                 return;
             }
             $("#a-docs").attr("href", faustDocURL)[0].click();

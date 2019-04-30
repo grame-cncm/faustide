@@ -1,5 +1,3 @@
-import { FaustScriptProcessorNode, FaustAudioWorkletNode } from "faust2webaudio";
-
 enum TScopeType {
     Oscilloscope = 0,
     Spectroscope = 1,
@@ -7,12 +5,12 @@ enum TScopeType {
     Plot = 3
 }
 type TOptions = {
-    audioCtx: AudioContext,
-    analyser: AnalyserNode,
+    audioCtx: AudioContext;
+    analyser: AnalyserNode;
     splitter: ChannelSplitterNode;
     channels: number;
-    container: HTMLDivElement,
-    type?: TScopeType
+    container: HTMLDivElement;
+    type?: TScopeType;
 };
 
 export class Scope {
@@ -176,7 +174,8 @@ export class Scope {
         colCanvas.height = this.f.length;
         this.spectColCtx = colCanvas.getContext("2d");
         let ctrl: HTMLDivElement;
-        for (const e of this.container.children) {
+        for (let i = 0; i < this.container.children.length; i++) {
+            const e = this.container.children[i];
             if (e.classList.contains("analyser-controller")) ctrl = e as HTMLDivElement;
             if (e.classList.contains("canvas-analyser")) this.canvas = e as HTMLCanvasElement;
         }
@@ -195,10 +194,11 @@ export class Scope {
             this.canvas = canvas;
             try {
                 $(canvas).tooltip({ trigger: "hover" });
-            } catch (e) {}
+            } catch (e) {} // eslint-disable-line no-empty
         }
         this.ctx = this.canvas.getContext("2d");
-        for (const e of ctrl.children) {
+        for (let i = 0; i < ctrl.children.length; i++) {
+            const e = ctrl.children[i];
             if (e.classList.contains("analyser-btn-switch")) this.btnSwitch = e as HTMLButtonElement;
             if (e.classList.contains("analyser-btn-size")) this.btnSize = e as HTMLButtonElement;
             if (e.classList.contains("analyser-btn-ch")) this.btnCh = e as HTMLButtonElement;
@@ -213,7 +213,7 @@ export class Scope {
             this.btnSwitch = btn;
             try {
                 $(btn).tooltip({ trigger: "hover" });
-            } catch (e) {}
+            } catch (e) {} // eslint-disable-line no-empty
         }
         if (!this.btnSize) {
             const btn = document.createElement("button");
@@ -226,7 +226,7 @@ export class Scope {
             this.btnSize = btn;
             try {
                 $(btn).tooltip({ trigger: "hover" });
-            } catch (e) {}
+            } catch (e) {} // eslint-disable-line no-empty
         }
         if (!this.btnCh) {
             const btn = document.createElement("button");
@@ -239,9 +239,10 @@ export class Scope {
             this.btnCh = btn;
             try {
                 $(btn).tooltip({ trigger: "hover" });
-            } catch (e) {}
+            } catch (e) {} // eslint-disable-line no-empty
         }
-        for (const e of this.btnSwitch.children) {
+        for (let i = 0; i < this.btnSwitch.children.length; i++) {
+            const e = this.btnSwitch.children[i];
             if (e.classList.contains("fas")) this.iSwitch = e as HTMLElement;
         }
         if (!this.iSwitch) {
@@ -252,21 +253,21 @@ export class Scope {
         }
     }
     bind() {
-        this.btnSwitch.addEventListener("click", (e) => {
+        this.btnSwitch.addEventListener("click", () => {
             this.zoom = 1;
             this.zoomOffset = 0;
             this.type = (this.type + 1) % 3;
             this.iSwitch.className = this.getIconClassName();
         });
-        this.btnSize.addEventListener("click", (e) => {
+        this.btnSize.addEventListener("click", () => {
             this.zoom = 1;
             this.zoomOffset = 0;
             this.size = Scope.sizes[(Scope.sizes.indexOf(this.size) + 1) % 4];
         });
-        this.btnCh.addEventListener("click", (e) => {
+        this.btnCh.addEventListener("click", () => {
             this.channel = (this.channel + 1) % this.channels;
         });
-        this.canvas.addEventListener("click", (e) => {
+        this.canvas.addEventListener("click", () => {
             this.paused = !this.paused;
         });
         this.canvas.addEventListener("wheel", (e) => {
@@ -307,7 +308,7 @@ export class Scope {
             }
             const freq = this.f.indexOf(Math.max(...this.f)) / this.f.length * sr / 2;
             const samp = this.t[this.t.length - 1];
-            const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // tslint:disable-line no-parameter-reassignment
+            const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // eslint-disable-line no-param-reassign
             Scope.drawOfflineSpectrogram(this.spectTempCtx, this.spectColCtx, this.spectCol$, this.f);
             if (this.type === TScopeType.Oscilloscope) {
                 Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
@@ -369,7 +370,7 @@ export class Scope {
         if (this._channel === oldCh) return;
         this.splitter.connect(this.analyser, this._channel, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
         setTimeout(() => {
-            try { this.splitter.disconnect(this.analyser, oldCh, 0); } catch {}
+            try { this.splitter.disconnect(this.analyser, oldCh, 0); } catch {} // eslint-disable-line no-empty
         }, 10);
         this._channel = channelIn;
     }
