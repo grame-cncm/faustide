@@ -35,7 +35,7 @@ type FaustEditorEnv = {
     midiEnv: FaustEditorMIDIEnv;
     uiEnv: FaustEditorUIEnv;
     compileOptions: FaustEditorCompileOptions;
-    editor?: monaco.editor.IStandaloneCodeEditor;
+    editor: monaco.editor.IStandaloneCodeEditor;
     jQuery: JQueryStatic;
     faust: Faust;
 };
@@ -70,8 +70,9 @@ type FaustEditorCompileOptions = {
     saveDsp: boolean;
     realtimeCompile: boolean;
     voices: number;
-    enablePlot: boolean;
+    enableRtPlot: boolean;
     plot: number;
+    plotSR: number;
     args: { [key: string]: any };
 };
 type FaustExportTargets = { [platform: string]: string[] };
@@ -104,7 +105,7 @@ $(async () => {
         $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
-    const plotHandler = (plotted: number[][]) => {
+    const plotHandler = (plotted: Float32Array[]) => {
         $("#plot-ui").empty();
         plotted.forEach((i) => {
             const $div = $("<div>").addClass("plot-channel");
@@ -158,12 +159,12 @@ $(async () => {
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         }
-        const { useWorklet, bufferSize, voices, args, enablePlot, plot } = compileOptions;
+        const { useWorklet, bufferSize, voices, args, enableRtPlot, plot } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler, plot: enablePlot ? plot : undefined });
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler, plot: enableRtPlot ? plot : undefined });
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
@@ -236,12 +237,6 @@ $(async () => {
         $("#faust-ui-default").hide();
         $("#nav-item-faust-ui").show();
         $("#iframe-faust-ui").css("visibility", "visible");
-        if (compileOptions.enablePlot) {
-            $("#nav-item-plot-ui").show();
-        } else {
-            $("#nav-item-plot-ui").hide();
-            $("#plot-ui").empty();
-        }
         $("#output-analyser-ui").show();
         refreshDspUI(node);
         saveEditorDspTable();
@@ -259,10 +254,8 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enablePlot: false, plot: 256, ...loadEditorParams() };
-    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, faust };
-    faustEnv.editor = editor;
-    faustEnv.faust = faust;
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
+    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Alerts
     $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
@@ -314,17 +307,22 @@ $(async () => {
         }
     });
     // Plot
-    ($("#check-plot").on("change", (e) => {
-        compileOptions.enablePlot = (e.currentTarget as HTMLInputElement).checked;
+    ($("#check-plot-rt").on("change", (e) => {
+        compileOptions.enableRtPlot = (e.currentTarget as HTMLInputElement).checked;
+        if (compileOptions.enableRtPlot) ($("#input-plot-sr").prop("disabled", true)[0] as HTMLInputElement).value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
+        else ($("#input-plot-sr").prop("disabled", false)[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
         saveEditorParams();
-        if (compileOptions.enablePlot && audioEnv.dsp) runDsp(editor.getValue());
-        $("#btn-replot").prop("disabled", !compileOptions.enablePlot);
-    })[0] as HTMLInputElement).checked = compileOptions.enablePlot;
-    $("#btn-replot").on("click", () => {
-        if (!compileOptions.enablePlot) return;
-        if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(plotHandler);
-        else runDsp(editor.getValue());
-    }).prop("disabled", !compileOptions.enablePlot);
+    })[0] as HTMLInputElement).checked = compileOptions.enableRtPlot;
+    $("#btn-plot").on("click", () => {
+        if (compileOptions.enableRtPlot) {
+            if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(plotHandler);
+            else runDsp(editor.getValue());
+        } else {
+            const code = editor.getValue();
+            const { args, plot, plotSR } = compileOptions;
+            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(plotHandler);
+        }
+    });
     ($("#input-plot-samps").on("change", (e) => {
         const v = +(e.currentTarget as HTMLInputElement).value;
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
@@ -332,7 +330,14 @@ $(async () => {
         compileOptions.plot = v1;
         (e.currentTarget as HTMLInputElement).value = v1.toString();
         saveEditorParams();
-    })[0] as HTMLSelectElement).value = compileOptions.plot.toString();
+    })[0] as HTMLInputElement).value = compileOptions.plot.toString();
+    ($("#input-plot-sr").on("change", (e) => {
+        const v = +(e.currentTarget as HTMLInputElement).value;
+        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 0); // Spinner
+        compileOptions.plotSR = v1;
+        (e.currentTarget as HTMLInputElement).value = v1.toString();
+        saveEditorParams();
+    })[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
     /**
      * Load stuffs from URL
      * Available params:
@@ -846,7 +851,7 @@ $(async () => {
     $("#btn-run").prop("disabled", false).on("click", async () => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
-        if ($("#tab-diagram").hasClass("active") || !compileOptions.enablePlot) $("#tab-faust-ui").tab("show");
+        if ($("#tab-diagram").hasClass("active") || !compileOptions.enableRtPlot) $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
@@ -1004,6 +1009,7 @@ $(async () => {
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
+    $("#check-plot-rt").change();
     ($("#check-realtime-compile")[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
     if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, editor.getValue());
     window.faustEnv = faustEnv;

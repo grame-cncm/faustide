@@ -92,21 +92,29 @@
 					Real-time Compile
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Plot samples">
-				<input id="check-plot" class="form-check-input" type="checkbox" value="" />
-				<label class="form-plot" for="check-plot">
-					Plot
-				</label>
-				<button id="btn-replot" type="button" class="btn btn-outline-secondary btn-sm ml-4">
+			<div id="form-plot" class="form form-row">
+				<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Enable real-time plot">
+					<input id="check-plot-rt" class="form-check-input" type="checkbox" value="" />
+					<label for="check-plot">
+						Real-time Plot
+					</label>
+				</div>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Samples to plot">
+					<div class="input-group-prepend">
+						<span class="input-group-text">Plot Samples</span>
+					</div>
+					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" />
+				</div>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Samples rate to plot">
+					<div class="input-group-prepend">
+						<span class="input-group-text input-group-text-sm">Sample Rate</span>
+					</div>
+					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" />
+				</div>
+				<button id="btn-plot" type="button" class="btn btn-outline-secondary">
 					<i class="fas fa-drafting-compass fa-sm"></i>
-					<span>Replot</span>
+					<span>Plot</span>
 				</button>
-			</div>
-			<div class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Samples to plot">
-			  <div class="input-group-prepend">
-				<div class="input-group-text">Samples</div>
-			  </div>
-			  <input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" />
 			</div>
 		</div>
 		<div id="center" class="container">
@@ -148,15 +156,15 @@
 					<li class="nav-item">
 						<a id="tab-diagram" class="nav-link active" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
 					</li>
+					<li id="nav-item-plot-ui" class="nav-item">
+						<a id="tab-plot-ui" class="nav-link" data-toggle="tab" href="#plot-ui" role="tab" aria-controls="plot-ui" aria-selected="true">
+							<span>Plot</span>
+						</a>
+					</li>
 					<li id="nav-item-faust-ui" class="nav-item">
 						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">
 							<span>DSP</span>
 							<button type="button" class="btn btn-outline-light btn-close-tab" data-toggle="tooltip" data-placement="top" title="Stop DSP">&times;</button>
-						</a>
-					</li>
-					<li id="nav-item-plot-ui" class="nav-item">
-						<a id="tab-plot-ui" class="nav-link" data-toggle="tab" href="#plot-ui" role="tab" aria-controls="plot-ui" aria-selected="true">
-							<span>Plot</span>
 						</a>
 					</li>
 				</ul>

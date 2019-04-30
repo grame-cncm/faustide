@@ -116,15 +116,15 @@ body {
                 margin: 10px 5px;
                 & .input-group-prepend > span {
                     font-size: 0.8em;
+                    &.input-group-text-sm {
+                        font-size: 0.75em;
+                    }
                 }
             }
-            & #btn-replot {
+            & #btn-plot {
                 color: white;
-                height: 28px;
-                padding: 0px 10px;
+                width: 100%;
                 font-size: 0.75em;
-                right: 0;
-                position: absolute;
             }
         }
         & > #center {
@@ -203,9 +203,6 @@ body {
                     flex: 0 0 auto;
                     position: relative;
                     & > #nav-item-faust-ui {
-                        display: none;
-                    }
-                    & > #nav-item-plot-ui {
                         display: none;
                     }
                     & button.btn-close-tab {
