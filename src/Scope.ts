@@ -118,6 +118,7 @@ export class Scope {
     }
     static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();
+        ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
         for (let i = 0; i < 4; i++) {

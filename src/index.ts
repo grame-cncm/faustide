@@ -105,6 +105,55 @@ $(async () => {
         $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
+    const plotScope = (plotted: Float32Array[], cursor?: { x: number; y: number }) => {
+        $("#plot-scope").children("canvas").off("mousemove");
+        const canvas = $("#plot-scope").children("canvas")[0] as HTMLCanvasElement;
+        const ctx = canvas.getContext("2d");
+        const rect = canvas.getBoundingClientRect();
+        const w = plotted[0].length - 1;
+        const h = rect.height;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.fillStyle = "#181818";
+        ctx.fillRect(0, 0, w, h);
+        const chHeight = h / plotted.length;
+        for (let i = 0; i < plotted.length; i++) {
+            const ch = plotted[i];
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "#404040";
+            ctx.beginPath();
+            ctx.moveTo(0, chHeight * (i + 0.5));
+            ctx.lineTo(w, chHeight * (i + 0.5));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "white";
+            ctx.moveTo(0, chHeight * (i + 1 - (ch[0] + 1) / 2));
+            for (let j = 0; j < ch.length; j++) {
+                ctx.lineTo(j, chHeight * (i + 1 - (ch[j] + 1) / 2));
+            }
+            ctx.stroke();
+        }
+        if (cursor) {
+            const j = Math.round(cursor.x / rect.width * w);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "#404040";
+            ctx.beginPath();
+            ctx.moveTo(j, 0);
+            ctx.lineTo(j, h);
+            ctx.stroke();
+            ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+            ctx.fillRect(w - 50, 0, 50, 15 * (plotted.length + 1));
+            ctx.fillStyle = "#DDDD99";
+            ctx.font = "bold 12px Consolas, monospace";
+            ctx.textAlign = "right";
+            ctx.fillText("@" + j, w - 2, 15, 50);
+            for (let i = 0; i < plotted.length; i++) {
+                ctx.fillText(plotted[i][j].toFixed(3), w - 2, 15 * (i + 2), 50);
+            }
+        }
+        $("#plot-scope").children("canvas").on("mousemove", e => plotScope(plotted, { x: e.offsetX, y: e.offsetY }));
+    };
     const plotHandler = (plotted: Float32Array[]) => {
         $("#plot-data").empty();
         if (!plotted.length || !plotted[0].length) {
@@ -112,28 +161,17 @@ $(async () => {
             return;
         }
         $("#plot-default").hide();
-        const canvas = $("#plot-scope").children("canvas")[0] as HTMLCanvasElement;
-        const ctx = canvas.getContext("2d");
-        canvas.width = plotted[0].length - 1;
-        canvas.height = canvas.getBoundingClientRect().height;
-        ctx.fillStyle = "#181818";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        const chHeight = canvas.height / plotted.length;
         for (let i = 0; i < plotted.length; i++) {
             const ch = plotted[i];
             const $div = $("<div>").addClass("plot-channel");
-            ctx.moveTo(0, chHeight * (i + 1 - (ch[0] + 1) / 2));
             for (let j = 0; j < ch.length; j++) {
                 const $cell = $("<div>").addClass("plot-cell");
                 $cell.append($("<span>").text(j)).append($("<span>").text(ch[j].toFixed(3)));
                 $div.append($cell);
-                ctx.lineTo(j, chHeight * (i + 1 - (ch[j] + 1) / 2));
             }
             $("#plot-data").append($div);
-            ctx.stroke();
         }
+        plotScope(plotted);
     };
     $("#btn-plot-ui-switch").on("click", (e) => {
         const $i = $(e.currentTarget).children("i");
