@@ -142,15 +142,11 @@ $(async () => {
             ctx.moveTo(j, 0);
             ctx.lineTo(j, h);
             ctx.stroke();
-            ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-            ctx.fillRect(w - 50, 0, 50, 15 * (plotted.length + 1));
-            ctx.fillStyle = "#DDDD99";
-            ctx.font = "bold 12px Consolas, monospace";
-            ctx.textAlign = "right";
-            ctx.fillText("@" + j, w - 2, 15, 50);
+            let text = "@" + j;
             for (let i = 0; i < plotted.length; i++) {
-                ctx.fillText(plotted[i][j].toFixed(3), w - 2, 15 * (i + 2), 50);
+                text += "<br />" + plotted[i][j].toFixed(3);
             }
+            $("#plot-scope-stat").html(text);
         }
         $("#plot-scope").children("canvas").on("mousemove", e => plotScope(plotted, { x: e.offsetX, y: e.offsetY }));
     };
