@@ -183,17 +183,27 @@
 						</div>
 					</div>
 					<div id="plot-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-plot-ui">
+						<div id="plot-data">
+							<!-- 
+							<div class="plot-channel">
+								<div class="plot-cell"><span>0</span><span>0.00000</span></div>
+							</div>
+							<div class="plot-channel">
+								<div class="plot-cell"><span>0</span><span>0.00000</span></div>
+							</div>
+							-->
+						</div>
+						<div id="plot-scope">
+							<canvas></canvas>
+						</div>
+						<div id="plot-ui-controller">
+							<button id="btn-plot-ui-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Scope / Data">
+								<i class="fas fa-wave-square fa-sm"></i>
+							</button>
+						</div>
 						<div id="plot-default" class="alert alert-info" role="alert">
 							<h5>No Data</h5>
 						</div>
-						<!-- 
-						<div class="plot-channel">
-							<div class="plot-cell"><span>0</span><span>0.00000</span></div>
-						</div>
-						<div class="plot-channel">
-							<div class="plot-cell"><span>0</span><span>0.00000</span></div>
-						</div>
-						 -->
 					</div>
 				</div>
 			</div>
@@ -262,7 +272,7 @@
 				<div id="input-analyser-ui" class="analyser-ui mt-2">
 					<canvas id="input-analyser" class="canvas-analyser" data-toggle="tooltip" data-placement="left" title="Input analyser"></canvas>
 					<div id="input-analyser-controller" class="analyser-controller">
-						<button id="btn-input-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope">
+						<button id="btn-input-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
 						<button id="btn-input-analyser-size" class="analyser-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>

@@ -106,17 +106,47 @@ $(async () => {
         $("#alert-faust-code").css("visibility", "visible");
     };
     const plotHandler = (plotted: Float32Array[]) => {
-        $("#plot-ui").empty();
-        plotted.forEach((i) => {
+        $("#plot-data").empty();
+        if (!plotted.length || !plotted[0].length) {
+            $("#plot-default").show();
+            return;
+        }
+        $("#plot-default").hide();
+        const canvas = $("#plot-scope").children("canvas")[0] as HTMLCanvasElement;
+        const ctx = canvas.getContext("2d");
+        canvas.width = plotted[0].length - 1;
+        canvas.height = canvas.getBoundingClientRect().height;
+        ctx.fillStyle = "#181818";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        const chHeight = canvas.height / plotted.length;
+        for (let i = 0; i < plotted.length; i++) {
+            const ch = plotted[i];
             const $div = $("<div>").addClass("plot-channel");
-            for (let j = 0; j < i.length; j++) {
+            ctx.moveTo(0, chHeight * (i + 1 - (ch[0] + 1) / 2));
+            for (let j = 0; j < ch.length; j++) {
                 const $cell = $("<div>").addClass("plot-cell");
-                $cell.append($("<span>").text(j)).append($("<span>").text(i[j].toFixed(3)));
+                $cell.append($("<span>").text(j)).append($("<span>").text(ch[j].toFixed(3)));
                 $div.append($cell);
+                ctx.lineTo(j, chHeight * (i + 1 - (ch[j] + 1) / 2));
             }
-            $("#plot-ui").append($div);
-        });
+            $("#plot-data").append($div);
+            ctx.stroke();
+        }
     };
+    $("#btn-plot-ui-switch").on("click", (e) => {
+        const $i = $(e.currentTarget).children("i");
+        if ($i.hasClass("fa-wave-square")) {
+            $("#plot-scope").css("visibility", "hidden");
+            $("#plot-data").css("visibility", "visible");
+            $i.removeClass("fa-wave-square").addClass("fa-table");
+        } else {
+            $("#plot-scope").css("visibility", "visible");
+            $("#plot-data").css("visibility", "hidden");
+            $i.removeClass("fa-table").addClass("fa-wave-square");
+        }
+    });
     // Async load Monaco Editor
     const editor = await initEditor();
     editor.layout();
@@ -321,6 +351,7 @@ $(async () => {
             const code = editor.getValue();
             const { args, plot, plotSR } = compileOptions;
             faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(plotHandler);
+            if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
         }
     });
     ($("#input-plot-samps").on("change", (e) => {
