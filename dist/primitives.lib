@@ -945,8 +945,9 @@ closed source license or any other license if you decide so.
 // process = os.sawtooth(freq)*gain;
 // ```
 //
-// //-----------------------------
-// //-------`vgroup`----------
+//-----------------------------
+
+//-------`vgroup`----------
 // The `vgroup` primitive implements a vertical group. A group contains other
 // UI elements that can also be groups. `vgroup` is not a signal processor per se
 // and is just a way to label/delimitate part of a Faust code.

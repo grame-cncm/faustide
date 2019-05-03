@@ -120,7 +120,7 @@ $(async () => {
         for (let i = 0; i < plotted.length; i++) {
             const ch = plotted[i];
             ctx.lineWidth = 1;
-            ctx.strokeStyle = "#404040";
+            ctx.strokeStyle = "#b0b0b0";
             ctx.beginPath();
             ctx.moveTo(0, chHeight * (i + 0.5));
             ctx.lineTo(w, chHeight * (i + 0.5));
@@ -137,7 +137,7 @@ $(async () => {
         if (cursor) {
             const j = Math.round(cursor.x / rect.width * w);
             ctx.lineWidth = 1;
-            ctx.strokeStyle = "#404040";
+            ctx.strokeStyle = "#b0b0b0";
             ctx.beginPath();
             ctx.moveTo(j, 0);
             ctx.lineTo(j, h);
