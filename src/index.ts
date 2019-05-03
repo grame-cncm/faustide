@@ -144,7 +144,8 @@ $(async () => {
             ctx.stroke();
             let text = "@" + j;
             for (let i = 0; i < plotted.length; i++) {
-                text += "<br />" + plotted[i][j].toFixed(3);
+                const samp = plotted[i][j];
+                text += "<br />" + (samp >= 0 ? "+" : "") + plotted[i][j].toFixed(3);
             }
             $("#plot-scope-stat").html(text);
         }
@@ -391,14 +392,14 @@ $(async () => {
     ($("#input-plot-samps").on("change", (e) => {
         const v = +(e.currentTarget as HTMLInputElement).value;
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
-        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / bufferSize) : Math.ceil(v / bufferSize)) * bufferSize, 0); // Spinner
+        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / bufferSize) : Math.ceil(v / bufferSize)) * bufferSize, bufferSize); // Spinner
         compileOptions.plot = v1;
         (e.currentTarget as HTMLInputElement).value = v1.toString();
         saveEditorParams();
     })[0] as HTMLInputElement).value = compileOptions.plot.toString();
     ($("#input-plot-sr").on("change", (e) => {
         const v = +(e.currentTarget as HTMLInputElement).value;
-        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 0); // Spinner
+        const v1 = Math.max((v === compileOptions.plotSR - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 1); // Spinner
         compileOptions.plotSR = v1;
         (e.currentTarget as HTMLInputElement).value = v1.toString();
         saveEditorParams();
