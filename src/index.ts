@@ -290,14 +290,31 @@ $(async () => {
             audioEnv.dspConnectedToOutput = true;
         }
         const bindUI = () => {
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            uiWindow.postMessage(JSON.stringify({ type: "ui", json: node.getJSON() }), "*");
-            node.setOutputParamHandler((path: string, value: number) => uiWindow.postMessage(JSON.stringify({ path, value, type: "param" }), "*"));
-            if (compileOptions.saveParams) {
-                const params = node.getParams();
-                for (const path in dspParams) {
-                    if (params.indexOf(path) !== -1) uiWindow.postMessage(JSON.stringify({ path, value: dspParams[path], type: "param" }), "*");
+            const callback = () => {
+                const msg = JSON.stringify({ type: "ui", json: node.getJSON() });
+                uiWindow.postMessage(msg, "*");
+                uiEnv.uiPopup.postMessage(msg, "*");
+                node.setOutputParamHandler((path: string, value: number) => {
+                    const msg = JSON.stringify({ path, value, type: "param" });
+                    uiWindow.postMessage(msg, "*");
+                    uiEnv.uiPopup.postMessage(msg, "*");
+                });
+                if (compileOptions.saveParams) {
+                    const params = node.getParams();
+                    for (const path in dspParams) {
+                        if (params.indexOf(path) !== -1) {
+                            const msg = JSON.stringify({ path, value: dspParams[path], type: "param" });
+                            uiWindow.postMessage(msg, "*");
+                            uiEnv.uiPopup.postMessage(msg, "*");
+                        }
+                    }
                 }
+            };
+            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            if (uiEnv.uiPopup) callback();
+            else {
+                uiEnv.uiPopup = window.open("faust_ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+                uiEnv.uiPopup.onload = callback;
             }
         };
         bindUI();
@@ -377,6 +394,7 @@ $(async () => {
     // Plot
     ($("#check-plot-rt").on("change", (e) => {
         compileOptions.enableRtPlot = (e.currentTarget as HTMLInputElement).checked;
+        $("#btn-plot").children("span").text("Plot " + (compileOptions.enableRtPlot ? "(Snapshot)" : "First Samples"));
         if (compileOptions.enableRtPlot) ($("#input-plot-sr").prop("disabled", true)[0] as HTMLInputElement).value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
         else ($("#input-plot-sr").prop("disabled", false)[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
         saveEditorParams();
@@ -472,11 +490,11 @@ $(async () => {
     };
     // MIDI Devices
     const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
-    document.addEventListener("keydown", (e) => {
+    $(document).on("keydown", (e) => {
         if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
         key2Midi.handleKeyDown(e.key);
     });
-    document.addEventListener("keyup", (e) => {
+    $(document).on("keyup", (e) => {
         if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
         key2Midi.handleKeyUp(e.key);
     });
@@ -927,20 +945,25 @@ $(async () => {
         // node.setOutputParamHandler(dspOutputHandler);
     });
     const dspParams: { [path: string]: number } = {};
-    window.addEventListener("message", (e) => {
-        if (!e.data) return;
-        const data = JSON.parse(e.data);
+    $(window).on("message", (e) => {
+        if (!(e.originalEvent as MessageEvent).data) return;
+        const data = JSON.parse((e.originalEvent as MessageEvent).data);
         if (data.type === "param") {
             if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
             if (compileOptions.saveParams) {
                 dspParams[data.path] = +data.value;
                 localStorage.setItem("faust_editor_dsp_params", JSON.stringify(dspParams));
             }
+            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            const msg = JSON.stringify({ path: data.path, value: +data.value, type: "param" });
+            uiWindow.postMessage(msg, "*");
+            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
             return;
         }
         if (data.type === "keydown") key2Midi.handleKeyDown(data.key);
         else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
     });
+    $(window).on("beforeunload", () => (uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined));
     $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -957,8 +980,13 @@ $(async () => {
         }
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();
+        const msg = JSON.stringify({ type: "clear" });
         const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-        uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
+        uiWindow.postMessage(msg, "*");
+        if (uiEnv.uiPopup) {
+            uiEnv.uiPopup.postMessage(msg, "*");
+            uiEnv.uiPopup.close();
+        }
         $("#faust-ui-default").show();
         $("#iframe-faust-ui").css("visibility", "hidden");
         $("#output-analyser-ui").hide();
