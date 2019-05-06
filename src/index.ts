@@ -1193,6 +1193,7 @@ effect = dm.freeverb_demo;`;
             const matched = faustlang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
             if (matched) {
                 const prefix = matched.nameArray.slice();
+                prefix.pop();
                 const doc = matched.doc;
                 $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
                 return;
