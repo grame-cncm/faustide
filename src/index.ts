@@ -106,7 +106,7 @@ $(async () => {
         $("#alert-faust-code").css("visibility", "visible");
     };
     const plotScope = (plotted: Float32Array[], cursor?: { x: number; y: number }) => {
-        $("#plot-scope").children("canvas").off("mousemove");
+        $("#plot-scope").children("canvas").off("mousemove").off("mouseleave");
         const canvas = $("#plot-scope").children("canvas")[0] as HTMLCanvasElement;
         const ctx = canvas.getContext("2d");
         const rect = canvas.getBoundingClientRect();
@@ -149,7 +149,9 @@ $(async () => {
             }
             $("#plot-scope-stat").html(text);
         }
-        $("#plot-scope").children("canvas").on("mousemove", e => plotScope(plotted, { x: e.offsetX, y: e.offsetY }));
+        $("#plot-scope").children("canvas")
+            .on("mousemove", e => plotScope(plotted, { x: e.offsetX, y: e.offsetY }))
+            .on("mouseleave", () => plotHandler(plotted));
     };
     const plotHandler = (plotted: Float32Array[]) => {
         $("#plot-data").empty();
