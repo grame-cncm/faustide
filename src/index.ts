@@ -61,6 +61,7 @@ type FaustEditorUIEnv = {
     analysersInited: boolean;
     inputScope: Scope;
     outputScope: Scope;
+    uiPopup?: Window;
 };
 type FaustEditorCompileOptions = {
     name: string;
@@ -641,13 +642,15 @@ $(async () => {
             }
         }
     });
-    navigator.mediaDevices.enumerateDevices().then((devices) => {
-        $("#input-ui-default").hide();
-        const $select = $("#select-audio-input").prop("disabled", false);
-        devices.forEach((device) => {
-            if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
+    if (navigator.mediaDevices) {
+        navigator.mediaDevices.enumerateDevices().then((devices) => {
+            $("#input-ui-default").hide();
+            const $select = $("#select-audio-input").prop("disabled", false);
+            devices.forEach((device) => {
+                if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
+            });
         });
-    });
+    }
     // DSP
     refreshDspUI();
     // Output
