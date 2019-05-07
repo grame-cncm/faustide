@@ -183,7 +183,7 @@
 						</div>
 					</div>
 					<div id="plot-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-plot-ui">
-						<div id="plot-data">
+						<div id="plot-data" class="plot-data">
 							<!-- 
 							<div class="plot-channel">
 								<div class="plot-cell"><span>0</span><span>0.00000</span></div>
@@ -193,16 +193,13 @@
 							</div>
 							-->
 						</div>
-						<div id="plot-scope">
-							<canvas></canvas>
-							<div id="plot-scope-stat"></div>
-						</div>
-						<div id="plot-ui-controller">
-							<button id="btn-plot-ui-switch" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Scope / Data">
+						<canvas class="plot-scope"></canvas>
+						<div id="plot-ui-controller" class="plot-ui-controller">
+							<button id="btn-plot-ui-switch" class="btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Scope / Data">
 								<i class="fas fa-wave-square fa-sm"></i>
 							</button>
 						</div>
-						<div id="plot-default" class="alert alert-info" role="alert">
+						<div id="plot-default" class="plot-default alert alert-info" role="alert">
 							<h5>No Data</h5>
 						</div>
 					</div>
@@ -294,7 +291,7 @@
 				<div id="output-analyser-ui" class="analyser-ui mt-2">
 					<canvas id="output-analyser" class="canvas-analyser" data-toggle="tooltip" data-placement="left" title="Output Analyser"></canvas>
 					<div id="output-analyser-controller" class="analyser-controller">
-						<button id="btn-output-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope">
+						<button id="btn-output-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
 						<button id="btn-output-analyser-size" class="analyser-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>

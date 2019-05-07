@@ -269,7 +269,7 @@ body {
                         & > div {
                             position: absolute;
                         }
-                        & > #plot-data {
+                        & > .plot-data {
                             display: flex;
                             height: 100%;
                             width: 100%;
@@ -307,31 +307,12 @@ body {
                                 }
                             }
                         }
-                        & > #plot-scope {
+                        & > canvas.plot-scope {
+                            position: absolute;
                             height: 100%;
                             width: 100%;
-                            & > canvas {
-                                height: 100%;
-                                width: 100%;
-                            }
-                            & > #plot-scope-stat {
-                                position: absolute;
-                                right: 0;
-                                top: 0;
-                                background-color: rgba(0, 0, 0, 0.75);
-                                color: #DDDD99;
-                                opacity: 0;
-                                transition: opacity 0.15s ease-in-out;
-                                font: bold 12px Consolas, monospace;
-                                text-align: right;
-                            }
-                            &:hover {
-                                & > #plot-scope-stat {
-                                    opacity: 1;
-                                }
-                            }
                         }
-                        & > #plot-ui-controller {
+                        & > .plot-ui-controller {
                             display: flex;
                             opacity: 0.4;
                             transition: opacity 0.15s ease-in-out;

@@ -5,6 +5,8 @@
 // TODO
 // webworkerify
 // bargraph in scopes
+// responsive / touch
+// plot scope
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input } from "webmidi";
@@ -21,6 +23,7 @@ import "bootstrap/js/dist/modal";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
+import { StaticScope } from "./StaticScope";
 
 declare global {
     interface Window {
@@ -61,6 +64,7 @@ type FaustEditorUIEnv = {
     analysersInited: boolean;
     inputScope: Scope;
     outputScope: Scope;
+    plotScope: StaticScope;
     uiPopup?: Window;
 };
 type FaustEditorCompileOptions = {
@@ -232,7 +236,7 @@ $(async () => {
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler, plot: enableRtPlot ? plot : undefined });
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler: uiEnv.plotScope.draw, plot: enableRtPlot ? plot : undefined });
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
@@ -338,7 +342,7 @@ $(async () => {
 
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
-    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null };
+    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: new StaticScope({ container: $("#plot-ui")[0] as HTMLDivElement }) };
     const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     if (compileOptions.saveDsp) loadEditorDspTable();
@@ -401,12 +405,12 @@ $(async () => {
     })[0] as HTMLInputElement).checked = compileOptions.enableRtPlot;
     $("#btn-plot").on("click", () => {
         if (compileOptions.enableRtPlot) {
-            if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(plotHandler);
+            if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(uiEnv.plotScope.draw);
             else runDsp(editor.getValue());
         } else {
             const code = editor.getValue();
             const { args, plot, plotSR } = compileOptions;
-            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(plotHandler);
+            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(uiEnv.plotScope.draw);
             if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
         }
     });

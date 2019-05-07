@@ -1,8 +1,7 @@
 enum TScopeType {
     Oscilloscope = 0,
     Spectroscope = 1,
-    Spectrogram = 2,
-    Plot = 3
+    Spectrogram = 2
 }
 type TOptions = {
     audioCtx: AudioContext;
@@ -67,7 +66,7 @@ export class Scope {
         for (let i = $0; i < $1; i++) {
             const x = w * (i - $0) / ($1 - $0 - 1);
             const y = h - (d[i] * 0.5 + 0.5) * h;
-            if (i === 0) ctx.moveTo(x, y);
+            if (i === $0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         }
         ctx.stroke();
@@ -121,11 +120,11 @@ export class Scope {
         ctx.beginPath();
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        for (let i = 0; i < 4; i++) {
-            ctx.moveTo(w * i / 4, 0);
-            ctx.lineTo(w * i / 4, h);
-            ctx.moveTo(0, h * i / 4);
-            ctx.lineTo(w, h * i / 4);
+        for (let i = 0.25; i < 1; i += 0.25) {
+            ctx.moveTo(w * i, 0);
+            ctx.lineTo(w * i, h);
+            ctx.moveTo(0, h * i);
+            ctx.lineTo(w, h * i);
         }
         ctx.stroke();
         ctx.restore();
@@ -182,7 +181,7 @@ export class Scope {
         }
         if (!ctrl) {
             ctrl = document.createElement("div");
-            ctrl.classList.add("analyser.controller");
+            ctrl.classList.add("analyser-controller");
             this.container.appendChild(ctrl);
         }
         if (!this.canvas) {
@@ -288,7 +287,6 @@ export class Scope {
         if (this.type === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
         if (this.type === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
         if (this.type === TScopeType.Spectrogram) return prefix + "fa-water";
-        if (this.type === TScopeType.Plot) return prefix + "fa-table";
         return prefix;
     }
     draw = () => {
