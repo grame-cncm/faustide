@@ -153,6 +153,13 @@ export class Scope {
         ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
         ctx.restore();
     }
+    static getIconClassName(typeIn: TScopeType) {
+        const prefix = "fas fa-sm ";
+        if (typeIn === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
+        if (typeIn === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
+        if (typeIn === TScopeType.Spectrogram) return prefix + "fa-water";
+        return prefix;
+    }
 
     constructor(options: TOptions) {
         Object.assign(this, options);
@@ -257,7 +264,7 @@ export class Scope {
             this.zoom = 1;
             this.zoomOffset = 0;
             this.type = (this.type + 1) % 3;
-            this.iSwitch.className = this.getIconClassName();
+            this.iSwitch.className = Scope.getIconClassName(this.type);
         });
         this.btnSize.addEventListener("click", () => {
             this.zoom = 1;
@@ -281,13 +288,6 @@ export class Scope {
             }
             if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
         });
-    }
-    getIconClassName() {
-        const prefix = "fas fa-sm ";
-        if (this.type === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
-        if (this.type === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
-        if (this.type === TScopeType.Spectrogram) return prefix + "fa-water";
-        return prefix;
     }
     draw = () => {
         this.frame++; // Reduce frame rate

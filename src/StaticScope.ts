@@ -1,7 +1,7 @@
 enum TScopeType {
     Data = 0,
-    Oscilloscope = 1,
-    Interleaved = 2,
+    Interleaved = 1,
+    Oscilloscope = 2,
     Spectroscope = 3
 }
 type TOptions = {
@@ -18,29 +18,33 @@ export class StaticScope {
     iSwitch: HTMLElement;
     divData: HTMLDivElement;
     divDefault: HTMLDivElement;
-    type = TScopeType.Oscilloscope;
+    private _type = TScopeType.Interleaved;
     private _zoom = 1;
     private _zoomOffset = 0;
     plotted: Float32Array[];
 
     handleMouseMove = (e: MouseEvent) => {
         if (!this.plotted || !this.plotted.length || !this.plotted[0].length) return;
+        if (this.type === TScopeType.Data) return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
         this.canvas.height = h;
         const cursor = { x: e.offsetX, y: e.offsetY };
-        StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset, cursor);
+        if (this.type === TScopeType.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset, cursor);
+        if (this.type === TScopeType.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset, cursor);
     }
     handleMouseLeave = () => {
         if (!this.plotted || !this.plotted.length || !this.plotted[0].length) return;
+        if (this.type === TScopeType.Data) return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
         this.canvas.height = h;
-        StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+        if (this.type === TScopeType.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+        if (this.type === TScopeType.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
     }
-    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array[], zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
+    static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array[], zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         this.drawGrid(ctx, w, h, d.length);
         if (!d || !d.length || !d[0].length) return;
@@ -63,13 +67,34 @@ export class StaticScope {
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const x = (j - $0) / ($1 - $0) * w;
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "#b0b0b0";
+            for (let i = 0; i < d.length; i++) {
+                samps.push(d[i][j]);
+            }
+            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+        }
+    }
+    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array[], zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
+        this.drawBackground(ctx, w, h);
+        this.drawGrid(ctx, w, h, 1);
+        if (!d || !d.length || !d[0].length) return;
+        const l = d[0].length;
+        ctx.lineWidth = 2;
+        const $0 = Math.round(l * zoomOffset);
+        const $1 = Math.round(l / zoom + l * zoomOffset);
+        for (let i = 0; i < d.length; i++) {
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, h);
+            ctx.strokeStyle = `hsl(${i * 60}, 100%, 75%)`;
+            for (let j = $0; j < $1; j++) {
+                const x = w * (j - $0) / ($1 - $0 - 1);
+                const y = h - (d[i][j] * 0.5 + 0.5) * h;
+                if (j === $0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
             ctx.stroke();
+        }
+        if (cursor) {
+            const samps: number[] = [];
+            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
             for (let i = 0; i < d.length; i++) {
                 samps.push(d[i][j]);
             }
@@ -105,11 +130,15 @@ export class StaticScope {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        for (let i = 0.25; i < 1; i += 0.25) {
-            ctx.moveTo(w * i, 0);
-            ctx.lineTo(w * i, h);
-            ctx.moveTo(0, h * i);
-            ctx.lineTo(w, h * i);
+        for (let j = 0.25; j < 1; j += 0.25) {
+            ctx.moveTo(w * j, 0);
+            ctx.lineTo(w * j, h);
+        }
+        for (let i = 0; i < channels; i++) {
+            for (let j = 0.25; j < 1; j += 0.25) {
+                ctx.moveTo(0, h * (i + j) / channels);
+                ctx.lineTo(w, h * (i + j) / channels);
+            }
         }
         ctx.stroke();
         ctx.beginPath();
@@ -123,6 +152,13 @@ export class StaticScope {
     }
     static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, i: number, d: number[], zoom?: number, zoomMin?: number, zoomMax?: number) {
         ctx.save();
+        const x = (i - zoomMin) / (zoomMax - zoomMin) * w;
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#b0b0b0";
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(w - 50, 0, 50, d.length * 15 + 20);
         if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
@@ -146,11 +182,40 @@ export class StaticScope {
         }
         ctx.restore();
     }
+    static fillDivData = (container: HTMLDivElement, d: Float32Array[]) => {
+        container.innerHTML = "";
+        for (let i = 0; i < d.length; i++) {
+            const ch = d[i];
+            const divCh = document.createElement("div");
+            divCh.classList.add("plot-channel");
+            for (let j = 0; j < ch.length; j++) {
+                const divCell = document.createElement("div");
+                divCell.classList.add("plot-cell");
+                const spanIndex = document.createElement("span");
+                spanIndex.innerText = j.toString();
+                const spanSamp = document.createElement("span");
+                spanSamp.innerText = ch[j].toFixed(3);
+                divCell.appendChild(spanIndex);
+                divCell.appendChild(spanSamp);
+                divCh.appendChild(divCell);
+            }
+            container.appendChild(divCh);
+        }
+    }
+    static getIconClassName(typeIn: TScopeType) {
+        const prefix = "fas fa-sm ";
+        if (typeIn === TScopeType.Data) return prefix + "fa-table";
+        if (typeIn === TScopeType.Interleaved) return prefix + "fa-water";
+        if (typeIn === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
+        if (typeIn === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
+        return prefix;
+    }
 
     constructor(options: TOptions) {
         Object.assign(this, options);
         this.getChildren();
         this.bind();
+        this.type = TScopeType.Interleaved;
     }
     getChildren() {
         let ctrl: HTMLDivElement;
@@ -213,17 +278,7 @@ export class StaticScope {
     }
     bind() {
         this.btnSwitch.addEventListener("click", () => {
-            this.zoom = 1;
-            this.zoomOffset = 0;
-            this.type = (this.type + 1) % 2;
-            this.iSwitch.className = this.getIconClassName();
-            if (this.type === TScopeType.Data) {
-                this.divData.style.visibility = "visible";
-                this.canvas.style.visibility = "hidden";
-            } else {
-                this.divData.style.visibility = "hidden";
-                this.canvas.style.visibility = "visible";
-            }
+            this.type = (this.type + 1) % 3;
         });
         this.canvas.addEventListener("click", () => {
         });
@@ -242,44 +297,20 @@ export class StaticScope {
         this.canvas.addEventListener("mousemove", this.handleMouseMove);
         this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
     }
-    getIconClassName() {
-        const prefix = "fas fa-sm ";
-        if (this.type === TScopeType.Data) return prefix + "fa-table";
-        if (this.type === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
-        if (this.type === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
-        return prefix;
-    }
     draw = (plotted: Float32Array[]) => {
         this.plotted = plotted;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
         this.canvas.height = h;
-        // Fill div.plot-data
-        this.divData.innerHTML = "";
         if (!this.plotted.length || !this.plotted[0].length) {
             this.divDefault.style.display = "block";
             return;
         }
         this.divDefault.style.display = "none";
-        for (let i = 0; i < this.plotted.length; i++) {
-            const ch = this.plotted[i];
-            const divCh = document.createElement("div");
-            divCh.classList.add("plot-channel");
-            for (let j = 0; j < ch.length; j++) {
-                const divCell = document.createElement("div");
-                divCell.classList.add("plot-cell");
-                const spanIndex = document.createElement("span");
-                spanIndex.innerText = j.toString();
-                const spanSamp = document.createElement("span");
-                spanSamp.innerText = ch[j].toFixed(3);
-                divCell.appendChild(spanIndex);
-                divCell.appendChild(spanSamp);
-                divCh.appendChild(divCell);
-            }
-            this.divData.appendChild(divCh);
-        }
-        StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+        if (this.type === TScopeType.Data) StaticScope.fillDivData(this.divData, this.plotted);
+        if (this.type === TScopeType.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+        if (this.type === TScopeType.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
     }
     get zoom() {
         return this._zoom;
@@ -293,5 +324,29 @@ export class StaticScope {
     }
     set zoomOffset(zoomOffsetIn) {
         this._zoomOffset = Math.max(0, Math.min(1 - 1 / this._zoom, zoomOffsetIn));
+    }
+    get type() {
+        return this._type;
+    }
+    set type(typeIn) {
+        this.iSwitch.className = StaticScope.getIconClassName(typeIn);
+        if (typeIn === TScopeType.Data) {
+            this.divData.style.visibility = "visible";
+            this.canvas.style.visibility = "hidden";
+            if (this.plotted && this.plotted.length && this.plotted[0].length) StaticScope.fillDivData(this.divData, this.plotted);
+        } else {
+            this.divData.style.visibility = "hidden";
+            this.canvas.style.visibility = "visible";
+            if (this.plotted && this.plotted.length && this.plotted[0].length) {
+                const w = this.container.clientWidth;
+                const h = this.container.clientHeight;
+                this.canvas.width = w;
+                this.canvas.height = h;
+                if (typeIn === TScopeType.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+                else if (typeIn === TScopeType.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+                else if (typeIn === TScopeType.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset);
+            }
+        }
+        this._type = typeIn;
     }
 }
