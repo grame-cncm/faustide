@@ -1,3 +1,5 @@
+$media-break-small: 900px;
+$media-break-mobile: 400px;
 body {
     background-color: #2b2b2b;
     color: whitesmoke;
@@ -16,8 +18,21 @@ body {
             flex: 0 0 200px;
             min-width: 200px;
             max-width: 200px;
+            padding-top: 60px;
+            padding-left: 15px;
+            padding-right: 15px;
+            @media screen and (max-width: $media-break-small) {
+                position: absolute;
+                visibility: hidden;
+                top: 32px;
+                border-radius: 0px 0px 10px 10px;
+                z-index: 10;
+                padding-top: 15px;
+                padding-bottom: 15px;
+                background-color: #2b2b2b;
+                box-shadow: 0 0 5px black;
+            }
             & > #btns {
-                margin-top: 60px;
                 & > button.btn {
                     color: whitesmoke;
                     margin: 5px;
@@ -133,9 +148,8 @@ body {
             flex-direction: column;
             padding: 0px;
             margin: 0px;
-            flex: 0 1 auto;
+            flex: 1 1 auto;
             height: 100%;
-            min-width: 400px;
             max-width: unset;
             & a.nav-link:not(.active) {
                 color: whitesmoke;
@@ -164,6 +178,34 @@ body {
                 & > #editor-top {
                     position: relative;
                     flex: 0 0 auto;
+                    flex-wrap: nowrap;
+                    & > *:first-child {
+                        padding-right: 4px;
+                    }
+                    & > *:last-child {
+                        margin-left: auto;
+                        padding-left: 4px;
+                    }
+                    & > .nav-item {
+                        @media screen and (max-width: $media-break-mobile) {
+                            display: none;
+                        }
+                    }
+                    & .btn-group {
+                        @media screen and (min-width: $media-break-small) {
+                            display: none;
+                        }
+                        & .btn:not(.btn-light) {
+                            color: white;
+                        }
+                    }
+                    & .btn-run {
+                        $color: #bcf0ff;
+                        &:hover {
+                            background-color: darken($color, 50%);
+                            border-color: $color;
+                        }
+                    }
                     & #tab-editor {
                         padding: 0px;
                         border: 0px;
@@ -365,11 +407,24 @@ body {
             padding: 0px;
             margin: 0px;
             width: 200px;
-            flex: 1 0 auto;
+            flex: 0 0 auto;
             font-size: 0.8em;
             flex-direction: column;
             max-width: calc(100% - 600px);
             min-width: 200px;
+            @media screen and (max-width: $media-break-small) {
+                position: absolute;
+                visibility: hidden;
+                border-radius: 0px 0px 10px 10px;
+                right: 0;
+                top: 32px;
+                max-width: calc(100% - 200px);
+                z-index: 10;
+                padding-top: 0px;
+                padding-bottom: 15px;
+                background-color: #2b2b2b;
+                box-shadow: 0 0 5px black;
+            }
             & .form-row {
                 margin-right: 0px;
                 margin-left: 0px;
@@ -564,5 +619,11 @@ body {
     margin-left: -1px;
 }
 .btn:focus {
-    box-shadow: none;
+    box-shadow: none !important;
+}
+
+div.tooltip {
+    @media screen and (max-width: $media-break-mobile) {
+        display: none;
+    }
 }

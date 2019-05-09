@@ -5,7 +5,7 @@
 // TODO
 // webworkerify
 // bargraph in scopes
-// responsive / touch
+// touch
 // plot scope
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
@@ -110,18 +110,6 @@ $(async () => {
         $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
-    $("#btn-plot-ui-switch").on("click", (e) => {
-        const $i = $(e.currentTarget).children("i");
-        if ($i.hasClass("fa-wave-square")) {
-            $("#plot-scope").css("visibility", "hidden");
-            $("#plot-data").css("visibility", "visible");
-            $i.removeClass("fa-wave-square").addClass("fa-table");
-        } else {
-            $("#plot-scope").css("visibility", "visible");
-            $("#plot-data").css("visibility", "hidden");
-            $i.removeClass("fa-table").addClass("fa-wave-square");
-        }
-    });
     // Async load Monaco Editor
     const editor = await initEditor();
     editor.layout();
@@ -609,7 +597,7 @@ $(async () => {
     // DSP
     refreshDspUI();
     // Output
-    $("#btn-dac").on("click", async (e) => {
+    $(".btn-dac").on("click", async (e) => {
         /*
         if (!audioEnv.audioCtx) {
             await initAudioCtx(audioEnv);
@@ -626,7 +614,7 @@ $(async () => {
         }
         */
         if (audioEnv.outputEnabled) {
-            $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
+            $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
                 .children("span").html("Output is Off");
             audioEnv.outputEnabled = false;
             if (audioEnv.dspConnectedToOutput) {
@@ -642,7 +630,7 @@ $(async () => {
                 audioEnv.dsp.connect(audioEnv.audioCtx.destination);
                 audioEnv.dspConnectedToOutput = true;
             }
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
+            $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
                 .children("span").html("Output is On");
         }
     });
@@ -874,7 +862,7 @@ $(async () => {
         $("#tab-examples").dropdown("toggle");
     });
     // Run Dsp Button
-    $("#btn-run").prop("disabled", false).on("click", async () => {
+    $(".btn-run").prop("disabled", false).on("click", async () => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
         if ($("#tab-diagram").hasClass("active") || !compileOptions.enableRtPlot) $("#tab-faust-ui").tab("show");
@@ -1040,6 +1028,34 @@ $(async () => {
         $(document).on("mousemove", handleMouseMove);
         $(document).on("mouseup", handleMouseUp);
     });
+    // Panels
+    $(".btn-show-left").on("click", (e) => {
+        if ($(e.currentTarget).hasClass("active")) {
+            $("#left").css("visibility", "hidden");
+            $(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+        } else {
+            $("#left").css("visibility", "visible");
+            $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+        }
+    });
+    $(".btn-show-right").on("click", (e) => {
+        if ($(e.currentTarget).hasClass("active")) {
+            $("#right").css("visibility", "hidden");
+            $(".btn-show-right").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+        } else {
+            $("#right").css("visibility", "visible");
+            $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+        }
+    });
+    $(window).on("resize", () => {
+        if (window.innerWidth <= 900) {
+            $("#right").add("#left").css("visibility", "hidden");
+            $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+        } else {
+            $("#right").add("#left").css("visibility", "visible");
+            $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+        }
+    });
     // autorunning
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
@@ -1058,11 +1074,11 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         audioCtx.addEventListener("statechange", () => {
             if (audioCtx.state === "running") {
                 audioEnv.outputEnabled = true;
-                $("#btn-dac").removeClass("btn-light").addClass("btn-primary")
+                $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
                     .children("span").html("Output is On");
             } else {
                 audioEnv.outputEnabled = false;
-                $("#btn-dac").removeClass("btn-primary").addClass("btn-light")
+                $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
                     .children("span").html("Output is Off");
             }
         });

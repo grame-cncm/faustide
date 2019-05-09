@@ -23,14 +23,19 @@ export class StaticScope {
     private _zoomOffset = 0;
     plotted: Float32Array[];
 
-    handleMouseMove = (e: MouseEvent) => {
+    handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.plotted || !this.plotted.length || !this.plotted[0].length) return;
         if (this.type === TScopeType.Data) return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
         this.canvas.height = h;
-        const cursor = { x: e.offsetX, y: e.offsetY };
+        const rect = this.canvas.getBoundingClientRect();
+        let x = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX - rect.left;
+        x = Math.max(0, Math.min(w, x));
+        let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
+        y = Math.max(0, Math.min(h, y));
+        const cursor = { x, y };
         if (this.type === TScopeType.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset, cursor);
         if (this.type === TScopeType.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.plotted, this.zoom, this.zoomOffset, cursor);
     }
@@ -295,7 +300,9 @@ export class StaticScope {
             this.handleMouseMove(e);
         });
         this.canvas.addEventListener("mousemove", this.handleMouseMove);
+        this.canvas.addEventListener("touchmove", this.handleMouseMove);
         this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
+        this.canvas.addEventListener("touchend", this.handleMouseLeave);
     }
     draw = (plotted: Float32Array[]) => {
         this.plotted = plotted;
