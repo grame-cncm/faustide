@@ -991,13 +991,15 @@ $(async () => {
         }
     });
     // Resizables
-    $(".resizable").on("mousedown", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+    $(".resizable").on("mousedown touchstart", (e: JQuery.TouchStartEvent | JQuery.MouseDownEvent) => {
+        if (e.originalEvent instanceof MouseEvent) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         $("#iframe-faust-ui").css("pointer-events", "none");
         const $div = $(e.currentTarget).parent();
-        const x = e.pageX;
-        const y = e.pageY;
+        const x = typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
+        const y = typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
         const w = $div.width();
         const h = $div.height();
         const modes: string[] = [];
@@ -1005,11 +1007,13 @@ $(async () => {
         if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
         if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
         if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
-        const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const dX = e.pageX - x;
-            const dY = e.pageY - y;
+        const handleMouseMove = (e: JQuery.TouchMoveEvent | JQuery.MouseMoveEvent) => {
+            if (e.originalEvent instanceof MouseEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const dX = (typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
+            const dY = (typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
             if (modes.indexOf("left") !== -1) $div.width(w - dX);
             if (modes.indexOf("right") !== -1) $div.width(w + dX);
             if (modes.indexOf("top") !== -1) $div.height(h - dY);
@@ -1020,15 +1024,17 @@ $(async () => {
                 wavesurfer.drawBuffer();
             }
         };
-        const handleMouseUp = (e: JQuery.MouseUpEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
+        const handleMouseUp = (e: JQuery.TouchEndEvent | JQuery.MouseUpEvent) => {
+            if (e.originalEvent instanceof MouseEvent) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             $("#iframe-faust-ui").css("pointer-events", "");
-            $(document).off("mousemove", handleMouseMove);
+            $(document).off("mousemove touchmove", handleMouseMove);
             $(document).off("mouseup", handleMouseUp);
         };
-        $(document).on("mousemove", handleMouseMove);
-        $(document).on("mouseup", handleMouseUp);
+        $(document).on("mousemove touchmove", handleMouseMove);
+        $(document).on("mouseup touchend", handleMouseUp);
     });
     // Panels
     $(".btn-show-left").on("click", (e) => {
