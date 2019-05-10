@@ -195,8 +195,13 @@ body {
                         @media screen and (min-width: $media-break-small) {
                             display: none;
                         }
-                        & .btn:not(.btn-light) {
-                            color: white;
+                        margin-bottom: -1px;
+                        & .btn {
+                            border-bottom-left-radius: 0px;
+                            border-bottom-right-radius: 0px;
+                            &:not(.btn-light) {
+                                color: white;
+                            }
                         }
                     }
                     & .btn-run {
