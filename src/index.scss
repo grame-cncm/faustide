@@ -407,6 +407,7 @@ body {
             padding: 0px;
             margin: 0px;
             width: 200px;
+            height: 100%;
             flex: 0 0 auto;
             font-size: 0.8em;
             flex-direction: column;
@@ -419,11 +420,23 @@ body {
                 right: 0;
                 top: 32px;
                 max-width: calc(100% - 200px);
+                max-height: calc(100% - 32px);
+                min-height: 280px;
                 z-index: 10;
                 padding-top: 0px;
                 padding-bottom: 15px;
                 background-color: #2b2b2b;
                 box-shadow: 0 0 5px black;
+            }
+            & > #right-resizable {
+                @media screen and (max-width: $media-break-small) {
+                    display: none;
+                }
+            }
+            & > #right-resizable-left-bottom {
+                @media screen and (min-width: $media-break-small) {
+                    display: none;
+                }
             }
             & .form-row {
                 margin-right: 0px;
@@ -456,12 +469,18 @@ body {
                     height: auto;
                 }
             }
+            & > #midi-ui {
+                position: relative;
+                display: flex;
+                flex: 0 1 auto;
+                flex-direction: column;
+                overflow: hidden;
+            }
             & > #input-ui {
                 position: relative;
                 display: flex;
                 flex: 1 1 auto;
                 flex-direction: column;
-                max-height: calc((100% - 300px) / 2 + 120px);
                 overflow: hidden;
                 & > #source-ui {
                     position: relative;
@@ -533,6 +552,7 @@ body {
         }
     }
     .resizable {
+        $strip: rgba(255, 255, 255, 0.5);
         position: absolute;
         display: block;
         z-index: 1;
@@ -543,7 +563,6 @@ body {
             height: 40px;
             width: 10px;
             top: calc(50% - 20px);
-            $strip: rgba(255, 255, 255, 0.5);
             background-image: linear-gradient(90deg, transparent, transparent 3px, $strip 3px, $strip 4px, transparent 4px, transparent 6px, $strip 6px, $strip 7px, transparent 7px);
         }
         &.resizable-left {
@@ -557,7 +576,6 @@ body {
             height: 10px;
             width: 40px;
             left: calc(50% - 20px);
-            $strip: rgba(255, 255, 255, 0.5);
             background-image: linear-gradient(0deg, transparent, transparent 3px, $strip 3px, $strip 4px, transparent 4px, transparent 6px, $strip 6px, $strip 7px, transparent 7px);
         }
         &.resizable-top {
@@ -566,6 +584,17 @@ body {
         &.resizable-bottom {
             bottom: 0;
         }
+        &.resizable-left.resizable-bottom {
+            cursor: sw-resize;
+            height: 20px;
+            width: 20px;
+            bottom: 0px;
+            top: auto;
+            left: 0px;
+            background-image: linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.5) 5px, rgba(255, 255, 255, 0.5) 6px, transparent 6px, transparent 8px, rgba(255, 255, 255, 0.5) 8px, rgba(255, 255, 255, 0.5) 9px, transparent 9px);
+        }
+        
+        
     }
 }
 .btn-overlay {

@@ -2,3 +2,4 @@ dist
 node_modules
 local
 src/libfaust-wasm.js
+webpack.config.js

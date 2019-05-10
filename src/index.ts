@@ -994,24 +994,20 @@ $(async () => {
         const y = e.pageY;
         const w = $div.width();
         const h = $div.height();
-        const mode = $(e.currentTarget).hasClass("resizable-left")
-            ? "left"
-            : $(e.currentTarget).hasClass("resizable-right")
-                ? "right"
-                : $(e.currentTarget).hasClass("resizable-top")
-                    ? "top"
-                    : $(e.currentTarget).hasClass("resizable-bottom")
-                        ? "bottom"
-                        : undefined;
+        const modes: string[] = [];
+        if ($(e.currentTarget).hasClass("resizable-left")) modes.push("left");
+        if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
+        if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
+        if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
         const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
             e.preventDefault();
             e.stopPropagation();
             const dX = e.pageX - x;
             const dY = e.pageY - y;
-            if (mode === "left") $div.width(w - dX);
-            else if (mode === "right") $div.width(w + dX);
-            else if (mode === "top") $div.height(h - dY);
-            else if (mode === "bottom") $div.height(h + dY);
+            if (modes.indexOf("left") !== -1) $div.width(w - dX);
+            if (modes.indexOf("right") !== -1) $div.width(w + dX);
+            if (modes.indexOf("top") !== -1) $div.height(h - dY);
+            if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
             if (editor) editor.layout();
             if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
                 wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
@@ -1049,10 +1045,10 @@ $(async () => {
     });
     $(window).on("resize", () => {
         if (window.innerWidth <= 900) {
-            $("#right").add("#left").css("visibility", "hidden");
+            $("#right").add("#left").css({ visibility: "hidden" });
             $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
         } else {
-            $("#right").add("#left").css("visibility", "visible");
+            $("#right").add("#left").css({ visibility: "visible", height: "" });
             $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
         }
     });
