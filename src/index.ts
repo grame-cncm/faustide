@@ -74,6 +74,7 @@ type FaustEditorCompileOptions = {
     saveParams: boolean;
     saveDsp: boolean;
     realtimeCompile: boolean;
+    popup: boolean;
     voices: number;
     enableRtPlot: boolean;
     plot: number;
@@ -218,11 +219,11 @@ $(async () => {
             const callback = () => {
                 const msg = JSON.stringify({ type: "ui", json: node.getJSON() });
                 uiWindow.postMessage(msg, "*");
-                uiEnv.uiPopup.postMessage(msg, "*");
+                if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                 node.setOutputParamHandler((path: string, value: number) => {
                     const msg = JSON.stringify({ path, value, type: "param" });
                     uiWindow.postMessage(msg, "*");
-                    uiEnv.uiPopup.postMessage(msg, "*");
+                    if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                 });
                 if (compileOptions.saveParams) {
                     const params = node.getParams();
@@ -230,13 +231,13 @@ $(async () => {
                         if (params.indexOf(path) !== -1) {
                             const msg = JSON.stringify({ path, value: dspParams[path], type: "param" });
                             uiWindow.postMessage(msg, "*");
-                            uiEnv.uiPopup.postMessage(msg, "*");
+                            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                         }
                     }
                 }
             };
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            if (uiEnv.uiPopup) callback();
+            if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
             else {
                 uiEnv.uiPopup = window.open("faust_ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
                 uiEnv.uiPopup.onload = callback;
@@ -264,7 +265,7 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: new StaticScope({ container: $("#plot-ui")[0] as HTMLDivElement }) };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Alerts
@@ -316,6 +317,11 @@ $(async () => {
             else getDiagram(code);
         }
     });
+    // Save Params
+    ($("#check-popup").on("change", (e) => {
+        compileOptions.popup = (e.currentTarget as HTMLInputElement).checked;
+        saveEditorParams();
+    })[0] as HTMLInputElement).checked = compileOptions.popup;
     // Plot
     ($("#check-plot-rt").on("change", (e) => {
         compileOptions.enableRtPlot = (e.currentTarget as HTMLInputElement).checked;
@@ -597,7 +603,7 @@ $(async () => {
     // DSP
     refreshDspUI();
     // Output
-    $(".btn-dac").on("click", async (e) => {
+    $(".btn-dac").on("click", async () => {
         /*
         if (!audioEnv.audioCtx) {
             await initAudioCtx(audioEnv);
