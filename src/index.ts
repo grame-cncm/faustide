@@ -82,22 +82,40 @@ type FaustEditorCompileOptions = {
     args: { [key: string]: any };
 };
 type FaustExportTargets = { [platform: string]: string[] };
+
 $(async () => {
-    // Async Load Faust Core
+    /**
+     * Async Load Faust Core
+     * Use import() for webpack code splitting, needs babel-dynamic-import
+     */
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust();
     await faust.ready;
+    /**
+     * To save dsp table to localStorage
+     */
     const saveEditorDspTable = () => {
         localStorage.setItem("faust_editor_dsp_table", faust.stringifyDspTable());
     };
+    /**
+     * To load dsp table from localStorage
+     */
     const loadEditorDspTable = () => {
         const str = localStorage.getItem("faust_editor_dsp_table");
         if (str) faust.parseDspTable(str);
     };
+    /**
+     * To save editor params to localStorage
+     */
     const saveEditorParams = () => {
         const str = JSON.stringify(compileOptions);
         localStorage.setItem("faust_editor_params", str);
     };
+    /**
+     * To load editor params from localStorage
+     *
+     * @returns {(FaustEditorCompileOptions | {})}
+     */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
         const str = localStorage.getItem("faust_editor_params");
         if (!str) return {};
@@ -107,49 +125,69 @@ $(async () => {
             return {};
         }
     };
+    /**
+     * To show Error at bottom of center
+     *
+     * @param {string} str
+     */
     const showError = (str: string) => {
         $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
-    // Async load Monaco Editor
+    /**
+     * Async Load Monaco Editor Core
+     * Use import() for webpack code splitting, needs babel-dynamic-import
+     */
     const editor = await initEditor();
-    editor.layout();
+    editor.layout(); // Each time force editor to fill div
     // Editor and Diagram
-    let editorDecoration: string[] = [];
+    let editorDecoration: string[] = []; // lines with error
+    /**
+     * Generate diagram only
+     *
+     * @param {string} code
+     * @returns {{ success: boolean; error?: Error }}
+     */
     const getDiagram = (code: string): { success: boolean; error?: Error } => {
-        let svg: string;
+        let svg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
             svg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
         } catch (e) {
+            /**
+             * Parse Faust-generated error message to locate the lines with error
+             */
             const matchLine = e.toString().match(/FaustDSP : (\d+)/);
             if (matchLine) {
                 const line = matchLine[1];
-                editorDecoration = editor.deltaDecorations(editorDecoration, [
-                    {
-                        range: new monaco.Range(line, 1, line, 1),
-                        options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
-                    }
-                ]);
+                editorDecoration = editor.deltaDecorations(editorDecoration, [{
+                    range: new monaco.Range(line, 1, line, 1),
+                    options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
+                }]);
             }
             showError(e);
             return { error: e, success: false };
         }
         const $svg = $("#diagram-svg>svg");
-        const curWidth = $svg.length ? $svg.width() : "100%";
-        $("#diagram-svg").empty().html(svg).children("svg").width(curWidth);
-        $("#diagram-default").hide();
-        $("#alert-faust-code").css("visibility", "hidden");
-        $("#diagram-svg").show();
+        const curWidth = $svg.length ? $svg.width() : "100%"; // conserve current zoom
+        $("#diagram-svg").empty().html(svg).children("svg").width(curWidth); // replace svg
+        $("#diagram-default").hide(); // hide "No Diagram" info
+        $("#alert-faust-code").css("visibility", "hidden"); // Supress error shown
+        $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
-    // dsp Compiler
+    /**
+     * Generate both diagram and dsp
+     *
+     * @param {string} code
+     * @returns {{ success: boolean; error?: Error }}
+     */
     const runDsp = async (code: string): Promise<{ success: boolean; error?: Error }> => {
         const audioCtx = audioEnv.audioCtx;
         const input = audioEnv.inputs[audioEnv.currentInput];
         let splitter = audioEnv.splitterOutput;
         const analyser = audioEnv.analyserOutput;
-        if (!audioCtx) {
+        if (!audioCtx) { // If audioCtx not init yet
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         }
@@ -1074,6 +1112,13 @@ $(async () => {
     if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, editor.getValue());
     window.faustEnv = faustEnv;
 });
+/**
+ * Init audio environment, audioNodes
+ *
+ * @param {FaustEditorAudioEnv} audioEnv
+ * @param {string} [deviceId]
+ * @returns
+ */
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
         const audioCtx = new (window.webkitAudioContext || window.AudioContext)();
@@ -1119,6 +1164,13 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     }
     return audioEnv;
 };
+/**
+ * Init analyser scopes with audio environment
+ *
+ * @param {FaustEditorUIEnv} uiEnv
+ * @param {FaustEditorAudioEnv} audioEnv
+ * @returns
+ */
 const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
     if (uiEnv.analysersInited) return;
     uiEnv.inputScope = new Scope({
@@ -1137,6 +1189,12 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
     });
     uiEnv.analysersInited = true;
 };
+/**
+ * Update dsp inputs, outputs, params info
+ *
+ * @param {(FaustAudioWorkletNode | FaustScriptProcessorNode)} [node]
+ * @returns
+ */
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {
         $("#dsp-ui-detail").hide();
@@ -1153,6 +1211,11 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
     $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
     $("#dsp-ui-detail-params").html(node.getParams().length.toString());
 };
+/**
+ * Init editor, register faust language and code hint
+ *
+ * @returns
+ */
 const initEditor = async () => {
     const code = `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
