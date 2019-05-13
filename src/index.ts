@@ -272,9 +272,9 @@ $(async () => {
     $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
     $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
     // Tooltips
-    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
-    $("#btn-export").tooltip({ trigger: "hover" });
-    $("#btn-share").tooltip({ trigger: "hover" });
+    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover", boundary: "viewport" });
+    $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
+    $("#btn-share").tooltip({ trigger: "hover", boundary: "viewport" });
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;

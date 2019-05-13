@@ -268,6 +268,9 @@ export class StaticScope {
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Scope / Data");
             ctrl.appendChild(btn);
+            try {
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
+            } catch (e) {} // eslint-disable-line no-empty
             this.btnSwitch = btn;
         }
         for (let i = 0; i < this.btnSwitch.children.length; i++) {

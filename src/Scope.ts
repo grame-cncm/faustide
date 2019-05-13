@@ -200,7 +200,7 @@ export class Scope {
             this.container.appendChild(canvas);
             this.canvas = canvas;
             try {
-                $(canvas).tooltip({ trigger: "hover" });
+                $(canvas).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) {} // eslint-disable-line no-empty
         }
         this.ctx = this.canvas.getContext("2d");
@@ -219,7 +219,7 @@ export class Scope {
             ctrl.appendChild(btn);
             this.btnSwitch = btn;
             try {
-                $(btn).tooltip({ trigger: "hover" });
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) {} // eslint-disable-line no-empty
         }
         if (!this.btnSize) {
@@ -232,7 +232,7 @@ export class Scope {
             ctrl.appendChild(btn);
             this.btnSize = btn;
             try {
-                $(btn).tooltip({ trigger: "hover" });
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) {} // eslint-disable-line no-empty
         }
         if (!this.btnCh) {
@@ -245,7 +245,7 @@ export class Scope {
             ctrl.appendChild(btn);
             this.btnCh = btn;
             try {
-                $(btn).tooltip({ trigger: "hover" });
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) {} // eslint-disable-line no-empty
         }
         for (let i = 0; i < this.btnSwitch.children.length; i++) {

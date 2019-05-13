@@ -18,9 +18,14 @@ body {
             flex: 0 0 200px;
             min-width: 200px;
             max-width: 200px;
-            padding-top: 60px;
+            padding-top: 15px;
             padding-left: 15px;
             padding-right: 15px;
+            overflow: auto;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+                display: none;
+            }
             @media screen and (max-width: $media-break-small) {
                 position: absolute;
                 visibility: hidden;
@@ -29,6 +34,7 @@ body {
                 z-index: 10;
                 padding-top: 15px;
                 padding-bottom: 15px;
+                max-height: calc(100% - 32px);
                 background-color: #2b2b2b;
                 box-shadow: 0 0 5px black;
             }
@@ -418,6 +424,11 @@ body {
             flex-direction: column;
             max-width: calc(100% - 600px);
             min-width: 200px;
+            overflow: auto;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+                display: none;
+            }
             @media screen and (max-width: $media-break-small) {
                 position: absolute;
                 visibility: hidden;
@@ -426,22 +437,11 @@ body {
                 top: 32px;
                 max-width: calc(100% - 200px);
                 max-height: calc(100% - 32px);
-                min-height: 280px;
                 z-index: 10;
                 padding-top: 0px;
                 padding-bottom: 15px;
                 background-color: #2b2b2b;
                 box-shadow: 0 0 5px black;
-            }
-            & > #right-resizable {
-                @media screen and (max-width: $media-break-small) {
-                    display: none;
-                }
-            }
-            & > #right-resizable-left-bottom {
-                @media screen and (min-width: $media-break-small) {
-                    display: none;
-                }
             }
             & .form-row {
                 margin-right: 0px;
@@ -477,14 +477,14 @@ body {
             & > #midi-ui {
                 position: relative;
                 display: flex;
-                flex: 0 1 auto;
+                flex: 0 0 auto;
                 flex-direction: column;
                 overflow: hidden;
             }
             & > #input-ui {
                 position: relative;
                 display: flex;
-                flex: 1 1 auto;
+                flex: 1 0 auto;
                 flex-direction: column;
                 overflow: hidden;
                 & > #source-ui {
