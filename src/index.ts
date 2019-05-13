@@ -867,6 +867,9 @@ $(async () => {
                 .children("span").html("Output is On");
         }
     });
+    /**
+     * Center
+     */
     // File Drag and drop
     $("#top").on("dragenter dragover", (e) => {
         const event = e.originalEvent as DragEvent;
@@ -895,12 +898,15 @@ $(async () => {
             const file = event.dataTransfer.files[0];
             const reader = new FileReader();
             reader.onload = () => {
+                // Update filename
                 compileOptions.name = file.name.split(".").slice(0, -1).join(".");
                 $("#input-filename").val(compileOptions.name);
                 const code = reader.result.toString();
                 editor.setValue(code);
+                // save code to localStorage
                 localStorage.setItem("faust_editor_code", code);
                 saveEditorParams();
+                // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
                     if (audioEnv.dsp) runDsp(code);
                     else getDiagram(code);
@@ -910,6 +916,7 @@ $(async () => {
             reader.readAsText(file);
         }
     });
+    // Update filename on change
     $("#input-filename").val(compileOptions.name).on("keyup", (e) => {
         compileOptions.name = $(e.currentTarget).val() as string;
         saveEditorParams();
@@ -923,6 +930,7 @@ $(async () => {
         children?: DirectoryTree[];
         extension?: string;
     };
+    // Append each file in examples.json to div menu
     fetch("./examples.json")
         .then(response => response.json())
         .then((tree: DirectoryTree) => {
@@ -943,6 +951,7 @@ $(async () => {
             };
             if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
         });
+    // Load an example
     $("#tab-examples").on("click", ".faust-example", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -973,6 +982,9 @@ $(async () => {
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
+    /**
+     * Bind message event for changing dsp params on receiving msg from ui window
+     */
     const dspParams: { [path: string]: number } = {};
     $(window).on("message", (e) => {
         if (!(e.originalEvent as MessageEvent).data) return;
@@ -989,9 +1001,11 @@ $(async () => {
             if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
             return;
         }
+        // Pass keyboard midi messages even inner window is focused
         if (data.type === "keydown") key2Midi.handleKeyDown(data.key);
         else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
     });
+    // Close DSP UI Popup when main window is closed
     $(window).on("beforeunload", () => (uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined));
     $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
         e.stopPropagation();
