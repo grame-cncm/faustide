@@ -208,6 +208,10 @@ $(async () => {
             showError(e);
             return { success: false, error: e };
         }
+        /**
+         * Push get diagram to end of scheduler
+         * generate diagram only when the tab is active
+         */
         if ($("#tab-diagram").hasClass("active")) setTimeout(getDiagram, 0, code);
         $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => getDiagram(code));
         if (audioEnv.dsp) { // Disconnect current
@@ -220,6 +224,9 @@ $(async () => {
             audioEnv.dspConnectedToOutput = false;
             delete audioEnv.dsp;
         }
+        /**
+         * Update the dsp with saved params
+         */
         let dspParams: { [path: string]: number } = {};
         if (compileOptions.saveParams) {
             const strDspParams = localStorage.getItem("faust_editor_dsp_params");
@@ -232,6 +239,9 @@ $(async () => {
                 }
             }
         }
+        /**
+         * Connect the dsp to graph (use a new splitter)
+         */
         audioEnv.dsp = node;
         const channelsCount = node.getNumOutputs();
         if (!splitter || splitter.numberOfOutputs !== channelsCount) {
@@ -253,16 +263,32 @@ $(async () => {
             node.connect(audioEnv.audioCtx.destination);
             audioEnv.dspConnectedToOutput = true;
         }
+        /**
+         * Bind dsp params to ui interface
+         * as UI is in an iframe and a popup window,
+         * send a message with params into the window
+         * bind events on param change
+         */
         const bindUI = () => {
             const callback = () => {
                 const msg = JSON.stringify({ type: "ui", json: node.getJSON() });
+                /**
+                 * Post param list json
+                 */
                 uiWindow.postMessage(msg, "*");
                 if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+                /**
+                 * set handler for param changed of dsp
+                 * send current value to window
+                 */
                 node.setOutputParamHandler((path: string, value: number) => {
                     const msg = JSON.stringify({ path, value, type: "param" });
                     uiWindow.postMessage(msg, "*");
                     if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                 });
+                /**
+                 * Post current param values
+                 */
                 if (compileOptions.saveParams) {
                     const params = node.getParams();
                     for (const path in dspParams) {
@@ -274,6 +300,9 @@ $(async () => {
                     }
                 }
             };
+            /**
+             * if window is opened, bind directly, else bind when window is loaded.
+             */
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
             else {
@@ -282,16 +311,20 @@ $(async () => {
             }
         };
         bindUI();
-        $("#alert-faust-code").css("visibility", "hidden");
-        $("#faust-ui-default").hide();
-        $("#nav-item-faust-ui").show();
-        $("#iframe-faust-ui").css("visibility", "visible");
-        $("#output-analyser-ui").show();
-        refreshDspUI(node);
-        saveEditorDspTable();
+        $("#alert-faust-code").css("visibility", "hidden"); // Supress error alert
+        $("#faust-ui-default").hide(); // Hide "No DSP yet" info
+        $("#nav-item-faust-ui").show(); // Show DSP UI tab
+        $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
+        $("#output-analyser-ui").show(); // Show dsp info on right panel
+        refreshDspUI(node); // update dsp info
+        saveEditorDspTable(); // Save the new DSP table to localStorage
         return { success: true };
     };
     let rtCompileTimer: NodeJS.Timeout;
+    /**
+     * Save current code to localStorage
+     * if realtime compile is on, do compile
+     */
     editor.onKeyUp(() => {
         const code = editor.getValue();
         if (localStorage.getItem("faust_editor_code") === code) return;
@@ -305,7 +338,12 @@ $(async () => {
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: new StaticScope({ container: $("#plot-ui")[0] as HTMLDivElement }) };
     const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
+
     if (compileOptions.saveDsp) loadEditorDspTable();
+
+    /**
+     * Bind DOM events
+     */
     // Alerts
     $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
     $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
@@ -313,6 +351,9 @@ $(async () => {
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-share").tooltip({ trigger: "hover", boundary: "viewport" });
+    /**
+     * Left panel options
+     */
     // Voices
     $("#select-voices").on("change", (e) => {
         compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
@@ -395,7 +436,7 @@ $(async () => {
         saveEditorParams();
     })[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
     /**
-     * Load stuffs from URL
+     * Load options from URL, override current
      * Available params:
      * {boolean} autorun
      * {boolean} realtime_compile
@@ -457,227 +498,6 @@ $(async () => {
             }
         }
     };
-    // MIDI Devices
-    const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
-    $(document).on("keydown", (e) => {
-        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-        key2Midi.handleKeyDown(e.key);
-    });
-    $(document).on("keyup", (e) => {
-        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-        key2Midi.handleKeyUp(e.key);
-    });
-    $("#select-midi-input").on("change", (e) => {
-        const id = (e.currentTarget as HTMLSelectElement).value;
-        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-        const keys: number[] = [];
-        const listener = (data: number[] | Uint8Array) => {
-            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
-            if (data[0] === 144) {
-                if (data[2]) {
-                    if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
-                    $("#midi-ui-note").text(data[1]).show();
-                } else {
-                    keys.splice(keys.indexOf(data[1]), 1);
-                    if (keys.length === 0) $("#midi-ui-note").hide();
-                    else $("#midi-ui-note").text(keys[keys.length - 1]);
-                }
-            }
-        };
-        if (id === "-2") {
-            key2Midi.handler = listener;
-            key2Midi.enabled = true;
-            return;
-        }
-        key2Midi.enabled = false;
-        if (id === "-1") return;
-        const input = webmidi.getInputById(id);
-        if (!input) return;
-        midiEnv.input = input;
-        input.addListener("midimessage", "all", e => listener(e.data));
-    });
-    webmidi.enable((e) => {
-        if (e) return;
-        $("#midi-ui-default").hide();
-        const $select = $("#select-midi-input").prop("disabled", false);
-        webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
-        if (webmidi.inputs.length) $select.children("option").eq(2).prop("selected", true).change();
-    });
-    // Audio Inputs
-    let wavesurfer: WaveSurfer;
-    $("#select-audio-input").on("change", async (e) => {
-        const id = (e.currentTarget as HTMLSelectElement).value;
-        if (audioEnv.currentInput === id) return;
-        if (audioEnv.audioCtx) {
-            const splitter = audioEnv.splitterInput;
-            const dsp = audioEnv.dsp;
-            const input = audioEnv.inputs[audioEnv.currentInput];
-            if (splitter) input.disconnect(splitter);
-            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
-                input.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
-            }
-        }
-        // MediaElementSource, Waveform
-        if (id === "-1") $("#source-ui").show();
-        else $("#source-ui").hide();
-        await initAudioCtx(audioEnv);
-        initAnalysersUI(uiEnv, audioEnv);
-        if (!wavesurfer) {
-            wavesurfer = WaveSurfer.create({
-                container: $("#source-waveform")[0],
-                audioContext: audioEnv.audioCtx,
-                backend: "MediaElement",
-                cursorColor: "#EEE",
-                progressColor: "#888",
-                waveColor: "#BBB",
-                height: 60,
-                splitChannels: true
-            });
-            wavesurfer.on("play", () => $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause"));
-            wavesurfer.on("pause", () => $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play"));
-            wavesurfer.on("finish", () => {
-                if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
-                else $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
-            });
-            wavesurfer.load("./02-XYLO1.mp3");
-            if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
-            }
-        }
-        await initAudioCtx(audioEnv, id);
-        const splitter = audioEnv.splitterInput;
-        const dsp = audioEnv.dsp;
-        const input = audioEnv.inputs[id];
-        audioEnv.currentInput = id;
-        audioEnv.inputEnabled = true;
-        if (splitter) input.connect(splitter);
-        if (dsp && dsp.getNumInputs()) {
-            input.connect(dsp);
-            audioEnv.dspConnectedToInput = true;
-        }
-    }).change();
-    // Waveform
-    $("#btn-source-play").on("click", () => {
-        if (!wavesurfer || !wavesurfer.isReady) return;
-        if (wavesurfer.isPlaying()) {
-            wavesurfer.pause();
-        } else {
-            wavesurfer.play();
-        }
-    });
-    $("#btn-source-rewind").on("click", () => {
-        if (!wavesurfer.isReady) return;
-        wavesurfer.seekTo(0);
-    });
-    $("#btn-source-loop").on("click", (e) => {
-        $(e.currentTarget).toggleClass("active");
-    });
-    $("#source-waveform").on("dragenter dragover", (e) => {
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#source-overlay").show();
-        }
-    });
-    $("#source-overlay").on("dragleave dragend", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        $(e.currentTarget).hide();
-    });
-    $("#source-overlay").on("dragenter dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#source-overlay").on("drop", (e) => {
-        $(e.currentTarget).hide();
-        if (!wavesurfer.isReady) return;
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.files.length) {
-            // Stop the propagation of the event
-            e.preventDefault();
-            e.stopPropagation();
-            const splitter = audioEnv.splitterInput;
-            const analyser = audioEnv.analyserInput;
-            const dsp = audioEnv.dsp;
-            let input = audioEnv.inputs[-1];
-            if (analyser && input) input.disconnect(splitter);
-            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
-                input.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
-            }
-            audioEnv.inputEnabled = false;
-
-            const file = event.dataTransfer.files[0];
-            try {
-                wavesurfer.load(URL.createObjectURL(file));
-            } catch (e) {
-                console.error(e); // eslint-disable-line no-console
-                showError("Cannot load sound file: " + e);
-                return;
-            }
-            if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
-                input = audioEnv.inputs[-1];
-            }
-            audioEnv.inputEnabled = true;
-            if (analyser && input) input.connect(splitter);
-            if (dsp && dsp.getNumInputs()) {
-                input.connect(dsp);
-                audioEnv.dspConnectedToInput = true;
-            }
-        }
-    });
-    if (navigator.mediaDevices) {
-        navigator.mediaDevices.enumerateDevices().then((devices) => {
-            $("#input-ui-default").hide();
-            const $select = $("#select-audio-input").prop("disabled", false);
-            devices.forEach((device) => {
-                if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
-            });
-        });
-    }
-    // DSP
-    refreshDspUI();
-    // Output
-    $(".btn-dac").on("click", async () => {
-        /*
-        if (!audioEnv.audioCtx) {
-            await initAudioCtx(audioEnv);
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-            .children("span").html("Output is On");
-        } else if (audioEnv.audioCtx.state === "suspended") {
-            audioEnv.audioCtx.resume();
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-            .children("span").html("Output is On");
-        } else {
-            audioEnv.audioCtx.suspend();
-            $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
-            .children("span").html("Output is Off");
-        }
-        */
-        if (audioEnv.outputEnabled) {
-            $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
-                .children("span").html("Output is Off");
-            audioEnv.outputEnabled = false;
-            if (audioEnv.dspConnectedToOutput) {
-                audioEnv.dsp.disconnect(audioEnv.audioCtx.destination);
-                audioEnv.dspConnectedToOutput = false;
-            }
-        } else {
-            audioEnv.outputEnabled = true;
-            if (!audioEnv.audioCtx) {
-                await initAudioCtx(audioEnv);
-                initAnalysersUI(uiEnv, audioEnv);
-            } else if (audioEnv.dsp) {
-                audioEnv.dsp.connect(audioEnv.audioCtx.destination);
-                audioEnv.dspConnectedToOutput = true;
-            }
-            $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
-                .children("span").html("Output is On");
-        }
-    });
     // Upload
     $("#btn-upload").on("click", () => {
         $("#input-upload").click();
@@ -710,7 +530,10 @@ $(async () => {
     // Docs
     $("#btn-docs").on("click", () => $("#a-docs")[0].click());
     $("#a-docs").on("click", e => e.stopPropagation());
-    // Export
+    /**
+     * Export
+     * Append options to export model
+     */
     const server = "https://faustservicecloud.grame.fr";
     fetch(`${server}/targets`)
         .then(response => response.json())
@@ -781,6 +604,11 @@ $(async () => {
             $("#btn-export").prop("disabled", "true");
         });
     // Share
+    /**
+     * Make share URL with options
+     *
+     * @returns
+     */
     const makeURL = () => {
         const base = window.location.origin + window.location.pathname;
         const urlParams = new URLSearchParams();
@@ -806,6 +634,238 @@ $(async () => {
             document.execCommand("copy");
         }
         $(e.currentTarget).html('<i class="fas fa-check"></i>');
+    });
+    /**
+     * Right panel options
+     */
+    // Keyboard as midi input
+    const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
+    $(document).on("keydown", (e) => {
+        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+        key2Midi.handleKeyDown(e.key);
+    });
+    $(document).on("keyup", (e) => {
+        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+        key2Midi.handleKeyUp(e.key);
+    });
+    // MIDI Devices select
+    $("#select-midi-input").on("change", (e) => {
+        const id = (e.currentTarget as HTMLSelectElement).value;
+        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
+        const keys: number[] = [];
+        const listener = (data: number[] | Uint8Array) => {
+            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
+            if (data[0] === 144) { // Show as pill midi note
+                if (data[2]) {
+                    if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
+                    $("#midi-ui-note").text(data[1]).show();
+                } else {
+                    keys.splice(keys.indexOf(data[1]), 1);
+                    if (keys.length === 0) $("#midi-ui-note").hide();
+                    else $("#midi-ui-note").text(keys[keys.length - 1]);
+                }
+            }
+        };
+        if (id === "-2") {
+            key2Midi.handler = listener;
+            key2Midi.enabled = true;
+            return;
+        }
+        key2Midi.enabled = false;
+        if (id === "-1") return;
+        const input = webmidi.getInputById(id);
+        if (!input) return;
+        midiEnv.input = input;
+        input.addListener("midimessage", "all", e => listener(e.data));
+    });
+    // Append current connected devices
+    webmidi.enable((e) => {
+        if (e) return;
+        $("#midi-ui-default").hide();
+        const $select = $("#select-midi-input").prop("disabled", false);
+        webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
+        if (webmidi.inputs.length) $select.children("option").eq(2).prop("selected", true).change();
+    });
+    /**
+     * Audio Inputs
+     * Use WaveSurfer lib with MediaElement and <audio />
+     */
+    let wavesurfer: WaveSurfer;
+    $("#select-audio-input").on("change", async (e) => {
+        const id = (e.currentTarget as HTMLSelectElement).value;
+        if (audioEnv.currentInput === id) return;
+        if (audioEnv.audioCtx) {
+            const splitter = audioEnv.splitterInput;
+            const dsp = audioEnv.dsp;
+            const input = audioEnv.inputs[audioEnv.currentInput];
+            if (splitter) input.disconnect(splitter);
+            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
+                input.disconnect(dsp);
+                audioEnv.dspConnectedToInput = false;
+            }
+        }
+        // MediaElementSource, Waveform
+        if (id === "-1") $("#source-ui").show();
+        else $("#source-ui").hide();
+        await initAudioCtx(audioEnv);
+        initAnalysersUI(uiEnv, audioEnv);
+        if (!wavesurfer) {
+            wavesurfer = WaveSurfer.create({
+                container: $("#source-waveform")[0],
+                audioContext: audioEnv.audioCtx,
+                backend: "MediaElement",
+                cursorColor: "#EEE",
+                progressColor: "#888",
+                waveColor: "#BBB",
+                height: 60,
+                splitChannels: true
+            });
+            wavesurfer.on("play", () => $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause"));
+            wavesurfer.on("pause", () => $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play"));
+            wavesurfer.on("finish", () => {
+                if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
+                else $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+            });
+            wavesurfer.load("./02-XYLO1.mp3");
+            if ($("#source-waveform audio").length) {
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+            }
+        }
+        // init audio environment and connect to dsp if necessary
+        await initAudioCtx(audioEnv, id);
+        const splitter = audioEnv.splitterInput;
+        const dsp = audioEnv.dsp;
+        const input = audioEnv.inputs[id];
+        audioEnv.currentInput = id;
+        audioEnv.inputEnabled = true;
+        if (splitter) input.connect(splitter);
+        if (dsp && dsp.getNumInputs()) {
+            input.connect(dsp);
+            audioEnv.dspConnectedToInput = true;
+        }
+    }).change();
+    // Waveform
+    $("#btn-source-play").on("click", () => {
+        if (!wavesurfer || !wavesurfer.isReady) return;
+        if (wavesurfer.isPlaying()) {
+            wavesurfer.pause();
+        } else {
+            wavesurfer.play();
+        }
+    });
+    $("#btn-source-rewind").on("click", () => {
+        if (!wavesurfer.isReady) return;
+        wavesurfer.seekTo(0);
+    });
+    $("#btn-source-loop").on("click", (e) => {
+        $(e.currentTarget).toggleClass("active");
+    });
+    // Waveform drag'n'drop
+    $("#source-waveform").on("dragenter dragover", (e) => {
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#source-overlay").show();
+        }
+    });
+    $("#source-overlay").on("dragleave dragend", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        $(e.currentTarget).hide();
+    });
+    $("#source-overlay").on("dragenter dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    $("#source-overlay").on("drop", (e) => {
+        $(e.currentTarget).hide();
+        if (!wavesurfer.isReady) return;
+        const event = e.originalEvent as DragEvent;
+        if (event.dataTransfer && event.dataTransfer.files.length) {
+            // Stop the propagation of the event
+            e.preventDefault();
+            e.stopPropagation();
+            const splitter = audioEnv.splitterInput;
+            const analyser = audioEnv.analyserInput;
+            const dsp = audioEnv.dsp;
+            let input = audioEnv.inputs[-1];
+            if (analyser && input) input.disconnect(splitter);
+            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
+                input.disconnect(dsp);
+                audioEnv.dspConnectedToInput = false;
+            }
+            audioEnv.inputEnabled = false;
+
+            const file = event.dataTransfer.files[0];
+            try {
+                wavesurfer.load(URL.createObjectURL(file));
+            } catch (e) {
+                console.error(e); // eslint-disable-line no-console
+                showError("Cannot load sound file: " + e);
+                return;
+            }
+            if ($("#source-waveform audio").length) {
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+                input = audioEnv.inputs[-1];
+            }
+            audioEnv.inputEnabled = true;
+            if (analyser && input) input.connect(splitter);
+            if (dsp && dsp.getNumInputs()) {
+                input.connect(dsp);
+                audioEnv.dspConnectedToInput = true;
+            }
+        }
+    });
+    // Append connected audio devices
+    if (navigator.mediaDevices) {
+        navigator.mediaDevices.enumerateDevices().then((devices) => {
+            $("#input-ui-default").hide();
+            const $select = $("#select-audio-input").prop("disabled", false);
+            devices.forEach((device) => {
+                if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
+            });
+        });
+    }
+    // DSP info
+    refreshDspUI();
+    // Output switch to connect / disconnect dsp form destination
+    $(".btn-dac").on("click", async () => {
+        /*
+        if (!audioEnv.audioCtx) {
+            await initAudioCtx(audioEnv);
+            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
+            .children("span").html("Output is On");
+        } else if (audioEnv.audioCtx.state === "suspended") {
+            audioEnv.audioCtx.resume();
+            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
+            .children("span").html("Output is On");
+        } else {
+            audioEnv.audioCtx.suspend();
+            $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
+            .children("span").html("Output is Off");
+        }
+        */
+        if (audioEnv.outputEnabled) {
+            $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
+                .children("span").html("Output is Off");
+            audioEnv.outputEnabled = false;
+            if (audioEnv.dspConnectedToOutput) {
+                audioEnv.dsp.disconnect(audioEnv.audioCtx.destination);
+                audioEnv.dspConnectedToOutput = false;
+            }
+        } else {
+            audioEnv.outputEnabled = true;
+            if (!audioEnv.audioCtx) {
+                await initAudioCtx(audioEnv);
+                initAnalysersUI(uiEnv, audioEnv);
+            } else if (audioEnv.dsp) {
+                audioEnv.dsp.connect(audioEnv.audioCtx.destination);
+                audioEnv.dspConnectedToOutput = true;
+            }
+            $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
+                .children("span").html("Output is On");
+        }
     });
     // File Drag and drop
     $("#top").on("dragenter dragover", (e) => {
