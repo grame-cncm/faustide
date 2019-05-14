@@ -369,8 +369,11 @@ $(async () => {
     // AudioWorklet
     $("#check-worklet").on("change", (e) => {
         compileOptions.useWorklet = (e.currentTarget as HTMLInputElement).checked;
-        if (compileOptions.useWorklet) $("#select-buffer-size").prop("disabled", true).children("option").eq(0).prop("selected", true);
-        else $("#select-buffer-size").prop("disabled", false).children("option").eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
+        const $options = $("#select-buffer-size").prop("disabled", true).children("option");
+        $options.eq(0).prop("disabled", !compileOptions.useWorklet);
+        $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
+        if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);
+        else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
