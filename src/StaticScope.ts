@@ -54,6 +54,10 @@ export class StaticScope {
         this.drawGrid(ctx, w, h, d.length);
         if (!d || !d.length || !d[0].length) return;
         const l = d[0].length;
+        let yFactor = 1;
+        d.forEach(ch => ch.forEach((e) => {
+            if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
+        }));
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -63,7 +67,7 @@ export class StaticScope {
         for (let i = 0; i < d.length; i++) {
             for (let j = $0; j < $1; j++) {
                 const x = w * (j - $0) / ($1 - $0 - 1);
-                const y = hCh * (i + 1) - (d[i][j] * 0.5 + 0.5) * hCh;
+                const y = hCh * (i + 1) - (d[i][j] / yFactor * 0.5 + 0.5) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -83,6 +87,10 @@ export class StaticScope {
         this.drawGrid(ctx, w, h, 1);
         if (!d || !d.length || !d[0].length) return;
         const l = d[0].length;
+        let yFactor = 1;
+        d.forEach(ch => ch.forEach((e) => {
+            if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
+        }));
         ctx.lineWidth = 2;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
@@ -91,7 +99,7 @@ export class StaticScope {
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 75%)`;
             for (let j = $0; j < $1; j++) {
                 const x = w * (j - $0) / ($1 - $0 - 1);
-                const y = h - (d[i][j] * 0.5 + 0.5) * h;
+                const y = h - (d[i][j] / yFactor * 0.5 + 0.5) * h;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -266,7 +274,7 @@ export class StaticScope {
             btn.className = "btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Scope / Data");
+            btn.setAttribute("title", "Interleaved Scope / Stacked Scope / Data");
             ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
