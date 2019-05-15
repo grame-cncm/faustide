@@ -847,6 +847,12 @@ $(async () => {
     }
     // DSP info
     refreshDspUI();
+    $("#dsp-ui-default").on("click", (e) => {
+        if (!$(e.currentTarget).hasClass("switch")) return;
+        ($("#check-worklet")[0] as HTMLInputElement).checked = !compileOptions.useWorklet;
+        $("#check-worklet").change();
+        if (!compileOptions.realtimeCompile) runDsp(editor.getValue());
+    })
     // Output switch to connect / disconnect dsp form destination
     $(".btn-dac").on("click", async () => {
         /*
@@ -1292,14 +1298,14 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
 const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
     if (!node) {
         $("#dsp-ui-detail").hide();
-        $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("no DSP yet");
+        $("#dsp-ui-default").removeClass(["badge-success", "switch"]).addClass("badge-warning").html("no DSP yet");
         return;
     }
     $("#dsp-ui-detail").show();
     if (node instanceof ScriptProcessorNode) {
-        $("#dsp-ui-default").removeClass("badge-success").addClass("badge-warning").html("ScriptProcessor");
+        $("#dsp-ui-default").removeClass("badge-success").addClass(["badge-warning", "switch"]).html("ScriptProcessor");
     } else {
-        $("#dsp-ui-default").removeClass("badge-warning").addClass("badge-success").html("AudioWorklet");
+        $("#dsp-ui-default").removeClass("badge-warning").addClass(["badge-success", "switch"]).html("AudioWorklet");
     }
     $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
     $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());

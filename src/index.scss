@@ -519,6 +519,9 @@ body {
                 display: flex;
                 flex: 2 1 auto;
                 flex-direction: column;
+                #dsp-ui-default:not(.switch) {
+                    pointer-events: none;
+                }
                 & #dsp-ui-detail {
                     display: none;
                     width: 100%;
