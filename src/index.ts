@@ -9,7 +9,7 @@
 // plot scope
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
-import webmidi, { Input } from "webmidi";
+import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
@@ -682,12 +682,27 @@ $(async () => {
         input.addListener("midimessage", "all", e => listener(e.data));
     });
     // Append current connected devices
+    const handleMIDIConnect = (e: WebMidiEventConnected) => {
+        if (e.port.type !== "input") return;
+        const $select = $("#select-midi-input");
+        if ($select.find(`[value="${e.port.id}"]`).length) return;
+        const $option = $(new Option(e.port.name, e.port.id));
+        $select.append($option);
+        $option.prop("selected", true).change();
+    }
+    const handleMIDIDisconnect = (e: WebMidiEventDisconnected) => {
+        if (e.port.type !== "input") return;
+        const $select = $("#select-midi-input");
+        $select.find(`[value="${e.port.id}"]`).remove();
+        $select.children("option").last().prop("selected", true).change();
+    }
+    $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
     webmidi.enable((e) => {
         if (e) return;
         $("#midi-ui-default").hide();
-        const $select = $("#select-midi-input").prop("disabled", false);
-        webmidi.inputs.forEach(input => $select.append(new Option(input.name, input.id)));
-        if (webmidi.inputs.length) $select.children("option").eq(2).prop("selected", true).change();
+        $("#select-midi-input").prop("disabled", false);
+        webmidi.addListener("connected", handleMIDIConnect);
+        webmidi.addListener("disconnected", handleMIDIDisconnect);
     });
     /**
      * Audio Inputs
