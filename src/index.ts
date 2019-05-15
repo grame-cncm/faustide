@@ -89,9 +89,10 @@ type FaustEditorCompileOptions = {
 };
 type FaustExportTargets = { [platform: string]: string[] };
 
+const supportAudioWorklet = !!window.AudioWorklet;
+let supportMediaStreamDestination = !!AudioContext.prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
+
 $(async () => {
-    const supportAudioWorklet = !!window.AudioWorklet;
-    let supportMediaStreamDestination = !!AudioContext.prototype.createMediaStreamDestination;
     /**
      * Async Load Faust Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
@@ -249,30 +250,32 @@ $(async () => {
                 }
             }
         }
-        /**
-         * Connect the dsp to graph (use a new splitter)
-         */
-        audioEnv.dsp = node;
-        const channelsCount = node.getNumOutputs();
-        if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-            if (splitter) splitter.disconnect(analyser);
-            splitter = audioCtx.createChannelSplitter(channelsCount);
-            delete audioEnv.splitterOutput;
-            audioEnv.splitterOutput = splitter;
-            uiEnv.outputScope.splitter = splitter;
-            uiEnv.outputScope.channels = channelsCount;
-            uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
-            splitter.connect(analyser, uiEnv.outputScope.channel);
-        }
-        if (audioEnv.inputEnabled && node.getNumInputs()) {
-            audioEnv.inputs[audioEnv.currentInput].connect(node);
-            audioEnv.dspConnectedToInput = true;
-        }
-        node.connect(splitter);
-        if (audioEnv.outputEnabled) {
-            node.connect(audioEnv.destination);
-            audioEnv.dspConnectedToOutput = true;
-        }
+        audioEnv.audioCtx.resume().then(() => { // Resume audioContext for firefox
+            /**
+             * Connect the dsp to graph (use a new splitter)
+             */
+            audioEnv.dsp = node;
+            const channelsCount = node.getNumOutputs();
+            if (!splitter || splitter.numberOfOutputs !== channelsCount) {
+                if (splitter) splitter.disconnect(analyser);
+                splitter = audioCtx.createChannelSplitter(channelsCount);
+                delete audioEnv.splitterOutput;
+                audioEnv.splitterOutput = splitter;
+                uiEnv.outputScope.splitter = splitter;
+                uiEnv.outputScope.channels = channelsCount;
+                uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
+                splitter.connect(analyser, uiEnv.outputScope.channel);
+            }
+            if (audioEnv.inputEnabled && node.getNumInputs()) {
+                audioEnv.inputs[audioEnv.currentInput].connect(node);
+                audioEnv.dspConnectedToInput = true;
+            }
+            node.connect(splitter);
+            if (audioEnv.outputEnabled) {
+                node.connect(audioEnv.destination);
+                audioEnv.dspConnectedToOutput = true;
+            }
+        });
         /**
          * Bind dsp params to ui interface
          * as UI is in an iframe and a popup window,
@@ -1301,11 +1304,9 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         audioEnv.outputEnabled = true;
         audioCtx.addEventListener("statechange", () => {
             if (audioCtx.state === "running") {
-                audioEnv.outputEnabled = true;
                 $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
                     .children("span").html("Output is On");
             } else {
-                audioEnv.outputEnabled = false;
                 $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
                     .children("span").html("Output is Off");
             }
@@ -1333,7 +1334,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
     if (!audioEnv.destination) {
-        if (AudioContext.prototype.createMediaStreamDestination) {
+        if (supportMediaStreamDestination) {
             audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
             const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
             if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
