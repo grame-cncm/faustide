@@ -28,7 +28,6 @@ body {
             }
             @media screen and (max-width: $media-break-small) {
                 position: absolute;
-                visibility: hidden;
                 top: 32px;
                 border-radius: 0px 0px 10px 10px;
                 z-index: 10;
@@ -198,9 +197,6 @@ body {
                         }
                     }
                     & .btn-group {
-                        @media screen and (min-width: $media-break-small) {
-                            display: none;
-                        }
                         margin-bottom: -1px;
                         & .btn {
                             border-bottom-left-radius: 0px;
@@ -432,7 +428,6 @@ body {
             }
             @media screen and (max-width: $media-break-small) {
                 position: absolute;
-                visibility: hidden;
                 border-radius: 0px 0px 10px 10px;
                 right: 0;
                 top: 32px;

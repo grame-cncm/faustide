@@ -1205,31 +1205,33 @@ $(async () => {
     // Panels
     $(".btn-show-left").on("click", (e) => {
         if ($(e.currentTarget).hasClass("active")) {
-            $("#left").css("visibility", "hidden");
+            $("#left").hide();
             $(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
         } else {
-            $("#left").css("visibility", "visible");
+            $("#left").show();
             $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
         }
+        editor.layout();
     });
     $(".btn-show-right").on("click", (e) => {
         if ($(e.currentTarget).hasClass("active")) {
-            $("#right").css("visibility", "hidden");
+            $("#right").hide();
             $(".btn-show-right").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
         } else {
-            $("#right").css("visibility", "visible");
+            $("#right").show();
             $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
         }
+        editor.layout();
     });
     $(window).on("resize", () => {
         if (window.innerWidth <= 900) {
-            $("#right").add("#left").css({ visibility: "hidden" });
+            $("#right").add("#left").hide();
             $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
         } else {
-            $("#right").add("#left").css({ visibility: "visible", height: "" });
+            $("#right").add("#left").show();
             $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
         }
-    });
+    }).resize();
     // autorunning
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
