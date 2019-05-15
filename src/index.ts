@@ -869,12 +869,14 @@ $(async () => {
     }
     // DSP info
     refreshDspUI();
-    $("#dsp-ui-default").on("click", (e) => {
-        if (!$(e.currentTarget).hasClass("switch")) return;
-        ($("#check-worklet")[0] as HTMLInputElement).checked = !compileOptions.useWorklet;
-        $("#check-worklet").change();
-        if (!compileOptions.realtimeCompile) runDsp(editor.getValue());
-    })
+    if (window.AudioWorklet) { // Switch between AW / SP nodes
+        $("#dsp-ui-default").on("click", (e) => {
+            if (!$(e.currentTarget).hasClass("switch")) return;
+            ($("#check-worklet")[0] as HTMLInputElement).checked = !compileOptions.useWorklet;
+            $("#check-worklet").change();
+            if (!compileOptions.realtimeCompile) runDsp(editor.getValue());
+        });
+    } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
     // Output switch to connect / disconnect dsp form destination
     $(".btn-dac").on("click", async () => {
         /*
