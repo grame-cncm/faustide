@@ -7,6 +7,7 @@
 // bargraph in scopes
 // touch
 // plot scope
+// init params with getNode
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
@@ -685,7 +686,7 @@ $(async () => {
     const handleMIDIConnect = (e: WebMidiEventConnected) => {
         if (e.port.type !== "input") return;
         const $select = $("#select-midi-input");
-        if ($select.find(`[value="${e.port.id}"]`).length) return;
+        if ($select.find(`option[value="${e.port.id}"]`).length) return;
         const $option = $(new Option(e.port.name, e.port.id));
         $select.append($option);
         $option.prop("selected", true).change();
@@ -693,7 +694,9 @@ $(async () => {
     const handleMIDIDisconnect = (e: WebMidiEventDisconnected) => {
         if (e.port.type !== "input") return;
         const $select = $("#select-midi-input");
-        $select.find(`[value="${e.port.id}"]`).remove();
+        const $find = $select.find(`option[value="${e.port.id}"]`);
+        if (!$find.length) return;
+        $find.remove();
         $select.children("option").last().prop("selected", true).change();
     }
     $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
@@ -836,10 +839,29 @@ $(async () => {
         }
     });
     // Append connected audio devices
+    const handleMediaDeviceChange = () => {
+        navigator.mediaDevices.enumerateDevices().then((devices) => {
+            const $select = $("#select-audio-input");
+            $select.children("option").each((i, e: HTMLOptionElement) => {
+                if (e.value === "-1") return;
+                if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
+                    e.remove();
+                    if (e.selected) $select.find("option").eq(0).prop("selected", true).change();
+                }
+            });
+            devices.forEach((device) => {
+                if (device.kind === "audioinput") {
+                    if ($select.find(`option[value=${device.deviceId}]`).length) return;
+                    $select.append(new Option(device.label || device.deviceId, device.deviceId));
+                }
+            });
+        });
+    };
     if (navigator.mediaDevices) {
         navigator.mediaDevices.enumerateDevices().then((devices) => {
             $("#input-ui-default").hide();
             const $select = $("#select-audio-input").prop("disabled", false);
+            navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
             devices.forEach((device) => {
                 if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
             });
