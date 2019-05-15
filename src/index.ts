@@ -33,6 +33,11 @@ declare global {
         AudioWorklet?: typeof AudioWorklet; // eslint-disable-line no-undef
         faustEnv: FaustEditorEnv;
     }
+    interface HTMLMediaElement extends HTMLElement {
+        setSinkId?(sinkId: string): Promise<undefined>;
+        srcObject?: MediaStream | MediaSource | Blob | File;
+        src: string;
+    }
 }
 type FaustEditorEnv = {
     audioEnv: FaustEditorAudioEnv;
@@ -51,7 +56,7 @@ type FaustEditorAudioEnv = {
     analyserOutput?: AnalyserNode;
     inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode };
     currentInput?: string;
-    mediaDestination?: MediaStreamAudioDestinationNode;
+    destination?: MediaStreamAudioDestinationNode | AudioDestinationNode;
     dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode;
     dspConnectedToOutput: boolean;
     dspConnectedToInput: boolean;
@@ -85,6 +90,8 @@ type FaustEditorCompileOptions = {
 type FaustExportTargets = { [platform: string]: string[] };
 
 $(async () => {
+    const supportAudioWorklet = !!window.AudioWorklet;
+    let supportMediaStreamDestination = !!AudioContext.prototype.createMediaStreamDestination;
     /**
      * Async Load Faust Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
@@ -263,7 +270,7 @@ $(async () => {
         }
         node.connect(splitter);
         if (audioEnv.outputEnabled) {
-            node.connect(audioEnv.audioCtx.destination);
+            node.connect(audioEnv.destination);
             audioEnv.dspConnectedToOutput = true;
         }
         /**
@@ -751,7 +758,7 @@ $(async () => {
             });
             wavesurfer.load("./02-XYLO1.mp3");
             if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
             }
         }
         // init audio environment and connect to dsp if necessary
@@ -766,6 +773,17 @@ $(async () => {
             input.connect(dsp);
             audioEnv.dspConnectedToInput = true;
         }
+    }).change();
+    /**
+     * Audio Outputs
+     * Choose and audio stream <audio />
+     */
+    $("#select-audio-output").on("change", async (e) => {
+        if (!supportMediaStreamDestination) return;
+        const id = (e.currentTarget as HTMLSelectElement).value;
+        await initAudioCtx(audioEnv);
+        const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
+        audio.setSinkId(id);
     }).change();
     // Waveform
     $("#btn-source-play").on("click", () => {
@@ -829,7 +847,7 @@ $(async () => {
                 return;
             }
             if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
                 input = audioEnv.inputs[-1];
             }
             audioEnv.inputEnabled = true;
@@ -843,18 +861,30 @@ $(async () => {
     // Append connected audio devices
     const handleMediaDeviceChange = () => {
         navigator.mediaDevices.enumerateDevices().then((devices) => {
-            const $select = $("#select-audio-input");
-            $select.children("option").each((i, e: HTMLOptionElement) => {
+            const $selectInput = $("#select-audio-input");
+            const $selectOutput = $("#select-audio-output");
+            $selectInput.children("option").each((i, e: HTMLOptionElement) => {
                 if (e.value === "-1") return;
                 if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
                     e.remove();
-                    if (e.selected) $select.find("option").eq(0).prop("selected", true).change();
+                    if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
+                }
+            });
+            $selectOutput.children("option").each((i, e: HTMLOptionElement) => {
+                if (e.value === "-1") return;
+                if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
+                    e.remove();
+                    if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
                 }
             });
             devices.forEach((device) => {
                 if (device.kind === "audioinput") {
-                    if ($select.find(`option[value=${device.deviceId}]`).length) return;
-                    $select.append(new Option(device.label || device.deviceId, device.deviceId));
+                    if ($selectInput.find(`option[value=${device.deviceId}]`).length) return;
+                    $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+                }
+                if (supportMediaStreamDestination && device.kind === "audiooutput") {
+                    if ($selectOutput.find(`option[value=${device.deviceId}]`).length) return;
+                    $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
                 }
             });
         });
@@ -862,16 +892,31 @@ $(async () => {
     if (navigator.mediaDevices) {
         navigator.mediaDevices.enumerateDevices().then((devices) => {
             $("#input-ui-default").hide();
-            const $select = $("#select-audio-input").prop("disabled", false);
+            const $selectInput = $("#select-audio-input").prop("disabled", false);
+            let $selectOutput: JQuery<HTMLElement>;
+            if (supportMediaStreamDestination) {
+                if (devices.find(device => device.kind === "audiooutput")) {
+                    $("#output-ui-default").hide();
+                    $selectOutput = $("#select-audio-output").prop("disabled", false);
+                } else { // No audio outputs, fallback to audioCtx.destination
+                    if (audioEnv.audioCtx && audioEnv.destination) audioEnv.destination = audioEnv.audioCtx.destination;
+                    supportMediaStreamDestination = false;
+                }
+            }
             navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
             devices.forEach((device) => {
-                if (device.kind === "audioinput") $select.append(new Option(device.label || device.deviceId, device.deviceId));
+                if (device.kind === "audioinput") {
+                    $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+                }
+                if (supportMediaStreamDestination && device.kind === "audiooutput") {
+                    $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
+                }
             });
         });
     }
     // DSP info
     refreshDspUI();
-    if (window.AudioWorklet) { // Switch between AW / SP nodes
+    if (supportAudioWorklet) { // Switch between AW / SP nodes
         $("#dsp-ui-default").on("click", (e) => {
             if (!$(e.currentTarget).hasClass("switch")) return;
             ($("#check-worklet")[0] as HTMLInputElement).checked = !compileOptions.useWorklet;
@@ -901,7 +946,7 @@ $(async () => {
                 .children("span").html("Output is Off");
             audioEnv.outputEnabled = false;
             if (audioEnv.dspConnectedToOutput) {
-                audioEnv.dsp.disconnect(audioEnv.audioCtx.destination);
+                audioEnv.dsp.disconnect(audioEnv.destination);
                 audioEnv.dspConnectedToOutput = false;
             }
         } else {
@@ -910,7 +955,7 @@ $(async () => {
                 await initAudioCtx(audioEnv);
                 initAnalysersUI(uiEnv, audioEnv);
             } else if (audioEnv.dsp) {
-                audioEnv.dsp.connect(audioEnv.audioCtx.destination);
+                audioEnv.dsp.connect(audioEnv.destination);
                 audioEnv.dspConnectedToOutput = true;
             }
             $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
@@ -1236,7 +1281,7 @@ $(async () => {
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
-    if (window.AudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
+    if (supportAudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     $("#check-plot-rt").change();
     ($("#check-realtime-compile")[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
     if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, editor.getValue());
@@ -1277,7 +1322,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.inputs) audioEnv.inputs = {};
     if (deviceId && !audioEnv.inputs[deviceId]) {
         if (deviceId === "-1") {
-            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLMediaElement);
+            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
         } else {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
@@ -1287,10 +1332,15 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-    if (!audioEnv.mediaDestination) {
-        try {
-            audioEnv.mediaDestination = audioEnv.audioCtx.createMediaStreamDestination();
-        } catch (e) {} // eslint-disable-line no-empty
+    if (!audioEnv.destination) {
+        if (AudioContext.prototype.createMediaStreamDestination) {
+            audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
+            const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
+            if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
+            else audio.src = URL.createObjectURL(audioEnv.destination.stream);
+        } else {
+            audioEnv.destination = audioEnv.audioCtx.destination;
+        }
     }
     return audioEnv;
 };

@@ -533,6 +533,12 @@ body {
             }
             & > #output-ui {
                 margin-top: auto;
+                & audio {
+                    display: none;
+                }
+                & > #btn-dac {
+                    margin-top: 4px;
+                }
             }
         }
         .modal {
