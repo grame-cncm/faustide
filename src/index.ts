@@ -169,7 +169,7 @@ $(async () => {
             return { error: e, success: false };
         }
         const $svg = $("#diagram-svg>svg");
-        const curWidth = $svg.length ? $svg.width() : "100%"; // conserve current zoom
+        const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
         $("#diagram-svg").empty().html(svg).children("svg").width(curWidth); // replace svg
         $("#diagram-default").hide(); // hide "No Diagram" info
         $("#alert-faust-code").css("visibility", "hidden"); // Supress error shown
@@ -1043,9 +1043,11 @@ $(async () => {
     $("#diagram-svg").on("click", "a", (e) => {
         e.preventDefault();
         if (svgDragged) return;
+        const $svg = $("#diagram-svg>svg");
+        const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
         const fileName = (e.currentTarget as SVGAElement).href.baseVal;
         const svg = faust.readFile("FaustDSP-svg/" + fileName);
-        $("#diagram-svg").empty().html(svg);
+        $("#diagram-svg").empty().html(svg).children("svg").width(curWidth); // replace svg;
     });
     // svg zoom
     $("#diagram-svg").on("mousedown", "svg", (e) => {
