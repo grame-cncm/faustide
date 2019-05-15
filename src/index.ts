@@ -90,7 +90,7 @@ type FaustEditorCompileOptions = {
 type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
-let supportMediaStreamDestination = !!AudioContext.prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
+let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 
 $(async () => {
     /**
