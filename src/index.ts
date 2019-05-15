@@ -150,10 +150,10 @@ $(async () => {
      * @returns {{ success: boolean; error?: Error }}
      */
     const getDiagram = (code: string): { success: boolean; error?: Error } => {
-        let svg: string; // Diagram SVG as string
+        let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
-            svg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
+            strSvg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
         } catch (e) {
             /**
              * Parse Faust-generated error message to locate the lines with error
@@ -171,7 +171,9 @@ $(async () => {
         }
         const $svg = $("#diagram-svg>svg");
         const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-        $("#diagram-svg").empty().html(svg).children("svg").width(curWidth); // replace svg
+        const svg = $(strSvg).filter("svg")[0] as unknown as SVGSVGElement;
+        const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
+        $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
         $("#diagram-default").hide(); // hide "No Diagram" info
         $("#alert-faust-code").css("visibility", "hidden"); // Supress error shown
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
@@ -1089,10 +1091,12 @@ $(async () => {
         e.preventDefault();
         if (svgDragged) return;
         const $svg = $("#diagram-svg>svg");
-        const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
+        const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = (e.currentTarget as SVGAElement).href.baseVal;
-        const svg = faust.readFile("FaustDSP-svg/" + fileName);
-        $("#diagram-svg").empty().html(svg).children("svg").width(curWidth); // replace svg;
+        const strSvg = faust.readFile("FaustDSP-svg/" + fileName);
+        const svg = $(strSvg).filter("svg")[0] as unknown as SVGSVGElement;
+        const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
+        $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
     });
     // svg zoom
     $("#diagram-svg").on("mousedown", "svg", (e) => {
@@ -1130,7 +1134,7 @@ $(async () => {
         if (!$svg.length) return;
         e.preventDefault();
         e.stopPropagation();
-        const d = (e.originalEvent as WheelEvent).deltaY / 100;
+        const d = (e.originalEvent as WheelEvent).deltaY > 0 ? 1 : -1;
         const w = $svg.width();
         $svg.width(w * (1 - d * 0.25));
     });
