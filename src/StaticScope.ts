@@ -58,21 +58,21 @@ export class StaticScope {
         d.forEach(ch => ch.forEach((e) => {
             if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
         }));
-        ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
-        ctx.beginPath();
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / d.length;
         for (let i = 0; i < d.length; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
             for (let j = $0; j < $1; j++) {
                 const x = w * (j - $0) / ($1 - $0 - 1);
                 const y = hCh * (i + 1) - (d[i][j] / yFactor * 0.5 + 0.5) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
+            ctx.stroke();
         }
-        ctx.stroke();
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
@@ -96,7 +96,7 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         for (let i = 0; i < d.length; i++) {
             ctx.beginPath();
-            ctx.strokeStyle = `hsl(${i * 60}, 100%, 75%)`;
+            ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
             for (let j = $0; j < $1; j++) {
                 const x = w * (j - $0) / ($1 - $0 - 1);
                 const y = h - (d[i][j] / yFactor * 0.5 + 0.5) * h;
@@ -201,6 +201,7 @@ export class StaticScope {
             const ch = d[i];
             const divCh = document.createElement("div");
             divCh.classList.add("plot-channel");
+            divCh.style.backgroundColor = `hsl(${i * 60}, 100%, 10%)`;
             for (let j = 0; j < ch.length; j++) {
                 const divCell = document.createElement("div");
                 divCell.classList.add("plot-cell");

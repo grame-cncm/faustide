@@ -692,7 +692,7 @@ $(async () => {
         const $option = $(new Option(e.port.name, e.port.id));
         $select.append($option);
         $option.prop("selected", true).change();
-    }
+    };
     const handleMIDIDisconnect = (e: WebMidiEventDisconnected) => {
         if (e.port.type !== "input") return;
         const $select = $("#select-midi-input");
@@ -700,7 +700,7 @@ $(async () => {
         if (!$find.length) return;
         $find.remove();
         $select.children("option").last().prop("selected", true).change();
-    }
+    };
     $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
     webmidi.enable((e) => {
         if (e) return;
