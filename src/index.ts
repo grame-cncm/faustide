@@ -1342,6 +1342,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         } else {
             audioEnv.destination = audioEnv.audioCtx.destination;
         }
+        audioEnv.destination.channelInterpretation = "discrete";
     }
     return audioEnv;
 };
