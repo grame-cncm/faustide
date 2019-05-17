@@ -16,14 +16,14 @@
 			height: 100%;
 		}
 
-		body>#faust-ui {
+		body > #faust-ui {
 			width: 100%;
 			height: 100%;
 			position: absolute;
 			display: flex;
 		}
 
-		body>#faust-ui>svg {
+		body > #faust-ui > svg {
 			width: 100%;
 			height: 100%;
 			position: relative;
@@ -5441,7 +5441,8 @@
 			var handler;
 			var source;
 			window.addEventListener("message", function (e) {
-				var data = JSON.parse(e.data);
+				var data = e.data;
+				if (!data.type) return;
 				source = e.source;
 				if (data.type === "clear") {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
@@ -5452,7 +5453,7 @@
 					_f4u$t.hard_delete($("#faust-ui")[0]);
 					$("#faust-ui").removeClass("hasSVG");
 					handler = _f4u$t.main(data.json, $("#faust-ui"), function (path, value) {
-						source.postMessage(JSON.stringify({ type: "param", path: path, value: value }), "*");
+						source.postMessage({ type: "param", path: path, value: value }, "*");
 					});
 					return;
 				}
@@ -5461,10 +5462,10 @@
 				}
 			});
 			window.addEventListener("keydown", function (e) {
-				if (source) source.postMessage(JSON.stringify({ type: "keydown", key: e.key }), "*");
+				if (source) source.postMessage({ type: "keydown", key: e.key }, "*");
 			})
 			window.addEventListener("keyup", function (e) {
-				if (source) source.postMessage(JSON.stringify({ type: "keyup", key: e.key }), "*");
+				if (source) source.postMessage({ type: "keyup", key: e.key }, "*");
 			})
 		});
 	</script>

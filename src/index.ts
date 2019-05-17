@@ -35,7 +35,6 @@ declare global {
     }
     interface HTMLMediaElement extends HTMLElement {
         setSinkId?(sinkId: string): Promise<undefined>;
-        srcObject?: MediaStream | MediaSource | Blob | File;
         src: string;
     }
 }
@@ -284,7 +283,7 @@ $(async () => {
          */
         const bindUI = () => {
             const callback = () => {
-                const msg = JSON.stringify({ type: "ui", json: node.getJSON() });
+                const msg = { type: "ui", json: node.getJSON() };
                 /**
                  * Post param list json
                  */
@@ -306,7 +305,7 @@ $(async () => {
                     const params = node.getParams();
                     for (const path in dspParams) {
                         if (params.indexOf(path) !== -1) {
-                            const msg = JSON.stringify({ path, value: dspParams[path], type: "param" });
+                            const msg = { path, value: dspParams[path], type: "param" };
                             uiWindow.postMessage(msg, "*");
                             if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                         }
@@ -1086,7 +1085,8 @@ $(async () => {
     const dspParams: { [path: string]: number } = {};
     $(window).on("message", (e) => {
         if (!(e.originalEvent as MessageEvent).data) return;
-        const data = JSON.parse((e.originalEvent as MessageEvent).data);
+        const data = (e.originalEvent as MessageEvent).data;
+        if (!data.type) return;
         if (data.type === "param") {
             if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
             if (compileOptions.saveParams) {
@@ -1094,7 +1094,7 @@ $(async () => {
                 localStorage.setItem("faust_editor_dsp_params", JSON.stringify(dspParams));
             }
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            const msg = JSON.stringify({ path: data.path, value: +data.value, type: "param" });
+            const msg = { path: data.path, value: +data.value, type: "param" };
             uiWindow.postMessage(msg, "*");
             if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
             return;
@@ -1121,7 +1121,7 @@ $(async () => {
         }
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();
-        const msg = JSON.stringify({ type: "clear" });
+        const msg = { type: "clear" };
         const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
         uiWindow.postMessage(msg, "*");
         if (uiEnv.uiPopup) {
@@ -1338,7 +1338,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
             audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
             const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
             if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
-            else audio.src = URL.createObjectURL(audioEnv.destination.stream);
+            else (audio as HTMLAudioElement).src = URL.createObjectURL(audioEnv.destination.stream);
         } else {
             audioEnv.destination = audioEnv.audioCtx.destination;
         }
