@@ -1334,6 +1334,8 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
     if (!audioEnv.destination) {
+        audioEnv.destination = audioEnv.audioCtx.destination;
+        /*
         if (supportMediaStreamDestination) {
             audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
             const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
@@ -1342,6 +1344,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         } else {
             audioEnv.destination = audioEnv.audioCtx.destination;
         }
+        */
         audioEnv.destination.channelInterpretation = "discrete";
     }
     return audioEnv;
