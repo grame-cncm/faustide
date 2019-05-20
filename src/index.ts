@@ -294,7 +294,7 @@ $(async () => {
                  * send current value to window
                  */
                 node.setOutputParamHandler((path: string, value: number) => {
-                    const msg = JSON.stringify({ path, value, type: "param" });
+                    const msg = { path, value, type: "param" };
                     uiWindow.postMessage(msg, "*");
                     if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                 });
