@@ -1313,7 +1313,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         });
         const unlockAudioContext = () => {
             if (audioCtx.state !== "suspended") return;
-            const unlock = (): any => audioCtx.resume().then(clean);
+            const unlock = (): any => audioCtx.resume().then(() => ($("#output-audio-stream")[0] as HTMLAudioElement).play()).then(clean);
             const clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
             $("body").on("touchstart touchend mousedown keydown", unlock);
         };
