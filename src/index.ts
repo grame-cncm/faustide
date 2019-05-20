@@ -550,74 +550,81 @@ $(async () => {
      * Append options to export model
      */
     const server = "https://faustservicecloud.grame.fr";
-    fetch(`${server}/targets`)
-        .then(response => response.json())
-        .then((targets: FaustExportTargets) => {
-            const plats = Object.keys(targets);
-            if (plats.length) {
-                $("#export-platform").add("#export-arch").empty();
-                plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-            }
-            $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
-            $("#export-platform").on("change", (e) => {
-                const plat = (e.currentTarget as HTMLSelectElement).value;
-                $("#export-arch").empty();
-                targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-            });
-            $("#export-download").on("click", () => $("#a-export-download")[0].click());
-            $("#a-export-download").on("click", e => e.stopPropagation());
-            $("#export-submit").on("click", () => {
-                $("#export-download").hide();
-                $("#export-loading").css("display", "inline-block");
-                $("#qr-code").hide();
-                $("#export-error").hide();
-                const form = new FormData();
-                form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
-                $.ajax({
-                    method: "POST",
-                    url: `${server}/filepost`,
-                    data: form,
-                    contentType: false,
-                    processData: false
-                }).done((shaKey) => {
-                    const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-                    if (matched) {
-                        const plat = $("#export-platform").val();
-                        const arch = $("#export-arch").val();
-                        const path = `${server}/${shaKey}/${plat}/${arch}`;
-                        $.ajax({
-                            method: "GET",
-                            url: `${path}/precompile`
-                        }).done((result) => {
-                            if (result === "DONE") {
-                                const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
-                                $("#a-export-download").attr({ href });
-                                $("#export-download").show();
-                                $("#qr-code").show();
-                                QRCode.toCanvas(
-                                    $("#qr-code")[0] as HTMLCanvasElement,
-                                    `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
-                                );
-                                return;
-                            }
-                            $("#export-loading").css("display", "none");
-                            $("#export-error").html(result).show();
-                        }).fail((jqXHR, textStatus) => {
-                            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                        }).always(() => $("#export-loading").css("display", "none"));
-                        return;
-                    }
-                    $("#export-loading").css("display", "none");
-                    $("#export-error").html(shaKey).show();
-                }).fail((jqXHR, textStatus) => {
-                    $("#export-loading").css("display", "none");
-                    $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+    const getTargets = (server: string) => {
+        $("#export-platform").add("#export-arch").empty();
+        $("#export-platform").off("change");
+        $("#export-download").off("click");
+        $("#a-export-download").off("click");
+        $("#export-submit").off("click");
+        fetch(`${server}/targets`)
+            .then(response => response.json())
+            .then((targets: FaustExportTargets) => {
+                const plats = Object.keys(targets);
+                if (plats.length) {
+                    plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+                    targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                }
+                $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
+                $("#export-platform").on("change", (e) => {
+                    const plat = (e.currentTarget as HTMLSelectElement).value;
+                    $("#export-arch").empty();
+                    targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 });
+                $("#export-download").on("click", () => $("#a-export-download")[0].click());
+                $("#a-export-download").on("click", e => e.stopPropagation());
+                $("#export-submit").on("click", () => {
+                    $("#export-download").hide();
+                    $("#export-loading").css("display", "inline-block");
+                    $("#qr-code").hide();
+                    $("#export-error").hide();
+                    const form = new FormData();
+                    form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
+                    $.ajax({
+                        method: "POST",
+                        url: `${server}/filepost`,
+                        data: form,
+                        contentType: false,
+                        processData: false
+                    }).done((shaKey) => {
+                        const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+                        if (matched) {
+                            const plat = $("#export-platform").val();
+                            const arch = $("#export-arch").val();
+                            const path = `${server}/${shaKey}/${plat}/${arch}`;
+                            $.ajax({
+                                method: "GET",
+                                url: `${path}/precompile`
+                            }).done((result) => {
+                                if (result === "DONE") {
+                                    const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                                    $("#a-export-download").attr({ href });
+                                    $("#export-download").show();
+                                    $("#qr-code").show();
+                                    QRCode.toCanvas(
+                                        $("#qr-code")[0] as HTMLCanvasElement,
+                                        `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
+                                    );
+                                    return;
+                                }
+                                $("#export-loading").css("display", "none");
+                                $("#export-error").html(result).show();
+                            }).fail((jqXHR, textStatus) => {
+                                $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                            }).always(() => $("#export-loading").css("display", "none"));
+                            return;
+                        }
+                        $("#export-loading").css("display", "none");
+                        $("#export-error").html(shaKey).show();
+                    }).fail((jqXHR, textStatus) => {
+                        $("#export-loading").css("display", "none");
+                        $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                    });
+                });
+            }).catch(() => {
+                $("#btn-export").prop("disabled", "true");
             });
-        }).catch(() => {
-            $("#btn-export").prop("disabled", "true");
-        });
+    };
+    $("#export-server").val(server).on("change", e => getTargets((e.currentTarget as HTMLInputElement).value)).change();
     // Share
     /**
      * Make share URL with options
