@@ -555,7 +555,7 @@ $(async () => {
         $("#export-platform").off("change");
         $("#export-download").off("click");
         $("#a-export-download").off("click");
-        $("#export-submit").prop("disabled", "true").off("click");
+        $("#export-submit").prop("disabled", true).off("click");
         fetch(`${server}/targets`)
             .then(response => response.json())
             .then((targets: FaustExportTargets) => {
@@ -572,7 +572,7 @@ $(async () => {
                 });
                 $("#export-download").on("click", () => $("#a-export-download")[0].click());
                 $("#a-export-download").on("click", e => e.stopPropagation());
-                $("#export-submit").prop("disabled", "false").on("click", () => {
+                $("#export-submit").prop("disabled", false).on("click", () => {
                     $("#export-download").hide();
                     $("#export-loading").css("display", "inline-block");
                     $("#qr-code").hide();
