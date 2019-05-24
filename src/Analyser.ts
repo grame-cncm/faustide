@@ -36,6 +36,7 @@ export class Analyser {
                 this.capturing = -1;
             }
         } else if (this.drawMode === "continuous") this.draw();
+        else if (this.drawMode === "manual" && index === this.buffers - 1) this.draw();
     }
     draw() {
         if (this.drawMode === "offline") return;

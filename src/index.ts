@@ -351,10 +351,10 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous") };
-    uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0], analyser: uiEnv.analyser });
-    uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
+    uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
+    uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
 
     if (compileOptions.saveDsp) loadEditorDspTable();
 
@@ -449,7 +449,7 @@ $(async () => {
         if (compileOptions.plotMode === "offline") {
             const code = editor.getValue();
             const { args, plot, plotSR } = compileOptions;
-            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.plotScope.draw({ t, drawMode: "manual", $: 0 }));
+            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.plotScope.draw({ t, drawMode: "manual", $: 0, bufferSize: compileOptions.useWorklet ? 128 : compileOptions.bufferSize }));
             if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
         } else { // eslint-disable-next-line no-lonely-if
             if (audioEnv.dsp) uiEnv.analyser.draw();

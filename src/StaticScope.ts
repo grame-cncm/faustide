@@ -1,5 +1,3 @@
-import { Analyser } from "./Analyser";
-
 enum TScopeMode {
     Data = 0,
     Interleaved = 1,
@@ -9,7 +7,6 @@ enum TScopeMode {
 }
 type TOptions = {
     container: HTMLDivElement;
-    analyser: Analyser;
     type?: TScopeMode;
 };
 export type TDrawOptions = {
@@ -18,6 +15,7 @@ export type TDrawOptions = {
     t?: Float32Array[]; // Time domain data
     f?: Float32Array[]; // Freq domain data
     e?: { type: string; data: any }[][]; // events of each buffer
+    bufferSize?: number;
 }
 
 export class StaticScope {
@@ -33,7 +31,6 @@ export class StaticScope {
     private _mode = TScopeMode.Interleaved;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
-    analyser: Analyser;
     data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0 };
     cursor: { x: number; y: number };
 
@@ -67,7 +64,7 @@ export class StaticScope {
         const { $, t, e } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
-        this.drawGrid(ctx, w, h, t.length, e.length);
+        this.drawGrid(ctx, w, h, t.length, e ? e.length : d.bufferSize);
         let yFactor = 1;
         t.forEach(ch => ch.forEach((e) => {
             if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
@@ -102,7 +99,7 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, t, e } = d;
-        this.drawGrid(ctx, w, h, 1, e.length);
+        this.drawGrid(ctx, w, h, 1, e ? e.length : d.bufferSize);
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         let yFactor = 1;
@@ -138,7 +135,7 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, f, e } = d;
-        this.drawGrid(ctx, w, h, f.length, e.length);
+        this.drawGrid(ctx, w, h, f.length, e ? e.length : d.bufferSize);
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
@@ -160,12 +157,13 @@ export class StaticScope {
         ctx.fillRect(0, 0, w, h);
         ctx.restore();
     }
-    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, channels: number, buffers: number) {
+    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, channels: number, buffersIn: number) {
         ctx.save();
         ctx.beginPath();
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
+        const buffers = buffersIn | 4;
         for (let j = 1 / buffers; j < 1; j += 1 / buffers) {
             ctx.moveTo(w * j, 0);
             ctx.lineTo(w * j, h);
