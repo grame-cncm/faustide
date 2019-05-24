@@ -1,4 +1,4 @@
-enum TScopeMode {
+enum EScopeMode {
     Data = 0,
     Interleaved = 1,
     Oscilloscope = 2,
@@ -7,11 +7,12 @@ enum TScopeMode {
 }
 type TOptions = {
     container: HTMLDivElement;
-    type?: TScopeMode;
+    type?: EScopeMode;
 };
 export type TDrawOptions = {
     drawMode: "offline" | "continuous" | "onevent" | "manual";
     $: number; // start sample index
+    $buffer?: number; // start buffer index
     t?: Float32Array[]; // Time domain data
     f?: Float32Array[]; // Freq domain data
     e?: { type: string; data: any }[][]; // events of each buffer
@@ -28,7 +29,7 @@ export class StaticScope {
     spanSwitch: HTMLSpanElement;
     divData: HTMLDivElement;
     divDefault: HTMLDivElement;
-    private _mode = TScopeMode.Interleaved;
+    private _mode = EScopeMode.Interleaved;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
     data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0 };
@@ -36,7 +37,7 @@ export class StaticScope {
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
-        if (this.mode === TScopeMode.Data) return;
+        if (this.mode === EScopeMode.Data) return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
@@ -51,7 +52,7 @@ export class StaticScope {
     }
     handleMouseLeave = () => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
-        if (this.mode === TScopeMode.Data) return;
+        if (this.mode === EScopeMode.Data) return;
         this.cursor = undefined;
         this.draw(this.data);
     }
@@ -64,7 +65,6 @@ export class StaticScope {
         const { $, t, e } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
-        this.drawGrid(ctx, w, h, t.length, e ? e.length : d.bufferSize);
         let yFactor = 1;
         t.forEach(ch => ch.forEach((e) => {
             if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
@@ -73,6 +73,7 @@ export class StaticScope {
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / t.length;
+        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Interleaved);
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
@@ -99,7 +100,6 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, t, e } = d;
-        this.drawGrid(ctx, w, h, 1, e ? e.length : d.bufferSize);
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         let yFactor = 1;
@@ -109,6 +109,7 @@ export class StaticScope {
         ctx.lineWidth = 2;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
+        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Oscilloscope);
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
@@ -135,13 +136,13 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, f, e } = d;
-        this.drawGrid(ctx, w, h, f.length, e ? e.length : d.bufferSize);
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
         const hCh = h / f.length;
+        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Spectroscope);
         for (let i = 0; i < f.length; i++) {
             for (let j = $0; j < $1; j++) {
                 const $j = this.wrap(j, $, l);
@@ -157,16 +158,18 @@ export class StaticScope {
         ctx.fillRect(0, 0, w, h);
         ctx.restore();
     }
-    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, channels: number, buffersIn: number) {
+    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, $0: number, $1: number, d: TDrawOptions, mode: EScopeMode) {
         ctx.save();
         ctx.beginPath();
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        const buffers = buffersIn | 4;
-        for (let j = 1 / buffers; j < 1; j += 1 / buffers) {
-            ctx.moveTo(w * j, 0);
-            ctx.lineTo(w * j, h);
+        const bufferSize = d.e && d.t && d.t[0] ? d.t[0].length / d.e.length : d.bufferSize;
+        const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
+        for (let j = Math.ceil($0 / bufferSize); j < Math.ceil($1 / bufferSize); j++) {
+            const x = (j * bufferSize - $0) / ($1 - $0) * w;
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
         }
         for (let i = 0; i < channels; i++) {
             for (let j = 0.25; j < 1; j += 0.25) {
@@ -248,20 +251,20 @@ export class StaticScope {
             container.appendChild(divCh);
         }
     }
-    static getIconClassName(typeIn: TScopeMode) {
+    static getIconClassName(typeIn: EScopeMode) {
         const prefix = "fas fa-sm ";
-        if (typeIn === TScopeMode.Data) return prefix + "fa-table";
-        if (typeIn === TScopeMode.Interleaved) return prefix + "fa-water";
-        if (typeIn === TScopeMode.Oscilloscope) return prefix + "fa-wave-square";
-        if (typeIn === TScopeMode.Spectroscope) return prefix + "fa-chart-bar";
+        if (typeIn === EScopeMode.Data) return prefix + "fa-table";
+        if (typeIn === EScopeMode.Interleaved) return prefix + "fa-water";
+        if (typeIn === EScopeMode.Oscilloscope) return prefix + "fa-wave-square";
+        if (typeIn === EScopeMode.Spectroscope) return prefix + "fa-chart-bar";
         return prefix;
     }
-    static getModeName(typeIn: TScopeMode) {
-        if (typeIn === TScopeMode.Data) return "Data";
-        if (typeIn === TScopeMode.Interleaved) return "Interleaved";
-        if (typeIn === TScopeMode.Oscilloscope) return "Oscilloscope";
-        if (typeIn === TScopeMode.Spectroscope) return "Spectroscope";
-        if (typeIn === TScopeMode.Spectrogram) return "Spectrogram";
+    static getModeName(typeIn: EScopeMode) {
+        if (typeIn === EScopeMode.Data) return "Data";
+        if (typeIn === EScopeMode.Interleaved) return "Interleaved";
+        if (typeIn === EScopeMode.Oscilloscope) return "Oscilloscope";
+        if (typeIn === EScopeMode.Spectroscope) return "Spectroscope";
+        if (typeIn === EScopeMode.Spectrogram) return "Spectrogram";
         return "";
     }
 
@@ -269,7 +272,7 @@ export class StaticScope {
         Object.assign(this, options);
         this.getChildren();
         this.bind();
-        this.mode = TScopeMode.Interleaved;
+        this.mode = EScopeMode.Interleaved;
     }
     getChildren() {
         let ctrl: HTMLDivElement;
@@ -343,8 +346,8 @@ export class StaticScope {
     bind() {
         this.btnSwitch.addEventListener("click", () => {
             let newType = (this.mode + 1) % 3;
-            if (newType === TScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 3;
-            if (newType === TScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 3;
+            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 3;
+            if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 3;
             this.mode = newType;
         });
         this.canvas.addEventListener("click", () => {
@@ -378,15 +381,15 @@ export class StaticScope {
                 return;
             }
             this.divDefault.style.display = "none";
-            if (this.mode === TScopeMode.Data) StaticScope.fillDivData(this.divData, this.data.t);
-            if (this.mode === TScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
-            if (this.mode === TScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data.t);
+            if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         });
     }
     get zoomType() {
-        return this.mode === TScopeMode.Spectroscope
+        return this.mode === EScopeMode.Spectroscope
             ? "spectroscope"
-            : this.mode === TScopeMode.Spectrogram
+            : this.mode === EScopeMode.Spectrogram
                 ? "spectrogram"
                 : "oscilloscope";
     }
@@ -413,7 +416,7 @@ export class StaticScope {
     set mode(modeIn) {
         this.iSwitch.className = StaticScope.getIconClassName(modeIn);
         this.spanSwitch.innerText = StaticScope.getModeName(modeIn);
-        if (modeIn === TScopeMode.Data) {
+        if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "";
             this.canvas.style.display = "none";
             if (this.data && this.data.t && this.data.t.length && this.data.t[0].length) StaticScope.fillDivData(this.divData, this.data.t);
@@ -425,9 +428,9 @@ export class StaticScope {
                 const h = this.container.clientHeight;
                 this.canvas.width = w;
                 this.canvas.height = h;
-                if (modeIn === TScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
-                else if (modeIn === TScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
-                else if (modeIn === TScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
+                if (modeIn === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
+                else if (modeIn === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
+                else if (modeIn === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
             }
         }
         this._mode = modeIn;

@@ -4,6 +4,7 @@ export class Analyser {
     cached: Float32Array[];
     cachedEvents: { type: string; data: any }[][];
     buffers: number;
+    $buffer: number;
     $: number;
     private _drawMode: "offline" | "continuous" | "onevent" | "manual";
     capturing: number;
@@ -26,6 +27,7 @@ export class Analyser {
         const bufferSize = plotted[0].length;
         this.initCache(bufferSize, channels);
         this.$ = (index % this.buffers) * bufferSize;
+        this.$buffer = index;
         plotted.forEach((a, i) => this.cached[i].set(a, this.$));
         this.cachedEvents[index % this.buffers] = events || [];
         if (this.drawMode === "onevent") {
@@ -44,8 +46,9 @@ export class Analyser {
         if (!this.cached || !this.cached.length) return;
         const bufferSize = this.cached[0].length / this.buffers;
         const $ = (this.$ + bufferSize) % this.cached[0].length;
-        if (this.drawMode === "continuous") this.drawHandler({ $, drawMode: this.drawMode, t: this.cached, e: this.cachedEvents });
-        else this.drawHandler({ $, drawMode: this.drawMode, t: this.cached.map(a => a.slice()), e: this.cachedEvents.slice() });
+        const $buffer = this.$buffer + 1 - this.buffers;
+        if (this.drawMode === "continuous") this.drawHandler({ $, $buffer, drawMode: this.drawMode, t: this.cached, e: this.cachedEvents });
+        else this.drawHandler({ $, $buffer, drawMode: this.drawMode, t: this.cached.map(a => a.slice()), e: this.cachedEvents.slice() });
     }
     get drawMode() {
         return this._drawMode;
