@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import { Faust2MD } from "./Faust2MD";
 /*
 Retrive faust2md doc by parsing .dsp file
@@ -147,14 +148,21 @@ export class Faust2Doc {
         let curName = ""; // current function name
         let strBuffer = ""; // current function doc
         const lines = strIn.split("\n");
-        lines.forEach((line) => {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
             if (!Faust2MD.isComment(line)) {
                 if (inComment) inComment = false; // we are closing a md-comment
                 const libs = this.matchLibrary(line);
                 const imps = this.matchImport(line);
-                libs.forEach(lib => this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc));
-                imps.forEach(imp => this.parse(imp, getFile, depth - 1, path, doc));
-                return;
+                for (let j = 0; j < libs.length; j++) {
+                    const lib = libs[j];
+                    await this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
+                }
+                for (let j = 0; j < imps.length; j++) {
+                    const imp = imps[j];
+                    await this.parse(imp, getFile, depth - 1, path, doc);
+                }
+                continue;
             }
             if (inComment) { // we are in a md-comment (not first line)
                 if (idt === 0) idt = Faust2MD.indentation(line); // we have to measure the indentation
@@ -167,7 +175,7 @@ export class Faust2Doc {
                     curName = "";
                     strBuffer = "";
                 }
-                return;
+                continue;
             }
             // check begin of md-comment
             const { c, s, t } = { c: Faust2MD.matchBeginComment(line), s: Faust2MD.matchBeginSection(line), t: Faust2MD.matchBeginTitle(line) };
@@ -177,7 +185,7 @@ export class Faust2Doc {
                 idt = 0;
                 strBuffer = "";
             }
-        });
+        }
         return doc;
     }
 }

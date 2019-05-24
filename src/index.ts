@@ -25,6 +25,7 @@ import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
 import { StaticScope } from "./StaticScope";
+import { Analyser } from "./Analyser";
 
 declare global {
     interface Window {
@@ -71,17 +72,19 @@ type FaustEditorUIEnv = {
     outputScope: Scope;
     plotScope: StaticScope;
     uiPopup?: Window;
+    analyser: Analyser;
 };
 type FaustEditorCompileOptions = {
     name: string;
     useWorklet: boolean;
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096;
+    saveCode: boolean;
     saveParams: boolean;
     saveDsp: boolean;
     realtimeCompile: boolean;
     popup: boolean;
     voices: number;
-    enableRtPlot: boolean;
+    plotMode: "offline" | "continuous" | "onevent" | "manual";
     plot: number;
     plotSR: number;
     args: { [key: string]: any };
@@ -178,7 +181,7 @@ $(async () => {
         }
         const $svg = $("#diagram-svg>svg");
         const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-        const svg = $(strSvg).filter("svg")[0] as unknown as SVGSVGElement;
+        const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
         $("#diagram-default").hide(); // hide "No Diagram" info
@@ -201,12 +204,12 @@ $(async () => {
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         }
-        const { useWorklet, bufferSize, voices, args, enableRtPlot, plot } = compileOptions;
+        const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler: uiEnv.plotScope.draw, plot: enableRtPlot ? plot : undefined });
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler: uiEnv.analyser.plotHandler });
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
@@ -340,15 +343,17 @@ $(async () => {
     editor.onKeyUp(() => {
         const code = editor.getValue();
         if (localStorage.getItem("faust_editor_code") === code) return;
-        localStorage.setItem("faust_editor_code", code);
+        if (compileOptions.saveCode) localStorage.setItem("faust_editor_code", code);
         clearTimeout(rtCompileTimer);
         if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, code);
     });
 
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
-    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: new StaticScope({ container: $("#plot-ui")[0] as HTMLDivElement }) };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, enableRtPlot: false, plot: 256, plotSR: 48000, ...loadEditorParams() };
+    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous") };
+    uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0], analyser: uiEnv.analyser });
+    uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "https://faust.grame.fr/tools/editor/libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
 
     if (compileOptions.saveDsp) loadEditorDspTable();
@@ -367,43 +372,49 @@ $(async () => {
      * Left panel options
      */
     // Voices
-    $("#select-voices").on("change", (e) => {
-        compileOptions.voices = +(e.currentTarget as HTMLInputElement).value;
+    $<HTMLSelectElement>("#select-voices").on("change", (e) => {
+        compileOptions.voices = +e.currentTarget.value;
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
     // BufferSize
-    $("#select-buffer-size").on("change", (e) => {
-        compileOptions.bufferSize = +(e.currentTarget as HTMLInputElement).value as 128 | 256 | 512 | 1024 | 2048 | 4096;
+    $<HTMLSelectElement>("#select-buffer-size").on("change", (e) => {
+        compileOptions.bufferSize = +e.currentTarget.value as 128 | 256 | 512 | 1024 | 2048 | 4096;
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
     // AudioWorklet
-    $("#check-worklet").on("change", (e) => {
-        compileOptions.useWorklet = (e.currentTarget as HTMLInputElement).checked;
+    $<HTMLInputElement>("#check-worklet").on("change", (e) => {
+        compileOptions.useWorklet = e.currentTarget.checked;
         const $options = $("#select-buffer-size").prop("disabled", true).children("option");
         $options.eq(0).prop("disabled", !compileOptions.useWorklet);
         $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
         if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);
         else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
+        $("#input-plot-samps").change();
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(editor.getValue());
     });
     // Save Params
-    ($("#check-save-params").on("change", (e) => {
-        compileOptions.saveParams = (e.currentTarget as HTMLInputElement).checked;
+    $<HTMLInputElement>("#check-save-code").on("change", (e) => {
+        compileOptions.saveCode = e.currentTarget.checked;
         saveEditorParams();
-    })[0] as HTMLInputElement).checked = compileOptions.saveParams;
+    })[0].checked = compileOptions.saveCode;
+    // Save Params
+    $<HTMLInputElement>("#check-save-params").on("change", (e) => {
+        compileOptions.saveParams = e.currentTarget.checked;
+        saveEditorParams();
+    })[0].checked = compileOptions.saveParams;
     // Save DSP
-    ($("#check-save-dsp").on("change", (e) => {
-        compileOptions.saveDsp = (e.currentTarget as HTMLInputElement).checked;
+    $<HTMLInputElement>("#check-save-dsp").on("change", (e) => {
+        compileOptions.saveDsp = e.currentTarget.checked;
         loadEditorDspTable();
         saveEditorParams();
-    })[0] as HTMLInputElement).checked = compileOptions.saveDsp;
+    })[0].checked = compileOptions.saveDsp;
     if (compileOptions.saveDsp) loadEditorDspTable();
     // Real-time Diagram
-    $("#check-realtime-compile").on("change", (e) => {
-        compileOptions.realtimeCompile = (e.currentTarget as HTMLInputElement).checked;
+    $<HTMLInputElement>("#check-realtime-compile").on("change", (e) => {
+        compileOptions.realtimeCompile = e.currentTarget.checked;
         saveEditorParams();
         if (compileOptions.realtimeCompile) {
             const code = editor.getValue();
@@ -412,44 +423,55 @@ $(async () => {
         }
     });
     // Save Params
-    ($("#check-popup").on("change", (e) => {
-        compileOptions.popup = (e.currentTarget as HTMLInputElement).checked;
+    $<HTMLInputElement>("#check-popup").on("change", (e) => {
+        compileOptions.popup = e.currentTarget.checked;
         saveEditorParams();
-    })[0] as HTMLInputElement).checked = compileOptions.popup;
+    })[0].checked = compileOptions.popup;
     // Plot
-    ($("#check-plot-rt").on("change", (e) => {
-        compileOptions.enableRtPlot = (e.currentTarget as HTMLInputElement).checked;
-        $("#btn-plot").children("span").text("Plot " + (compileOptions.enableRtPlot ? "(Snapshot)" : "First Samples"));
-        if (compileOptions.enableRtPlot) ($("#input-plot-sr").prop("disabled", true)[0] as HTMLInputElement).value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
-        else ($("#input-plot-sr").prop("disabled", false)[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
+    $<HTMLInputElement>("#select-plot-mode").on("change", (e) => {
+        compileOptions.plotMode = e.currentTarget.value as "offline" | "continuous" | "onevent" | "manual";
+        uiEnv.analyser.drawMode = compileOptions.plotMode;
+        const $span = $("#btn-plot").children("span");
+        if (compileOptions.plotMode === "offline") {
+            $("#btn-plot").show();
+            $span.text("Plot First Samples");
+        } else if (compileOptions.plotMode === "manual") {
+            $("#btn-plot").show();
+            $span.text("Plot (Snapshot)");
+        } else $("#btn-plot").hide();
+        if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 1;
+        const $plotSR = $<HTMLInputElement>("#input-plot-sr");
+        if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();
+        else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
         saveEditorParams();
-    })[0] as HTMLInputElement).checked = compileOptions.enableRtPlot;
+    });
     $("#btn-plot").on("click", () => {
-        if (compileOptions.enableRtPlot) {
-            if (audioEnv.dsp) audioEnv.dsp.replot(compileOptions.plot).then(uiEnv.plotScope.draw);
-            else runDsp(editor.getValue());
-        } else {
+        if (compileOptions.plotMode === "offline") {
             const code = editor.getValue();
             const { args, plot, plotSR } = compileOptions;
-            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(uiEnv.plotScope.draw);
+            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.plotScope.draw({ t, drawMode: "manual", $: 0 }));
             if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
+        } else { // eslint-disable-next-line no-lonely-if
+            if (audioEnv.dsp) uiEnv.analyser.draw();
+            else runDsp(editor.getValue());
         }
     });
-    ($("#input-plot-samps").on("change", (e) => {
-        const v = +(e.currentTarget as HTMLInputElement).value;
+    $<HTMLInputElement>("#input-plot-samps").on("change", (e) => {
+        const v = +e.currentTarget.value;
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
         const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / bufferSize) : Math.ceil(v / bufferSize)) * bufferSize, bufferSize); // Spinner
         compileOptions.plot = v1;
-        (e.currentTarget as HTMLInputElement).value = v1.toString();
+        uiEnv.analyser.buffers = v1 / bufferSize;
+        e.currentTarget.value = v1.toString();
         saveEditorParams();
-    })[0] as HTMLInputElement).value = compileOptions.plot.toString();
-    ($("#input-plot-sr").on("change", (e) => {
-        const v = +(e.currentTarget as HTMLInputElement).value;
+    })[0].value = compileOptions.plot.toString();
+    $<HTMLInputElement>("#input-plot-sr").on("change", (e) => {
+        const v = +e.currentTarget.value;
         const v1 = Math.max((v === compileOptions.plotSR - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 1); // Spinner
         compileOptions.plotSR = v1;
-        (e.currentTarget as HTMLInputElement).value = v1.toString();
+        e.currentTarget.value = v1.toString();
         saveEditorParams();
-    })[0] as HTMLInputElement).value = compileOptions.plotSR.toString();
+    })[0].value = compileOptions.plotSR.toString();
     /**
      * Load options from URL, override current
      * Available params:
@@ -517,8 +539,8 @@ $(async () => {
     $("#btn-upload").on("click", () => {
         $("#input-upload").click();
     });
-    $("#input-upload").on("input", (e) => {
-        const file = (e.currentTarget as HTMLInputElement).files[0];
+    $<HTMLInputElement>("#input-upload").on("input", (e) => {
+        const file = e.currentTarget.files[0];
         const reader = new FileReader();
         reader.onload = () => {
             compileOptions.name = file.name.split(".").slice(0, -1).join(".");
@@ -565,8 +587,8 @@ $(async () => {
                     targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 }
                 $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
-                $("#export-platform").on("change", (e) => {
-                    const plat = (e.currentTarget as HTMLSelectElement).value;
+                $<HTMLSelectElement>("#export-platform").on("change", (e) => {
+                    const plat = e.currentTarget.value;
                     $("#export-arch").empty();
                     targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 });
@@ -601,7 +623,7 @@ $(async () => {
                                     $("#export-download").show();
                                     $("#qr-code").show();
                                     QRCode.toCanvas(
-                                        $("#qr-code")[0] as HTMLCanvasElement,
+                                        $<HTMLCanvasElement>("#qr-code")[0],
                                         `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
                                     );
                                     return;
@@ -622,7 +644,7 @@ $(async () => {
                 });
             });
     };
-    $("#export-server").val(server).on("change", e => getTargets((e.currentTarget as HTMLInputElement).value)).change();
+    $<HTMLInputElement>("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value)).change();
     // Share
     /**
      * Make share URL with options
@@ -669,8 +691,8 @@ $(async () => {
         key2Midi.handleKeyUp(e.key);
     });
     // MIDI Devices select
-    $("#select-midi-input").on("change", (e) => {
-        const id = (e.currentTarget as HTMLSelectElement).value;
+    $<HTMLSelectElement>("#select-midi-input").on("change", (e) => {
+        const id = e.currentTarget.value;
         if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
         const keys: number[] = [];
         const listener = (data: number[] | Uint8Array) => {
@@ -728,8 +750,8 @@ $(async () => {
      * Use WaveSurfer lib with MediaElement and <audio />
      */
     let wavesurfer: WaveSurfer;
-    $("#select-audio-input").on("change", async (e) => {
-        const id = (e.currentTarget as HTMLSelectElement).value;
+    $<HTMLSelectElement>("#select-audio-input").on("change", async (e) => {
+        const id = e.currentTarget.value;
         if (audioEnv.currentInput === id) return;
         if (audioEnv.audioCtx) {
             const splitter = audioEnv.splitterInput;
@@ -765,7 +787,7 @@ $(async () => {
             });
             wavesurfer.load("./02-XYLO1.mp3");
             if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
             }
         }
         // init audio environment and connect to dsp if necessary
@@ -785,11 +807,11 @@ $(async () => {
      * Audio Outputs
      * Choose and audio stream <audio />
      */
-    $("#select-audio-output").on("change", async (e) => {
+    $<HTMLSelectElement>("#select-audio-output").on("change", async (e) => {
         if (!supportMediaStreamDestination) return;
-        const id = (e.currentTarget as HTMLSelectElement).value;
+        const id = e.currentTarget.value;
         await initAudioCtx(audioEnv);
-        const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
+        const audio = $<HTMLAudioElement>("#output-audio-stream")[0];
         audio.setSinkId(id);
     }).change();
     // Waveform
@@ -854,7 +876,7 @@ $(async () => {
                 return;
             }
             if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
+                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
                 input = audioEnv.inputs[-1];
             }
             audioEnv.inputEnabled = true;
@@ -926,7 +948,7 @@ $(async () => {
     if (supportAudioWorklet) { // Switch between AW / SP nodes
         $("#dsp-ui-default").on("click", (e) => {
             if (!$(e.currentTarget).hasClass("switch")) return;
-            ($("#check-worklet")[0] as HTMLInputElement).checked = !compileOptions.useWorklet;
+            $<HTMLInputElement>("#check-worklet")[0].checked = !compileOptions.useWorklet;
             $("#check-worklet").change();
             if (!compileOptions.realtimeCompile) runDsp(editor.getValue());
         });
@@ -1080,7 +1102,7 @@ $(async () => {
     $(".btn-run").prop("disabled", false).on("click", async () => {
         const compileResult = await runDsp(editor.getValue());
         if (!compileResult.success) return;
-        if ($("#tab-diagram").hasClass("active") || !compileOptions.enableRtPlot) $("#tab-faust-ui").tab("show");
+        if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
     });
@@ -1098,7 +1120,7 @@ $(async () => {
                 dspParams[data.path] = +data.value;
                 localStorage.setItem("faust_editor_dsp_params", JSON.stringify(dspParams));
             }
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+            const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
             const msg = { path: data.path, value: +data.value, type: "param" };
             uiWindow.postMessage(msg, "*");
             if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
@@ -1127,7 +1149,7 @@ $(async () => {
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();
         const msg = { type: "clear" };
-        const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+        const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
         uiWindow.postMessage(msg, "*");
         if (uiEnv.uiPopup) {
             uiEnv.uiPopup.postMessage(msg, "*");
@@ -1140,14 +1162,14 @@ $(async () => {
     });
     let svgDragged = false;
     // svg inject
-    $("#diagram-svg").on("click", "a", (e) => {
+    $<SVGAElement>("#diagram-svg").on("click", "a", (e) => {
         e.preventDefault();
         if (svgDragged) return;
         const $svg = $("#diagram-svg>svg");
         const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
-        const fileName = (e.currentTarget as SVGAElement).href.baseVal;
-        const strSvg = faust.readFile("FaustDSP-svg/" + fileName);
-        const svg = $(strSvg).filter("svg")[0] as unknown as SVGSVGElement;
+        const fileName = e.currentTarget.href.baseVal;
+        const strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" });
+        const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
     });
@@ -1290,8 +1312,9 @@ $(async () => {
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     if (supportAudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
-    $("#check-plot-rt").change();
-    ($("#check-realtime-compile")[0] as HTMLInputElement).checked = compileOptions.realtimeCompile;
+    $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
+    $("#input-plot-samps").change();
+    $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
     if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, editor.getValue());
     window.faustEnv = faustEnv;
 });
@@ -1318,7 +1341,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         });
         const unlockAudioContext = () => {
             if (audioCtx.state !== "suspended") return;
-            const unlock = (): any => audioCtx.resume().then(() => ($("#output-audio-stream")[0] as HTMLAudioElement).play()).then(clean);
+            const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
             const clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
             $("body").on("touchstart touchend mousedown keydown", unlock);
         };
@@ -1328,7 +1351,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.inputs) audioEnv.inputs = {};
     if (deviceId && !audioEnv.inputs[deviceId]) {
         if (deviceId === "-1") {
-            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0] as HTMLAudioElement);
+            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
         } else {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
@@ -1368,14 +1391,14 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         analyser: audioEnv.analyserInput,
         splitter: audioEnv.splitterInput,
         channels: 2,
-        container: $("#input-analyser-ui")[0] as HTMLDivElement
+        container: $<HTMLDivElement>("#input-analyser-ui")[0]
     });
     uiEnv.outputScope = new Scope({
         audioCtx: audioEnv.audioCtx,
         analyser: audioEnv.analyserOutput,
         splitter: audioEnv.splitterOutput,
         channels: 1,
-        container: $("#output-analyser-ui")[0] as HTMLDivElement
+        container: $<HTMLDivElement>("#output-analyser-ui")[0]
     });
     uiEnv.analysersInited = true;
 };
@@ -1421,8 +1444,12 @@ effect = dm.freeverb_demo;`;
     monaco.languages.register(faustlang.language);
     monaco.languages.setLanguageConfiguration("faust", faustlang.config);
     monaco.editor.defineTheme("vs-dark", faustlang.theme);
+    let saveCode = false;
+    try {
+        saveCode = JSON.parse(localStorage.getItem("faust_editor_params")).saveCode;
+    } catch {} // eslint-disable-line no-empty
     const editor = monaco.editor.create($("#editor")[0], {
-        value: localStorage.getItem("faust_editor_code") || code,
+        value: saveCode ? (localStorage.getItem("faust_editor_code") || code) : code,
         language: "faust",
         theme: "vs-dark",
         dragAndDrop: true,

@@ -57,6 +57,10 @@ const faustFunctions = [
     "seq", "par", "sum", "prod"
 ];
 const getFile = async (fileName: string) => {
+    if (window.faustEnv && window.faustEnv.faust && window.faustEnv.faust.fs) {
+        const fs = window.faustEnv.faust.fs;
+        return fs.readFile("libraries/" + fileName, { encoding: "utf8" });
+    }
     const libPath = "https://faust.grame.fr/tools/editor/libraries/";
     const res = await fetch(libPath + fileName);
     return res.text();

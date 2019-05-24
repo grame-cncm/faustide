@@ -66,7 +66,7 @@
 					<option value="128" hidden disabled>128</option>
 					<option value="256">256</option>
 					<option value="512">512</option>
-					<option selected value="1024">1024</option>
+					<option value="1024" selected>1024</option>
 					<option value="2048">2048</option>
 					<option value="4096">4096</option>
 					<option value="8192">8192</option>
@@ -74,16 +74,26 @@
 			</form>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="(recommended) Chrome supports AudioWorklet">
 				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
-				<label class="form-check-label" for="check-worklet">Use AudioWorklet</label>
+				<label class="form-check-label" for="check-worklet">
+					Use AudioWorklet
+				</label>
+			</div>
+			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save DSP Code">
+				<input id="check-save-code" class="form-check-input" type="checkbox" value="" checked />
+				<label class="form-check-label" for="check-save-code">
+					Save DSP Code
+				</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP parameters">
 				<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
-				<label class="form-check-label" for="check-save-params">Save Params State</label>
+				<label class="form-check-label" for="check-save-params">
+					Save Params State
+				</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
 				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-dsp">
-					Save DSP Source
+					Save DSP Cache
 				</label>
 			</div>
 			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Try to compile in real-time">
@@ -99,11 +109,16 @@
 				</label>
 			</div>
 			<div id="form-plot" class="form form-row">
-				<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Enable real-time plot">
-					<input id="check-plot-rt" class="form-check-input" type="checkbox" value="" />
-					<label for="check-plot">
-						Real-time Plot
-					</label>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select samples display mode">
+					<div class="input-group-prepend">
+						<span class="input-group-text">Plot Mode</span>
+					</div>
+					<select id="select-plot-mode" class="form-control">
+						<option value="offline" selected>Offline</option>
+						<option value="continuous" selected>Continuous</option>
+						<option value="onevent" selected>On Event</option>
+						<option value="manual" selected>Manual</option>
+					</select>
 				</div>
 				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Samples to plot">
 					<div class="input-group-prepend">
@@ -217,7 +232,7 @@
 						</div>
 						<canvas class="plot-scope"></canvas>
 						<div id="plot-ui-controller" class="plot-ui-controller">
-							<button id="btn-plot-ui-switch" class="btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Interleaved Scope / Stacked Scope / Data">
+							<button id="btn-plot-ui-switch" class="btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Interleaved Scope / Stacked Scope / Data">
 								<i class="fas fa-wave-square fa-sm"></i>
 							</button>
 						</div>
