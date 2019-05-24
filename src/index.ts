@@ -439,7 +439,7 @@ $(async () => {
             $("#btn-plot").show();
             $span.text("Plot (Snapshot)");
         } else $("#btn-plot").hide();
-        if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 1;
+        if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 2;
         const $plotSR = $<HTMLInputElement>("#input-plot-sr");
         if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();
         else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";

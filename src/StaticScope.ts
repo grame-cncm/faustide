@@ -16,7 +16,7 @@ export type TDrawOptions = {
     t?: Float32Array[]; // Time domain data
     f?: Float32Array[]; // Freq domain data
     e?: { type: string; data: any }[][]; // events of each buffer
-    bufferSize?: number;
+    bufferSize: number;
 }
 
 export class StaticScope {
@@ -29,10 +29,10 @@ export class StaticScope {
     spanSwitch: HTMLSpanElement;
     divData: HTMLDivElement;
     divDefault: HTMLDivElement;
-    private _mode = EScopeMode.Interleaved;
+    private _mode = EScopeMode.Oscilloscope;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
-    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0 };
+    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128 };
     cursor: { x: number; y: number };
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
@@ -164,12 +164,24 @@ export class StaticScope {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        const bufferSize = d.e && d.t && d.t[0] ? d.t[0].length / d.e.length : d.bufferSize;
+        const bufferSize = d.bufferSize;
         const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
         for (let j = Math.ceil($0 / bufferSize); j < Math.ceil($1 / bufferSize); j++) {
+            const $buffer = (d.$buffer || 0) + j;
             const x = (j * bufferSize - $0) / ($1 - $0) * w;
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, h);
+            if (d.e && d.e[$buffer] && d.e[$buffer].length) {
+                ctx.stroke();
+                ctx.strokeStyle = "#ff8800";
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+                ctx.strokeStyle = "#404040";
+                ctx.beginPath();
+            } else {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+            }
         }
         for (let i = 0; i < channels; i++) {
             for (let j = 0.25; j < 1; j += 0.25) {
@@ -225,7 +237,7 @@ export class StaticScope {
             const ch = d[i];
             const divCh = document.createElement("div");
             divCh.classList.add("plot-channel");
-            divCh.style.backgroundColor = `hsl(${i * 60}, 100%, 10%)`;
+            divCh.style.backgroundColor = d.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
             for (let j = 0; j < Math.min(ch.length, 2048); j++) {
                 const divCell = document.createElement("div");
                 divCell.classList.add("plot-cell");
@@ -272,7 +284,7 @@ export class StaticScope {
         Object.assign(this, options);
         this.getChildren();
         this.bind();
-        this.mode = EScopeMode.Interleaved;
+        this.mode = EScopeMode.Oscilloscope;
     }
     getChildren() {
         let ctrl: HTMLDivElement;
@@ -346,8 +358,8 @@ export class StaticScope {
     bind() {
         this.btnSwitch.addEventListener("click", () => {
             let newType = (this.mode + 1) % 3;
-            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 3;
             if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 3;
+            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 3;
             this.mode = newType;
         });
         this.canvas.addEventListener("click", () => {
@@ -359,7 +371,7 @@ export class StaticScope {
             const center = (e.pageX - rect.left) / rect.width / zoom + this.zoomOffset;
             if (e.deltaY !== 0) {
                 this.zoom *= multiplier;
-                this.zoomOffset = center - center / this.zoom;
+                if (zoom !== this.zoom) this.zoomOffset = center - center / this.zoom;
             }
             if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
             this.handleMouseMove(e);

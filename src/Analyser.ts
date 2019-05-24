@@ -29,9 +29,10 @@ export class Analyser {
         this.$ = (index % this.buffers) * bufferSize;
         this.$buffer = index;
         plotted.forEach((a, i) => this.cached[i].set(a, this.$));
-        this.cachedEvents[index % this.buffers] = events || [];
+        this.cachedEvents[index] = events || [];
+        delete this.cachedEvents[index - this.buffers - 1];
         if (this.drawMode === "onevent") {
-            if (events && this.capturing === -1) this.capturing = this.buffers - 1;
+            if (events && events.length && this.capturing === -1) this.capturing = this.buffers - 1;
             if (this.capturing > 0) this.capturing--;
             if (this.capturing === 0) {
                 this.draw();
@@ -47,8 +48,8 @@ export class Analyser {
         const bufferSize = this.cached[0].length / this.buffers;
         const $ = (this.$ + bufferSize) % this.cached[0].length;
         const $buffer = this.$buffer + 1 - this.buffers;
-        if (this.drawMode === "continuous") this.drawHandler({ $, $buffer, drawMode: this.drawMode, t: this.cached, e: this.cachedEvents });
-        else this.drawHandler({ $, $buffer, drawMode: this.drawMode, t: this.cached.map(a => a.slice()), e: this.cachedEvents.slice() });
+        if (this.drawMode === "continuous") this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.cached, e: this.cachedEvents });
+        else this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.cached.map(a => a.slice()), e: this.cachedEvents.slice() });
     }
     get drawMode() {
         return this._drawMode;
