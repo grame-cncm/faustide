@@ -8,6 +8,7 @@
 // touch
 // plot scope
 // init params with getNode
+// Popup UI checkbox popup
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";

@@ -353,6 +353,10 @@ body {
                                             width: 50px;
                                         }
                                     }
+                                    &.highlight > span {
+                                        border-color: #ff8800;
+                                        background-color: #552200
+                                    }
                                 }
                             }
                         }

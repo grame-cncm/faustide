@@ -48,6 +48,7 @@ export class StaticScope {
         let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
         y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
+        if (this.data.drawMode === "continuous") return;
         this.draw(this.data);
     }
     handleMouseLeave = () => {
@@ -168,7 +169,7 @@ export class StaticScope {
         const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
         for (let j = Math.ceil($0 / bufferSize); j < Math.ceil($1 / bufferSize); j++) {
             const $buffer = (d.$buffer || 0) + j;
-            const x = (j * bufferSize - $0) / ($1 - $0) * w;
+            const x = (j * bufferSize - $0) / ($1 - $0 - 1) * w;
             if (d.e && d.e[$buffer] && d.e[$buffer].length) {
                 ctx.stroke();
                 ctx.strokeStyle = "#ff8800";
@@ -231,20 +232,27 @@ export class StaticScope {
         }
         ctx.restore();
     }
-    static fillDivData = (container: HTMLDivElement, d: Float32Array[]) => {
+    static fillDivData(container: HTMLDivElement, d: TDrawOptions) {
         container.innerHTML = "";
-        for (let i = 0; i < d.length; i++) {
-            const ch = d[i];
+        if (!d) return;
+        const { $, t, e } = d;
+        if (!t || !t.length || !t[0].length) return;
+        const l = t[0].length;
+        for (let i = 0; i < t.length; i++) {
+            const ch = t[i];
             const divCh = document.createElement("div");
             divCh.classList.add("plot-channel");
-            divCh.style.backgroundColor = d.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
+            divCh.style.backgroundColor = t.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
             for (let j = 0; j < Math.min(ch.length, 2048); j++) {
+                const $j = this.wrap(j, $, l);
                 const divCell = document.createElement("div");
                 divCell.classList.add("plot-cell");
+                const $buffer = (d.$buffer || 0) + Math.floor(j / d.bufferSize);
+                if (e && e[$buffer] && e[$buffer].length && j % d.bufferSize === 0) divCell.classList.add("highlight");
                 const spanIndex = document.createElement("span");
                 spanIndex.innerText = j.toString();
                 const spanSamp = document.createElement("span");
-                spanSamp.innerText = ch[j].toFixed(3);
+                spanSamp.innerText = ch[$j].toFixed(3);
                 divCell.appendChild(spanIndex);
                 divCell.appendChild(spanSamp);
                 divCh.appendChild(divCell);
@@ -393,7 +401,7 @@ export class StaticScope {
                 return;
             }
             this.divDefault.style.display = "none";
-            if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data.t);
+            if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);
             if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
             if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         });
@@ -431,7 +439,7 @@ export class StaticScope {
         if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "";
             this.canvas.style.display = "none";
-            if (this.data && this.data.t && this.data.t.length && this.data.t[0].length) StaticScope.fillDivData(this.divData, this.data.t);
+            if (this.data && this.data.t && this.data.t.length && this.data.t[0].length) StaticScope.fillDivData(this.divData, this.data);
         } else {
             this.divData.style.display = "none";
             this.canvas.style.display = "";
