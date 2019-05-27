@@ -167,6 +167,7 @@ export class StaticScope {
         ctx.strokeStyle = "#404040";
         const bufferSize = d.bufferSize;
         const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
+        const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
         for (let j = Math.ceil($0 / bufferSize); j < Math.ceil($1 / bufferSize); j++) {
             const $buffer = (d.$buffer || 0) + j;
             const x = (j * bufferSize - $0) / ($1 - $0 - 1) * w;
@@ -177,6 +178,7 @@ export class StaticScope {
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, h);
                 ctx.stroke();
+                eventsToDraw.push([ctx, w, h, x, d.e[$buffer]]);
                 ctx.strokeStyle = "#404040";
                 ctx.beginPath();
             } else {
@@ -198,6 +200,24 @@ export class StaticScope {
             ctx.lineTo(w, h * i / channels);
         }
         ctx.stroke();
+        eventsToDraw.forEach(params => this.drawEvent(...params));
+        ctx.restore();
+    }
+    static drawEvent(ctx: CanvasRenderingContext2D, w: number, h: number, x: number, e: { type: string; data: any }[]) {
+        ctx.save();
+        ctx.font = "bold 12px Consolas, monospace";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        const eStrings = e.map(event => (event.data.path ? `${event.data.path}: ${event.data.value}` : `${event.type}: ${event.data.join(",")}`));
+        const textWidth = Math.max(...eStrings.map(s => ctx.measureText(s).width)) + 5;
+        if (w - x >= textWidth) {
+            ctx.fillRect(x, 0, textWidth, e.length * 15);
+            ctx.textAlign = "left";
+        } else {
+            ctx.fillRect(x - textWidth, 0, textWidth, e.length * 15);
+            ctx.textAlign = "right";
+        }
+        ctx.fillStyle = "#DDDD99";
+        eStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
         ctx.restore();
     }
     static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, i: number, d: number[], zoom?: number, zoomMin?: number, zoomMax?: number) {

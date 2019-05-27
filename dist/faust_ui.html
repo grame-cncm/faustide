@@ -5446,11 +5446,13 @@
 				source = e.source;
 				if (data.type === "clear") {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
+					_f4u$t.HANDLER_CALLBACKS = [];
 					$("#faust-ui").removeClass("hasSVG");
 					return;
 				}
 				if (data.type === "ui") {
 					_f4u$t.hard_delete($("#faust-ui")[0]);
+					_f4u$t.HANDLER_CALLBACKS = [];
 					$("#faust-ui").removeClass("hasSVG");
 					handler = _f4u$t.main(data.json, $("#faust-ui"), function (path, value) {
 						source.postMessage({ type: "param", path: path, value: value }, "*");
