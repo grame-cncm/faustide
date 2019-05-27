@@ -38,6 +38,7 @@ export class StaticScope {
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
+        if (this.data.drawMode === "continuous") return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
         this.canvas.width = w;
@@ -48,7 +49,6 @@ export class StaticScope {
         let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
         y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
-        if (this.data.drawMode === "continuous") return;
         this.draw(this.data);
     }
     handleMouseLeave = () => {

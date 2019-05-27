@@ -49,6 +49,7 @@
     "faust2webaudio": "github:fr0stbyter/faust2webaudio",
     "file-loader": "^3.0.1",
     "jquery": "^3.4.1",
+    "kissfft-js": "^0.1.8",
     "monaco-editor": "^0.17.0",
     "monaco-editor-webpack-plugin": "^1.7.0",
     "node-sass": "^4.12.0",
@@ -62,7 +63,8 @@
     "wavesurfer.js": "^2.2.1",
     "webmidi": "^2.3.3",
     "webpack": "^4.32.2",
-    "webpack-cli": "^3.3.2"
+    "webpack-cli": "^3.3.2",
+    "window-function": "^2.1.0"
   },
   "dependencies": {}
 }

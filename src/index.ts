@@ -8,6 +8,7 @@
 // touch
 // plot scope
 // init params with getNode
+// horizontal scroll
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
@@ -1341,7 +1342,8 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         });
         const unlockAudioContext = () => {
             if (audioCtx.state !== "suspended") return;
-            const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
+            const unlock = (): any => audioCtx.resume().then(clean);
+            // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
             const clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
             $("body").on("touchstart touchend mousedown keydown", unlock);
         };
