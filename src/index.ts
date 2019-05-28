@@ -181,8 +181,8 @@ $(async () => {
             showError(e);
             return { error: e, success: false };
         }
-        const $svg = $("#diagram-svg>svg");
-        const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
+        // const $svg = $("#diagram-svg>svg");
+        // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
@@ -508,7 +508,7 @@ $(async () => {
         let code;
         if (urlParams.has("code")) {
             const codeURL = urlParams.get("code");
-            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".");
+            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             const response = await fetch(codeURL);
             code = await response.text();
@@ -522,7 +522,7 @@ $(async () => {
         }
         if (urlParams.has("name")) {
             const name = urlParams.get("name");
-            compileOptions.name = name;
+            compileOptions.name = name.replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             saveEditorParams();
         }
@@ -545,7 +545,7 @@ $(async () => {
         const file = e.currentTarget.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            compileOptions.name = file.name.split(".").slice(0, -1).join(".");
+            compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             const code = reader.result.toString();
             editor.setValue(code);
@@ -589,6 +589,9 @@ $(async () => {
                     targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 }
                 $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
+                $("#export-name").on("keydown", (e) => {
+                    if (e.key.match(/[^a-zA-Z0-9-_]/)) e.preventDefault();
+                });
                 $<HTMLSelectElement>("#export-platform").on("change", (e) => {
                     const plat = e.currentTarget.value;
                     $("#export-arch").empty();
@@ -602,7 +605,7 @@ $(async () => {
                     $("#qr-code").hide();
                     $("#export-error").hide();
                     const form = new FormData();
-                    form.append("file", new File([editor.getValue()], `${$("#export-name").val()}.dsp`));
+                    form.append("file", new File([editor.getValue()], `${($("#export-name").val() as string).replace(/[^a-zA-Z0-9-_]/g, "") || "untitled"}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
@@ -1025,7 +1028,7 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 // Update filename
-                compileOptions.name = file.name.split(".").slice(0, -1).join(".");
+                compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
                 $("#input-filename").val(compileOptions.name);
                 const code = reader.result.toString();
                 editor.setValue(code);
@@ -1043,8 +1046,11 @@ $(async () => {
         }
     });
     // Update filename on change
-    $("#input-filename").val(compileOptions.name).on("keyup", (e) => {
-        compileOptions.name = $(e.currentTarget).val() as string;
+    $("#input-filename").val(compileOptions.name).on("keydown", (e) => {
+        if (e.key.match(/[^a-zA-Z0-9-_]/)) e.preventDefault();
+    }).on("keyup", (e) => {
+        compileOptions.name = ($(e.currentTarget).val() as string).replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+        $(e.currentTarget).val(compileOptions.name);
         saveEditorParams();
     });
     // Examples
@@ -1087,7 +1093,7 @@ $(async () => {
             fetch("../" + path)
                 .then(response => response.text())
                 .then((code) => {
-                    compileOptions.name = name.split(".").slice(0, -1).join(".");
+                    compileOptions.name = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
                     $("#input-filename").val(compileOptions.name);
                     editor.setValue(code);
                     localStorage.setItem("faust_editor_code", code);
@@ -1167,8 +1173,8 @@ $(async () => {
     $<SVGAElement>("#diagram-svg").on("click", "a", (e) => {
         e.preventDefault();
         if (svgDragged) return;
-        const $svg = $("#diagram-svg>svg");
-        const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
+        // const $svg = $("#diagram-svg>svg");
+        // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = e.currentTarget.href.baseVal;
         const strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" });
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];

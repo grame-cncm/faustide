@@ -81,7 +81,7 @@ export class StaticScope {
             document.removeEventListener("touchmove", handleMouseMove);
             document.removeEventListener("mouseup", handleMouseUp);
             document.removeEventListener("touchend", handleMouseUp);
-        }
+        };
         document.addEventListener("mousemove", handleMouseMove);
         document.addEventListener("touchmove", handleMouseMove);
         document.addEventListener("mouseup", handleMouseUp);
@@ -99,7 +99,7 @@ export class StaticScope {
     static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, t, e } = d;
+        const { $, t } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         let yFactor = 1;
@@ -136,7 +136,7 @@ export class StaticScope {
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, t, e } = d;
+        const { $, t } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         let yFactor = 1;
@@ -172,7 +172,7 @@ export class StaticScope {
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, f, e } = d;
+        const { $, f } = d;
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
