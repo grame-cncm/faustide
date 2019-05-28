@@ -129,7 +129,8 @@ export class StaticScope {
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
             const $j = this.wrap(j, $, l);
             for (let i = 0; i < t.length; i++) {
-                samps.push(t[i][$j]);
+                const samp = t[i][$j];
+                if (samp) samps.push(samp);
             }
             this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
         }
@@ -166,7 +167,8 @@ export class StaticScope {
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
             const $j = this.wrap(j, $, l);
             for (let i = 0; i < t.length; i++) {
-                samps.push(t[i][$j]);
+                const samp = t[i][$j];
+                if (samp) samps.push(samp);
             }
             this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
         }
@@ -462,12 +464,12 @@ export class StaticScope {
         this.raf = requestAnimationFrame(() => {
             if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
             if (data) this.data = data;
-            if (this.divDefault.style.display === "none") {
-                if (!this.data || !this.data.t.length || !this.data.t[0].length) {
+            if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) {
+                if (this.divDefault.style.display === "none") {
                     this.divDefault.style.display = "block";
                     return;
                 }
-            } else this.divDefault.style.display = "none";
+            } else if (this.divDefault.style.display !== "none") this.divDefault.style.display = "none";
             const w = this.container.clientWidth;
             const h = this.container.clientHeight;
             if (this.canvas.width !== w) this.canvas.width = w;

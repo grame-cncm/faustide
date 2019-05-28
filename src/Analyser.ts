@@ -24,14 +24,16 @@ export class Analyser {
         this.fftSize = 256;
     }
     initCache(bufferSize: number, channels: number) {
-        if (this.t && this.t.length === channels && this.t[0].length === bufferSize * this.buffers) return;
-        this.t = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * this.buffers));
-        this.f = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * this.buffers));
+        const buffers = this.drawMode === "offline" ? 1 : this.buffers;
+        if (this.t && this.t.length === channels && this.t[0].length === bufferSize * buffers) return;
+        this.t = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers));
+        this.f = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers));
         this.$ = 0;
         this.e = [];
     }
-    plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
+    plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[], drawOffline?: boolean) => {
         if (!plotted.length) return;
+        if (this.drawMode === "offline" && !drawOffline) return;
         const channels = plotted.length;
         const bufferSize = plotted[0].length;
         this.initCache(bufferSize, channels);
@@ -47,7 +49,12 @@ export class Analyser {
                         if (j >= 0) t4fft.set(a.subarray(j * fftHopSize, j * fftHopSize + this.fftSize));
                         else {
                             const $split = j * fftHopSize * -1;
-                            t4fft.set(this.t[i].subarray(this.$ - $split, this.$));
+                            if (this.$ - $split > 0) t4fft.set(this.t[i].subarray(this.$ - $split, this.$));
+                            else {
+                                const $tSplit = $split - this.$;
+                                t4fft.set(this.t[i].subarray(this.t[i].length - $tSplit));
+                                t4fft.set(this.t[i].subarray(0, this.$), $tSplit);
+                            }
                             t4fft.set(a.subarray(0, this.fftSize - $split), $split);
                         }
                         const mag = this.fft.forward(apply(t4fft, blackman)).reduce((acc: number[], cur: number, idx: number) => {
@@ -56,7 +63,6 @@ export class Analyser {
                             else acc[(idx - 1) / 2] = 10 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / this.fftSize);
                             return acc;
                         }, []);
-                        mag.forEach((e, k) => mag[k] = 10 * Math.log10(e / this.fftSize));
                         this.f[i].set(mag, this.$ + (j + this.fftOverlap - 1) * fftHopSize);
                     }
                 } else {
@@ -81,16 +87,13 @@ export class Analyser {
         delete this.e[index - this.buffers - 1];
         if (this.drawMode === "onevent") {
             if (events && events.length && this.capturing === -1) this.capturing = this.buffers - 1;
-            if (this.capturing > 0) this.capturing--;
-            if (this.capturing === 0) {
-                this.draw();
-                this.capturing = -1;
-            }
-        } else if (this.drawMode === "continuous") this.draw();
-        else if (this.drawMode === "manual" && index === this.buffers - 1) this.draw();
+            if (this.capturing >= 0) this.capturing--;
+            if (this.capturing !== -1) this.draw();
+        } else if (this.drawMode === "manual") {
+            if (index === this.buffers - 1) this.draw();
+        } else this.draw();
     }
     draw() {
-        if (this.drawMode === "offline") return;
         if (!this.drawHandler) return;
         if (!this.t || !this.t.length) return;
         const bufferSize = this.t[0].length / this.buffers;
