@@ -278,6 +278,10 @@ body {
                         height: 100%;
                     }
                     & > #faust-ui {
+                        &.tab-pane:not(.show) {
+                            display: unset;
+                            visibility: hidden;
+                        }
                         & > #iframe-faust-ui {
                             display: block;
                             position: absolute;
@@ -638,15 +642,12 @@ body {
 	margin-left: 3px;
 }
 // override bootstrap display none for iframe offscreen display
-.tab-content > .tab-pane.active {
-    display: block;
-    visibility: visible;
-    z-index: 0;
-}
 .tab-content > .tab-pane {
-    display: unset;
-    visibility: hidden;
     z-index: -1;
+    &.active {
+        display: block;
+        z-index: 0;
+    }
 }
 .dropright .dropdown-toggle.submenu-toggle::after {
     right: 0;

@@ -47,7 +47,7 @@ export class StaticScope {
         let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
         y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
-        if (this.data.drawMode === "continuous") return;
+        // if (this.data.drawMode === "continuous") return;
         this.draw(this.data);
     }
     handleMouseDown = (eDown: MouseEvent | TouchEvent) => {
@@ -442,17 +442,20 @@ export class StaticScope {
         this.canvas.addEventListener("touchend", this.handleMouseLeave);
     }
     draw = (data: TDrawOptions) => {
-        requestAnimationFrame(() => {
+        if (this.raf) cancelAnimationFrame(this.raf);
+        this.raf = requestAnimationFrame(() => {
+            if (this.canvas.offsetParent === null) return; // not visible
             this.data = data;
+            if (this.divDefault.style.display === "none") {
+                if (!this.data || !this.data.t.length || !this.data.t[0].length) {
+                    this.divDefault.style.display = "block";
+                    return;
+                }
+            } else this.divDefault.style.display = "none";
             const w = this.container.clientWidth;
             const h = this.container.clientHeight;
-            this.canvas.width = w;
-            this.canvas.height = h;
-            if (!this.data || !this.data.t.length || !this.data.t[0].length) {
-                this.divDefault.style.display = "block";
-                return;
-            }
-            this.divDefault.style.display = "none";
+            if (this.canvas.width !== w) this.canvas.width = w;
+            if (this.canvas.height !== h) this.canvas.height = h;
             if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);
             if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
             if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);

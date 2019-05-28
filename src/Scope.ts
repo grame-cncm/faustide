@@ -291,7 +291,7 @@ export class Scope {
     }
     draw = () => {
         this.frame++; // Reduce frame rate
-        if (this.frame % 2 === 0 && this.audioCtx && this.audioCtx.state === "running" && this.analyser) {
+        if (this.canvas.offsetParent !== null && this.frame % 2 === 0 && this.audioCtx && this.audioCtx.state === "running" && this.analyser) {
             const ctx = this.ctx;
             const sr = this.audioCtx.sampleRate;
             const w = this.container.clientWidth;
