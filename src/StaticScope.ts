@@ -110,7 +110,7 @@ export class StaticScope {
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / t.length;
-        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Interleaved);
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Interleaved);
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
@@ -123,6 +123,7 @@ export class StaticScope {
             }
             ctx.stroke();
         }
+        eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
@@ -146,7 +147,7 @@ export class StaticScope {
         ctx.lineWidth = 2;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
-        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Oscilloscope);
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Oscilloscope);
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
@@ -159,6 +160,7 @@ export class StaticScope {
             }
             ctx.stroke();
         }
+        eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
@@ -179,7 +181,7 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
         const hCh = h / f.length;
-        this.drawGrid(ctx, w, h, $0, $1, d, EScopeMode.Spectroscope);
+        this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
         for (let i = 0; i < f.length; i++) {
             for (let j = $0; j < $1; j++) {
                 const $j = this.wrap(j, $, l);
@@ -195,7 +197,7 @@ export class StaticScope {
         ctx.fillRect(0, 0, w, h);
         ctx.restore();
     }
-    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, $0: number, $1: number, d: TDrawOptions, mode: EScopeMode) {
+    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, $0: number, $1: number, yFactor: number, d: TDrawOptions, mode: EScopeMode) {
         ctx.save();
         ctx.beginPath();
         ctx.setLineDash([]);
@@ -204,7 +206,11 @@ export class StaticScope {
         const bufferSize = d.bufferSize;
         const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
         const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
-        for (let j = Math.ceil($0 / bufferSize); j < Math.ceil($1 / bufferSize); j++) {
+        const $0buffer = Math.ceil($0 / bufferSize);
+        const $1buffer = Math.ceil($1 / bufferSize);
+        let hGrid = 1;
+        while (($1buffer - $0buffer) / hGrid > 16) hGrid *= 2; // Maximum horizontal grids = 16
+        for (let j = $0buffer; j < $1buffer; j++) {
             const $buffer = (d.$buffer || 0) + j;
             const x = (j * bufferSize - $0) / ($1 - $0 - 1) * w;
             if (d.e && d.e[$buffer] && d.e[$buffer].length) {
@@ -217,15 +223,25 @@ export class StaticScope {
                 eventsToDraw.push([ctx, w, h, x, d.e[$buffer]]);
                 ctx.strokeStyle = "#404040";
                 ctx.beginPath();
-            } else {
+            } else if (j % hGrid === 0) {
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, h);
             }
         }
+        const hCh = h / channels;
+        let vGrid = 0.25;
+        while (yFactor / vGrid > 2) vGrid *= 2; // Maximum horizontal grids in channel one side = 2
         for (let i = 0; i < channels; i++) {
-            for (let j = 0.25; j < 1; j += 0.25) {
-                ctx.moveTo(0, h * (i + j) / channels);
-                ctx.lineTo(w, h * (i + j) / channels);
+            const y = (i + 0.5) * hCh;
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            for (let j = vGrid; j < yFactor; j += vGrid) {
+                const y1 = (i + 0.5 + j / yFactor / 2) * hCh;
+                ctx.moveTo(0, y1);
+                ctx.lineTo(w, y1);
+                const y2 = (i + 0.5 - j / yFactor / 2) * hCh;
+                ctx.moveTo(0, y2);
+                ctx.lineTo(w, y2);
             }
         }
         ctx.stroke();
@@ -236,8 +252,8 @@ export class StaticScope {
             ctx.lineTo(w, h * i / channels);
         }
         ctx.stroke();
-        eventsToDraw.forEach(params => this.drawEvent(...params));
         ctx.restore();
+        return eventsToDraw;
     }
     static drawEvent(ctx: CanvasRenderingContext2D, w: number, h: number, x: number, e: { type: string; data: any }[]) {
         ctx.save();
@@ -441,11 +457,11 @@ export class StaticScope {
         this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
         this.canvas.addEventListener("touchend", this.handleMouseLeave);
     }
-    draw = (data: TDrawOptions) => {
+    draw = (data?: TDrawOptions) => {
         if (this.raf) cancelAnimationFrame(this.raf);
         this.raf = requestAnimationFrame(() => {
-            if (this.canvas.offsetParent === null) return; // not visible
-            this.data = data;
+            if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
+            if (data) this.data = data;
             if (this.divDefault.style.display === "none") {
                 if (!this.data || !this.data.t.length || !this.data.t[0].length) {
                     this.divDefault.style.display = "block";

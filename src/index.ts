@@ -452,7 +452,7 @@ $(async () => {
             const code = editor.getValue();
             const { args, plot, plotSR, useWorklet, bufferSize } = compileOptions;
             faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.plotScope.draw({ t, drawMode: "manual", $: 0, $buffer: 0, bufferSize: useWorklet ? 128 : bufferSize }));
-            if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
+            if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show").one("shown.bs.tab", () => uiEnv.plotScope.draw());
         } else { // eslint-disable-next-line no-lonely-if
             if (audioEnv.dsp) uiEnv.analyser.draw();
             else runDsp(editor.getValue());
