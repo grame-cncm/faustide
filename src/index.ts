@@ -9,6 +9,7 @@
 // plot scope
 // init params with getNode
 // horizontal scroll
+// File name strip and trim
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";

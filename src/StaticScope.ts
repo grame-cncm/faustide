@@ -34,22 +34,58 @@ export class StaticScope {
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
     data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128 };
     cursor: { x: number; y: number };
+    dragging: boolean = false;
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
-        if (this.data.drawMode === "continuous") return;
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
-        this.canvas.width = w;
-        this.canvas.height = h;
         const rect = this.canvas.getBoundingClientRect();
         let x = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX - rect.left;
         x = Math.max(0, Math.min(w, x));
         let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
         y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
+        if (this.data.drawMode === "continuous") return;
         this.draw(this.data);
+    }
+    handleMouseDown = (eDown: MouseEvent | TouchEvent) => {
+        if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
+        if (this.mode === EScopeMode.Data) return;
+        eDown.preventDefault();
+        eDown.stopPropagation();
+        this.dragging = true;
+        this.canvas.style.cursor = "grab";
+        const origZoom = this.zoom;
+        const origOffset = this.zoomOffset;
+        let prevX = eDown instanceof MouseEvent ? eDown.pageX : eDown.touches[0].pageX;
+        let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
+        const handleMouseMove = (eMove: MouseEvent | TouchEvent) => {
+            const x = eMove instanceof MouseEvent ? eMove.pageX : eMove.touches[0].pageX;
+            const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
+            const dX = x - prevX;
+            const dY = y - prevY;
+            prevX = x;
+            prevY = y;
+            const multiplier = 1 / 1.015 ** dY;
+            const offset = -1 * dX / this.zoom / this.canvas.width;
+            if (multiplier !== 1) this.zoom *= multiplier;
+            if (offset !== 0) this.zoomOffset += offset;
+            if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw(this.data);
+        };
+        const handleMouseUp = () => {
+            this.dragging = false;
+            this.canvas.style.cursor = "";
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("touchmove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+            document.removeEventListener("touchend", handleMouseUp);
+        }
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("touchmove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        document.addEventListener("touchend", handleMouseUp);
     }
     handleMouseLeave = () => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
@@ -394,16 +430,12 @@ export class StaticScope {
         });
         this.canvas.addEventListener("wheel", (e) => {
             const multiplier = 1.5 ** (e.deltaY > 0 ? -1 : 1);
-            const zoom = this.zoom;
-            const rect = this.canvas.getBoundingClientRect();
-            const center = (e.pageX - rect.left) / rect.width / zoom + this.zoomOffset;
-            if (e.deltaY !== 0) {
-                this.zoom *= multiplier;
-                if (zoom !== this.zoom) this.zoomOffset = center - center / this.zoom;
-            }
+            if (multiplier !== 1) this.zoom *= 1.5 ** (e.deltaY > 0 ? -1 : 1);
             if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
             this.handleMouseMove(e);
         });
+        this.canvas.addEventListener("mousedown", this.handleMouseDown);
+        this.canvas.addEventListener("touchstart", this.handleMouseDown);
         this.canvas.addEventListener("mousemove", this.handleMouseMove);
         this.canvas.addEventListener("touchmove", this.handleMouseMove);
         this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
@@ -437,8 +469,12 @@ export class StaticScope {
         return this._zoom[this.zoomType];
     }
     set zoom(zoomIn) {
+        const w = this.canvas.width;
+        let cursorIn = 0;
+        if (this.cursor) cursorIn = this.cursor.x / w;
+        const cursor = this.zoomOffset + cursorIn / this.zoom;
         this._zoom[this.zoomType] = Math.min(16, Math.max(1, zoomIn));
-        this.zoomOffset = this.zoomOffset;
+        this.zoomOffset = cursor - cursorIn / this.zoom;
     }
     get zoomOffset() {
         return this._zoomOffset[this.zoomType];
