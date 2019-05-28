@@ -171,7 +171,7 @@ export class StaticScope {
             this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
         }
     }
-    static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number) {
+    static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, f } = d;
@@ -262,10 +262,10 @@ export class StaticScope {
         const eStrings = e.map(event => (event.data.path ? `${event.data.path}: ${event.data.value}` : `${event.type}: ${event.data.join(",")}`));
         const textWidth = Math.max(...eStrings.map(s => ctx.measureText(s).width)) + 5;
         if (w - x >= textWidth) {
-            ctx.fillRect(x, 0, textWidth, e.length * 15);
+            ctx.fillRect(x, 0, textWidth, e.length * 15 + 2);
             ctx.textAlign = "left";
         } else {
-            ctx.fillRect(x - textWidth, 0, textWidth, e.length * 15);
+            ctx.fillRect(x - textWidth, 0, textWidth, e.length * 15 + 2);
             ctx.textAlign = "right";
         }
         ctx.fillStyle = "#DDDD99";
@@ -437,9 +437,9 @@ export class StaticScope {
     }
     bind() {
         this.btnSwitch.addEventListener("click", () => {
-            let newType = (this.mode + 1) % 3;
-            if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 3;
-            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 3;
+            let newType = (this.mode + 1) % 4;
+            if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 4;
+            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 4;
             this.mode = newType;
         });
         this.canvas.addEventListener("click", () => {
@@ -475,6 +475,7 @@ export class StaticScope {
             if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);
             if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
             if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         });
     }
     get zoomType() {

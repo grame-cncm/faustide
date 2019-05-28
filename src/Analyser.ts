@@ -12,13 +12,16 @@ export class Analyser {
     $: number;
     private _drawMode: "offline" | "continuous" | "onevent" | "manual";
     capturing: number;
-    fft: FFT;
+    private _fft: FFT;
+    private _fftSize: 256 | 1024 | 4096;
+    private _fftOverlap: 1 | 2 | 4 = 2;
     drawHandler: (options: TDrawOptions) => any;
     constructor(buffers?: number, drawMode?: "offline" | "continuous" | "onevent" | "manual", drawHandler?: (options: TDrawOptions) => any) {
         this.buffers = buffers || 0;
         this.drawMode = drawMode || "manual";
         this.drawHandler = drawHandler;
         this.capturing = -1;
+        this.fftSize = 256;
     }
     initCache(bufferSize: number, channels: number) {
         if (this.t && this.t.length === channels && this.t[0].length === bufferSize * this.buffers) return;
@@ -26,8 +29,6 @@ export class Analyser {
         this.f = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * this.buffers));
         this.$ = 0;
         this.e = [];
-        if (this.fft) this.fft.dispose();
-        this.fft = new FFT(bufferSize);
     }
     plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
         if (!plotted.length) return;
@@ -36,13 +37,45 @@ export class Analyser {
         this.initCache(bufferSize, channels);
         this.$ = (index % this.buffers) * bufferSize;
         this.$buffer = index;
+        const fftHopSize = this.fftHopSize;
+        const t4fft = new Float32Array(this.fftSize);
         plotted.forEach((a, i) => {
             this.t[i].set(a, this.$);
-            this.f[i].set(this.fft.forward(apply(a, blackman)).reduce((acc: number[], cur: number, idx: number) => {
-                if (idx % 2 === 0) acc[idx / 2] = cur;
-                else acc[(idx - 1) / 2] = (acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5;
-                return acc;
-            }, []), this.$);
+            if ((this.$ + bufferSize) % this.fftHopSize === 0) {
+                if (bufferSize > this.fftSize) {
+                    for (let j = 1 - this.fftOverlap; j < bufferSize / fftHopSize - (this.fftOverlap - 1); j++) {
+                        if (j >= 0) t4fft.set(a.subarray(j * fftHopSize, j * fftHopSize + this.fftSize));
+                        else {
+                            const $split = j * fftHopSize * -1;
+                            t4fft.set(this.t[i].subarray(this.$ - $split, this.$));
+                            t4fft.set(a.subarray(0, this.fftSize - $split), $split);
+                        }
+                        const mag = this.fft.forward(apply(t4fft, blackman)).reduce((acc: number[], cur: number, idx: number) => {
+                            if (idx >= t4fft.length) return acc;
+                            if (idx % 2 === 0) acc[idx / 2] = cur;
+                            else acc[(idx - 1) / 2] = 10 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / this.fftSize);
+                            return acc;
+                        }, []);
+                        mag.forEach((e, k) => mag[k] = 10 * Math.log10(e / this.fftSize));
+                        this.f[i].set(mag, this.$ + (j + this.fftOverlap - 1) * fftHopSize);
+                    }
+                } else {
+                    if (bufferSize === this.fftSize) t4fft.set(a);
+                    else if (this.$ + bufferSize >= this.fftSize) t4fft.set(this.t[i].subarray(this.$ + bufferSize - this.fftSize, this.$ + bufferSize));
+                    else {
+                        const $split = this.fftSize - (this.$ + bufferSize);
+                        t4fft.set(this.t[i].subarray(this.$ + bufferSize - this.fftSize));
+                        t4fft.set(this.t[i].subarray(0, this.fftSize - $split), $split);
+                    }
+                    const mag = this.fft.forward(apply(t4fft, blackman)).reduce((acc: number[], cur: number, idx: number) => {
+                        if (idx >= t4fft.length) return acc;
+                        if (idx % 2 === 0) acc[idx / 2] = cur;
+                        else acc[(idx - 1) / 2] = 10 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / this.fftSize);
+                        return acc;
+                    }, []);
+                    this.f[i].set(mag, this.$);
+                }
+            }
         });
         this.e[index] = events || [];
         delete this.e[index - this.buffers - 1];
@@ -72,5 +105,22 @@ export class Analyser {
     set drawMode(modeIn) {
         this._drawMode = modeIn;
         this.draw();
+    }
+    get fft() {
+        return this._fft;
+    }
+    get fftSize() {
+        return this._fftSize;
+    }
+    set fftSize(fftSizeIn) {
+        this._fftSize = fftSizeIn;
+        if (this.fft) this.fft.dispose();
+        this._fft = new FFT(fftSizeIn);
+    }
+    get fftOverlap() {
+        return this._fftOverlap;
+    }
+    get fftHopSize() {
+        return this.fftSize / this.fftOverlap;
     }
 }
