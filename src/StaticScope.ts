@@ -192,6 +192,16 @@ export class StaticScope {
                 ctx.fillRect(x, hCh * (i + 1) - y, w / ($1 - $0), y);
             }
         }
+        if (cursor) {
+            const samps: number[] = [];
+            const j = Math.round($0 + cursor.x / w * ($1 - $0));
+            const $j = this.wrap(j, $, l);
+            for (let i = 0; i < f.length; i++) {
+                const samp = f[i][$j];
+                if (samp) samps.push(samp);
+            }
+            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1);
+        }
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();
@@ -214,7 +224,7 @@ export class StaticScope {
         while (($1buffer - $0buffer) / hGrid > 16) hGrid *= 2; // Maximum horizontal grids = 16
         for (let j = $0buffer; j < $1buffer; j++) {
             const $buffer = (d.$buffer || 0) + j;
-            const x = (j * bufferSize - $0) / ($1 - $0 - 1) * w;
+            const x = (j * bufferSize - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
             if (d.e && d.e[$buffer] && d.e[$buffer].length) {
                 ctx.stroke();
                 ctx.strokeStyle = "#ff8800";
@@ -491,11 +501,12 @@ export class StaticScope {
         return this._zoom[this.zoomType];
     }
     set zoom(zoomIn) {
+        const maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.data.t[0].length / this.data.bufferSize) : 16;
         const w = this.canvas.width;
         let cursorIn = 0;
         if (this.cursor) cursorIn = this.cursor.x / w;
         const cursor = this.zoomOffset + cursorIn / this.zoom;
-        this._zoom[this.zoomType] = Math.min(16, Math.max(1, zoomIn));
+        this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
         this.zoomOffset = cursor - cursorIn / this.zoom;
     }
     get zoomOffset() {
@@ -514,6 +525,7 @@ export class StaticScope {
     set mode(modeIn) {
         this.iSwitch.className = StaticScope.getIconClassName(modeIn);
         this.spanSwitch.innerText = StaticScope.getModeName(modeIn);
+        this._mode = modeIn;
         if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "";
             this.canvas.style.display = "none";
@@ -531,6 +543,5 @@ export class StaticScope {
                 else if (modeIn === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
             }
         }
-        this._mode = modeIn;
     }
 }
