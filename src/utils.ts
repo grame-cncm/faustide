@@ -11,6 +11,8 @@ import { blackman } from "window-function";
  */
 export const mod = (x: number, y: number) => (x % y + y) % y;
 
+export const wrap = (i: number, $: number, l: number) => mod(i + $, l);
+
 /**
  * Copy a Float32Array by given offset and length,
  * support negative pointer, will be wrapped correctly

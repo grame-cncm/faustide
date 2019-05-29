@@ -26,7 +26,7 @@ export class Analyser {
         const buffers = this.drawMode === "offline" ? 1 : this.buffers;
         if (this.t && this.t.length === channels && this.t[0].length === bufferSize * buffers) return;
         this.t = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers));
-        this.f = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers));
+        this.f = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers).fill(-Infinity));
         this.$ = 0;
         this.e = [];
     }
@@ -63,16 +63,17 @@ export class Analyser {
         } else this.draw();
     }
     draw() {
-        if (!this.drawHandler) return;
-        if (!this.t || !this.t.length) return;
-        if (this.drawMode === "offline") {
-            this.drawHandler({ $: 0, $buffer: 0, bufferSize: this.t[0].length, drawMode: this.drawMode, t: this.t, f: this.f, e: this.e });
+        const { t, f, e, drawHandler, drawMode } = this;
+        if (!drawHandler) return;
+        if (!t || !t.length) return;
+        if (drawMode === "offline") {
+            drawHandler({ $: 0, $buffer: 0, bufferSize: t[0].length, drawMode, t, f, e });
             return;
         }
         const bufferSize = this.t[0].length / this.buffers;
         const $ = (this.$ + bufferSize) % this.t[0].length;
         const $buffer = this.$buffer + 1 - this.buffers;
-        if (this.drawMode === "continuous") this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.t, f: this.f, e: this.e });
+        if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.t, f: this.f, e: this.e });
         else this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
     }
     get drawMode() {

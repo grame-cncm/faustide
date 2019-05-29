@@ -1,3 +1,5 @@
+import { wrap } from "./utils";
+
 enum EScopeMode {
     Data = 0,
     Interleaved = 1,
@@ -48,7 +50,7 @@ export class StaticScope {
         y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
         // if (this.data.drawMode === "continuous") return;
-        this.draw(this.data);
+        this.draw();
     }
     handleMouseDown = (eDown: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
@@ -69,10 +71,10 @@ export class StaticScope {
             prevX = x;
             prevY = y;
             const multiplier = 1 / 1.015 ** dY;
-            const offset = -1 * dX / this.zoom / this.canvas.width;
+            const offset = -dX / this.zoom / this.canvas.width;
             if (multiplier !== 1) this.zoom *= multiplier;
             if (offset !== 0) this.zoomOffset += offset;
-            if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw(this.data);
+            if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw();
         };
         const handleMouseUp = () => {
             this.dragging = false;
@@ -91,10 +93,7 @@ export class StaticScope {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
         this.cursor = undefined;
-        this.draw(this.data);
-    }
-    static wrap(i: number, $: number, l: number) {
-        return (i + $) % l;
+        this.draw();
     }
     static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
@@ -102,10 +101,16 @@ export class StaticScope {
         const { $, t } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
+        // Fastest way to get highest abs value in buffer
         let yFactor = 1;
-        t.forEach(ch => ch.forEach((e) => {
-            if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
-        }));
+        let i = t.length;
+        while (i--) {
+            let j = l;
+            while (j--) {
+                const abs = Math.abs(t[i][j]);
+                if (abs > yFactor) yFactor = abs;
+            }
+        }
         ctx.lineWidth = 2;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
@@ -117,7 +122,7 @@ export class StaticScope {
             const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = this.wrap(j, $, l);
+                const $j = wrap(j, $, l);
                 const samp = t[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -136,7 +141,7 @@ export class StaticScope {
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = this.wrap(j, $, l);
+            const $j = wrap(j, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
                 if (samp) samps.push(samp);
@@ -150,10 +155,16 @@ export class StaticScope {
         const { $, t } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
+        // Fastest way to get highest abs value in buffer
         let yFactor = 1;
-        t.forEach(ch => ch.forEach((e) => {
-            if (Math.abs(e) > yFactor) yFactor = Math.abs(e);
-        }));
+        let i = t.length;
+        while (i--) {
+            let j = l;
+            while (j--) {
+                const abs = Math.abs(t[i][j]);
+                if (abs > yFactor) yFactor = abs;
+            }
+        }
         ctx.lineWidth = 2;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
@@ -164,7 +175,7 @@ export class StaticScope {
             const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = this.wrap(j, $, l);
+                const $j = wrap(j, $, l);
                 const samp = t[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -183,7 +194,7 @@ export class StaticScope {
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = this.wrap(j, $, l);
+            const $j = wrap(j, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
                 if (samp) samps.push(samp);
@@ -208,7 +219,7 @@ export class StaticScope {
             const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = this.wrap(j, $, l);
+                const $j = wrap(j, $, l);
                 const samp = f[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -217,7 +228,7 @@ export class StaticScope {
                     continue;
                 }
                 const x = w * (j - $0) / ($1 - $0 - 1);
-                const y = hCh * (i + 1) - Math.max(0, (maxInStep + 10) / 100 + 1) * hCh;
+                const y = hCh * (i + 1) - Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1)) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -229,8 +240,8 @@ export class StaticScope {
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
             const samps: number[] = [];
-            const j = Math.round($0 + cursor.x / w * ($1 - $0));
-            const $j = this.wrap(j, $, l);
+            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
+            const $j = wrap(j, $, l);
             for (let i = 0; i < f.length; i++) {
                 const samp = f[i][$j];
                 if (samp) samps.push(samp);
@@ -363,7 +374,7 @@ export class StaticScope {
             divCh.classList.add("plot-channel");
             divCh.style.backgroundColor = t.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
             for (let j = 0; j < Math.min(ch.length, 2048); j++) {
-                const $j = this.wrap(j, $, l);
+                const $j = wrap(j, $, l);
                 const divCell = document.createElement("div");
                 divCell.classList.add("plot-cell");
                 const $buffer = (d.$buffer || 0) + Math.floor(j / d.bufferSize);
@@ -505,10 +516,10 @@ export class StaticScope {
         this.canvas.addEventListener("touchend", this.handleMouseLeave);
     }
     draw = (data?: TDrawOptions) => {
+        if (data) this.data = data;
         if (this.raf) cancelAnimationFrame(this.raf);
         this.raf = requestAnimationFrame(() => {
             if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
-            if (data) this.data = data;
             if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) {
                 if (this.divDefault.style.display === "none") {
                     this.divDefault.style.display = "block";
