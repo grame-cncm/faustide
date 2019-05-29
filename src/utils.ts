@@ -63,11 +63,18 @@ export const setWrap = (dest: Float32Array, src: Float32Array, $dest?: number) =
     return dest;
 };
 
+/**
+ * Calcute FFT power, result array is half sized
+ *
+ * @param {Float32Array} t
+ * @param {FFT} fft
+ * @returns
+ */
 export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint-disable-line arrow-body-style
     return fft.forward(apply(t, blackman)).reduce((acc: Float32Array, cur: number, idx: number) => {
         if (idx >= t.length) return acc;
         if (idx % 2 === 0) acc[idx / 2] = cur;
-        else acc[(idx - 1) / 2] = 10 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / t.length);
+        else acc[(idx - 1) / 2] = 20 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / t.length);
         return acc;
     }, new Float32Array(t.length / 2));
 };

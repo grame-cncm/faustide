@@ -114,10 +114,19 @@ export class StaticScope {
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
-            for (let j = $0; j < $1; j += Math.max(1, Math.round(($1 - $0) / w))) {
+            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+            let maxInStep;
+            for (let j = $0; j < $1; j++) {
                 const $j = this.wrap(j, $, l);
+                const samp = t[i][$j];
+                const $step = (j - $0) % step;
+                if ($step === 0) maxInStep = samp;
+                if ($step !== step - 1) {
+                    if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
+                    continue;
+                }
                 const x = w * (j - $0) / ($1 - $0 - 1);
-                const y = hCh * (i + 1) - (t[i][$j] / yFactor * 0.5 + 0.5) * hCh;
+                const y = hCh * (i + 1) - (maxInStep / yFactor * 0.5 + 0.5) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -152,10 +161,19 @@ export class StaticScope {
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
-            for (let j = $0; j < $1; j += Math.max(1, Math.round(($1 - $0) / w))) {
+            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+            let maxInStep;
+            for (let j = $0; j < $1; j++) {
                 const $j = this.wrap(j, $, l);
+                const samp = t[i][$j];
+                const $step = (j - $0) % step;
+                if ($step === 0) maxInStep = samp;
+                if ($step !== step - 1) {
+                    if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
+                    continue;
+                }
                 const x = w * (j - $0) / ($1 - $0 - 1);
-                const y = h - (t[i][$j] / yFactor * 0.5 + 0.5) * h;
+                const y = h - (maxInStep / yFactor * 0.5 + 0.5) * h;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -183,15 +201,32 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
         const hCh = h / f.length;
-        this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
         for (let i = 0; i < f.length; i++) {
+            ctx.beginPath();
+            ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
+            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+            let maxInStep;
             for (let j = $0; j < $1; j++) {
                 const $j = this.wrap(j, $, l);
-                const x = w * (j - $0) / ($1 - $0);
-                const y = ((f[i][$j] + 10) / 100 + 1) * hCh;
-                ctx.fillRect(x, hCh * (i + 1) - y, w / ($1 - $0), y);
+                const samp = f[i][$j];
+                const $step = (j - $0) % step;
+                if ($step === 0) maxInStep = samp;
+                if ($step !== step - 1) {
+                    if ($step !== 0 && samp > maxInStep) maxInStep = samp;
+                    continue;
+                }
+                const x = w * (j - $0) / ($1 - $0 - 1);
+                const y = hCh * (i + 1) - Math.max(0, (maxInStep + 10) / 100 + 1) * hCh;
+                if (j === $0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
+            ctx.lineTo(w, hCh * (i + 1));
+            ctx.lineTo(0, hCh * (i + 1));
+            ctx.closePath();
+            ctx.fill();
         }
+        eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
             const samps: number[] = [];
             const j = Math.round($0 + cursor.x / w * ($1 - $0));
@@ -200,7 +235,7 @@ export class StaticScope {
                 const samp = f[i][$j];
                 if (samp) samps.push(samp);
             }
-            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1);
+            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
         }
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
