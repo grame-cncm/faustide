@@ -115,9 +115,9 @@
 						<span class="input-group-text">Mode</span>
 					</div>
 					<select id="select-plot-mode" class="form-control">
-						<option value="offline" selected>Offline</option>
-						<option value="continuous" selected>Continuous</option>
-						<option value="onevent" selected>On Event</option>
+						<option value="offline">Offline</option>
+						<option value="continuous">Continuous</option>
+						<option value="onevent">On Event</option>
 						<option value="manual" selected>Manual</option>
 					</select>
 				</div>
@@ -132,6 +132,16 @@
 						<span class="input-group-text input-group-text-sm">Sample Rate</span>
 					</div>
 					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" />
+				</div>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Size">
+					<div class="input-group-prepend">
+						<span class="input-group-text">FFT Size</span>
+					</div>
+					<select id="select-plot-fftsize" class="form-control">
+						<option value="256">256</option>
+						<option value="1024" selected>1024</option>
+						<option value="4096">4096</option>
+					</select>
 				</div>
 				<button id="btn-plot" type="button" class="btn btn-outline-secondary">
 					<i class="fas fa-drafting-compass fa-sm"></i>

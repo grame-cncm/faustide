@@ -1,4 +1,4 @@
-import { wrap } from "./utils";
+import { wrap, fillRectWrap } from "./utils";
 
 enum EScopeMode {
     Data = 0,
@@ -19,6 +19,7 @@ export type TDrawOptions = {
     f?: Float32Array[]; // Freq domain data
     e?: { type: string; data: any }[][]; // events of each buffer
     bufferSize: number;
+    fftSize: number;
 }
 
 export class StaticScope {
@@ -34,9 +35,11 @@ export class StaticScope {
     private _mode = EScopeMode.Oscilloscope;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
-    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128 };
+    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128, fftSize: 256 };
     cursor: { x: number; y: number };
     dragging: boolean = false;
+    spectTempCtx: CanvasRenderingContext2D;
+    lastSpect$: number = 0;
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
@@ -116,10 +119,10 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / t.length;
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Interleaved);
+        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
-            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
                 const $j = wrap(j, $, l);
@@ -169,10 +172,10 @@ export class StaticScope {
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Oscilloscope);
+        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
-            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
                 const $j = wrap(j, $, l);
@@ -210,13 +213,12 @@ export class StaticScope {
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
-        ctx.fillStyle = "#FFFFFF";
         const hCh = h / f.length;
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
+        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
         for (let i = 0; i < f.length; i++) {
             ctx.beginPath();
             ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
-            const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
             let maxInStep;
             for (let j = $0; j < $1; j++) {
                 const $j = wrap(j, $, l);
@@ -248,6 +250,84 @@ export class StaticScope {
             }
             this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
         }
+    }
+    static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
+        this.drawBackground(ctx, w, h);
+        if (!d) return;
+        const { $, f, fftSize } = d;
+        const fftOverlap = 2;
+        const fftBins = fftSize / fftOverlap;
+        if (!f || !f.length || !f[0].length) return;
+        const l = f[0].length / fftBins;
+        const $0fft = Math.floor(l * zoomOffset);
+        const $1fft = Math.ceil(l / zoom + l * zoomOffset);
+        const $0 = $0fft * fftBins;
+        const $1 = $1fft * fftBins;
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        const $0src = $0fft + $ / fftBins;
+        const $1src = $1fft + $ / fftBins;
+        if ($1src > l) {
+            const split$ = l - $0src;
+            ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, 0, 0, split$ / ($1src - $0src) * w, h);
+            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l, tempCtx.canvas.height, split$ / ($1src - $0src) * w, 0, (1 - split$ / ($1src - $0src)) * w, h);
+        } else {
+            ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, 0, 0, w, h);
+        }
+        ctx.restore();
+        eventsToDraw.forEach(params => this.drawEvent(...params));
+        if (cursor) {
+            const samps: number[] = [];
+            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
+            const $j = wrap(j, $, l);
+            for (let i = 0; i < f.length; i++) {
+                const samp = f[i][$j];
+                if (samp) samps.push(samp);
+            }
+            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+        }
+    }
+    static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number) {
+        if (!d) return last$;
+        const { $, f, fftSize } = d;
+        const fftOverlap = 2;
+        const fftBins = fftSize / fftOverlap;
+        if (!f || !f.length || !f[0].length) return last$;
+        const l = f[0].length;
+        const $0 = wrap(Math.floor(last$ / fftBins) * fftBins, 0, l);
+        const $1 = $0 >= $ ? $ + l : $;
+        if ($1 - $0 < 0) return last$;
+        const $0fft = $0 / fftBins;
+        const $1fft = $1 / fftBins;
+        const h = ctx.canvas.height;
+        const hCh = h / f.length;
+        const w = l / fftBins;
+        const $h = hCh / fftBins;
+        if (ctx.canvas.width !== w) ctx.canvas.width = w;
+        ctx.fillStyle = "#181818";
+        fillRectWrap(ctx, $0fft, 0, $1fft - $0fft, h);
+        const step = Math.max(1, Math.round(fftBins / hCh));
+        for (let i = 0; i < f.length; i++) {
+            for (let j = $0fft; j < $1fft; j++) {
+                let maxInStep;
+                for (let k = 0; k < fftBins; k++) {
+                    const samp = f[i][wrap(k, j * fftBins, l)];
+                    const $step = k % step;
+                    if ($step === 0) maxInStep = samp;
+                    if ($step !== step - 1) {
+                        if ($step !== 0 && samp > maxInStep) maxInStep = samp;
+                        continue;
+                    }
+                    const normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
+                    const hue = (normalized * 180 + 240) % 360;
+                    const lum = normalized * 50;
+                    ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
+                    fillRectWrap(ctx, j, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h));
+                }
+            }
+        }
+        return wrap($1, 0, l);
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();
@@ -407,6 +487,7 @@ export class StaticScope {
         if (typeIn === EScopeMode.Interleaved) return prefix + "fa-water";
         if (typeIn === EScopeMode.Oscilloscope) return prefix + "fa-wave-square";
         if (typeIn === EScopeMode.Spectroscope) return prefix + "fa-chart-bar";
+        if (typeIn === EScopeMode.Spectrogram) return prefix + "fa-align-justify";
         return prefix;
     }
     static getModeName(typeIn: EScopeMode) {
@@ -425,6 +506,8 @@ export class StaticScope {
         this.mode = EScopeMode.Oscilloscope;
     }
     getChildren() {
+        this.spectTempCtx = document.createElement("canvas").getContext("2d");
+        this.spectTempCtx.canvas.height = 1024;
         let ctrl: HTMLDivElement;
         for (let i = 0; i < this.container.children.length; i++) {
             const e = this.container.children[i];
@@ -495,9 +578,9 @@ export class StaticScope {
     }
     bind() {
         this.btnSwitch.addEventListener("click", () => {
-            let newType = (this.mode + 1) % 4;
-            if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 4;
-            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 4;
+            let newType = (this.mode + 1) % 5;
+            if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 5;
+            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 5;
             this.mode = newType;
         });
         this.canvas.addEventListener("click", () => {
@@ -519,21 +602,23 @@ export class StaticScope {
         if (data) this.data = data;
         if (this.raf) cancelAnimationFrame(this.raf);
         this.raf = requestAnimationFrame(() => {
-            if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
             if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) {
                 if (this.divDefault.style.display === "none") {
                     this.divDefault.style.display = "block";
                     return;
                 }
             } else if (this.divDefault.style.display !== "none") this.divDefault.style.display = "none";
+            if (data) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
+            if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
             const w = this.container.clientWidth;
             const h = this.container.clientHeight;
             if (this.canvas.width !== w) this.canvas.width = w;
             if (this.canvas.height !== h) this.canvas.height = h;
             if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);
-            if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
-            if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
-            if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            else if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            else if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            else if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            else if (this.mode === EScopeMode.Spectrogram) StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         });
     }
     get zoomType() {
@@ -575,19 +660,10 @@ export class StaticScope {
         if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "";
             this.canvas.style.display = "none";
-            if (this.data && this.data.t && this.data.t.length && this.data.t[0].length) StaticScope.fillDivData(this.divData, this.data);
         } else {
             this.divData.style.display = "none";
             this.canvas.style.display = "";
-            if (this.data && this.data.t && this.data.t.length && this.data.t[0].length) {
-                const w = this.container.clientWidth;
-                const h = this.container.clientHeight;
-                this.canvas.width = w;
-                this.canvas.height = h;
-                if (modeIn === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
-                else if (modeIn === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
-                else if (modeIn === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset);
-            }
         }
+        this.draw();
     }
 }

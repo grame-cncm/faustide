@@ -63,18 +63,18 @@ export class Analyser {
         } else this.draw();
     }
     draw() {
-        const { t, f, e, drawHandler, drawMode } = this;
+        const { t, f, e, drawHandler, drawMode, fftSize } = this;
         if (!drawHandler) return;
         if (!t || !t.length) return;
         if (drawMode === "offline") {
-            drawHandler({ $: 0, $buffer: 0, bufferSize: t[0].length, drawMode, t, f, e });
+            drawHandler({ $: 0, $buffer: 0, bufferSize: t[0].length, drawMode, fftSize, t, f, e });
             return;
         }
         const bufferSize = this.t[0].length / this.buffers;
         const $ = (this.$ + bufferSize) % this.t[0].length;
         const $buffer = this.$buffer + 1 - this.buffers;
-        if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.t, f: this.f, e: this.e });
-        else this.drawHandler({ $, $buffer, bufferSize, drawMode: this.drawMode, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
+        if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, t, f, e });
+        else this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
     }
     get drawMode() {
         return this._drawMode;

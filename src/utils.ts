@@ -65,6 +65,23 @@ export const setWrap = (dest: Float32Array, src: Float32Array, $dest?: number) =
     return dest;
 };
 
+export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
+    const { width, height } = ctx.canvas;
+    let $x = 0;
+    while ($x < w) {
+        let $y = 0;
+        const startX = wrap($x + x, 0, width);
+        const drawW = startX + w < width ? w : width - startX;
+        while ($y < h) {
+            const startY = wrap($y + y, 0, height);
+            const drawH = startY + h < height ? h : height - startY;
+            ctx.fillRect(startX, startY, drawW, drawH);
+            $y += drawH;
+        }
+        $x += drawW;
+    }
+};
+
 /**
  * Calcute FFT power, result array is half sized
  *
