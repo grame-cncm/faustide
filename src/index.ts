@@ -463,7 +463,9 @@ $(async () => {
     $<HTMLInputElement>("#input-plot-samps").on("change", (e) => {
         const v = +e.currentTarget.value;
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
-        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / bufferSize) : Math.ceil(v / bufferSize)) * bufferSize, bufferSize); // Spinner
+        const fftSize = compileOptions.plotFFT || 256;
+        const step = Math.max(bufferSize, fftSize);
+        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
         compileOptions.plot = v1;
         uiEnv.analyser.buffers = v1 / bufferSize;
         e.currentTarget.value = v1.toString();

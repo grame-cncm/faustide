@@ -208,7 +208,9 @@ export class StaticScope {
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, f } = d;
+        const { $, f, fftSize } = d;
+        const fftOverlap = 2;
+        const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
@@ -221,7 +223,7 @@ export class StaticScope {
             ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = wrap(j, $, l);
+                const $j = wrap(j, $ - $ % fftBins, l);
                 const samp = f[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -266,12 +268,13 @@ export class StaticScope {
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
-        const $0src = $0fft + $ / fftBins;
-        const $1src = $1fft + $ / fftBins;
+        ctx.imageSmoothingEnabled = false;
+        const $0src = $0fft + Math.floor($ / fftBins);
+        const $1src = $1fft + Math.floor($ / fftBins);
         if ($1src > l) {
             const split$ = l - $0src;
             ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, 0, 0, split$ / ($1src - $0src) * w, h);
-            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l, tempCtx.canvas.height, split$ / ($1src - $0src) * w, 0, (1 - split$ / ($1src - $0src)) * w, h);
+            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l - 0.01, tempCtx.canvas.height, split$ / ($1src - $0src) * w, 0, (1 - split$ / ($1src - $0src)) * w, h);
         } else {
             ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, 0, 0, w, h);
         }
@@ -341,24 +344,27 @@ export class StaticScope {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        const bufferSize = d.bufferSize;
-        const channels = mode === EScopeMode.Interleaved ? d.t.length : 1;
+        const { t, e, bufferSize, fftSize } = d;
+        const fftOverlap = 2;
+        const fftBins = fftSize / fftOverlap;
+        const channels = mode === EScopeMode.Interleaved ? t.length : 1;
         const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
         const $0buffer = Math.ceil($0 / bufferSize);
         const $1buffer = Math.ceil($1 / bufferSize);
         let hGrid = 1;
         while (($1buffer - $0buffer) / hGrid > 16) hGrid *= 2; // Maximum horizontal grids = 16
+        let $buffer = d.$buffer || 0;
+        if (mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope) $buffer -= $buffer % (fftBins / bufferSize);
         for (let j = $0buffer; j < $1buffer; j++) {
-            const $buffer = (d.$buffer || 0) + j;
             const x = (j * bufferSize - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
-            if (d.e && d.e[$buffer] && d.e[$buffer].length) {
+            if (e && e[$buffer + j] && e[$buffer + j].length) {
                 ctx.stroke();
                 ctx.strokeStyle = "#ff8800";
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, h);
                 ctx.stroke();
-                eventsToDraw.push([ctx, w, h, x, d.e[$buffer]]);
+                eventsToDraw.push([ctx, w, h, x, e[$buffer + j]]);
                 ctx.strokeStyle = "#404040";
                 ctx.beginPath();
             } else if (j % hGrid === 0) {
