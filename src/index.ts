@@ -482,6 +482,7 @@ $(async () => {
     $<HTMLInputElement>("#select-plot-fftsize").on("change", (e) => {
         compileOptions.plotFFT = +e.currentTarget.value as 256 | 1024 | 4096;
         uiEnv.analyser.fftSize = compileOptions.plotFFT;
+        $("#input-plot-samps").change();
         saveEditorParams();
     });
     /**

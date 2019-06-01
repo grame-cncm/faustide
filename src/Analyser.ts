@@ -57,7 +57,7 @@ export class Analyser {
         if (this.drawMode === "onevent") {
             if (events && events.length && this.capturing === -1) this.capturing = this.buffers - 1;
             if (this.capturing >= 0) this.capturing--;
-            if (this.capturing !== -1) this.draw();
+            if (this.capturing !== -1 || (events && events.length)) this.draw();
         } else if (this.drawMode === "manual") {
             if (index === this.buffers - 1) this.draw();
         } else this.draw();
