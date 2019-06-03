@@ -1,6 +1,6 @@
 import { FFTR } from "kissfft-js";
 import { TDrawOptions } from "./StaticScope";
-import { sliceWrap, getFrequencyDomainData, setWrap } from "./utils";
+import { sliceWrap, getFrequencyDomainData, setWrap, estimateFreq } from "./utils";
 
 export class Analyser {
     t: Float32Array[];
@@ -15,6 +15,7 @@ export class Analyser {
     private _fftSize: 256 | 1024 | 4096;
     private _fftOverlap: 1 | 2 | 4 = 2;
     drawHandler: (options: TDrawOptions) => any;
+    freqEstimated: number;
     constructor(buffers?: number, drawMode?: "offline" | "continuous" | "onevent" | "manual", drawHandler?: (options: TDrawOptions) => any) {
         this.buffers = buffers || 0;
         this.drawMode = drawMode || "manual";
@@ -45,11 +46,22 @@ export class Analyser {
         const { fftSize, fftHopSize, fft } = this;
         t.forEach((a, i) => {
             this.t[i].set(a, this.$);
+            let fData: Float32Array;
             for (let $fftEnd = (this.$ + bufferSize) - (this.$ + bufferSize) % fftHopSize; $fftEnd > this.$; $fftEnd -= fftHopSize) {
                 const $fft = $fftEnd - fftSize;
                 const t4fft = sliceWrap(this.t[i], $fft, fftSize);
-                const f = getFrequencyDomainData(t4fft, fft);
-                setWrap(this.f[i], f, $fftEnd - fftHopSize);
+                fData = getFrequencyDomainData(t4fft, fft);
+                setWrap(this.f[i], fData, $fftEnd - fftHopSize);
+            }
+            if (fData) {
+                let sr = 48000;
+                try {
+                    sr = this.getSampleRate();
+                    if (typeof sr !== "number") sr = 48000;
+                } catch (e) {
+                    sr = 48000;
+                }
+                this.freqEstimated = estimateFreq(fData, sr);
             }
         });
         this.e[index] = events || [];
@@ -63,19 +75,20 @@ export class Analyser {
         } else this.draw();
     }
     draw() {
-        const { t, f, e, drawHandler, drawMode, fftSize } = this;
+        const { t, f, e, drawHandler, drawMode, fftSize, freqEstimated } = this;
         if (!drawHandler) return;
         if (!t || !t.length) return;
         if (drawMode === "offline") {
-            drawHandler({ $: 0, $buffer: 0, bufferSize: t[0].length, drawMode, fftSize, t, f, e });
+            drawHandler({ $: 0, $buffer: 0, bufferSize: t[0].length, drawMode, fftSize, freqEstimated, t, f, e });
             return;
         }
         const bufferSize = this.t[0].length / this.buffers;
         const $ = (this.$ + bufferSize) % this.t[0].length;
         const $buffer = this.$buffer + 1 - this.buffers;
-        if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, t, f, e });
-        else this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
+        if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, freqEstimated, t, f, e });
+        else this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, freqEstimated, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
     }
+    getSampleRate = () => 48000;
     get drawMode() {
         return this._drawMode;
     }

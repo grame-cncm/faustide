@@ -11,15 +11,23 @@ type TOptions = {
     container: HTMLDivElement;
     type?: EScopeMode;
 };
+type TStatsToDraw = {
+    x?: number;
+    y?: number;
+    index?: number;
+    values: number[];
+    freq: number;
+};
 export type TDrawOptions = {
     drawMode: "offline" | "continuous" | "onevent" | "manual";
     $: number; // start sample index
-    $buffer?: number; // start buffer index
+    $buffer: number; // start buffer index
     t?: Float32Array[]; // Time domain data
     f?: Float32Array[]; // Freq domain data
     e?: { type: string; data: any }[][]; // events of each buffer
     bufferSize: number;
     fftSize: number;
+    freqEstimated?: number;
 }
 
 export class StaticScope {
@@ -143,7 +151,7 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
@@ -153,7 +161,7 @@ export class StaticScope {
                 const samp = t[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Interleaved);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1);
         }
     }
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -200,7 +208,7 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
@@ -210,7 +218,7 @@ export class StaticScope {
                 const samp = t[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Oscilloscope);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1);
         }
     }
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -252,7 +260,7 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
@@ -262,7 +270,7 @@ export class StaticScope {
                 const samp = f[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Spectroscope);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1);
         }
     }
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -293,7 +301,7 @@ export class StaticScope {
         ctx.restore();
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
             const gridX = w / ($1fft - $0fft);
             const gridY = h / f.length / fftBins;
             const $fft = Math.floor($0fft + cursor.x / gridX);
@@ -306,7 +314,7 @@ export class StaticScope {
             if (samp) statsToDraw.values = [samp];
             statsToDraw.x = ($fft - $0fft + 0.5) * gridX;
             statsToDraw.y = (($ch + 1) * fftBins - $bin) * gridY;
-            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Spectrogram);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1);
         }
     }
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number) {
@@ -432,12 +440,12 @@ export class StaticScope {
         eStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
         ctx.restore();
     }
-    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, statsToDraw: { x?: number; y?: number; index?: number; values: number[] }, zoom: number, zoomMin: number, zoomMax: number, mode: EScopeMode) {
+    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, statsToDraw: { x?: number; y?: number; index?: number; values: number[]; freq?: number }, zoom: number, zoomMin: number, zoomMax: number) {
         ctx.save();
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#b0b0b0";
         ctx.beginPath();
-        const { x, y, index, values } = statsToDraw;
+        const { x, y, index, values, freq } = statsToDraw;
         if (x) {
             ctx.moveTo(x, 0);
             ctx.lineTo(x, h);
@@ -448,7 +456,6 @@ export class StaticScope {
         }
         ctx.stroke();
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(w - 50, 0, 50, values.length * 15 + 20);
         if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
         if (typeof zoomMax === "number") ctx.fillRect(w - 40, h - 16, 40, 16);
         if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
@@ -464,10 +471,14 @@ export class StaticScope {
         }
         ctx.textAlign = "right";
         if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
-        ctx.fillText("@" + index, w - 2, 15, 50);
-        for (let i = 0; i < values.length; i++) {
-            ctx.fillText(values[i].toFixed(3), w - 2, 30 + i * 15, 50);
-        }
+        const right: string[] = [];
+        if (typeof index === "number") right.push("@" + index);
+        if (freq) right.push("~" + freq.toFixed(0) + "Hz");
+        values.forEach(v => right.push(v.toFixed(3)));
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillRect(w - 50, 0, 50, right.length * 15 + 5);
+        ctx.fillStyle = "#DDDD99";
+        right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 50));
         ctx.restore();
     }
     static fillDivData(container: HTMLDivElement, d: TDrawOptions) {

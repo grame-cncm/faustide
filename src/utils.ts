@@ -65,6 +65,15 @@ export const setWrap = (dest: Float32Array, src: Float32Array, $dest?: number) =
     return dest;
 };
 
+/**
+ * CanvasRenderingContext2D.fillRect with wrap
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x
+ * @param {number} y
+ * @param {number} w
+ * @param {number} h
+ */
 export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
     const { width, height } = ctx.canvas;
     let $x = 0;
@@ -96,4 +105,12 @@ export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint
         else acc[(idx - 1) / 2] = 20 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / t.length);
         return acc;
     }, new Float32Array(t.length / 2));
+};
+
+export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
+    const i = fft.reduce((acc, cur, idx, arr) => {
+        if (cur > arr[acc]) acc = idx;
+        return acc;
+    }, 0);
+    return sampleRate / 2 * i / fft.length;
 };
