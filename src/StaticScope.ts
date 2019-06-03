@@ -119,7 +119,8 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / t.length;
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Interleaved);
-        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+        const gridX = w / ($1 - $0 - 1);
+        const step = Math.max(1, Math.round(1 / gridX));
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
@@ -133,7 +134,7 @@ export class StaticScope {
                     if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
                     continue;
                 }
-                const x = w * (j - $0) / ($1 - $0 - 1);
+                const x = (j - $0) * gridX;
                 const y = hCh * (i + 1) - (maxInStep / yFactor * 0.5 + 0.5) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
@@ -142,14 +143,17 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const samps: number[] = [];
-            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = wrap(j, $, l);
+            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const $cursor = Math.round($0 + cursor.x / gridX);
+            statsToDraw.values = [];
+            statsToDraw.x = ($cursor - $0) * gridX;
+            statsToDraw.index = $cursor;
             for (let i = 0; i < t.length; i++) {
+                const $j = wrap($cursor, $, l);
                 const samp = t[i][$j];
-                if (samp) samps.push(samp);
+                if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Interleaved);
         }
     }
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -172,7 +176,8 @@ export class StaticScope {
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Oscilloscope);
-        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+        const gridX = w / ($1 - $0 - 1);
+        const step = Math.max(1, Math.round(1 / gridX));
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
@@ -186,7 +191,7 @@ export class StaticScope {
                     if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
                     continue;
                 }
-                const x = w * (j - $0) / ($1 - $0 - 1);
+                const x = (j - $0) * gridX;
                 const y = h - (maxInStep / yFactor * 0.5 + 0.5) * h;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
@@ -195,14 +200,17 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const samps: number[] = [];
-            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = wrap(j, $, l);
+            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const $cursor = Math.round($0 + cursor.x / gridX);
+            statsToDraw.values = [];
+            statsToDraw.x = ($cursor - $0) * gridX;
+            statsToDraw.index = $cursor;
             for (let i = 0; i < t.length; i++) {
+                const $j = wrap($cursor, $, l);
                 const samp = t[i][$j];
-                if (samp) samps.push(samp);
+                if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Oscilloscope);
         }
     }
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -217,7 +225,8 @@ export class StaticScope {
         const $1 = Math.round(l / zoom + l * zoomOffset);
         const hCh = h / f.length;
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
-        const step = Math.max(1, Math.round(($1 - $0 - 1) / w));
+        const gridX = w / ($1 - $0 - 1);
+        const step = Math.max(1, Math.round(1 / gridX));
         for (let i = 0; i < f.length; i++) {
             ctx.beginPath();
             ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
@@ -231,7 +240,7 @@ export class StaticScope {
                     if ($step !== 0 && samp > maxInStep) maxInStep = samp;
                     continue;
                 }
-                const x = w * (j - $0) / ($1 - $0 - 1);
+                const x = (j - $0) * gridX;
                 const y = hCh * (i + 1) - Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1)) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
@@ -243,14 +252,17 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const samps: number[] = [];
-            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = wrap(j, $, l);
+            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const $cursor = Math.round($0 + cursor.x / gridX);
+            statsToDraw.values = [];
+            statsToDraw.x = ($cursor - $0) * gridX;
+            statsToDraw.index = $cursor;
             for (let i = 0; i < f.length; i++) {
+                const $j = wrap($cursor, $ - $ % fftBins, l);
                 const samp = f[i][$j];
-                if (samp) samps.push(samp);
+                if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Spectroscope);
         }
     }
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -281,14 +293,20 @@ export class StaticScope {
         ctx.restore();
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const samps: number[] = [];
-            const j = Math.round($0 + cursor.x / w * ($1 - $0 - 1));
-            const $j = wrap(j, $, l);
-            for (let i = 0; i < f.length; i++) {
-                const samp = f[i][$j];
-                if (samp) samps.push(samp);
-            }
-            this.drawStats(ctx, w, h, j, samps, zoom, $0, $1 - 1);
+            const statsToDraw: { x?: number; y?: number; index?: number; values: number[] } = { values: [] };
+            const gridX = w / ($1fft - $0fft);
+            const gridY = h / f.length / fftBins;
+            const $fft = Math.floor($0fft + cursor.x / gridX);
+            const $ch = Math.floor(cursor.y / gridY / fftBins);
+            const $bin = Math.floor((h - cursor.y) / gridY) % fftBins;
+            const $cursor = $fft * fftBins + $bin;
+            statsToDraw.index = $cursor;
+            const $j = wrap($cursor, $ - $ % fftBins, f[0].length);
+            const samp = f[$ch][$j];
+            if (samp) statsToDraw.values = [samp];
+            statsToDraw.x = ($fft - $0fft + 0.5) * gridX;
+            statsToDraw.y = (($ch + 1) * fftBins - $bin) * gridY;
+            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1, EScopeMode.Spectrogram);
         }
     }
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number) {
@@ -414,17 +432,23 @@ export class StaticScope {
         eStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
         ctx.restore();
     }
-    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, i: number, d: number[], zoom?: number, zoomMin?: number, zoomMax?: number) {
+    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, statsToDraw: { x?: number; y?: number; index?: number; values: number[] }, zoom: number, zoomMin: number, zoomMax: number, mode: EScopeMode) {
         ctx.save();
-        const x = (i - zoomMin) / (zoomMax - zoomMin) * w;
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#b0b0b0";
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
+        const { x, y, index, values } = statsToDraw;
+        if (x) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+        }
+        if (y) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+        }
         ctx.stroke();
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(w - 50, 0, 50, d.length * 15 + 20);
+        ctx.fillRect(w - 50, 0, 50, values.length * 15 + 20);
         if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
         if (typeof zoomMax === "number") ctx.fillRect(w - 40, h - 16, 40, 16);
         if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
@@ -440,9 +464,9 @@ export class StaticScope {
         }
         ctx.textAlign = "right";
         if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
-        ctx.fillText("@" + i.toString(), w - 2, 15, 50);
-        for (let i = 0; i < d.length; i++) {
-            ctx.fillText(d[i].toFixed(3), w - 2, 30 + i * 15, 50);
+        ctx.fillText("@" + index, w - 2, 15, 50);
+        for (let i = 0; i < values.length; i++) {
+            ctx.fillText(values[i].toFixed(3), w - 2, 30 + i * 15, 50);
         }
         ctx.restore();
     }
