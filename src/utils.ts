@@ -74,8 +74,12 @@ export const setWrap = (dest: Float32Array, src: Float32Array, $dest?: number) =
  * @param {number} w
  * @param {number} h
  */
-export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
-    const { width, height } = ctx.canvas;
+export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, canvasWidth?: number, canvasHeight?: number) => {
+    let width = canvasWidth;
+    let height = canvasHeight;
+    if (!width && !height) ({ width, height } = ctx.canvas);
+    else if (!width) width = ctx.canvas.width;
+    else if (!height) height = ctx.canvas.height;
     let $x = 0;
     while ($x < w) {
         let $y = 0;

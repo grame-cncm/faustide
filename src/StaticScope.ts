@@ -28,6 +28,7 @@ export type TDrawOptions = {
     bufferSize: number;
     fftSize: number;
     freqEstimated?: number;
+    sampleRate?: number;
 }
 
 export class StaticScope {
@@ -109,7 +110,7 @@ export class StaticScope {
     static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, t } = d;
+        const { $, t, freqEstimated, sampleRate, drawMode } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         // Fastest way to get highest abs value in buffer
@@ -122,19 +123,40 @@ export class StaticScope {
                 if (abs > yFactor) yFactor = abs;
             }
         }
-        ctx.lineWidth = 2;
-        const $0 = Math.round(l * zoomOffset);
-        const $1 = Math.round(l / zoom + l * zoomOffset);
-        const hCh = h / t.length;
+        let $0 = 0; // Draw start
+        let $1 = l - 1; // Draw End
+        if (drawMode === "continuous" && freqEstimated && sampleRate && l < 10000) { // Stablize
+            let $zerox = 0;
+            const thresh = 0.01;
+            const period = sampleRate / freqEstimated;
+            const times = Math.floor(l / period) - 1;
+            while (t[0][wrap($zerox++, $, l)] > 0 && $zerox < l);
+            if ($zerox >= l - 1) {
+                $zerox = 0;
+            } else {
+                while (t[0][wrap($zerox++, $, l)] < 0 + thresh && $zerox < l);
+                if ($zerox >= l - 1) {
+                    $zerox = 0;
+                }
+            }
+            const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
+            $0 = Math.round($zerox + drawL * zoomOffset);
+            $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
+        } else {
+            $0 = Math.round(l * zoomOffset);
+            $1 = Math.round(l / zoom + l * zoomOffset);
+        }
+        const hCh = h / t.length; // Height per channel
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Interleaved);
         const gridX = w / ($1 - $0 - 1);
-        const step = Math.max(1, Math.round(1 / gridX));
+        const step = Math.max(1, Math.round(1 / gridX)); // horizontal draw step for optimization
+        ctx.lineWidth = 2;
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = wrap(j, $, l);
+                const $j = wrap(j, $, l); // True index
                 const samp = t[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -167,7 +189,7 @@ export class StaticScope {
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, t } = d;
+        const { $, t, freqEstimated, sampleRate, drawMode } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
         // Fastest way to get highest abs value in buffer
@@ -180,12 +202,33 @@ export class StaticScope {
                 if (abs > yFactor) yFactor = abs;
             }
         }
-        ctx.lineWidth = 2;
-        const $0 = Math.round(l * zoomOffset);
-        const $1 = Math.round(l / zoom + l * zoomOffset);
+        let $0 = 0; // Draw start
+        let $1 = l - 1; // Draw End
+        if (drawMode === "continuous" && freqEstimated && sampleRate && l < 10000) { // Stablize
+            let $zerox = 0;
+            const thresh = 0.01;
+            const period = sampleRate / freqEstimated;
+            const times = Math.floor(l / period) - 1;
+            while (t[0][wrap($zerox++, $, l)] > 0 && $zerox < l);
+            if ($zerox >= l - 1) {
+                $zerox = 0;
+            } else {
+                while (t[0][wrap($zerox++, $, l)] < 0 + thresh && $zerox < l);
+                if ($zerox >= l - 1) {
+                    $zerox = 0;
+                }
+            }
+            const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
+            $0 = Math.round($zerox + drawL * zoomOffset);
+            $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
+        } else {
+            $0 = Math.round(l * zoomOffset);
+            $1 = Math.round(l / zoom + l * zoomOffset);
+        }
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Oscilloscope);
         const gridX = w / ($1 - $0 - 1);
         const step = Math.max(1, Math.round(1 / gridX));
+        ctx.lineWidth = 2;
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
@@ -323,17 +366,17 @@ export class StaticScope {
         const fftOverlap = 2;
         const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return last$;
+        const { width: canvasWidth, height: h } = ctx.canvas;
         const l = f[0].length;
         const $0 = wrap(last$, 0, l);
         const $1 = $0 >= $ ? $ + l : $;
         if ($1 - $0 < 0) return last$;
         const $0fft = Math.floor($0 / fftBins);
         const $1fft = Math.ceil($1 / fftBins);
-        const h = ctx.canvas.height;
         const hCh = h / f.length;
         const w = l / fftBins;
         const $h = hCh / fftBins;
-        if (ctx.canvas.width !== w) ctx.canvas.width = w;
+        if (canvasWidth !== w) ctx.canvas.width = w;
         const step = Math.max(1, Math.round(fftBins / hCh));
         for (let i = 0; i < f.length; i++) {
             for (let j = $0fft; j < $1fft; j++) {
@@ -350,7 +393,7 @@ export class StaticScope {
                     const hue = (normalized * 180 + 240) % 360;
                     const lum = normalized * 50;
                     ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
-                    fillRectWrap(ctx, j, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h));
+                    fillRectWrap(ctx, j, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h), w, h);
                 }
             }
         }
