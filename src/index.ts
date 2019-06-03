@@ -781,8 +781,13 @@ $(async () => {
             }
         }
         // MediaElementSource, Waveform
-        if (id === "-1") $("#source-ui").show();
-        else $("#source-ui").hide();
+        if (id === "-1") {
+            $("#source-ui").show();
+            $("#input-analyser-ui").hide();
+        } else {
+            $("#source-ui").hide();
+            $("#input-analyser-ui").show();
+        }
         await initAudioCtx(audioEnv);
         initAnalysersUI(uiEnv, audioEnv);
         if (!wavesurfer) {
@@ -796,11 +801,17 @@ $(async () => {
                 height: 60,
                 splitChannels: true
             });
-            wavesurfer.on("play", () => $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause"));
+            wavesurfer.on("play", () => {
+                $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
+                $("#input-analyser-ui").show();
+            });
             wavesurfer.on("pause", () => $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play"));
             wavesurfer.on("finish", () => {
                 if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
-                else $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+                else {
+                    $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+                    $("#input-analyser-ui").hide();
+                }
             });
             wavesurfer.load("./02-XYLO1.mp3");
             if ($("#source-waveform audio").length) {
