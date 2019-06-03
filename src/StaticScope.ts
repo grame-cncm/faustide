@@ -298,18 +298,16 @@ export class StaticScope {
         const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return last$;
         const l = f[0].length;
-        const $0 = wrap(Math.floor(last$ / fftBins) * fftBins, 0, l);
+        const $0 = wrap(last$, 0, l);
         const $1 = $0 >= $ ? $ + l : $;
         if ($1 - $0 < 0) return last$;
-        const $0fft = $0 / fftBins;
-        const $1fft = $1 / fftBins;
+        const $0fft = Math.floor($0 / fftBins);
+        const $1fft = Math.ceil($1 / fftBins);
         const h = ctx.canvas.height;
         const hCh = h / f.length;
         const w = l / fftBins;
         const $h = hCh / fftBins;
         if (ctx.canvas.width !== w) ctx.canvas.width = w;
-        ctx.fillStyle = "#181818";
-        fillRectWrap(ctx, $0fft, 0, $1fft - $0fft, h);
         const step = Math.max(1, Math.round(fftBins / hCh));
         for (let i = 0; i < f.length; i++) {
             for (let j = $0fft; j < $1fft; j++) {

@@ -1,4 +1,4 @@
-import { FFT } from "kissfft-js";
+import { FFTR } from "kissfft-js";
 import { TDrawOptions } from "./StaticScope";
 import { sliceWrap, getFrequencyDomainData, setWrap } from "./utils";
 
@@ -11,7 +11,7 @@ export class Analyser {
     $: number;
     private _drawMode: "offline" | "continuous" | "onevent" | "manual";
     capturing: number;
-    private _fft: FFT;
+    private _fft: FFTR;
     private _fftSize: 256 | 1024 | 4096;
     private _fftOverlap: 1 | 2 | 4 = 2;
     drawHandler: (options: TDrawOptions) => any;
@@ -92,7 +92,7 @@ export class Analyser {
     set fftSize(fftSizeIn) {
         this._fftSize = fftSizeIn;
         if (this.fft) this.fft.dispose();
-        this._fft = new FFT(fftSizeIn);
+        this._fft = new FFTR(fftSizeIn);
     }
     get fftOverlap() {
         return this._fftOverlap;
