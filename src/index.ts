@@ -520,7 +520,7 @@ $(async () => {
         let code;
         if (urlParams.has("code")) {
             const codeURL = urlParams.get("code");
-            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             const response = await fetch(codeURL);
             code = await response.text();
@@ -534,7 +534,7 @@ $(async () => {
         }
         if (urlParams.has("name")) {
             const name = urlParams.get("name");
-            compileOptions.name = name.replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+            compileOptions.name = name.replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             saveEditorParams();
         }
@@ -557,7 +557,7 @@ $(async () => {
         const file = e.currentTarget.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+            compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
             $("#input-filename").val(compileOptions.name);
             const code = reader.result.toString();
             editor.setValue(code);
@@ -602,7 +602,7 @@ $(async () => {
                 }
                 $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
                 $("#export-name").on("keydown", (e) => {
-                    if (e.key.match(/[^a-zA-Z0-9-_]/)) e.preventDefault();
+                    if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
                 });
                 $<HTMLSelectElement>("#export-platform").on("change", (e) => {
                     const plat = e.currentTarget.value;
@@ -617,7 +617,7 @@ $(async () => {
                     $("#qr-code").hide();
                     $("#export-error").hide();
                     const form = new FormData();
-                    form.append("file", new File([editor.getValue()], `${($("#export-name").val() as string).replace(/[^a-zA-Z0-9-_]/g, "") || "untitled"}.dsp`));
+                    form.append("file", new File([editor.getValue()], `${($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled"}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
@@ -1051,7 +1051,7 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 // Update filename
-                compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+                compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                 $("#input-filename").val(compileOptions.name);
                 const code = reader.result.toString();
                 editor.setValue(code);
@@ -1070,9 +1070,9 @@ $(async () => {
     });
     // Update filename on change
     $("#input-filename").val(compileOptions.name).on("keydown", (e) => {
-        if (e.key.match(/[^a-zA-Z0-9-_]/)) e.preventDefault();
+        if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
     }).on("keyup", (e) => {
-        compileOptions.name = ($(e.currentTarget).val() as string).replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+        compileOptions.name = ($(e.currentTarget).val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         $(e.currentTarget).val(compileOptions.name);
         saveEditorParams();
     });
@@ -1116,7 +1116,7 @@ $(async () => {
             fetch("../" + path)
                 .then(response => response.text())
                 .then((code) => {
-                    compileOptions.name = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9-_]/g, "") || "untitled";
+                    compileOptions.name = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                     $("#input-filename").val(compileOptions.name);
                     editor.setValue(code);
                     localStorage.setItem("faust_editor_code", code);
