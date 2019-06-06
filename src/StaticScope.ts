@@ -1,4 +1,5 @@
 import { wrap, fillRectWrap } from "./utils";
+import "./StaticScope.scss";
 
 enum EScopeMode {
     Data = 0,
@@ -534,12 +535,12 @@ export class StaticScope {
         for (let i = 0; i < t.length; i++) {
             const ch = t[i];
             const divCh = document.createElement("div");
-            divCh.classList.add("plot-channel");
+            divCh.classList.add("static-scope-channel");
             divCh.style.backgroundColor = t.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
             for (let j = 0; j < Math.min(ch.length, 2048); j++) {
                 const $j = wrap(j, $, l);
                 const divCell = document.createElement("div");
-                divCell.classList.add("plot-cell");
+                divCell.classList.add("static-scope-cell");
                 const $buffer = (d.$buffer || 0) + Math.floor(j / d.bufferSize);
                 if (e && e[$buffer] && e[$buffer].length && j % d.bufferSize === 0) divCell.classList.add("highlight");
                 const spanIndex = document.createElement("span");
@@ -552,7 +553,7 @@ export class StaticScope {
             }
             if (ch.length > 2048) {
                 const divCell = document.createElement("div");
-                divCell.classList.add("plot-cell");
+                divCell.classList.add("static-scope-cell");
                 const spanIndex = document.createElement("span");
                 spanIndex.innerText = "...";
                 const spanSamp = document.createElement("span");
@@ -594,31 +595,31 @@ export class StaticScope {
         let ctrl: HTMLDivElement;
         for (let i = 0; i < this.container.children.length; i++) {
             const e = this.container.children[i];
-            if (e.classList.contains("plot-ui-controller")) ctrl = e as HTMLDivElement;
-            if (e.classList.contains("plot-scope")) this.canvas = e as HTMLCanvasElement;
-            if (e.classList.contains("plot-data")) this.divData = e as HTMLDivElement;
-            if (e.classList.contains("plot-default")) this.divDefault = e as HTMLDivElement;
+            if (e.classList.contains("static-scope-ui-controller")) ctrl = e as HTMLDivElement;
+            if (e.classList.contains("static-scope-canvas")) this.canvas = e as HTMLCanvasElement;
+            if (e.classList.contains("static-scope-data")) this.divData = e as HTMLDivElement;
+            if (e.classList.contains("static-scope-default")) this.divDefault = e as HTMLDivElement;
         }
         if (!ctrl) {
             ctrl = document.createElement("div");
-            ctrl.classList.add("plot-ui-controller");
+            ctrl.classList.add("static-scope-ui-controller");
             this.container.appendChild(ctrl);
         }
         if (!this.canvas) {
             const canvas = document.createElement("canvas");
-            canvas.classList.add("plot-scope");
+            canvas.classList.add("static-scope-canvas");
             this.container.appendChild(canvas);
             this.canvas = canvas;
         }
         if (!this.divData) {
             const divData = document.createElement("div");
-            divData.classList.add("plot-data");
+            divData.classList.add("static-scope-data");
             this.container.appendChild(divData);
             this.divData = divData;
         }
         if (!this.divDefault) {
             const divDefault = document.createElement("div");
-            divDefault.classList.add("plot-data", "alert", "alert-info");
+            divDefault.classList.add("static-scope-data", "alert", "alert-info");
             divDefault.setAttribute("role", "alert");
             divDefault.innerHTML = "<h5>No Data</h5>";
             this.container.appendChild(divDefault);
@@ -627,11 +628,11 @@ export class StaticScope {
         this.ctx = this.canvas.getContext("2d");
         for (let i = 0; i < ctrl.children.length; i++) {
             const e = ctrl.children[i];
-            if (e.classList.contains("btn-plot-ui-switch")) this.btnSwitch = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-switch")) this.btnSwitch = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
-            btn.className = "btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+            btn.className = "static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Interleaved Scope / Stacked Scope / Data");

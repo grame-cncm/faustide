@@ -13,6 +13,9 @@
 <body>
 	<div id="root">
 		<div id="left">
+			<div id="file-manager" class="file-manager">
+
+			</div>
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 				<button id="btn-run" type="button" class="btn-run btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP" disabled>
 					<i class="fas fa-play fa-sm"></i>
@@ -236,8 +239,8 @@
 							<span>Click Run to compile your faust code.</span>
 						</div>
 					</div>
-					<div id="plot-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-plot-ui">
-						<div id="plot-data" class="plot-data">
+					<div id="plot-ui" class="static-scope tab-pane fade" role="tabpanel" aria-labelledby="tab-plot-ui">
+						<div class="static-scope-data">
 							<!-- 
 							<div class="plot-channel">
 								<div class="plot-cell"><span>0</span><span>0.00000</span></div>
@@ -247,13 +250,13 @@
 							</div>
 							-->
 						</div>
-						<canvas class="plot-scope"></canvas>
-						<div id="plot-ui-controller" class="plot-ui-controller">
-							<button id="btn-plot-ui-switch" class="btn-plot-ui-switch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Interleaved Scope / Stacked Scope / Data">
+						<canvas class="static-scope-canvas"></canvas>
+						<div class="static-scope-ui-controller">
+							<button class="static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Interleaved Scope / Stacked Scope / Data">
 								<i class="fas fa-wave-square fa-sm"></i>
 							</button>
 						</div>
-						<div id="plot-default" class="plot-default alert alert-info" role="alert">
+						<div class="static-scope-default alert alert-info" role="alert">
 							<h5>No Data</h5>
 						</div>
 					</div>
