@@ -39,6 +39,7 @@ export class Scope {
     t: Float32Array;
     ti: Uint8Array;
     f: Float32Array;
+    drawSpectrogram: boolean = false;
 
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
         this.drawBackground(ctx, w, h);
@@ -263,7 +264,7 @@ export class Scope {
         this.btnSwitch.addEventListener("click", () => {
             this.zoom = 1;
             this.zoomOffset = 0;
-            this.type = (this.type + 1) % 3;
+            this.type = (this.type + 1) % (this.drawSpectrogram ? 3 : 2);
             this.iSwitch.className = Scope.getIconClassName(this.type);
         });
         this.btnSize.addEventListener("click", () => {
@@ -308,7 +309,7 @@ export class Scope {
             const freq = this.f.indexOf(Math.max(...this.f)) / this.f.length * sr / 2;
             const samp = this.t[this.t.length - 1];
             const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // eslint-disable-line no-param-reassign
-            Scope.drawOfflineSpectrogram(this.spectTempCtx, this.spectColCtx, this.spectCol$, this.f);
+            if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.spectColCtx, this.spectCol$, this.f);
             if (this.type === TScopeType.Oscilloscope) {
                 Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);

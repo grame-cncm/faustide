@@ -90,6 +90,7 @@ type FaustEditorCompileOptions = {
     plot: number;
     plotSR: number;
     plotFFT: 256 | 1024 | 4096;
+    drawSpectrogram: boolean;
     args: { [key: string]: any };
 };
 type FaustExportTargets = { [platform: string]: string[] };
@@ -354,7 +355,7 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous") };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, ...loadEditorParams() };
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, drawSpectrogram: false, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
@@ -479,6 +480,13 @@ $(async () => {
         e.currentTarget.value = v1.toString();
         saveEditorParams();
     })[0].value = compileOptions.plotSR.toString();
+    $<HTMLInputElement>("#check-draw-spectrogram").on("change", (e) => {
+        compileOptions.drawSpectrogram = e.currentTarget.checked;
+        uiEnv.plotScope.drawSpectrogram = compileOptions.drawSpectrogram;
+        uiEnv.inputScope.drawSpectrogram = compileOptions.drawSpectrogram;
+        uiEnv.outputScope.drawSpectrogram = compileOptions.drawSpectrogram;
+        saveEditorParams();
+    })[0].checked = compileOptions.drawSpectrogram;
     // Plot
     $<HTMLInputElement>("#select-plot-fftsize").on("change", (e) => {
         compileOptions.plotFFT = +e.currentTarget.value as 256 | 1024 | 4096;

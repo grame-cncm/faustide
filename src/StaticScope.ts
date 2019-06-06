@@ -49,6 +49,7 @@ export class StaticScope {
     dragging: boolean = false;
     spectTempCtx: CanvasRenderingContext2D;
     lastSpect$: number = 0;
+    drawSpectrogram: boolean = false;
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
@@ -661,6 +662,7 @@ export class StaticScope {
     bind() {
         this.btnSwitch.addEventListener("click", () => {
             let newType = (this.mode + 1) % 5;
+            if (newType === EScopeMode.Spectrogram && !this.drawSpectrogram) newType = (newType + 1) % 5;
             if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 5;
             if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 5;
             this.mode = newType;
@@ -690,7 +692,7 @@ export class StaticScope {
                     return;
                 }
             } else if (this.divDefault.style.display !== "none") this.divDefault.style.display = "none";
-            if (data) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
+            if (data && this.drawSpectrogram) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
             if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
             const w = this.container.clientWidth;
             const h = this.container.clientHeight;
