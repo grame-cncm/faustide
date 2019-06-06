@@ -1,3 +1,5 @@
+import "./Scope.scss";
+
 enum TScopeType {
     Oscilloscope = 0,
     Spectroscope = 1,
@@ -184,17 +186,17 @@ export class Scope {
         let ctrl: HTMLDivElement;
         for (let i = 0; i < this.container.children.length; i++) {
             const e = this.container.children[i];
-            if (e.classList.contains("analyser-controller")) ctrl = e as HTMLDivElement;
-            if (e.classList.contains("canvas-analyser")) this.canvas = e as HTMLCanvasElement;
+            if (e.classList.contains("scope-controller")) ctrl = e as HTMLDivElement;
+            if (e.classList.contains("scope-canvas")) this.canvas = e as HTMLCanvasElement;
         }
         if (!ctrl) {
             ctrl = document.createElement("div");
-            ctrl.classList.add("analyser-controller");
+            ctrl.classList.add("scope-controller");
             this.container.appendChild(ctrl);
         }
         if (!this.canvas) {
             const canvas = document.createElement("canvas");
-            canvas.classList.add("canvas-analyser");
+            canvas.classList.add("scope-canvas");
             canvas.setAttribute("data-toggle", "tooltip");
             canvas.setAttribute("data-placement", "left");
             canvas.setAttribute("title", "Input analyser");
@@ -207,13 +209,13 @@ export class Scope {
         this.ctx = this.canvas.getContext("2d");
         for (let i = 0; i < ctrl.children.length; i++) {
             const e = ctrl.children[i];
-            if (e.classList.contains("analyser-btn-switch")) this.btnSwitch = e as HTMLButtonElement;
-            if (e.classList.contains("analyser-btn-size")) this.btnSize = e as HTMLButtonElement;
-            if (e.classList.contains("analyser-btn-ch")) this.btnCh = e as HTMLButtonElement;
+            if (e.classList.contains("scope-btn-switch")) this.btnSwitch = e as HTMLButtonElement;
+            if (e.classList.contains("scope-btn-size")) this.btnSize = e as HTMLButtonElement;
+            if (e.classList.contains("scope-btn-ch")) this.btnCh = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
-            btn.className = "analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+            btn.className = "scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Oscilloscope / Spectroscope / Spectrogram");
@@ -225,7 +227,7 @@ export class Scope {
         }
         if (!this.btnSize) {
             const btn = document.createElement("button");
-            btn.className = "analyser-btn-size btn btn-outline-light btn-sm btn-overlay";
+            btn.className = "scope-btn-size btn btn-outline-light btn-sm btn-overlay";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Analyser Size");
@@ -238,7 +240,7 @@ export class Scope {
         }
         if (!this.btnCh) {
             const btn = document.createElement("button");
-            btn.className = "analyser-btn-ch btn btn-outline-light btn-sm btn-overlay";
+            btn.className = "scope-btn-ch btn btn-outline-light btn-sm btn-overlay";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Current Channel");

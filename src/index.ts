@@ -813,7 +813,10 @@ $(async () => {
                 $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
                 $("#input-analyser-ui").show();
             });
-            wavesurfer.on("pause", () => $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play"));
+            wavesurfer.on("pause", () => {
+                $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+                $("#input-analyser-ui").hide();
+            });
             wavesurfer.on("finish", () => {
                 if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
                 else {

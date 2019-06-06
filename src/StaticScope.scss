@@ -65,4 +65,28 @@ div.static-scope {
         position: relative;
         top: 20%;
     }
+    & .btn-overlay {
+        font-size: 12px;
+        border-color: transparent;
+        border-radius: 0px;
+        padding: 0rem 0.1rem;
+        z-index: 3;
+        &.active {
+            color: unset !important;
+            background-color: unset !important;
+            border-color: transparent transparent #f8f9fa transparent !important;
+            border-bottom-color: #f8f9fa !important;
+            &:hover {
+                color: #212529 !important;
+                background-color: #f8f9fa !important;
+                border-color: #f8f9fa !important;
+            }
+        }
+        &:focus {
+            box-shadow: none !important;
+        }
+        &.btn-overlay-icon {
+            width: 20px;
+        }
+    }
 }

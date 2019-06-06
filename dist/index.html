@@ -14,7 +14,7 @@
 	<div id="root">
 		<div id="left">
 			<div id="file-manager" class="file-manager">
-
+				<div class="file-manager-title"></div>
 			</div>
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 				<button id="btn-run" type="button" class="btn-run btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP" disabled>
@@ -324,14 +324,14 @@
 						</button>
 					</div>
 				</div>
-				<div id="input-analyser-ui" class="analyser-ui mt-2">
-					<canvas id="input-analyser" class="canvas-analyser" data-toggle="tooltip" data-placement="left" title="Input analyser"></canvas>
-					<div id="input-analyser-controller" class="analyser-controller">
-						<button id="btn-input-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
+				<div id="input-analyser-ui" class="scope-ui mt-2">
+					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left" title="Input analyser"></canvas>
+					<div class="scope-controller">
+						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
-						<button id="btn-input-analyser-size" class="analyser-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
-						<button id="btn-input-analyser-ch" class="analyser-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
+						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
+						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
 					</div>
 				</div>
 			</div>
@@ -345,14 +345,14 @@
 						<li class="list-group-item d-flex justify-content-between align-items-center">Params : <span id="dsp-ui-detail-params" class="badge">0</span></li>
 					</ul>
 				</div>
-				<div id="output-analyser-ui" class="analyser-ui mt-2">
-					<canvas id="output-analyser" class="canvas-analyser" data-toggle="tooltip" data-placement="left" title="Output Analyser"></canvas>
-					<div id="output-analyser-controller" class="analyser-controller">
-						<button id="btn-output-analyser-switch" class="analyser-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
+				<div id="output-analyser-ui" class="scope-ui mt-2">
+					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left" title="Output Analyser"></canvas>
+					<div class="scope-controller">
+						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
-						<button id="btn-output-analyser-size" class="analyser-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
-						<button id="btn-output-analyser-ch" class="analyser-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
+						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
+						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
 					</div>
 				</div>
 			</div>

@@ -387,29 +387,6 @@ body {
             & wave { /* stylelint-disable-line selector-type-no-unknown */
                 overflow: hidden !important;
             }
-            & .analyser-ui {
-                position: relative;
-                flex: 1 1 auto;
-                min-height: 100px;
-                & > .analyser-controller {
-                    position: absolute;
-                    display: flex;
-                    top: 0px;
-                    z-index: 5;
-                    opacity: 0.4;
-                    transition: opacity 0.15s ease-in-out;
-                }
-                &:hover {
-                    & > .analyser-controller {
-                        opacity: 1;
-                    }
-                }
-                & > canvas {
-                    position: absolute;
-                    width: 100%;
-                    height: auto;
-                }
-            }
             & > #midi-ui {
                 position: relative;
                 display: flex;
