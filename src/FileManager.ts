@@ -24,6 +24,7 @@ export class FileManager {
     divLabel: HTMLDivElement;
     divBtnNewFile: HTMLButtonElement;
     divFiles: HTMLDivElement;
+    divOverlay: HTMLDivElement;
     container: HTMLDivElement;
     path: string = "./";
     _fileList: string[];
@@ -44,6 +45,7 @@ export class FileManager {
             if (e.classList.contains("filemanager-label")) this.divLabel = e as HTMLDivElement;
             if (e.classList.contains("filemanager-btn-new-file")) this.divBtnNewFile = e as HTMLButtonElement;
             if (e.classList.contains("filemanager-files")) this.divFiles = e as HTMLDivElement;
+            if (e.classList.contains("filemanager-overlay")) this.divOverlay = e as HTMLDivElement;
         }
         if (!this.divLabel) {
             const divLabel = document.createElement("div");
@@ -68,6 +70,12 @@ export class FileManager {
             this.container.appendChild(divFiles);
             this.divFiles = divFiles;
         }
+        if (!this.divOverlay) {
+            const divOverlap = document.createElement("div");
+            divOverlap.classList.add("filemanager-overlay");
+            this.container.appendChild(divOverlap);
+            this.divOverlay = divOverlap;
+        }
     }
     bind() {
         this.divBtnNewFile.addEventListener("click", () => {
@@ -88,6 +96,57 @@ export class FileManager {
             sel.removeAllRanges();
             sel.addRange(range);
         });
+        const dragenterHandler = (e: DragEvent) => {
+            if (e.dataTransfer && e.dataTransfer.items.length && e.dataTransfer.items[0].kind === "file") {
+                e.preventDefault();
+                e.stopPropagation();
+                this.divOverlay.style.display = "block";
+            }
+        };
+        const dragendHandler = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.divOverlay.style.display = "";
+        };
+        const dragoverHandler = (e: DragEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        const dropHandler = (e: DragEvent) => {
+            this.divOverlay.style.display = "";
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                e.preventDefault();
+                e.stopPropagation();
+                const file = e.dataTransfer.files[0];
+                const reader = new FileReader();
+                reader.onload = () => {
+                    let fileName = file.name.replace(/[^a-zA-Z0-9_]/g, "");
+                    if (!fileName) {
+                        let i = 1;
+                        fileName = "untitled" + i + ".dsp";
+                        while (this._fileList.indexOf(fileName) !== -1) {
+                            fileName = "untitled" + (++i) + ".dsp";
+                        }
+                    }
+                    const content = reader.result.toString();
+                    this.fs.writeFile(this.path + fileName, content);
+                    this._fileList.push(fileName);
+                    const divFile = this.createFileDiv(fileName, false);
+                    this.divFiles.appendChild(divFile);
+                    this.select(fileName);
+                    if (this.saveHandler) this.saveHandler(fileName, content);
+                };
+                reader.onerror = () => undefined;
+                reader.readAsText(file);
+            }
+        }
+        this.container.addEventListener("dragenter", dragenterHandler);
+        this.container.addEventListener("dragover", dragenterHandler);
+        this.divOverlay.addEventListener("dragenter", dragoverHandler);
+        this.divOverlay.addEventListener("dragover", dragoverHandler);
+        this.divOverlay.addEventListener("dragleave", dragendHandler);
+        this.divOverlay.addEventListener("dragend", dragendHandler);
+        this.divOverlay.addEventListener("drop", dropHandler);
     }
     createFileDiv(name: string, editing?: boolean) {
         const divFile = document.createElement("div");
@@ -129,10 +188,10 @@ export class FileManager {
             e.stopPropagation();
             const i = this._fileList.indexOf(fileName);
             this.fs.unlink(this.path + fileName);
-            delete this._fileList[i];
+            this._fileList.splice(i, 1);
             divFile.remove();
             if (this.deleteHandler) this.deleteHandler(fileName);
-            if (this.divFiles.children.length === 0) {
+            if (this._fileList.length === 0) {
                 const fileName = "untitled.dsp";
                 this.fs.writeFile(this.path + fileName, "");
                 this._fileList.push(fileName);
@@ -142,7 +201,7 @@ export class FileManager {
                 this.setValue(`import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`);
             } else {
-                (this.divFiles.children[0] as HTMLDivElement).click();
+                this.select(this._fileList[0]);
             }
         });
         const handlePointerDown = () => this.select(fileName);

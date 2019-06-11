@@ -392,6 +392,11 @@ $(async () => {
             }
             project[fileName] = content;
             localStorage.setItem("faust_editor_project", JSON.stringify(project));
+            if (compileOptions.realtimeCompile) {
+                const code = uiEnv.fileManager.allCodes;
+                if (audioEnv.dsp) runDsp(code);
+                else getDiagram(code);
+            }
         },
         deleteHandler: (fileName: string) => {
             let project: { [name: string]: string };
@@ -402,6 +407,11 @@ $(async () => {
             }
             delete project[fileName];
             localStorage.setItem("faust_editor_project", JSON.stringify(project));
+            if (compileOptions.realtimeCompile) {
+                const code = uiEnv.fileManager.allCodes;
+                if (audioEnv.dsp) runDsp(code);
+                else getDiagram(code);
+            }
         }
     });
     if (compileOptions.saveDsp) loadEditorDspTable();
