@@ -625,7 +625,8 @@ $(async () => {
                     $("#qr-code").hide();
                     $("#export-error").hide();
                     const form = new FormData();
-                    form.append("file", new File([editor.getValue()], `${($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled"}.dsp`));
+                    const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                    form.append("file", new File([`declare name "${name}"; ${editor.getValue()}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
