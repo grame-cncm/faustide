@@ -4,9 +4,9 @@ type TOptions = {
     container: HTMLDivElement;
     fs: TFileSystem;
     path?: string;
-    selectHandler?: (name: string, content: string) => any;
-    saveHandler?: (name: string, content: string) => any;
-    deleteHandler?: (name: string) => any;
+    selectHandler?: (name: string, content: string, codes: string) => any;
+    saveHandler?: (name: string, content: string, codes: string) => any;
+    deleteHandler?: (name: string, codes: string) => any;
 };
 type TFileSystem = {
     rename: (oldName: string, newName: string) => any;
@@ -31,9 +31,9 @@ export class FileManager {
     path: string = "./";
     _fileList: string[];
     private _fs: TFileSystem;
-    selectHandler: (name: string, content: string) => any = () => undefined;
-    saveHandler: (name: string, content: string) => any = () => undefined;
-    deleteHandler?: (name: string) => any = () => undefined;
+    selectHandler: (name: string, content: string, codes: string) => any = () => undefined;
+    saveHandler: (name: string, content: string, codes: string) => any = () => undefined;
+    deleteHandler?: (name: string, codes: string) => any = () => undefined;
 
     constructor(options: TOptions) {
         Object.assign(this, options);
@@ -154,7 +154,7 @@ export class FileManager {
                     const divFile = this.createFileDiv(fileName, false);
                     this.divFiles.appendChild(divFile);
                     this.select(fileName);
-                    if (this.saveHandler) this.saveHandler(fileName, content);
+                    if (this.saveHandler) this.saveHandler(fileName, content, this.allCodes);
                 };
                 reader.onerror = () => undefined;
                 reader.readAsText(file);
@@ -210,7 +210,7 @@ export class FileManager {
             this.fs.unlink(this.path + fileName);
             this._fileList.splice(i, 1);
             divFile.remove();
-            if (this.deleteHandler) this.deleteHandler(fileName);
+            if (this.deleteHandler) this.deleteHandler(fileName, this.allCodes);
             if (this._fileList.length === 0) {
                 const fileName = "untitled.dsp";
                 this.fs.writeFile(this.path + fileName, "");
@@ -285,23 +285,23 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             if (divFile.dataset.filename === fileName) divFile.classList.add("selected");
             else divFile.classList.remove("selected");
         }
-        if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, { encoding: "utf8" }));
+        if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, { encoding: "utf8" }), this.allCodes);
     }
     save(fileName: string, content: string) {
         this.fs.writeFile(this.path + fileName, content);
-        if (this.saveHandler) this.saveHandler(fileName, content);
+        if (this.saveHandler) this.saveHandler(fileName, content, this.allCodes);
     }
     saveAll() {
         if (!this.saveHandler) return;
         this._fileList.forEach((fileName) => {
             const content = this.getValue(fileName);
-            if (this.selectHandler && content) this.saveHandler(fileName, content);
+            if (this.selectHandler && content) this.saveHandler(fileName, content, this.allCodes);
         });
     }
     setValue(value: string, useSelectHandler?: boolean) {
         const fileName = this.selected;
         if (fileName) {
-            if (this.selectHandler && useSelectHandler !== false) this.selectHandler(fileName, value);
+            if (this.selectHandler && useSelectHandler !== false) this.selectHandler(fileName, value, this.allCodes);
             this.save(fileName, value);
         }
     }

@@ -383,7 +383,7 @@ $(async () => {
         fs: faust.fs,
         path: "project/",
         selectHandler: (fileName: string, content: string) => editor.setValue(content),
-        saveHandler: (fileName: string, content: string) => {
+        saveHandler: (fileName: string, content: string, codes: string) => {
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
@@ -391,14 +391,17 @@ $(async () => {
                 project = {};
             }
             project[fileName] = content;
-            localStorage.setItem("faust_editor_project", JSON.stringify(project));
+            try {
+                localStorage.setItem("faust_editor_project", JSON.stringify(project));
+            } catch (e) {
+                showError(e);
+            }
             if (compileOptions.realtimeCompile) {
-                const code = uiEnv.fileManager.allCodes;
-                if (audioEnv.dsp) runDsp(code);
-                else getDiagram(code);
+                if (audioEnv.dsp) runDsp(codes);
+                else getDiagram(codes);
             }
         },
-        deleteHandler: (fileName: string) => {
+        deleteHandler: (fileName: string, codes: string) => {
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
@@ -408,9 +411,8 @@ $(async () => {
             delete project[fileName];
             localStorage.setItem("faust_editor_project", JSON.stringify(project));
             if (compileOptions.realtimeCompile) {
-                const code = uiEnv.fileManager.allCodes;
-                if (audioEnv.dsp) runDsp(code);
-                else getDiagram(code);
+                if (audioEnv.dsp) runDsp(codes);
+                else getDiagram(codes);
             }
         }
     });
