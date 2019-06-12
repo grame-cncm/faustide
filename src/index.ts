@@ -104,7 +104,7 @@ $(async () => {
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
     const { Faust } = await import("faust2webaudio");
-    const faust = new Faust();
+    const faust = new Faust({ wasmLocation: "../dist/libfaust-wasm.wasm", dataLocation: "../dist/libfaust-wasm.data" });
     await faust.ready;
     /**
      * To save dsp table to localStorage
