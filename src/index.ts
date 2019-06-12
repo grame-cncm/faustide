@@ -677,7 +677,7 @@ $(async () => {
                     $("#export-error").hide();
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    form.append("file", new File([`declare filename "${name}"; ${editor.getValue()}`], `${name}.dsp`));
+                    form.append("file", new File([`declare filename "${name}"; ${uiEnv.fileManager.allCodes}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
