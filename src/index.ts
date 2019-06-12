@@ -1403,6 +1403,7 @@ $(async () => {
     $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
     $("#select-plot-fftsize").children(`option[value=${compileOptions.plotFFT}]`).prop("selected", true).change();
     $("#input-plot-samps").change();
+    $("#check-draw-spectrogram").change();
     $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
     if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, uiEnv.fileManager.allCodes);
     window.faustEnv = faustEnv;
