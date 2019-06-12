@@ -106,7 +106,7 @@ $(async () => {
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
     const { Faust } = await import("faust2webaudio");
-    const faust = new Faust();
+    const faust = new Faust({ wasmLocation: "./libfaust-wasm.wasm", dataLocation: "./libfaust-wasm.data" });
     await faust.ready;
     /**
      * To save dsp table to localStorage
@@ -676,7 +676,8 @@ $(async () => {
                     $("#qr-code").hide();
                     $("#export-error").hide();
                     const form = new FormData();
-                    form.append("file", new File([uiEnv.fileManager.allCodes], `${($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled"}.dsp`));
+                    const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                    form.append("file", new File([`declare filename "${name}"; ${editor.getValue()}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
