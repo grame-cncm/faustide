@@ -22,7 +22,9 @@ type TFileSystem = {
 
 export class FileManager {
     divLabel: HTMLDivElement;
-    divBtnNewFile: HTMLButtonElement;
+    btnExpand: HTMLButtonElement;
+    spanLabel: HTMLSpanElement;
+    btnNewFile: HTMLButtonElement;
     divFiles: HTMLDivElement;
     divOverlay: HTMLDivElement;
     container: HTMLDivElement;
@@ -43,26 +45,39 @@ export class FileManager {
         for (let i = 0; i < this.container.children.length; i++) {
             const e = this.container.children[i];
             if (e.classList.contains("filemanager-label")) this.divLabel = e as HTMLDivElement;
-            if (e.classList.contains("filemanager-btn-new-file")) this.divBtnNewFile = e as HTMLButtonElement;
             if (e.classList.contains("filemanager-files")) this.divFiles = e as HTMLDivElement;
             if (e.classList.contains("filemanager-overlay")) this.divOverlay = e as HTMLDivElement;
         }
         if (!this.divLabel) {
             const divLabel = document.createElement("div");
             divLabel.classList.add("filemanager-label");
-            divLabel.innerText = "File Manager";
             this.container.appendChild(divLabel);
             this.divLabel = divLabel;
         }
         for (let i = 0; i < this.divLabel.children.length; i++) {
             const e = this.divLabel.children[i];
-            if (e.classList.contains("filemanager-btn-new-file")) this.divBtnNewFile = e as HTMLButtonElement;
+            if (e.classList.contains("filemanager-btn-expand")) this.btnExpand = e as HTMLButtonElement;
+            if (e.classList.contains("filemanager-span-label")) this.btnNewFile = e as HTMLButtonElement;
+            if (e.classList.contains("filemanager-btn-new-file")) this.btnNewFile = e as HTMLButtonElement;
         }
-        if (!this.divBtnNewFile) {
-            const divBtnNewFile = document.createElement("button");
-            divBtnNewFile.classList.add("filemanager-btn-new-file", "filemanager-btn-icon");
-            this.divLabel.appendChild(divBtnNewFile);
-            this.divBtnNewFile = divBtnNewFile;
+        if (!this.btnExpand) {
+            const btnExpand = document.createElement("button");
+            btnExpand.classList.add("filemanager-btn-expand", "filemanager-btn-icon", "expanded");
+            this.divLabel.appendChild(btnExpand);
+            this.btnExpand = btnExpand;
+        }
+        if (!this.spanLabel) {
+            const spanLabel = document.createElement("span");
+            spanLabel.classList.add("filemanager-span-label");
+            spanLabel.innerText = "Project Files";
+            this.divLabel.appendChild(spanLabel);
+            this.spanLabel = spanLabel;
+        }
+        if (!this.btnNewFile) {
+            const btnNewFile = document.createElement("button");
+            btnNewFile.classList.add("filemanager-btn-new-file", "filemanager-btn-icon");
+            this.divLabel.appendChild(btnNewFile);
+            this.btnNewFile = btnNewFile;
         }
         if (!this.divFiles) {
             const divFiles = document.createElement("div");
@@ -78,7 +93,12 @@ export class FileManager {
         }
     }
     bind() {
-        this.divBtnNewFile.addEventListener("click", () => {
+        this.divLabel.addEventListener("click", () => {
+            this.expanded = !this.expanded;
+        });
+        this.btnNewFile.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
             let i = 1;
             let fileName = "untitled" + i + ".dsp";
             while (this._fileList.indexOf(fileName) !== -1) {
@@ -139,7 +159,7 @@ export class FileManager {
                 reader.onerror = () => undefined;
                 reader.readAsText(file);
             }
-        }
+        };
         this.container.addEventListener("dragenter", dragenterHandler);
         this.container.addEventListener("dragover", dragenterHandler);
         this.divOverlay.addEventListener("dragenter", dragoverHandler);
@@ -301,6 +321,20 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         let codes = "";
         this._fileList.forEach(fileName => codes += (this.getValue(fileName) || "") + "\n");
         return codes;
+    }
+    set expanded(expanded: boolean) {
+        if (expanded) {
+            if (!this.btnExpand.classList.contains("expanded")) {
+                this.btnExpand.classList.add("expanded");
+                this.divFiles.style.display = "";
+            }
+        } else if (this.btnExpand.classList.contains("expanded")) {
+            this.btnExpand.classList.remove("expanded");
+            this.divFiles.style.display = "none";
+        }
+    }
+    get expanded() {
+        return this.btnExpand.classList.contains("expanded");
     }
     get fs() {
         return this._fs;
