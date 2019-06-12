@@ -17,7 +17,7 @@ type TStatsToDraw = {
     y?: number;
     index?: number;
     values: number[];
-    freq: number;
+    freq?: number;
 };
 export type TDrawOptions = {
     drawMode: "offline" | "continuous" | "onevent" | "manual";
@@ -175,13 +175,13 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
+            const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
             statsToDraw.index = $cursor;
+            const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
-                const $j = wrap($cursor, $, l);
                 const samp = t[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
@@ -253,13 +253,13 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
+            const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
             statsToDraw.index = $cursor;
+            const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
-                const $j = wrap($cursor, $, l);
                 const samp = t[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
@@ -305,13 +305,14 @@ export class StaticScope {
         }
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
+            const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = Math.round($0 + cursor.x / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
             statsToDraw.index = $cursor;
+            const $j = wrap($cursor, $ - $ % fftBins, l);
+            statsToDraw.freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
             for (let i = 0; i < f.length; i++) {
-                const $j = wrap($cursor, $ - $ % fftBins, l);
                 const samp = f[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
@@ -346,7 +347,7 @@ export class StaticScope {
         ctx.restore();
         eventsToDraw.forEach(params => this.drawEvent(...params));
         if (cursor) {
-            const statsToDraw: TStatsToDraw = { values: [], freq: d.freqEstimated };
+            const statsToDraw: TStatsToDraw = { values: [] };
             const gridX = w / ($1fft - $0fft);
             const gridY = h / f.length / fftBins;
             const $fft = Math.floor($0fft + cursor.x / gridX);
@@ -355,6 +356,7 @@ export class StaticScope {
             const $cursor = $fft * fftBins + $bin;
             statsToDraw.index = $cursor;
             const $j = wrap($cursor, $ - $ % fftBins, f[0].length);
+            statsToDraw.freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
             const samp = f[$ch][$j];
             if (samp) statsToDraw.values = [samp];
             statsToDraw.x = ($fft - $0fft + 0.5) * gridX;
@@ -518,7 +520,7 @@ export class StaticScope {
         if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
         const right: string[] = [];
         if (typeof index === "number") right.push("@" + index);
-        if (freq) right.push("~" + freq.toFixed(0) + "Hz");
+        if (freq) right.push("@" + freq.toFixed(0) + "Hz");
         values.forEach(v => right.push(v.toFixed(3)));
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(w - 50, 0, 50, right.length * 15 + 5);
