@@ -199,7 +199,8 @@ $(async () => {
      * @param {string} code
      * @returns {{ success: boolean; error?: Error }}
      */
-    const runDsp = async (code: string): Promise<{ success: boolean; error?: Error }> => {
+    const runDsp = async (codeIn: string): Promise<{ success: boolean; error?: Error }> => {
+        const code = `declare filename "${compileOptions.name}.dsp"; declare name "${compileOptions.name}"; ${codeIn}`;
         const audioCtx = audioEnv.audioCtx;
         const input = audioEnv.inputs[audioEnv.currentInput];
         let splitter = audioEnv.splitterOutput;
@@ -626,7 +627,7 @@ $(async () => {
                     $("#export-error").hide();
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    form.append("file", new File([`declare filename "${name}"; ${editor.getValue()}`], `${name}.dsp`));
+                    form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${editor.getValue()}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,

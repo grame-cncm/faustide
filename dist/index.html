@@ -172,7 +172,7 @@
 					<li class="nav-item">
 						<div id="tab-editor" class="nav-link active" data-toggle="tab" href="#" role="tab" aria-selected="true">
 							<div class="input-group" data-toggle="tooltip" data-placement="bottom" title="File Name">
-								<input id="input-filename" type="text" class="form-control" aria-label="File Name" placeholder="Name" />
+								<input id="input-filename" type="text" class="form-control" aria-label="File Name" placeholder="File Name" />
 								<div class="input-group-append">
 									<span class="input-group-text">.dsp</span>
 								</div>
@@ -389,8 +389,13 @@
 							<input id="export-server" type="text" class="form-control form-control-sm" placeholder="Server" />
 						</div>
 						<div class="form-group">
-							<label for="export-name">Name</label>
-							<input id="export-name" type="text" class="form-control form-control-sm" placeholder="Name" />
+							<label for="export-name">File Name</label>
+							<div class="input-group input-group-sm">
+								<input id="export-name" type="text" class="form-control form-control-sm" placeholder="File Name" />
+								<div class="input-group-append">
+									<span class="input-group-text">.dsp</span>
+								</div>
+							</div>
 						</div>
 						<div class="form-group">
 							<label for="export-platform" class="col-form-label">Platform</label>

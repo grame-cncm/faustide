@@ -28,6 +28,7 @@ export type TDrawOptions = {
     e?: { type: string; data: any }[][]; // events of each buffer
     bufferSize: number;
     fftSize: number;
+    fftOverlap: 1 | 2 | 4 | 8;
     freqEstimated?: number;
     sampleRate?: number;
 }
@@ -45,7 +46,7 @@ export class StaticScope {
     private _mode = EScopeMode.Oscilloscope;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
-    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128, fftSize: 256 };
+    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128, fftSize: 256, fftOverlap: 2 };
     cursor: { x: number; y: number };
     dragging: boolean = false;
     spectTempCtx: CanvasRenderingContext2D;
@@ -269,8 +270,7 @@ export class StaticScope {
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, f, fftSize } = d;
-        const fftOverlap = 2;
+        const { $, f, fftSize, fftOverlap } = d;
         const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length;
@@ -322,8 +322,7 @@ export class StaticScope {
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
-        const { $, f, fftSize } = d;
-        const fftOverlap = 2;
+        const { $, f, fftSize, fftOverlap } = d;
         const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return;
         const l = f[0].length / fftBins;
@@ -366,8 +365,7 @@ export class StaticScope {
     }
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number) {
         if (!d) return last$;
-        const { $, f, fftSize } = d;
-        const fftOverlap = 2;
+        const { $, f, fftSize, fftOverlap } = d;
         const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return last$;
         const { width: canvasWidth, height: h } = ctx.canvas;
@@ -415,8 +413,7 @@ export class StaticScope {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
-        const { t, e, bufferSize, fftSize } = d;
-        const fftOverlap = 2;
+        const { t, e, bufferSize, fftSize, fftOverlap } = d;
         const fftBins = fftSize / fftOverlap;
         const channels = mode === EScopeMode.Interleaved ? t.length : 1;
         const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
