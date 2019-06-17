@@ -90,6 +90,7 @@ type FaustEditorCompileOptions = {
     plot: number;
     plotSR: number;
     plotFFT: 256 | 1024 | 4096;
+    plotFFTOverlap: 1 | 2 | 4 | 8;
     drawSpectrogram: boolean;
     args: { [key: string]: any };
 };
@@ -356,7 +357,7 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous") };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, drawSpectrogram: false, ...loadEditorParams() };
+    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
@@ -493,6 +494,11 @@ $(async () => {
         compileOptions.plotFFT = +e.currentTarget.value as 256 | 1024 | 4096;
         uiEnv.analyser.fftSize = compileOptions.plotFFT;
         $("#input-plot-samps").change();
+        saveEditorParams();
+    });
+    $<HTMLInputElement>("#select-plot-fftoverlap").on("change", (e) => {
+        compileOptions.plotFFTOverlap = +e.currentTarget.value as 1 | 2 | 4 | 8;
+        uiEnv.analyser.fftOverlap = compileOptions.plotFFTOverlap;
         saveEditorParams();
     });
     /**
@@ -1358,6 +1364,7 @@ $(async () => {
     if (supportAudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
     $("#select-plot-fftsize").children(`option[value=${compileOptions.plotFFT}]`).prop("selected", true).change();
+    $("#select-plot-fftoverlap").children(`option[value=${compileOptions.plotFFTOverlap}]`).prop("selected", true).change();
     $("#input-plot-samps").change();
     $("#check-draw-spectrogram").change();
     $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;

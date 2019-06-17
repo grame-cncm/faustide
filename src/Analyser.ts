@@ -11,7 +11,7 @@ export class Analyser {
      */
     t: Float32Array[];
     /**
-     * Frequency Domain Data
+     * Frequency Domain Data, overlap x2 gives same length as t
      *
      * @type {Float32Array[]}
      * @memberof Analyser
@@ -92,7 +92,7 @@ export class Analyser {
         this.initCache(bufferSize, channels);
         this.$ = (index % this.buffers) * bufferSize;
         this.$buffer = index;
-        const { $, fftSize, fftOverlap, fftHopSize, fft } = this;
+        const { $, fftSize, fftOverlap, fftHopSize, fftBins, fft } = this;
         t.forEach((a, i) => {
             this.t[i].set(a, $);
             let fData: Float32Array;
@@ -100,7 +100,7 @@ export class Analyser {
                 const $fft = $fftEnd - fftSize;
                 const t4fft = sliceWrap(this.t[i], $fft, fftSize);
                 fData = getFrequencyDomainData(t4fft, fft);
-                setWrap(this.f[i], fData, $fftEnd * fftOverlap / 2 - fftHopSize);
+                setWrap(this.f[i], fData, $fftEnd * fftOverlap / 2 - fftBins);
             }
             if (fData) this.freqEstimated = estimateFreq(fData, this.sampleRate);
         });
@@ -162,10 +162,13 @@ export class Analyser {
     set fftOverlap(fftOverlapIn) {
         if (this._fftOverlap === fftOverlapIn) return;
         this._fftOverlap = fftOverlapIn;
-        if (this.t && this.t.length && this.t[0].length) return;
+        if (!this.t || !this.t.length || !this.t[0].length) return;
         this.f = new Array(this.t.length).fill(null).map(() => new Float32Array(this.t[0].length * this.fftOverlap / 2).fill(-Infinity));
     }
     get fftHopSize() {
         return this.fftSize / this.fftOverlap;
+    }
+    get fftBins() {
+        return this.fftSize / 2;
     }
 }

@@ -271,8 +271,10 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, f, fftSize, fftOverlap } = d;
-        const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
         const l = f[0].length;
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
@@ -285,7 +287,7 @@ export class StaticScope {
             ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep;
             for (let j = $0; j < $1; j++) {
-                const $j = wrap(j, $ - $ % fftBins, l);
+                const $j = wrap(j, $f, l);
                 const samp = f[i][$j];
                 const $step = (j - $0) % step;
                 if ($step === 0) maxInStep = samp;
@@ -310,7 +312,7 @@ export class StaticScope {
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX;
             statsToDraw.index = $cursor;
-            const $j = wrap($cursor, $ - $ % fftBins, l);
+            const $j = wrap($cursor, $f, l);
             statsToDraw.freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
             for (let i = 0; i < f.length; i++) {
                 const samp = f[i][$j];
@@ -323,8 +325,10 @@ export class StaticScope {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, f, fftSize, fftOverlap } = d;
-        const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
         const l = f[0].length / fftBins;
         const $0fft = Math.floor(l * zoomOffset);
         const $1fft = Math.ceil(l / zoom + l * zoomOffset);
@@ -334,8 +338,8 @@ export class StaticScope {
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         ctx.imageSmoothingEnabled = false;
-        const $0src = $0fft + Math.floor($ / fftBins);
-        const $1src = $1fft + Math.floor($ / fftBins);
+        const $0src = $0fft + Math.floor($f / fftBins);
+        const $1src = $1fft + Math.floor($f / fftBins);
         if ($1src > l) {
             const split$ = l - $0src;
             ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, 0, 0, split$ / ($1src - $0src) * w, h);
@@ -354,7 +358,7 @@ export class StaticScope {
             const $bin = Math.floor((h - cursor.y) / gridY) % fftBins;
             const $cursor = $fft * fftBins + $bin;
             statsToDraw.index = $cursor;
-            const $j = wrap($cursor, $ - $ % fftBins, f[0].length);
+            const $j = wrap($cursor, $f, f[0].length);
             statsToDraw.freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
             const samp = f[$ch][$j];
             if (samp) statsToDraw.values = [samp];
@@ -366,12 +370,14 @@ export class StaticScope {
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number) {
         if (!d) return last$;
         const { $, f, fftSize, fftOverlap } = d;
-        const fftBins = fftSize / fftOverlap;
         if (!f || !f.length || !f[0].length) return last$;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
         const { width: canvasWidth, height: h } = ctx.canvas;
         const l = f[0].length;
         const $0 = wrap(last$, 0, l);
-        const $1 = $0 >= $ ? $ + l : $;
+        const $1 = $0 >= $f ? $f + l : $f;
         if ($1 - $0 < 0) return last$;
         const $0fft = Math.floor($0 / fftBins);
         const $1fft = Math.ceil($1 / fftBins);
@@ -417,17 +423,17 @@ export class StaticScope {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
         const { t, e, bufferSize, fftSize, fftOverlap } = d;
-        const fftBins = fftSize / fftOverlap;
+        const fftBins = fftSize / 2;
         const channels = mode === EScopeMode.Interleaved ? t.length : 1;
         const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
-        const $0buffer = Math.ceil($0 / bufferSize);
-        const $1buffer = Math.ceil($1 / bufferSize);
+        const $0buffer = Math.ceil($0 / bufferSize / (fftOverlap / 2));
+        const $1buffer = Math.ceil($1 / bufferSize / (fftOverlap / 2));
         let hGrid = 1;
         while (($1buffer - $0buffer) / hGrid > 16) hGrid *= 2; // Maximum horizontal grids = 16
         let $buffer = d.$buffer || 0;
         if (mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope) $buffer -= $buffer % (fftBins / bufferSize);
         for (let j = $0buffer; j < $1buffer; j++) {
-            const x = (j * bufferSize - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
+            const x = (j * bufferSize * (fftOverlap / 2) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
             if (e && e[$buffer + j] && e[$buffer + j].length) {
                 ctx.stroke();
                 ctx.strokeStyle = "#ff8800";
