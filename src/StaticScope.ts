@@ -380,6 +380,8 @@ export class StaticScope {
         const $h = hCh / fftBins;
         if (canvasWidth !== w) ctx.canvas.width = w;
         const step = Math.max(1, Math.round(fftBins / hCh));
+        ctx.fillStyle = "black";
+        fillRectWrap(ctx, $0fft, 0, $1fft - $0fft, h, w, h);
         for (let i = 0; i < f.length; i++) {
             for (let j = $0fft; j < $1fft; j++) {
                 let maxInStep;
@@ -392,6 +394,7 @@ export class StaticScope {
                         continue;
                     }
                     const normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
+                    if (normalized === 0) continue;
                     const hue = (normalized * 180 + 240) % 360;
                     const lum = normalized * 50;
                     ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
@@ -517,7 +520,7 @@ export class StaticScope {
         if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
         const right: string[] = [];
         if (typeof index === "number") right.push("@" + index);
-        if (freq) right.push("@" + freq.toFixed(0) + "Hz");
+        if (typeof freq === "number") right.push("@" + freq.toFixed(0) + "Hz");
         values.forEach(v => right.push(v.toFixed(3)));
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
         ctx.fillRect(w - 50, 0, 50, right.length * 15 + 5);
