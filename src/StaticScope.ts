@@ -423,17 +423,18 @@ export class StaticScope {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#404040";
         const { t, e, bufferSize, fftSize, fftOverlap } = d;
+        const inFreqDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
         const fftBins = fftSize / 2;
         const channels = mode === EScopeMode.Interleaved ? t.length : 1;
         const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
-        const $0buffer = Math.ceil($0 / bufferSize / (fftOverlap / 2));
-        const $1buffer = Math.ceil($1 / bufferSize / (fftOverlap / 2));
+        const $0buffer = Math.ceil($0 / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1));
+        const $1buffer = Math.ceil($1 / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1));
         let hGrid = 1;
         while (($1buffer - $0buffer) / hGrid > 16) hGrid *= 2; // Maximum horizontal grids = 16
         let $buffer = d.$buffer || 0;
-        if (mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope) $buffer -= $buffer % (fftBins / bufferSize);
+        if (inFreqDomain) $buffer -= $buffer % (fftBins / bufferSize);
         for (let j = $0buffer; j < $1buffer; j++) {
-            const x = (j * bufferSize * (fftOverlap / 2) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
+            const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * w;
             if (e && e[$buffer + j] && e[$buffer + j].length) {
                 ctx.stroke();
                 ctx.strokeStyle = "#ff8800";
