@@ -161,19 +161,30 @@ export class StaticScope {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep;
+            let minInstep;
             for (let j = $0; j < $1; j++) {
                 const $j = wrap(j, $, l); // True index
                 const samp = t[i][$j];
                 const $step = (j - $0) % step;
-                if ($step === 0) maxInStep = samp;
+                if ($step === 0) {
+                    maxInStep = samp;
+                    minInstep = samp;
+                }
                 if ($step !== step - 1) {
-                    if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
+                    if ($step !== 0) {
+                        if (samp > maxInStep) maxInStep = samp;
+                        if (samp < minInstep) minInstep = samp;
+                    }
                     continue;
                 }
                 const x = (j - $0) * gridX;
-                const y = hCh * (i + 1) - (maxInStep / yFactor * 0.5 + 0.5) * hCh;
+                let y = hCh * (i + 1) - (maxInStep / yFactor * 0.5 + 0.5) * hCh;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
+                if (minInstep !== maxInStep) {
+                    y = h - (minInstep / yFactor * 0.5 + 0.5) * h;
+                    ctx.lineTo(x, y);
+                }
             }
             ctx.stroke();
         }
@@ -239,19 +250,30 @@ export class StaticScope {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep;
+            let minInstep;
             for (let j = $0; j < $1; j++) {
                 const $j = wrap(j, $, l);
                 const samp = t[i][$j];
                 const $step = (j - $0) % step;
-                if ($step === 0) maxInStep = samp;
+                if ($step === 0) {
+                    maxInStep = samp;
+                    minInstep = samp;
+                }
                 if ($step !== step - 1) {
-                    if ($step !== 0 && Math.abs(samp) > Math.abs(maxInStep)) maxInStep = samp;
+                    if ($step !== 0) {
+                        if (samp > maxInStep) maxInStep = samp;
+                        if (samp < minInstep) minInstep = samp;
+                    }
                     continue;
                 }
                 const x = (j - $0) * gridX;
-                const y = h - (maxInStep / yFactor * 0.5 + 0.5) * h;
+                let y = h - (maxInStep / yFactor * 0.5 + 0.5) * h;
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
+                if (minInstep !== maxInStep) {
+                    y = h - (minInstep / yFactor * 0.5 + 0.5) * h;
+                    ctx.lineTo(x, y);
+                }
             }
             ctx.stroke();
         }
