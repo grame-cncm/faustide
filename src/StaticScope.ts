@@ -517,6 +517,7 @@ export class StaticScope {
                 }
             }
         }
+        ctx.strokeStyle = normalStrokeStyle;
         const hCh = (h - bottom) / channels;
         let vStep = 0.25;
         while (yFactor / vStep > 2) vStep *= 2; // Maximum horizontal grids in channel one side = 2
