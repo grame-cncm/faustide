@@ -849,7 +849,7 @@ export class StaticScope {
         const w = this.canvas.width;
         let cursorIn = 0.5;
         const left = 50;
-        if (this.cursor) cursorIn = Math.max(0, this.cursor.x - left) / w;
+        if (this.cursor) cursorIn = Math.max(0, this.cursor.x - left) / (w - left);
         const cursor = this.zoomOffset + cursorIn / this.zoom;
         this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
         this.zoomOffset = cursor - cursorIn / this.zoom;
