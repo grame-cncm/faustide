@@ -118,3 +118,5 @@ export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
     }, 0);
     return sampleRate / 2 * i / fft.length;
 };
+
+export const indexToFreq = (i: number, fftBins: number, sampleRate: number) => (i % fftBins) / fftBins * sampleRate / 2;

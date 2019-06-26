@@ -128,13 +128,13 @@
 					<div class="input-group-prepend">
 						<span class="input-group-text">Samples</span>
 					</div>
-					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" />
+					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" min="0" step="128" />
 				</div>
 				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Sample rate to plot (Fixed in real-time plot)">
 					<div class="input-group-prepend">
 						<span class="input-group-text input-group-text-sm">Sample Rate</span>
 					</div>
-					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" />
+					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" min="100" step="100" />
 				</div>
 				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Size">
 					<div class="input-group-prepend">

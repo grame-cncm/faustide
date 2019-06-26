@@ -1,4 +1,4 @@
-import { wrap, fillRectWrap } from "./utils";
+import { wrap, fillRectWrap, indexToFreq } from "./utils";
 import "./StaticScope.scss";
 
 enum EScopeMode {
@@ -39,6 +39,9 @@ export class StaticScope {
     container: HTMLDivElement;
     canvas: HTMLCanvasElement;
     btnSwitch: HTMLButtonElement;
+    btnZoomOut: HTMLButtonElement;
+    btnZoom: HTMLButtonElement;
+    btnZoomIn: HTMLButtonElement;
     iSwitch: HTMLElement;
     spanSwitch: HTMLSpanElement;
     divData: HTMLDivElement;
@@ -128,7 +131,7 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
-        if (drawMode === "continuous" && freqEstimated && sampleRate && l < 10000) { // Stablize
+        if (drawMode === "continuous" && freqEstimated && sampleRate) { // Stablize
             let $zerox = 0;
             const thresh = 0.01;
             const period = sampleRate / freqEstimated;
@@ -207,7 +210,7 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
-        if (drawMode === "continuous" && freqEstimated && sampleRate && l < 10000) { // Stablize
+        if (drawMode === "continuous" && freqEstimated && sampleRate) { // Stablize
             let $zerox = 0;
             const thresh = 0.01;
             const period = sampleRate / freqEstimated;
@@ -276,8 +279,8 @@ export class StaticScope {
         let $f = $ * fftOverlap / 2;
         $f -= $f % fftBins;
         const l = f[0].length;
-        const $0 = Math.round(l * zoomOffset);
-        const $1 = Math.round(l / zoom + l * zoomOffset);
+        const $0 = l - fftBins + Math.round(fftBins * zoomOffset);
+        const $1 = l - fftBins + Math.round(fftBins / zoom + fftBins * zoomOffset);
         const hCh = h / f.length;
         const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 1, d, EScopeMode.Spectroscope);
         const gridX = w / ($1 - $0 - 1);
@@ -313,12 +316,12 @@ export class StaticScope {
             statsToDraw.x = ($cursor - $0) * gridX;
             statsToDraw.index = $cursor;
             const $j = wrap($cursor, $f, l);
-            statsToDraw.freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
+            statsToDraw.freq = indexToFreq($j, fftBins, d.sampleRate);
             for (let i = 0; i < f.length; i++) {
                 const samp = f[i][$j];
                 if (samp) statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, w, h, statsToDraw, zoom, $0, $1 - 1);
+            this.drawStats(ctx, w, h, statsToDraw, zoom, indexToFreq(l - fftBins + $0, fftBins, d.sampleRate), indexToFreq(l - fftBins + $1 - 1, fftBins, d.sampleRate));
         }
     }
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
@@ -509,15 +512,15 @@ export class StaticScope {
             ctx.lineTo(w, y);
         }
         ctx.stroke();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
         if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
         if (typeof zoomMax === "number") ctx.fillRect(w - 40, h - 16, 40, 16);
-        if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
+        // if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
         ctx.fillStyle = "#DDDD99";
         ctx.font = "bold 12px Consolas, monospace";
         if (typeof zoom === "number") {
             ctx.textAlign = "center";
-            ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
+            // ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
         }
         if (typeof zoomMin === "number") {
             ctx.textAlign = "left";
@@ -638,6 +641,9 @@ export class StaticScope {
         for (let i = 0; i < ctrl.children.length; i++) {
             const e = ctrl.children[i];
             if (e.classList.contains("static-scope-ui-switch")) this.btnSwitch = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoom")) this.btnZoom = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
@@ -650,6 +656,45 @@ export class StaticScope {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) {} // eslint-disable-line no-empty
             this.btnSwitch = btn;
+        }
+        if (!this.btnZoomOut) {
+            const btn = document.createElement("button");
+            btn.className = "static-scope-ui-zoomout btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+            btn.setAttribute("data-toggle", "tooltip");
+            btn.setAttribute("data-placement", "top");
+            btn.setAttribute("title", "Zoom Out");
+            btn.innerText = "-";
+            ctrl.appendChild(btn);
+            try {
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
+            } catch (e) {} // eslint-disable-line no-empty
+            this.btnZoomOut = btn;
+        }
+        if (!this.btnZoom) {
+            const btn = document.createElement("button");
+            btn.className = "static-scope-ui-zoom btn btn-outline-light btn-sm btn-overlay";
+            btn.setAttribute("data-toggle", "tooltip");
+            btn.setAttribute("data-placement", "top");
+            btn.setAttribute("title", "Reset Zoom");
+            btn.innerText = "1.0x";
+            ctrl.appendChild(btn);
+            try {
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
+            } catch (e) {} // eslint-disable-line no-empty
+            this.btnZoom = btn;
+        }
+        if (!this.btnZoomIn) {
+            const btn = document.createElement("button");
+            btn.className = "static-scope-ui-zoomin btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+            btn.setAttribute("data-toggle", "tooltip");
+            btn.setAttribute("data-placement", "top");
+            btn.setAttribute("title", "Zoom In");
+            btn.innerText = "+";
+            ctrl.appendChild(btn);
+            try {
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
+            } catch (e) {} // eslint-disable-line no-empty
+            this.btnZoomIn = btn;
         }
         for (let i = 0; i < this.btnSwitch.children.length; i++) {
             const e = this.btnSwitch.children[i];
@@ -684,6 +729,18 @@ export class StaticScope {
             if (multiplier !== 1) this.zoom *= 1.5 ** (e.deltaY > 0 ? -1 : 1);
             if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
             this.handleMouseMove(e);
+        });
+        this.btnZoomOut.addEventListener("click", () => {
+            this.zoom /= 1.5;
+            this.draw();
+        });
+        this.btnZoom.addEventListener("click", () => {
+            this.zoom = 1;
+            this.draw();
+        });
+        this.btnZoomIn.addEventListener("click", () => {
+            this.zoom *= 1.5;
+            this.draw();
         });
         this.canvas.addEventListener("mousedown", this.handleMouseDown);
         this.canvas.addEventListener("touchstart", this.handleMouseDown);
@@ -726,13 +783,14 @@ export class StaticScope {
         return this._zoom[this.zoomType];
     }
     set zoom(zoomIn) {
-        const maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.data.t[0].length / this.data.bufferSize) : 16;
+        const maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.data.t[0].length / (this.inFreqDomain ? this.data.fftSize / 2 : this.data.bufferSize)) : 16;
         const w = this.canvas.width;
-        let cursorIn = 0;
+        let cursorIn = 0.5;
         if (this.cursor) cursorIn = this.cursor.x / w;
         const cursor = this.zoomOffset + cursorIn / this.zoom;
         this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
         this.zoomOffset = cursor - cursorIn / this.zoom;
+        this.btnZoom.innerHTML = this.zoom.toFixed(1);
     }
     get zoomOffset() {
         return this._zoomOffset[this.zoomType];
@@ -759,5 +817,8 @@ export class StaticScope {
             this.canvas.style.display = "";
         }
         this.draw();
+    }
+    get inFreqDomain() {
+        return this.mode === EScopeMode.Spectrogram || this.mode === EScopeMode.Spectroscope;
     }
 }

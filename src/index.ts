@@ -469,17 +469,15 @@ $(async () => {
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
         const fftSize = compileOptions.plotFFT || 256;
         const step = Math.max(bufferSize, fftSize);
-        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
+        const v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
         compileOptions.plot = v1;
         uiEnv.analyser.buffers = v1 / bufferSize;
+        e.currentTarget.step = step.toString();
         e.currentTarget.value = v1.toString();
         saveEditorParams();
     })[0].value = compileOptions.plot.toString();
     $<HTMLInputElement>("#input-plot-sr").on("change", (e) => {
-        const v = +e.currentTarget.value;
-        const v1 = Math.max((v === compileOptions.plotSR - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 1); // Spinner
-        compileOptions.plotSR = v1;
-        e.currentTarget.value = v1.toString();
+        compileOptions.plotSR = +e.currentTarget.value;
         saveEditorParams();
     })[0].value = compileOptions.plotSR.toString();
     $<HTMLInputElement>("#check-draw-spectrogram").on("change", (e) => {
