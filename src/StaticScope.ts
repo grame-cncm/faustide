@@ -488,12 +488,7 @@ export class StaticScope {
             const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * (w - left) + left;
             if (x < left) continue;
             if (j % 1 === 0) { // on buffer start
-                if (e && e[$buffer + j] && e[$buffer + j].length) {
-                    ctx.strokeStyle = eventStrokeStyle;
-                    eventsToDraw.push([ctx, w, h, x, e[$buffer + j]]);
-                } else {
-                    ctx.strokeStyle = bufferStrokeStyle;
-                }
+                ctx.strokeStyle = bufferStrokeStyle;
             } else {
                 ctx.strokeStyle = normalStrokeStyle;
             }
@@ -507,6 +502,19 @@ export class StaticScope {
                 ctx.fillText(((j % (fftBins / bufferSize)) / (fftBins / bufferSize) * sampleRate / 2).toFixed(), Math.min(x, w - 20), h - 10);
             } else {
                 ctx.fillText((j * bufferSize).toFixed(), Math.min(x, w - 20), h - 10);
+            }
+        }
+        if (e) {
+            for (let j = Math.ceil($0buffer); j < $1buffer; j++) {
+                if (e[$buffer + j] && e[$buffer + j].length) {
+                    const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * (w - left) + left;
+                    ctx.strokeStyle = eventStrokeStyle;
+                    eventsToDraw.push([ctx, w, h, x, e[$buffer + j]]);
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, h - bottom);
+                    ctx.stroke();
+                }
             }
         }
         const hCh = (h - bottom) / channels;
