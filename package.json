@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "node ./src/listEx.js && webpack --mode development",
-    "dist": "npm run build && webpack --mode production"
+    "dist": "node ./src/listEx.js && webpack --mode production"
   },
   "repository": {
     "type": "git",
@@ -56,6 +56,7 @@
     "popper.js": "^1.15.0",
     "qrcode": "^1.3.3",
     "sass-loader": "^7.1.0",
+    "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
     "stylelint": "^9.10.1",
     "stylelint-config-recommended": "^2.2.0",
