@@ -465,7 +465,7 @@ export class StaticScope {
         $0buffer -= $0buffer % hStep;
         $1buffer -= $0buffer % hStep;
         let $buffer = d.$buffer || 0;
-        if (inFreqDomain) $buffer -= $buffer % (fftBins / bufferSize);
+        if (inFreqDomain) $buffer -= $buffer % (fftBins / bufferSize / fftOverlap / 2);
         const left = 50;
         const bottom = 20;
         const eventStrokeStyle = "#ff8800";
@@ -485,7 +485,8 @@ export class StaticScope {
         ctx.stroke();
         ctx.strokeStyle = bufferStrokeStyle;
         for (let j = $0buffer; j < $1buffer; j += hStep) {
-            const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * (w - left) + left;
+            const $fft = j / (fftBins / bufferSize) * fftOverlap / 2;
+            const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
             if (x < left) continue;
             if (j % 1 === 0) { // on buffer start
                 ctx.strokeStyle = bufferStrokeStyle;
@@ -497,9 +498,9 @@ export class StaticScope {
             ctx.lineTo(x, h - bottom);
             ctx.stroke();
             if (mode === EScopeMode.Spectrogram) {
-                if (j % (fftBins / bufferSize) === 0) ctx.fillText((j / (fftBins / bufferSize)).toFixed(), Math.min(x, w - 20), h - 10);
+                if ($fft % 1 === 0) ctx.fillText($fft.toFixed(), Math.min(x, w - 20), h - 10);
             } else if (mode === EScopeMode.Spectroscope) {
-                ctx.fillText(((j % (fftBins / bufferSize)) / (fftBins / bufferSize) * sampleRate / 2).toFixed(), Math.min(x, w - 20), h - 10);
+                ctx.fillText((($fft % 1) * sampleRate / 2).toFixed(), Math.min(x, w - 20), h - 10);
             } else {
                 ctx.fillText((j * bufferSize).toFixed(), Math.min(x, w - 20), h - 10);
             }
@@ -507,7 +508,7 @@ export class StaticScope {
         if (e) {
             for (let j = Math.ceil($0buffer); j < $1buffer; j++) {
                 if (e[$buffer + j] && e[$buffer + j].length) {
-                    const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - (mode === EScopeMode.Spectroscope ? 0 : 1)) * (w - left) + left;
+                    const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
                     ctx.strokeStyle = eventStrokeStyle;
                     eventsToDraw.push([ctx, w, h, x, e[$buffer + j]]);
                     ctx.beginPath();
