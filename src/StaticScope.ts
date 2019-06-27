@@ -375,7 +375,7 @@ export class StaticScope {
         if ($1src > l) {
             const split$ = l - $0src;
             ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, left, 0, split$ / ($1src - $0src) * (w - left), h - bottom);
-            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l - 0.01, tempCtx.canvas.height, split$ / ($1src - $0src) * (w - left) + left, 0, (1 - split$ / ($1src - $0src)) * (w - left) + left, h - bottom);
+            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l - 0.01, tempCtx.canvas.height, split$ / ($1src - $0src) * (w - left) + left, 0, (1 - split$ / ($1src - $0src)) * (w - left), h - bottom);
         } else {
             ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, left, 0, w - left, h - bottom);
         }
@@ -488,11 +488,7 @@ export class StaticScope {
             const $fft = j / (fftBins / bufferSize) * fftOverlap / 2;
             const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
             if (x < left) continue;
-            if (j % 1 === 0) { // on buffer start
-                ctx.strokeStyle = bufferStrokeStyle;
-            } else {
-                ctx.strokeStyle = normalStrokeStyle;
-            }
+            ctx.strokeStyle = j % 1 === 0 ? bufferStrokeStyle : normalStrokeStyle;
             ctx.beginPath();
             ctx.moveTo(x, 0);
             ctx.lineTo(x, h - bottom);
