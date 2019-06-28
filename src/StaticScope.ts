@@ -851,7 +851,7 @@ export class StaticScope {
         return this._zoom[this.zoomType];
     }
     set zoom(zoomIn) {
-        const maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.data.t[0].length / (this.inFreqDomain ? this.data.fftSize / 2 : this.data.bufferSize)) : 16;
+        const maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.mode === EScopeMode.Spectroscope ? 16 : this.data.t[0].length / (this.inFreqDomain ? this.data.fftSize / 2 : this.data.bufferSize)) : 16;
         const w = this.canvas.width;
         let cursorIn = 0.5;
         const left = 50;
