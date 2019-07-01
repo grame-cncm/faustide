@@ -54,11 +54,12 @@ div.static-scope {
     & > .static-scope-ui-controller {
         display: flex;
         opacity: 0.4;
-        transition: opacity 0.15s ease-in-out;
+        transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
     }
     &:hover {
         & > .static-scope-ui-controller {
             opacity: 1;
+            background-color: rgba(0, 0, 0, 0.5);
         }
     }
     & > .static-scope-default {

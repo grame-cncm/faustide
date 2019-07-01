@@ -127,13 +127,13 @@
 					<div class="input-group-prepend">
 						<span class="input-group-text">Samples</span>
 					</div>
-					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" />
+					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" min="0" step="128" />
 				</div>
 				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Sample rate to plot (Fixed in real-time plot)">
 					<div class="input-group-prepend">
 						<span class="input-group-text input-group-text-sm">Sample Rate</span>
 					</div>
-					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" />
+					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" min="100" step="100" />
 				</div>
 				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Size">
 					<div class="input-group-prepend">
@@ -143,6 +143,17 @@
 						<option value="256">256</option>
 						<option value="1024" selected>1024</option>
 						<option value="4096">4096</option>
+					</select>
+				</div>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Overlap">
+					<div class="input-group-prepend">
+						<span class="input-group-text">FFT Overlap</span>
+					</div>
+					<select id="select-plot-fftoverlap" class="form-control">
+						<option value="1">1</option>
+						<option value="2" selected>2</option>
+						<option value="4">4</option>
+						<option value="8">8</option>
 					</select>
 				</div>
 				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Draw spectrogram (Increase CPU usage)">
@@ -171,7 +182,7 @@
 					<li class="nav-item">
 						<div id="tab-editor" class="nav-link active" data-toggle="tab" href="#" role="tab" aria-selected="true">
 							<div class="input-group" data-toggle="tooltip" data-placement="bottom" title="File Name">
-								<input id="input-filename" type="text" class="form-control" aria-label="File Name" placeholder="Name" />
+								<input id="input-filename" type="text" class="form-control" aria-label="File Name" placeholder="File Name" />
 								<div class="input-group-append">
 									<span class="input-group-text">.dsp</span>
 								</div>
@@ -310,7 +321,7 @@
 				</form>
 				<div id="source-ui" class="mt-2">
 					<div id="source-overlay"></div>
-					<div id="source-waveform"></div>
+					<div id="source-waveform" data-toggle="tooltip" data-placement="left" title="Drag and drop to replace"></div>
 					<div id="source-controller">
 						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="From beginning">
 							<i class="fas fa-step-backward fa-sm"></i>
@@ -388,8 +399,13 @@
 							<input id="export-server" type="text" class="form-control form-control-sm" placeholder="Server" />
 						</div>
 						<div class="form-group">
-							<label for="export-name">Name</label>
-							<input id="export-name" type="text" class="form-control form-control-sm" placeholder="Name" />
+							<label for="export-name">File Name</label>
+							<div class="input-group input-group-sm">
+								<input id="export-name" type="text" class="form-control form-control-sm" placeholder="File Name" />
+								<div class="input-group-append">
+									<span class="input-group-text">.dsp</span>
+								</div>
+							</div>
 						</div>
 						<div class="form-group">
 							<label for="export-platform" class="col-form-label">Platform</label>

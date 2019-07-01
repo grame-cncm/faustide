@@ -79,7 +79,7 @@ type FaustEditorUIEnv = {
     fileManager: FileManager;
 };
 type FaustEditorCompileOptions = {
-    name: string;
+    mainFileIndex?: number;
     useWorklet: boolean;
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096;
     saveCode: boolean;
@@ -92,6 +92,7 @@ type FaustEditorCompileOptions = {
     plot: number;
     plotSR: number;
     plotFFT: 256 | 1024 | 4096;
+    plotFFTOverlap: 1 | 2 | 4 | 8;
     drawSpectrogram: boolean;
     args: { [key: string]: any };
 };
@@ -185,7 +186,9 @@ $(async () => {
         let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
-            strSvg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
+            const args: string[] = [];
+            compileOptions.args["-I"].forEach((s: string) => args.push("-I", s));
+            strSvg = faust.getDiagram(code, args);
         } catch (e) {
             /**
              * Parse Faust-generated error message to locate the lines with error
@@ -217,7 +220,8 @@ $(async () => {
      * @param {string} code
      * @returns {{ success: boolean; error?: Error }}
      */
-    const runDsp = async (code: string): Promise<{ success: boolean; error?: Error }> => {
+    const runDsp = async (codeIn: string): Promise<{ success: boolean; error?: Error }> => {
+        const code = `declare filename "${uiEnv.fileManager.mainFileName}"; declare name "${uiEnv.fileManager.mainFileNameWithoutSuffix}"; ${codeIn}`;
         const audioCtx = audioEnv.audioCtx;
         const input = audioEnv.inputs[audioEnv.currentInput];
         let splitter = audioEnv.splitterOutput;
@@ -358,21 +362,10 @@ $(async () => {
         return { success: true };
     };
     let rtCompileTimer: NodeJS.Timeout;
-    /**
-     * Save current code to localStorage
-     * if realtime compile is on, do compile
-     */
-    editor.onKeyUp(() => {
-        const code = editor.getValue();
-        uiEnv.fileManager.setValue(code, false);
-        clearTimeout(rtCompileTimer);
-        if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, uiEnv.fileManager.allCodes);
-    });
-
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, drawSpectrogram: false, ...loadEditorParams() };
+    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
@@ -382,8 +375,9 @@ $(async () => {
         container: $<HTMLDivElement>("#filemanager")[0],
         fs: faust.fs,
         path: "project/",
-        selectHandler: (fileName: string, content: string) => editor.setValue(content),
-        saveHandler: (fileName: string, content: string, codes: string) => {
+        $mainFile: compileOptions.mainFileIndex || 0,
+        selectHandler: (fileName, content) => editor.setValue(content),
+        saveHandler: (fileName: string, content: string, mainCode: string) => {
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
@@ -396,12 +390,10 @@ $(async () => {
             } catch (e) {
                 showError(e);
             }
-            if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(codes);
-                else getDiagram(codes);
-            }
+            clearTimeout(rtCompileTimer);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, mainCode);
         },
-        deleteHandler: (fileName: string, codes: string) => {
+        deleteHandler: (fileName, mainCode) => {
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
@@ -411,8 +403,16 @@ $(async () => {
             delete project[fileName];
             localStorage.setItem("faust_editor_project", JSON.stringify(project));
             if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(codes);
-                else getDiagram(codes);
+                if (audioEnv.dsp) runDsp(mainCode);
+                else getDiagram(mainCode);
+            }
+        },
+        mainFileChangeHandler: (index, mainCode) => {
+            compileOptions.mainFileIndex = index;
+            saveEditorParams();
+            if (compileOptions.realtimeCompile) {
+                if (audioEnv.dsp) runDsp(mainCode);
+                else getDiagram(mainCode);
             }
         }
     });
@@ -435,13 +435,13 @@ $(async () => {
     $<HTMLSelectElement>("#select-voices").on("change", (e) => {
         compileOptions.voices = +e.currentTarget.value;
         saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.allCodes);
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
     // BufferSize
     $<HTMLSelectElement>("#select-buffer-size").on("change", (e) => {
         compileOptions.bufferSize = +e.currentTarget.value as 128 | 256 | 512 | 1024 | 2048 | 4096;
         saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.allCodes);
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
     // AudioWorklet
     $<HTMLInputElement>("#check-worklet").on("change", (e) => {
@@ -453,7 +453,7 @@ $(async () => {
         else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
         $("#input-plot-samps").change();
         saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.allCodes);
+        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
     // Save Params
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
@@ -477,7 +477,7 @@ $(async () => {
         compileOptions.realtimeCompile = e.currentTarget.checked;
         saveEditorParams();
         if (compileOptions.realtimeCompile) {
-            const code = uiEnv.fileManager.allCodes;
+            const code = uiEnv.fileManager.mainCode;
             if (audioEnv.dsp) runDsp(code);
             else getDiagram(code);
         }
@@ -507,13 +507,13 @@ $(async () => {
     });
     $("#btn-plot").on("click", () => {
         if (compileOptions.plotMode === "offline") {
-            const code = uiEnv.fileManager.allCodes;
+            const code = uiEnv.fileManager.mainCode;
             const { args, plot, plotSR } = compileOptions;
             faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.analyser.plotHandler(t, 0, undefined, true));
             if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
         } else { // eslint-disable-next-line no-lonely-if
             if (audioEnv.dsp) uiEnv.analyser.draw();
-            else runDsp(uiEnv.fileManager.allCodes);
+            else runDsp(uiEnv.fileManager.mainCode);
         }
     });
     $("#tab-plot-ui").on("shown.bs.tab", () => uiEnv.plotScope.draw());
@@ -522,17 +522,15 @@ $(async () => {
         const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
         const fftSize = compileOptions.plotFFT || 256;
         const step = Math.max(bufferSize, fftSize);
-        const v1 = Math.max((v === compileOptions.plot - 1 ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
+        const v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
         compileOptions.plot = v1;
         uiEnv.analyser.buffers = v1 / bufferSize;
+        e.currentTarget.step = step.toString();
         e.currentTarget.value = v1.toString();
         saveEditorParams();
     })[0].value = compileOptions.plot.toString();
     $<HTMLInputElement>("#input-plot-sr").on("change", (e) => {
-        const v = +e.currentTarget.value;
-        const v1 = Math.max((v === compileOptions.plotSR - 1 ? Math.floor(v / 100) : Math.ceil(v / 100)) * 100, 1); // Spinner
-        compileOptions.plotSR = v1;
-        e.currentTarget.value = v1.toString();
+        compileOptions.plotSR = +e.currentTarget.value;
         saveEditorParams();
     })[0].value = compileOptions.plotSR.toString();
     $<HTMLInputElement>("#check-draw-spectrogram").on("change", (e) => {
@@ -547,6 +545,11 @@ $(async () => {
         compileOptions.plotFFT = +e.currentTarget.value as 256 | 1024 | 4096;
         uiEnv.analyser.fftSize = compileOptions.plotFFT;
         $("#input-plot-samps").change();
+        saveEditorParams();
+    });
+    $<HTMLInputElement>("#select-plot-fftoverlap").on("change", (e) => {
+        compileOptions.plotFFTOverlap = +e.currentTarget.value as 1 | 2 | 4 | 8;
+        uiEnv.analyser.fftOverlap = compileOptions.plotFFTOverlap;
         saveEditorParams();
     });
     /**
@@ -583,8 +586,8 @@ $(async () => {
         let code;
         if (urlParams.has("code")) {
             const codeURL = urlParams.get("code");
-            compileOptions.name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            $("#input-filename").val(compileOptions.name);
+            const name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+            uiEnv.fileManager.renameSelected(`${name}.dsp`);
             const response = await fetch(codeURL);
             code = await response.text();
         }
@@ -596,9 +599,8 @@ $(async () => {
             code = atob(b64Code);
         }
         if (urlParams.has("name")) {
-            const name = urlParams.get("name");
-            compileOptions.name = name.replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            $("#input-filename").val(compileOptions.name);
+            const name = urlParams.get("name").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+            uiEnv.fileManager.renameSelected(`${name}.dsp`);
             saveEditorParams();
         }
         if (code) {
@@ -618,10 +620,9 @@ $(async () => {
         const file = e.currentTarget.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            $("#input-filename").val(compileOptions.name);
+            const name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
             const code = reader.result.toString();
-            uiEnv.fileManager.setValue(code);
+            uiEnv.fileManager.newFile(`${name}.dsp`, code);
             if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(code);
                 else getDiagram(code);
@@ -630,11 +631,11 @@ $(async () => {
         reader.onerror = () => undefined;
         reader.readAsText(file);
     }).on("click", e => e.stopPropagation());
-    // Save as
+    // Save as //TODO zip
     $("#btn-save").on("click", () => {
         const text = uiEnv.fileManager.allCodes;
         const uri = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
-        $("#a-save").attr({ href: uri, download: compileOptions.name + ".dsp" })[0].click();
+        $("#a-save").attr({ href: uri, download: uiEnv.fileManager.mainFileName })[0].click();
     });
     $("#a-save").on("click", e => e.stopPropagation());
     // Docs
@@ -659,7 +660,7 @@ $(async () => {
                     plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
                     targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 }
-                $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(compileOptions.name));
+                $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
                 $("#export-name").on("keydown", (e) => {
                     if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
                 });
@@ -677,7 +678,7 @@ $(async () => {
                     $("#export-error").hide();
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    form.append("file", new File([`declare filename "${name}"; ${uiEnv.fileManager.allCodes}`], `${name}.dsp`));
+                    form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${editor.getValue()}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
@@ -733,8 +734,8 @@ $(async () => {
         const urlParams = new URLSearchParams();
         urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
         urlParams.set("voices", compileOptions.voices.toString());
-        urlParams.set("name", compileOptions.name);
-        urlParams.set("inline", btoa(uiEnv.fileManager.allCodes).replace("+", "-").replace("/", "_"));
+        urlParams.set("name", uiEnv.fileManager.mainFileNameWithoutSuffix);
+        urlParams.set("inline", btoa(uiEnv.fileManager.mainCode).replace("+", "-").replace("/", "_"));
         return base + "?" + urlParams.toString();
     };
     $("#modal-share").on("shown.bs.modal", () => {
@@ -1041,7 +1042,7 @@ $(async () => {
             if (!$(e.currentTarget).hasClass("switch")) return;
             $<HTMLInputElement>("#check-worklet")[0].checked = !compileOptions.useWorklet;
             $("#check-worklet").change();
-            if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.allCodes);
+            if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
         });
     } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
     // Output switch to connect / disconnect dsp form destination
@@ -1114,10 +1115,9 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 // Update filename
-                compileOptions.name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                $("#input-filename").val(compileOptions.name);
+                const name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                 const code = reader.result.toString();
-                uiEnv.fileManager.setValue(code);
+                uiEnv.fileManager.newFile(`${name}.dsp`, code);
                 // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
                     if (audioEnv.dsp) runDsp(code);
@@ -1127,14 +1127,6 @@ $(async () => {
             reader.onerror = () => undefined;
             reader.readAsText(file);
         }
-    });
-    // Update filename on change
-    $("#input-filename").val(compileOptions.name).on("keydown", (e) => {
-        if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
-    }).on("keyup", (e) => {
-        compileOptions.name = ($(e.currentTarget).val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-        $(e.currentTarget).val(compileOptions.name);
-        saveEditorParams();
     });
     // Examples
     type DirectoryTree = {
@@ -1176,9 +1168,8 @@ $(async () => {
             fetch("../" + path)
                 .then(response => response.text())
                 .then((code) => {
-                    compileOptions.name = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    $("#input-filename").val(compileOptions.name);
-                    uiEnv.fileManager.setValue(code);
+                    const fileName = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                    uiEnv.fileManager.newFile(fileName, code);
                     if (compileOptions.realtimeCompile) {
                         if (audioEnv.dsp) runDsp(code);
                         else getDiagram(code);
@@ -1187,9 +1178,17 @@ $(async () => {
         }
         $("#tab-examples").dropdown("toggle");
     });
+    /**
+     * Save current code to localStorage
+     * if realtime compile is on, do compile
+     */
+    editor.getModel().onDidChangeContent(() => {
+        const code = editor.getValue();
+        uiEnv.fileManager.setValue(code, false);
+    });
     // Run Dsp Button
     $(".btn-run").prop("disabled", false).on("click", async () => {
-        const compileResult = await runDsp(uiEnv.fileManager.allCodes);
+        const compileResult = await runDsp(uiEnv.fileManager.mainCode);
         if (!compileResult.success) return;
         if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
@@ -1403,10 +1402,11 @@ $(async () => {
     if (supportAudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
     $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
     $("#select-plot-fftsize").children(`option[value=${compileOptions.plotFFT}]`).prop("selected", true).change();
+    $("#select-plot-fftoverlap").children(`option[value=${compileOptions.plotFFTOverlap}]`).prop("selected", true).change();
     $("#input-plot-samps").change();
     $("#check-draw-spectrogram").change();
     $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
-    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, uiEnv.fileManager.allCodes);
+    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, uiEnv.fileManager.mainCode);
     window.faustEnv = faustEnv;
 });
 /**

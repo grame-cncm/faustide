@@ -4,9 +4,11 @@ type TOptions = {
     container: HTMLDivElement;
     fs: TFileSystem;
     path?: string;
-    selectHandler?: (name: string, content: string, codes: string) => any;
-    saveHandler?: (name: string, content: string, codes: string) => any;
-    deleteHandler?: (name: string, codes: string) => any;
+    $mainFile?: number;
+    selectHandler?: (name: string, content: string, mainCode: string) => any;
+    saveHandler?: (name: string, content: string, mainCode: string) => any;
+    deleteHandler?: (name: string, mainCode: string) => any;
+    mainFileChangeHandler?: (index: number, mainCode: string) => any;
 };
 type TFileSystem = {
     rename: (oldName: string, newName: string) => any;
@@ -29,17 +31,20 @@ export class FileManager {
     divOverlay: HTMLDivElement;
     container: HTMLDivElement;
     path: string = "./";
+    $mainFile: number = 0;
     _fileList: string[];
     private _fs: TFileSystem;
-    selectHandler: (name: string, content: string, codes: string) => any = () => undefined;
-    saveHandler: (name: string, content: string, codes: string) => any = () => undefined;
-    deleteHandler?: (name: string, codes: string) => any = () => undefined;
+    selectHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
+    saveHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
+    deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
+    mainFileChangeHandler?: (index: number, mainCode: string) => any = () => undefined;
 
     constructor(options: TOptions) {
         Object.assign(this, options);
         this.getChildren();
         this.getFiles();
         this.bind();
+        this.setMain(this.$mainFile);
     }
     getChildren() {
         for (let i = 0; i < this.container.children.length; i++) {
@@ -140,7 +145,7 @@ export class FileManager {
                 const file = e.dataTransfer.files[0];
                 const reader = new FileReader();
                 reader.onload = () => {
-                    let fileName = file.name.replace(/[^a-zA-Z0-9_]/g, "");
+                    let fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "");
                     if (!fileName) {
                         let i = 1;
                         fileName = "untitled" + i + ".dsp";
@@ -154,7 +159,7 @@ export class FileManager {
                     const divFile = this.createFileDiv(fileName, false);
                     this.divFiles.appendChild(divFile);
                     this.select(fileName);
-                    if (this.saveHandler) this.saveHandler(fileName, content, this.allCodes);
+                    if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
                 };
                 reader.onerror = () => undefined;
                 reader.readAsText(file);
@@ -176,10 +181,13 @@ export class FileManager {
         spanName.innerText = name;
         divFile.dataset.filename = name;
         if (editing) spanName.contentEditable = "true";
+        const btnMain = document.createElement("button");
+        btnMain.classList.add("filemanager-btn-main", "filemanager-btn-icon");
         const btnRename = document.createElement("button");
         btnRename.classList.add("filemanager-btn-rename", "filemanager-btn-icon");
         const btnDelete = document.createElement("button");
         btnDelete.classList.add("filemanager-btn-delete", "filemanager-btn-icon");
+        divFile.appendChild(btnMain);
         divFile.appendChild(spanName);
         divFile.appendChild(btnRename);
         divFile.appendChild(btnDelete);
@@ -198,19 +206,21 @@ export class FileManager {
             const newName = (e.currentTarget as HTMLSpanElement).innerText.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
             (e.currentTarget as HTMLSpanElement).innerText = newName;
             if (this.rename(fileName, newName)) fileName = newName;
-            else e.preventDefault();
         });
         spanName.addEventListener("keydown", (e) => {
             if (e.key === "Enter") (e.currentTarget as HTMLSpanElement).blur();
-            if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
+            if (e.key.match(/[^a-zA-Z0-9_.]/)) e.preventDefault();
         });
+        btnMain.addEventListener("mousedown", () => this.setMain(this._fileList.indexOf(fileName)));
+        btnMain.addEventListener("touchstart", () => this.setMain(this._fileList.indexOf(fileName)));
         btnDelete.addEventListener("click", (e) => {
             e.stopPropagation();
             const i = this._fileList.indexOf(fileName);
             this.fs.unlink(this.path + fileName);
             this._fileList.splice(i, 1);
             divFile.remove();
-            if (this.deleteHandler) this.deleteHandler(fileName, this.allCodes);
+            if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
+            if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
             if (this._fileList.length === 0) {
                 const fileName = "untitled.dsp";
                 this.fs.writeFile(this.path + fileName, "");
@@ -223,11 +233,25 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             } else {
                 this.select(this._fileList[0]);
             }
+            this.setMain(this.$mainFile);
         });
         const handlePointerDown = () => this.select(fileName);
         divFile.addEventListener("mousedown", handlePointerDown);
         divFile.addEventListener("touchstart", handlePointerDown);
         return divFile;
+    }
+    setMain($: number) {
+        if ($ >= this._fileList.length) return;
+        this.$mainFile = $;
+        for (let i = 0; i < this.divFiles.children.length; i++) {
+            const e = this.divFiles.children[i];
+            const btnMain = e.querySelector(".filemanager-btn-main");
+            if (btnMain) {
+                if (i === $) btnMain.classList.add("active");
+                else btnMain.classList.remove("active");
+            }
+        }
+        if (this.mainFileChangeHandler) this.mainFileChangeHandler($, this.mainCode);
     }
     getFiles() {
         this.divFiles.innerHTML = "";
@@ -252,8 +276,10 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         } else {
             this.select(this._fileList[0]);
         }
+        if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
     }
     rename(oldName: string, newName: string) {
+        if (oldName === newName) return false;
         const i = this._fileList.indexOf(oldName);
         let spanName: HTMLSpanElement;
         let divFile: HTMLDivElement;
@@ -277,7 +303,25 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         spanName.contentEditable = "false";
         divFile.dataset.filename = newName;
         this.select(newName);
+        this.deleteHandler(oldName, this.mainCode);
         return true;
+    }
+    renameSelected(newName: string) {
+        this.rename(this.selected, newName);
+    }
+    newFile(fileNameIn: string, content?: string) {
+        let fileName = fileNameIn;
+        if (this._fileList.indexOf(fileName) !== -1) {
+            let i = 1;
+            fileName = "untitled" + i + ".dsp";
+            while (this._fileList.indexOf(fileName) !== -1) {
+                fileName = "untitled" + (++i) + ".dsp";
+            }
+        }
+        this.fs.writeFile(this.path + fileName, content || "");
+        this._fileList.push(fileName);
+        const divFile = this.createFileDiv(fileName, false);
+        this.divFiles.appendChild(divFile);
     }
     select(fileName: string) {
         for (let i = 0; i < this.divFiles.children.length; i++) {
@@ -285,29 +329,30 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             if (divFile.dataset.filename === fileName) divFile.classList.add("selected");
             else divFile.classList.remove("selected");
         }
-        if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, { encoding: "utf8" }), this.allCodes);
+        if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, { encoding: "utf8" }), this.mainCode);
     }
     save(fileName: string, content: string) {
+        if (this.getValue(fileName) === content) return;
         this.fs.writeFile(this.path + fileName, content);
-        if (this.saveHandler) this.saveHandler(fileName, content, this.allCodes);
+        if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
     }
     saveAll() {
         if (!this.saveHandler) return;
         this._fileList.forEach((fileName) => {
             const content = this.getValue(fileName);
-            if (this.selectHandler && content) this.saveHandler(fileName, content, this.allCodes);
+            if (this.selectHandler && content) this.saveHandler(fileName, content, this.mainCode);
         });
     }
     setValue(value: string, useSelectHandler?: boolean) {
         const fileName = this.selected;
         if (fileName) {
-            if (this.selectHandler && useSelectHandler !== false) this.selectHandler(fileName, value, this.allCodes);
+            if (this.selectHandler && useSelectHandler !== false) this.selectHandler(fileName, value, this.mainCode);
             this.save(fileName, value);
         }
     }
     getValue(fileNameIn?: string) {
         const fileName = fileNameIn || this.selected;
-        if (fileName.endsWith(".dsp")) return this.fs.readFile(this.path + fileName, { encoding: "utf8" });
+        if (fileName.endsWith(".dsp") || fileName.endsWith(".lib")) return this.fs.readFile(this.path + fileName, { encoding: "utf8" });
         return null;
     }
     get selected() {
@@ -316,6 +361,16 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             if (divFile.classList.contains("selected")) return divFile.dataset.filename;
         }
         return null;
+    }
+    get mainCode() {
+        const fileName = this._fileList[this.$mainFile];
+        return fileName ? this.getValue(fileName) || "" : "";
+    }
+    get mainFileName() {
+        return this._fileList[this.$mainFile];
+    }
+    get mainFileNameWithoutSuffix() {
+        return this._fileList[this.$mainFile].split(".").slice(0, -1).join(".");
     }
     get allCodes() {
         let codes = "";
