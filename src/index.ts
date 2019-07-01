@@ -624,8 +624,8 @@ $(async () => {
             const code = reader.result.toString();
             uiEnv.fileManager.newFile(`${name}.dsp`, code);
             if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(code);
-                else getDiagram(code);
+                if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+                else getDiagram(uiEnv.fileManager.mainCode);
             }
         };
         reader.onerror = () => undefined;
@@ -1120,8 +1120,8 @@ $(async () => {
                 uiEnv.fileManager.newFile(`${name}.dsp`, code);
                 // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
-                    if (audioEnv.dsp) runDsp(code);
-                    else getDiagram(code);
+                    if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+                    else getDiagram(uiEnv.fileManager.mainCode);
                 }
             };
             reader.onerror = () => undefined;
@@ -1171,8 +1171,8 @@ $(async () => {
                     const fileName = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                     uiEnv.fileManager.newFile(`${fileName}.dsp`, code);
                     if (compileOptions.realtimeCompile) {
-                        if (audioEnv.dsp) runDsp(code);
-                        else getDiagram(code);
+                        if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+                        else getDiagram(uiEnv.fileManager.mainCode);
                     }
                 });
         }
