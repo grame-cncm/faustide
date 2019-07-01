@@ -1169,7 +1169,7 @@ $(async () => {
                 .then(response => response.text())
                 .then((code) => {
                     const fileName = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    uiEnv.fileManager.newFile(fileName, code);
+                    uiEnv.fileManager.newFile(`${fileName}.dsp`, code);
                     if (compileOptions.realtimeCompile) {
                         if (audioEnv.dsp) runDsp(code);
                         else getDiagram(code);
