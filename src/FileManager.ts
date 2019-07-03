@@ -206,6 +206,7 @@ export class FileManager {
             const newName = (e.currentTarget as HTMLSpanElement).innerText.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
             (e.currentTarget as HTMLSpanElement).innerText = newName;
             if (this.rename(fileName, newName)) fileName = newName;
+            (e.currentTarget as HTMLSpanElement).contentEditable = "false";
         });
         spanName.addEventListener("keydown", (e) => {
             if (e.key === "Enter") (e.currentTarget as HTMLSpanElement).blur();
