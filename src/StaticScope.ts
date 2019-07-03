@@ -881,9 +881,15 @@ export class StaticScope {
         if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "";
             this.canvas.style.display = "none";
+            this.btnZoom.style.display = "none";
+            this.btnZoomIn.style.display = "none";
+            this.btnZoomOut.style.display = "none";
         } else {
             this.divData.style.display = "none";
             this.canvas.style.display = "";
+            this.btnZoom.style.display = "";
+            this.btnZoomIn.style.display = "";
+            this.btnZoomOut.style.display = "";
         }
         this.draw();
     }

@@ -98,6 +98,7 @@ type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
+const VERSION = "1.0.0";
 
 $(async () => {
     /**
@@ -133,6 +134,8 @@ $(async () => {
      * @returns {(FaustEditorCompileOptions | {})}
      */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
+        const clientVersion = localStorage.getItem("faust_editor_version");
+        if (clientVersion !== VERSION) return {};
         const str = localStorage.getItem("faust_editor_params");
         if (!str) return {};
         try {
@@ -168,7 +171,7 @@ $(async () => {
         let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
-            strSvg = faust.getDiagram(code, ["-I", compileOptions.args["-I"]]);
+            strSvg = faust.getDiagram(code, compileOptions.args);
         } catch (e) {
             /**
              * Parse Faust-generated error message to locate the lines with error
@@ -359,6 +362,7 @@ $(async () => {
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous") };
     const compileOptions: FaustEditorCompileOptions = { name: "untitled", useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, args: { "-I": "libraries/" }, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, ...loadEditorParams() };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
+    localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
@@ -605,6 +609,7 @@ $(async () => {
         $("#export-download").off("click");
         $("#a-export-download").off("click");
         $("#export-submit").prop("disabled", true).off("click");
+        const expandedCode = faust.expandCode(editor.getValue(), compileOptions.args);
         fetch(`${server}/targets`)
             .then(response => response.json())
             .then((targets: FaustExportTargets) => {
@@ -631,7 +636,7 @@ $(async () => {
                     $("#export-error").hide();
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${editor.getValue()}`], `${name}.dsp`));
+                    form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
