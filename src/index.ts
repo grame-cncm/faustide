@@ -609,7 +609,6 @@ $(async () => {
         $("#export-download").off("click");
         $("#a-export-download").off("click");
         $("#export-submit").prop("disabled", true).off("click");
-        const expandedCode = faust.expandCode(editor.getValue(), compileOptions.args);
         fetch(`${server}/targets`)
             .then(response => response.json())
             .then((targets: FaustExportTargets) => {
@@ -636,7 +635,14 @@ $(async () => {
                     $("#export-error").hide();
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
+                    try {
+                        const expandedCode = faust.expandCode(editor.getValue(), compileOptions.args);
+                        form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
+                    } catch (e) {
+                        $("#export-loading").css("display", "none");
+                        $("#export-error").html(e).show();
+                        return;
+                    }
                     $.ajax({
                         method: "POST",
                         url: `${server}/filepost`,
