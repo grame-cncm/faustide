@@ -377,6 +377,11 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         this._fileList.forEach(fileName => codes += (this.getValue(fileName) || "") + "\n");
         return codes;
     }
+    get selectedCode() {
+        const selected = this.selected;
+        if (selected) return this.getValue(selected);
+        return this.mainCode;
+    }
     set expanded(expanded: boolean) {
         if (expanded) {
             if (!this.btnExpand.classList.contains("expanded")) {
