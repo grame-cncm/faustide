@@ -313,7 +313,7 @@ $(async () => {
          */
         const bindUI = () => {
             const callback = () => {
-                const msg = { type: "ui", json: node.getJSON() };
+                const msg = { type: "ui", ui: node.getUI() };
                 /**
                  * Post param list json
                  */
