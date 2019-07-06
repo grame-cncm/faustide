@@ -220,8 +220,6 @@ export class FileManager {
             this.fs.unlink(this.path + fileName);
             this._fileList.splice(i, 1);
             divFile.remove();
-            if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
-            if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
             if (this._fileList.length === 0) {
                 const fileName = "untitled.dsp";
                 this.fs.writeFile(this.path + fileName, "");
@@ -234,7 +232,9 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             } else {
                 this.select(this._fileList[0]);
             }
-            this.setMain(this.$mainFile);
+            if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
+            else this.setMain(this.$mainFile);
+            if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
         });
         const handlePointerDown = () => this.select(fileName);
         divFile.addEventListener("mousedown", handlePointerDown);

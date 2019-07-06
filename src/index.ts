@@ -286,7 +286,7 @@ $(async () => {
             audioEnv.dsp = node;
             const channelsCount = node.getNumOutputs();
             if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-                if (splitter) splitter.disconnect(analyser);
+                if (splitter) splitter.disconnect();
                 splitter = audioCtx.createChannelSplitter(channelsCount);
                 delete audioEnv.splitterOutput;
                 audioEnv.splitterOutput = splitter;
@@ -395,7 +395,7 @@ $(async () => {
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, mainCode);
         },
-        deleteHandler: (fileName, mainCode) => {
+        deleteHandler: (fileName) => {
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
@@ -404,10 +404,6 @@ $(async () => {
             }
             delete project[fileName];
             localStorage.setItem("faust_editor_project", JSON.stringify(project));
-            if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(mainCode);
-                else getDiagram(mainCode);
-            }
         },
         mainFileChangeHandler: (index, mainCode) => {
             compileOptions.mainFileIndex = index;

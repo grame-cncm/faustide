@@ -1828,6 +1828,8 @@ class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_6__["C
     this.container.style.top = "".concat(top, "px");
     this.container.style.width = "".concat(width, "px");
     this.container.style.height = "".concat(height, "px");
+    this.tabs.style.height = "".concat(grid, "px");
+    this.tabs.style.top = "".concat(0.25 * grid, "px");
 
     for (var i = 0; i < this.tabs.children.length; i++) {
       var tab = this.tabs.children[i];
