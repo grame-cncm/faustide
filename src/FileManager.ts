@@ -323,6 +323,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         this._fileList.push(fileName);
         const divFile = this.createFileDiv(fileName, false);
         this.divFiles.appendChild(divFile);
+        if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
     }
     select(fileName: string) {
         for (let i = 0; i < this.divFiles.children.length; i++) {
