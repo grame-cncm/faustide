@@ -408,10 +408,8 @@ $(async () => {
         mainFileChangeHandler: (index, mainCode) => {
             compileOptions.mainFileIndex = index;
             saveEditorParams();
-            if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(mainCode);
-                else getDiagram(mainCode);
-            }
+            clearTimeout(rtCompileTimer);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 100, mainCode);
         }
     });
     if (compileOptions.saveDsp) loadEditorDspTable();
