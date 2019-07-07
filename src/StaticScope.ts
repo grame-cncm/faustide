@@ -131,16 +131,16 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
-        if (drawMode === "continuous" && freqEstimated && sampleRate) { // Stablize
+        if (drawMode === "continuous") { // Stablize
             let $zerox = 0;
-            const thresh = 0.01;
+            const thresh = 0.001;
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
-            while (t[0][wrap($zerox++, $, l)] > 0 && $zerox < l);
+            while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l);
             if ($zerox >= l - 1) {
                 $zerox = 0;
             } else {
-                while (t[0][wrap($zerox++, $, l)] < 0 + thresh && $zerox < l);
+                while (t[0][wrap($zerox++, $, l)] < thresh && $zerox < l);
                 if ($zerox >= l - 1) {
                     $zerox = 0;
                 }
@@ -200,7 +200,7 @@ export class StaticScope {
             const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
-                if (samp) statsToDraw.values.push(samp);
+                if (typeof samp === "number") statsToDraw.values.push(samp);
             }
             this.drawStats(ctx, w, h, statsToDraw);
         }
@@ -223,16 +223,16 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
-        if (drawMode === "continuous" && freqEstimated && sampleRate) { // Stablize
+        if (drawMode === "continuous") { // Stablize
             let $zerox = 0;
-            const thresh = 0.01;
+            const thresh = 0.001;
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
-            while (t[0][wrap($zerox++, $, l)] > 0 && $zerox < l); // Find first raise
+            while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l); // Find first raise
             if ($zerox >= l - 1) { // Found nothing, no stablization
                 $zerox = 0;
             } else {
-                while (t[0][wrap($zerox++, $, l)] < 0 + thresh && $zerox < l); // Find first drop
+                while (t[0][wrap($zerox++, $, l)] < thresh && $zerox < l); // Find first drop
                 if ($zerox >= l - 1) {
                     $zerox = 0;
                 }
@@ -291,7 +291,7 @@ export class StaticScope {
             const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
-                if (samp) statsToDraw.values.push(samp);
+                if (typeof samp === "number") statsToDraw.values.push(samp);
             }
             this.drawStats(ctx, w, h, statsToDraw);
         }
@@ -346,7 +346,7 @@ export class StaticScope {
             const $j = wrap($cursor, $f, l);
             for (let i = 0; i < f.length; i++) {
                 const samp = f[i][$j];
-                if (samp) statsToDraw.values.push(samp);
+                if (typeof samp === "number") statsToDraw.values.push(samp);
             }
             this.drawStats(ctx, w, h, statsToDraw);
         }
@@ -392,7 +392,7 @@ export class StaticScope {
             const $j = wrap($cursor, $f, f[0].length);
             const freq = ($j % fftBins) / fftBins * d.sampleRate / 2;
             const samp = f[$ch][$j];
-            if (samp) statsToDraw.values = [samp];
+            if (typeof samp === "number") statsToDraw.values = [samp];
             statsToDraw.x = ($fft - $0fft + 0.5) * gridX + left;
             statsToDraw.y = (($ch + 1) * fftBins - $bin) * gridY;
             statsToDraw.xLabel = $fft.toFixed(0);
