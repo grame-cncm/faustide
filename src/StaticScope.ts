@@ -419,11 +419,11 @@ export class StaticScope {
         const $h = hCh / fftBins;
         if (canvasWidth !== w) ctx.canvas.width = w;
         const step = Math.max(1, Math.round(fftBins / hCh));
-        ctx.fillStyle = "black";
-        fillRectWrap(ctx, $0fft, 0, $1fft - $0fft, h, w, h);
         for (let i = 0; i < f.length; i++) {
             for (let j = $0fft; j < $1fft; j++) {
                 let maxInStep;
+                ctx.fillStyle = "black";
+                ctx.fillRect(j % w, 0, 1, h);
                 for (let k = 0; k < fftBins; k++) {
                     const samp = f[i][wrap(k, j * fftBins, l)];
                     const $step = k % step;
