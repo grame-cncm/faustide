@@ -80,11 +80,17 @@ export class Scope {
         const $0 = Math.round(l * zoomOffset);
         const $1 = Math.round(l / zoom + l * zoomOffset);
         ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
         for (let i = $0; i < $1; i++) {
             const x = w * (i - $0) / ($1 - $0);
             const y = ((d[i] + 10) / 100 + 1) * h;
-            ctx.fillRect(x, h - y, w / ($1 - $0), y);
+            if (i === $0) ctx.moveTo(x, h - y);
+            else ctx.lineTo(x, h - y);
         }
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fill();
     }
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: Float32Array, $: number) {
         const l = d.length;
