@@ -19,7 +19,6 @@ export class Scope {
     raf: number;
     ctx: CanvasRenderingContext2D;
     spectTempCtx: CanvasRenderingContext2D;
-    spectColCtx: CanvasRenderingContext2D;
     spectCol$ = 0;
     private _paused = false;
     frame = 0;
@@ -87,16 +86,29 @@ export class Scope {
             ctx.fillRect(x, h - y, w / ($1 - $0), y);
         }
     }
-    static drawOfflineSpectrogram(tempCtx: CanvasRenderingContext2D, colCtx: CanvasRenderingContext2D, $: number, d: Float32Array) {
+    static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: Float32Array, $: number) {
         const l = d.length;
-        const normalized = d.map(f => Math.min(1, Math.max(0, (f + 10) / 100 + 1)));
+        const h = ctx.canvas.height;
+        const step = Math.max(1, Math.round(l / h));
+        let maxInStep;
+        ctx.fillStyle = "black";
+        ctx.fillRect($, 0, 1, h);
+        const $h = h / l;
         for (let i = 0; i < l; i++) {
-            const hue = (normalized[i] * 180 + 240) % 360;
-            const lum = normalized[i] * 50;
-            colCtx.fillStyle = `hsla(${hue}, 100%, ${lum}%)`;
-            colCtx.fillRect(0, l - i - 1, 1, 1);
+            const samp = d[i];
+            const $step = i % step;
+            if ($step === 0) maxInStep = samp;
+            if ($step !== step - 1) {
+                if ($step !== 0 && samp > maxInStep) maxInStep = samp;
+                continue;
+            }
+            const normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
+            if (normalized === 0) continue;
+            const hue = (normalized * 180 + 240) % 360;
+            const lum = normalized * 50;
+            ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
+            ctx.fillRect($, (1 - i / l) * h, 1, Math.max(1, $h));
         }
-        tempCtx.drawImage(colCtx.canvas, $, 0, 1, tempCtx.canvas.height);
     }
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, $: number, w: number, h: number, d: Float32Array, zoom: number) {
         this.drawBackground(ctx, w, h);
@@ -175,14 +187,9 @@ export class Scope {
         if (!window.AudioWorklet) this.paused = true;
     }
     getChildren() {
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = 1024;
-        tempCanvas.height = 1024;
-        this.spectTempCtx = tempCanvas.getContext("2d");
-        const colCanvas = document.createElement("canvas");
-        colCanvas.width = 1;
-        colCanvas.height = this.f.length;
-        this.spectColCtx = colCanvas.getContext("2d");
+        this.spectTempCtx = document.createElement("canvas").getContext("2d");
+        this.spectTempCtx.canvas.height = 1024;
+        this.spectTempCtx.canvas.width = 1024;
         let ctrl: HTMLDivElement;
         for (let i = 0; i < this.container.children.length; i++) {
             const e = this.container.children[i];
@@ -311,7 +318,7 @@ export class Scope {
             const freq = this.f.indexOf(Math.max(...this.f)) / this.f.length * sr / 2;
             const samp = this.t[this.t.length - 1];
             const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // eslint-disable-line no-param-reassign
-            if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.spectColCtx, this.spectCol$, this.f);
+            if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.f, this.spectCol$);
             if (this.type === TScopeType.Oscilloscope) {
                 Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
                 Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
@@ -345,7 +352,6 @@ export class Scope {
         this.t = new Float32Array(this.analyser.fftSize);
         this.ti = new Uint8Array(this.analyser.fftSize);
         this.f = new Float32Array(this.analyser.frequencyBinCount);
-        this.spectColCtx.canvas.height = this.f.length;
         this.btnSize.innerText = sizeIn.toString() + " samps";
         this._size = sizeIn;
     }

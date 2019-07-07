@@ -1,4 +1,4 @@
-import { wrap, fillRectWrap, indexToFreq } from "./utils";
+import { wrap, indexToFreq } from "./utils";
 import "./StaticScope.scss";
 
 enum EScopeMode {
