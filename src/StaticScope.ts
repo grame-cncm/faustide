@@ -423,7 +423,7 @@ export class StaticScope {
             for (let j = $0fft; j < $1fft; j++) {
                 let maxInStep;
                 ctx.fillStyle = "black";
-                ctx.fillRect(j % w, 0, 1, h);
+                ctx.fillRect(j % w, i * hCh, 1, hCh);
                 for (let k = 0; k < fftBins; k++) {
                     const samp = f[i][wrap(k, j * fftBins, l)];
                     const $step = k % step;
@@ -437,7 +437,7 @@ export class StaticScope {
                     const hue = (normalized * 180 + 240) % 360;
                     const lum = normalized * 50;
                     ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
-                    fillRectWrap(ctx, j, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h), w, h);
+                    ctx.fillRect(j % w, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h));
                 }
             }
         }
