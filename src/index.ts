@@ -1,15 +1,12 @@
 /* eslint-disable newline-per-chained-call */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-use-before-define */
-// import { Faust } from "faust2webaudio";
 // TODO
 // webworkerify
 // bargraph in scopes
-// touch
-// plot scope
 // init params with getNode
-// horizontal scroll
-// File name strip and trim
+// popup plot
+// gain for input
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
@@ -141,13 +138,27 @@ $(async () => {
         const str = localStorage.getItem("faust_editor_params");
         if (!str) return {};
         try {
-            return JSON.parse(localStorage.getItem("faust_editor_params")) as FaustEditorCompileOptions;
+            return JSON.parse(str) as FaustEditorCompileOptions;
         } catch (e) {
             return {};
         }
     };
+    const loadDspParams = (): { [path: string]: number } => {
+        const str = localStorage.getItem("faust_editor_dsp_params");
+        if (!str) return {};
+        try {
+            return JSON.parse(str) as { [path: string]: number };
+        } catch (e) {
+            return {};
+        }
+    };
+    const saveDspParams = () => {
+        const str = JSON.stringify(dspParams);
+        localStorage.setItem("faust_editor_dsp_params", str);
+    };
+    const dspParams = loadDspParams();
     /**
-     * To load all files from localStorage
+     * Load all files to Emscripten File System from localStorage
      *
      */
     const loadProject = () => {
@@ -171,6 +182,11 @@ $(async () => {
         $(".alert-faust-code>span").text(str);
         $("#alert-faust-code").css("visibility", "visible");
     };
+    /**
+     * Hide error display
+     *
+     */
+    const clearError = () => $("#alert-faust-code").css("visibility", "hidden");
     /**
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
@@ -211,7 +227,7 @@ $(async () => {
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
         $("#diagram-default").hide(); // hide "No Diagram" info
-        $("#alert-faust-code").css("visibility", "hidden"); // Supress error shown
+        clearError(); // Supress error shown
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
@@ -267,15 +283,10 @@ $(async () => {
         /**
          * Update the dsp with saved params
          */
-        let dspParams: { [path: string]: number } = {};
         if (compileOptions.saveParams) {
-            const strDspParams = localStorage.getItem("faust_editor_dsp_params");
-            if (strDspParams) {
-                dspParams = JSON.parse(strDspParams);
-                for (const path in dspParams) {
-                    if (node.getParams().indexOf(path) !== -1) {
-                        node.setParamValue(path, dspParams[path]);
-                    }
+            for (const path in dspParams) {
+                if (node.getParams().indexOf(path) !== -1) {
+                    node.setParamValue(path, dspParams[path]);
                 }
             }
         }
@@ -353,7 +364,7 @@ $(async () => {
             }
         };
         bindUI();
-        $("#alert-faust-code").css("visibility", "hidden"); // Supress error alert
+        clearError(); // Supress error shown
         $("#faust-ui-default").hide(); // Hide "No DSP yet" info
         $("#nav-item-faust-ui").show(); // Show DSP UI tab
         $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
@@ -1200,17 +1211,14 @@ $(async () => {
     /**
      * Bind message event for changing dsp params on receiving msg from ui window
      */
-    const dspParams: { [path: string]: number } = {};
     $(window).on("message", (e) => {
         if (!(e.originalEvent as MessageEvent).data) return;
         const data = (e.originalEvent as MessageEvent).data;
         if (!data.type) return;
         if (data.type === "param") {
             if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
-            if (compileOptions.saveParams) {
-                dspParams[data.path] = +data.value;
-                localStorage.setItem("faust_editor_dsp_params", JSON.stringify(dspParams));
-            }
+            dspParams[data.path] = +data.value;
+            if (compileOptions.saveParams) saveDspParams();
             const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
             const msg = { path: data.path, value: +data.value, type: "param" };
             uiWindow.postMessage(msg, "*");
