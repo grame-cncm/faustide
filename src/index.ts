@@ -1454,7 +1454,7 @@ $(async () => {
  */
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEnv.audioCtx) {
-        const audioCtx = new (window.webkitAudioContext || window.AudioContext)();
+        const audioCtx = new (window.webkitAudioContext || window.AudioContext)({ latencyHint: 0.00001 });
         audioEnv.audioCtx = audioCtx;
         audioEnv.outputEnabled = true;
         audioCtx.addEventListener("statechange", () => {
@@ -1481,7 +1481,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         if (deviceId === "-1") {
             if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
         } else {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId } });
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
         }
     }
