@@ -1,6 +1,7 @@
 /* eslint-disable */
 const fs = require("fs");
 
-["faust_ui.html", "faust_ui.js", "faust_ui.js.map"].forEach((f) => {
-    fs.copyFileSync("./node_modules/faust-ui/dist/" + f, "./dist/" + f);
-});
+const map = { "index.js": "faust_ui.js", "index.js.map": "faust_ui.js.map" };
+for (const key in map) {
+    fs.copyFileSync("./node_modules/faust-ui/dist/" + key, "./dist/" + map[key]);
+}

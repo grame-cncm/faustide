@@ -699,7 +699,7 @@ export class StaticScope {
         }
         if (!this.divDefault) {
             const divDefault = document.createElement("div");
-            divDefault.classList.add("static-scope-data", "alert", "alert-info");
+            divDefault.classList.add("static-scope-default", "alert", "alert-info");
             divDefault.setAttribute("role", "alert");
             divDefault.innerHTML = "<h5>No Data</h5>";
             this.container.appendChild(divDefault);

@@ -96,64 +96,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "./node_modules/@babel/runtime/helpers/defineProperty.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@babel/runtime/helpers/defineProperty.js ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-module.exports = _defineProperty;
-
-/***/ }),
-
-/***/ "./node_modules/@babel/runtime/helpers/objectSpread.js":
-/*!*************************************************************!*\
-  !*** ./node_modules/@babel/runtime/helpers/objectSpread.js ***!
-  \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-var defineProperty = __webpack_require__(/*! ./defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-
-function _objectSpread(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-    var ownKeys = Object.keys(source);
-
-    if (typeof Object.getOwnPropertySymbols === 'function') {
-      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
-      }));
-    }
-
-    ownKeys.forEach(function (key) {
-      defineProperty(target, key, source[key]);
-    });
-  }
-
-  return target;
-}
-
-module.exports = _objectSpread;
-
-/***/ }),
-
 /***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/Base.scss":
 /*!*****************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/Base.scss ***!
@@ -1430,23 +1372,21 @@ module.exports = function (css) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUI", function() { return FaustUI; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _Layout__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Layout */ "./src/Layout.ts");
-/* harmony import */ var _FaustUIRoot__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./FaustUIRoot */ "./src/FaustUIRoot.ts");
-/* harmony import */ var _index_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./index.scss */ "./src/index.scss");
-/* harmony import */ var _index_scss__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_index_scss__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Layout__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Layout */ "./src/Layout.ts");
+/* harmony import */ var _FaustUIRoot__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./FaustUIRoot */ "./src/FaustUIRoot.ts");
+/* harmony import */ var _index_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./index.scss */ "./src/index.scss");
+/* harmony import */ var _index_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_index_scss__WEBPACK_IMPORTED_MODULE_3__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
 
-
-class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
+class FaustUI extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"] {
   on(type, listener) {
     return super.on(type, listener);
   }
@@ -1470,11 +1410,11 @@ class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
   constructor(options) {
     super();
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "root", void 0);
+    _defineProperty(this, "root", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "faustUIRoot", void 0);
+    _defineProperty(this, "faustUIRoot", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "_ui", void 0);
+    _defineProperty(this, "_ui", void 0);
 
     this.setMaxListeners(128);
     var root = options.root,
@@ -1493,7 +1433,7 @@ class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
         width = _this$root$getBoundin.width,
         height = _this$root$getBoundin.height;
 
-    var _Layout$calcLayout = _Layout__WEBPACK_IMPORTED_MODULE_3__["Layout"].calcLayout(this.ui),
+    var _Layout$calcLayout = _Layout__WEBPACK_IMPORTED_MODULE_1__["Layout"].calcLayout(this.ui),
         layout = _Layout$calcLayout.layout;
 
     return {
@@ -1509,7 +1449,7 @@ class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
         height = _this$calc.height,
         layout = _this$calc.layout;
 
-    this.faustUIRoot = new _FaustUIRoot__WEBPACK_IMPORTED_MODULE_4__["FaustUIRoot"]({
+    this.faustUIRoot = new _FaustUIRoot__WEBPACK_IMPORTED_MODULE_2__["FaustUIRoot"]({
       width,
       height,
       layout,
@@ -1529,7 +1469,7 @@ class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
     this._ui = uiIn;
     var state = this.calc();
     this.emit("uiWillChange", this._ui);
-    if (this.faustUIRoot) this.faustUIRoot.setState(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, state, {
+    if (this.faustUIRoot) this.faustUIRoot.setState(_objectSpread({}, state, {
       ui: this.ui
     }));
     this.emit("uiChanged", this._ui);
@@ -1564,24 +1504,23 @@ class FaustUI extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIGroup", function() { return FaustUIGroup; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Layout__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Layout */ "./src/Layout.ts");
-/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Button */ "./src/components/Button.ts");
-/* harmony import */ var _components_Checkbox__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/Checkbox */ "./src/components/Checkbox.ts");
-/* harmony import */ var _components_Nentry__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/Nentry */ "./src/components/Nentry.ts");
-/* harmony import */ var _components_Component__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/Component */ "./src/components/Component.ts");
-/* harmony import */ var _components_Knob__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/Knob */ "./src/components/Knob.ts");
-/* harmony import */ var _components_VSlider__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/VSlider */ "./src/components/VSlider.ts");
-/* harmony import */ var _components_HSlider__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/HSlider */ "./src/components/HSlider.ts");
-/* harmony import */ var _components_VBargraph__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/VBargraph */ "./src/components/VBargraph.ts");
-/* harmony import */ var _components_HBargraph__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/HBargraph */ "./src/components/HBargraph.ts");
-/* harmony import */ var _components_Numerical__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/Numerical */ "./src/components/Numerical.ts");
-/* harmony import */ var _components_Led__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./components/Led */ "./src/components/Led.ts");
-/* harmony import */ var _components_Menu__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./components/Menu */ "./src/components/Menu.ts");
-/* harmony import */ var _components_Radio__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./components/Radio */ "./src/components/Radio.ts");
+/* harmony import */ var _Layout__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Layout */ "./src/Layout.ts");
+/* harmony import */ var _components_Button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/Button */ "./src/components/Button.ts");
+/* harmony import */ var _components_Checkbox__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/Checkbox */ "./src/components/Checkbox.ts");
+/* harmony import */ var _components_Nentry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Nentry */ "./src/components/Nentry.ts");
+/* harmony import */ var _components_Component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./components/Component */ "./src/components/Component.ts");
+/* harmony import */ var _components_Knob__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./components/Knob */ "./src/components/Knob.ts");
+/* harmony import */ var _components_VSlider__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./components/VSlider */ "./src/components/VSlider.ts");
+/* harmony import */ var _components_HSlider__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/HSlider */ "./src/components/HSlider.ts");
+/* harmony import */ var _components_VBargraph__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/VBargraph */ "./src/components/VBargraph.ts");
+/* harmony import */ var _components_HBargraph__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/HBargraph */ "./src/components/HBargraph.ts");
+/* harmony import */ var _components_Numerical__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./components/Numerical */ "./src/components/Numerical.ts");
+/* harmony import */ var _components_Led__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./components/Led */ "./src/components/Led.ts");
+/* harmony import */ var _components_Menu__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./components/Menu */ "./src/components/Menu.ts");
+/* harmony import */ var _components_Radio__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./components/Radio */ "./src/components/Radio.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
@@ -1597,16 +1536,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_6__["Component"] {
+class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "tabs", void 0);
+    _defineProperty(this, "tabs", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "items", void 0);
+    _defineProperty(this, "items", void 0);
   }
 
   static parseMeta(metaIn) {
@@ -1640,7 +1578,7 @@ class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_6__["C
   }
 
   static getComponent(item, emitter, grid, itemLeft, itemTop) {
-    var type = _Layout__WEBPACK_IMPORTED_MODULE_2__["Layout"].predictType(item);
+    var type = _Layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].predictType(item);
 
     var _this$parseMeta = this.parseMeta(item.meta),
         metaObject = _this$parseMeta.metaObject,
@@ -1672,18 +1610,18 @@ class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_6__["C
       step: "step" in item ? +item.step : 1,
       value: "init" in item ? +item.init || 0 : 0
     };
-    if (type === "button") return new _components_Button__WEBPACK_IMPORTED_MODULE_3__["FaustUIButton"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "checkbox") return new _components_Checkbox__WEBPACK_IMPORTED_MODULE_4__["FaustUICheckbox"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "nentry") return new _components_Nentry__WEBPACK_IMPORTED_MODULE_5__["FaustUINentry"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "knob") return new _components_Knob__WEBPACK_IMPORTED_MODULE_7__["FaustUIKnob"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "menu") return new _components_Menu__WEBPACK_IMPORTED_MODULE_14__["FaustUIMenu"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "radio") return new _components_Radio__WEBPACK_IMPORTED_MODULE_15__["FaustUIRadio"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "hslider") return new _components_HSlider__WEBPACK_IMPORTED_MODULE_9__["FaustUIHSlider"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "vslider") return new _components_VSlider__WEBPACK_IMPORTED_MODULE_8__["FaustUIVSlider"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "hbargraph") return new _components_HBargraph__WEBPACK_IMPORTED_MODULE_11__["FaustUIHBargraph"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "vbargraph") return new _components_VBargraph__WEBPACK_IMPORTED_MODULE_10__["FaustUIVBargraph"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "numerical") return new _components_Numerical__WEBPACK_IMPORTED_MODULE_12__["FaustUINumerical"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
-    if (type === "led") return new _components_Led__WEBPACK_IMPORTED_MODULE_13__["FaustUILed"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, props));
+    if (type === "button") return new _components_Button__WEBPACK_IMPORTED_MODULE_1__["FaustUIButton"](_objectSpread({}, props));
+    if (type === "checkbox") return new _components_Checkbox__WEBPACK_IMPORTED_MODULE_2__["FaustUICheckbox"](_objectSpread({}, props));
+    if (type === "nentry") return new _components_Nentry__WEBPACK_IMPORTED_MODULE_3__["FaustUINentry"](_objectSpread({}, props));
+    if (type === "knob") return new _components_Knob__WEBPACK_IMPORTED_MODULE_5__["FaustUIKnob"](_objectSpread({}, props));
+    if (type === "menu") return new _components_Menu__WEBPACK_IMPORTED_MODULE_12__["FaustUIMenu"](_objectSpread({}, props));
+    if (type === "radio") return new _components_Radio__WEBPACK_IMPORTED_MODULE_13__["FaustUIRadio"](_objectSpread({}, props));
+    if (type === "hslider") return new _components_HSlider__WEBPACK_IMPORTED_MODULE_7__["FaustUIHSlider"](_objectSpread({}, props));
+    if (type === "vslider") return new _components_VSlider__WEBPACK_IMPORTED_MODULE_6__["FaustUIVSlider"](_objectSpread({}, props));
+    if (type === "hbargraph") return new _components_HBargraph__WEBPACK_IMPORTED_MODULE_9__["FaustUIHBargraph"](_objectSpread({}, props));
+    if (type === "vbargraph") return new _components_VBargraph__WEBPACK_IMPORTED_MODULE_8__["FaustUIVBargraph"](_objectSpread({}, props));
+    if (type === "numerical") return new _components_Numerical__WEBPACK_IMPORTED_MODULE_10__["FaustUINumerical"](_objectSpread({}, props));
+    if (type === "led") return new _components_Led__WEBPACK_IMPORTED_MODULE_11__["FaustUILed"](_objectSpread({}, props));
     return undefined;
   }
 
@@ -1902,31 +1840,29 @@ class FaustUIGroup extends _components_Component__WEBPACK_IMPORTED_MODULE_6__["C
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIRoot", function() { return FaustUIRoot; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _FaustUIGroup__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./FaustUIGroup */ "./src/FaustUIGroup.ts");
-/* harmony import */ var _components_Component__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./components/Component */ "./src/components/Component.ts");
+/* harmony import */ var _FaustUIGroup__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FaustUIGroup */ "./src/FaustUIGroup.ts");
+/* harmony import */ var _components_Component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/Component */ "./src/components/Component.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIRoot extends _components_Component__WEBPACK_IMPORTED_MODULE_3__["Component"] {
+class FaustUIRoot extends _components_Component__WEBPACK_IMPORTED_MODULE_1__["Component"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "container", void 0);
+    _defineProperty(this, "container", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "xGrids", void 0);
+    _defineProperty(this, "xGrids", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "yGrids", void 0);
+    _defineProperty(this, "yGrids", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "grid", void 0);
+    _defineProperty(this, "grid", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "left", void 0);
+    _defineProperty(this, "left", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "top", void 0);
+    _defineProperty(this, "top", void 0);
   }
 
   componentWillMount() {
@@ -1959,7 +1895,7 @@ class FaustUIRoot extends _components_Component__WEBPACK_IMPORTED_MODULE_3__["Co
 
   updateChildren() {
     this.container.innerHTML = "";
-    this.children = this.state.ui.map(group => new _FaustUIGroup__WEBPACK_IMPORTED_MODULE_2__["FaustUIGroup"](_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.state, {
+    this.children = this.state.ui.map(group => new _FaustUIGroup__WEBPACK_IMPORTED_MODULE_0__["FaustUIGroup"](_objectSpread({}, this.state, {
       grid: this.grid,
       ui: group,
       outerLeft: 0,
@@ -1987,11 +1923,9 @@ class FaustUIRoot extends _components_Component__WEBPACK_IMPORTED_MODULE_3__["Co
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Layout", function() { return Layout; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 class Layout {
   static predictType(item) {
@@ -2014,7 +1948,7 @@ class Layout {
 
   static injectLayout(ui) {
     ui.forEach(item => {
-      if ("items" in item) this.injectLayout(item.items);else item.layout = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.itemLayoutMap[this.predictType(item)]);
+      if ("items" in item) this.injectLayout(item.items);else item.layout = _objectSpread({}, this.itemLayoutMap[this.predictType(item)]);
     });
     return ui;
   }
@@ -2150,13 +2084,13 @@ class Layout {
 
 }
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Layout, "padding", 0.2);
+_defineProperty(Layout, "padding", 0.2);
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Layout, "labelHeight", 0.25);
+_defineProperty(Layout, "labelHeight", 0.25);
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Layout, "spaceBetween", 0.1);
+_defineProperty(Layout, "spaceBetween", 0.1);
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Layout, "itemLayoutMap", {
+_defineProperty(Layout, "itemLayoutMap", {
   hslider: {
     width: 5,
     height: 1,
@@ -2266,34 +2200,31 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIItem", function() { return FaustUIItem; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
-/* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Base.scss */ "./src/components/Base.scss");
-/* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Base_scss__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Component */ "./src/components/Component.ts");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+/* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Base.scss */ "./src/components/Base.scss");
+/* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Base_scss__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Component */ "./src/components/Component.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
 
-
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 
 
-class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
+class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_2__["Component"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "container", void 0);
+    _defineProperty(this, "container", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", void 0);
+    _defineProperty(this, "className", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleKeyDown", e => {});
+    _defineProperty(this, "handleKeyDown", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleKeyUp", e => {});
+    _defineProperty(this, "handleKeyUp", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleTouchStart", e => {
+    _defineProperty(this, "handleTouchStart", e => {
       e.preventDefault();
       var rect = e.currentTarget.getBoundingClientRect();
       var prevX = e.touches[0].pageX;
@@ -2350,11 +2281,11 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
       });
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleWheel", e => {});
+    _defineProperty(this, "handleWheel", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleClick", e => {});
+    _defineProperty(this, "handleClick", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleMouseDown", e => {
+    _defineProperty(this, "handleMouseDown", e => {
       e.preventDefault();
       e.currentTarget.focus();
       var rect = e.currentTarget.getBoundingClientRect();
@@ -2400,23 +2331,23 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
       document.addEventListener("mouseup", handleMouseUp);
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleMouseOver", e => {});
+    _defineProperty(this, "handleMouseOver", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleMouseOut", e => {});
+    _defineProperty(this, "handleMouseOut", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleContextMenu", e => {});
+    _defineProperty(this, "handleContextMenu", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDown", e => {});
+    _defineProperty(this, "handlePointerDown", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDrag", e => {});
+    _defineProperty(this, "handlePointerDrag", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerUp", e => {});
+    _defineProperty(this, "handlePointerUp", e => {});
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleFocusIn", e => this.setState({
+    _defineProperty(this, "handleFocusIn", e => this.setState({
       focus: true
     }));
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleFocusOut", e => this.setState({
+    _defineProperty(this, "handleFocusOut", e => this.setState({
       focus: false
     }));
   }
@@ -2436,7 +2367,7 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
     if (unitstyle === "%") return value.toFixed(type === "int" ? 0 : 2) + " %";
     if (unitstyle === "pan") return value === 0 ? "C" : (type === "int" ? Math.abs(value) : Math.abs(value).toFixed(2)) + (value < 0 ? " L" : " R");
     if (unitstyle === "semitones") return value.toFixed(type === "int" ? 0 : 2) + " st";
-    if (unitstyle === "midi") return Object(_utils__WEBPACK_IMPORTED_MODULE_2__["toMIDI"])(value);
+    if (unitstyle === "midi") return Object(_utils__WEBPACK_IMPORTED_MODULE_0__["toMIDI"])(value);
     if (unitstyle === "custom") return value.toFixed(type === "int" ? 0 : 2) + " " + unit;
     if (unitstyle === "native") return value.toFixed(type === "int" ? 0 : 2);
     return "N/A";
@@ -2493,7 +2424,7 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
   }
 
   resize() {
-    var style = this.state ? _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style) : this.defaultProps.style;
+    var style = this.state ? _objectSpread({}, this.defaultProps.style, this.state.style) : this.defaultProps.style;
     this.container.style.width = "".concat(style.width, "px");
     this.container.style.height = "".concat(style.height, "px");
     this.container.style.left = "".concat(style.left, "px");
@@ -2587,7 +2518,7 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_4__["Component"] {
 
 }
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(FaustUIItem, "defaultProps", {
+_defineProperty(FaustUIItem, "defaultProps", {
   value: 0,
   active: true,
   focus: false,
@@ -2651,40 +2582,38 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIButton", function() { return FaustUIButton; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Button.scss */ "./src/components/Button.scss");
-/* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Button_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Button.scss */ "./src/components/Button.scss");
+/* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Button_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIButton extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIButton extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "button");
+    _defineProperty(this, "className", "button");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "btn", void 0);
+    _defineProperty(this, "btn", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "span", void 0);
+    _defineProperty(this, "span", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDown", () => {
+    _defineProperty(this, "handlePointerDown", () => {
       this.setValue(1);
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerUp", () => {
+    _defineProperty(this, "handlePointerUp", () => {
       this.setValue(0);
     });
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "normal",
@@ -2709,7 +2638,7 @@ class FaustUIButton extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   setStyle() {
     var value = this.state.value;
 
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.btn.style.backgroundColor = value ? style.bgoncolor : style.bgcolor;
     this.btn.style.borderColor = value ? style.borderoncolor : style.bordercolor;
@@ -2778,25 +2707,24 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUICheckbox", function() { return FaustUICheckbox; });
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Button__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Button */ "./src/components/Button.ts");
-/* harmony import */ var _Checkbox_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Checkbox.scss */ "./src/components/Checkbox.scss");
-/* harmony import */ var _Checkbox_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_Checkbox_scss__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _Button__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Button */ "./src/components/Button.ts");
+/* harmony import */ var _Checkbox_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Checkbox.scss */ "./src/components/Checkbox.scss");
+/* harmony import */ var _Checkbox_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Checkbox_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-class FaustUICheckbox extends _Button__WEBPACK_IMPORTED_MODULE_1__["FaustUIButton"] {
+class FaustUICheckbox extends _Button__WEBPACK_IMPORTED_MODULE_0__["FaustUIButton"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "className", "checkbox");
+    _defineProperty(this, "className", "checkbox");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handlePointerDown", () => {
+    _defineProperty(this, "handlePointerDown", () => {
       this.setValue(1 - this.state.value);
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handlePointerUp", () => {});
+    _defineProperty(this, "handlePointerUp", () => {});
   }
 
 }
@@ -2813,16 +2741,14 @@ class FaustUICheckbox extends _Button__WEBPACK_IMPORTED_MODULE_1__["FaustUIButto
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-
-class Component extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
+class Component extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"] {
   on(type, listener) {
     return super.on(type, listener);
   }
@@ -2850,13 +2776,13 @@ class Component extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
   constructor(props) {
     super();
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "children", void 0);
+    _defineProperty(this, "children", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "container", void 0);
+    _defineProperty(this, "container", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "state", void 0);
+    _defineProperty(this, "state", void 0);
 
-    var state = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps, props);
+    var state = _objectSpread({}, this.defaultProps, props);
 
     this.state = state;
     return this;
@@ -2892,7 +2818,7 @@ class Component extends events__WEBPACK_IMPORTED_MODULE_2__["EventEmitter"] {
 
 }
 
-_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Component, "defaultProps", {});
+_defineProperty(Component, "defaultProps", {});
 
 /***/ }),
 
@@ -2936,26 +2862,24 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIHBargraph", function() { return FaustUIHBargraph; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HBargraph.scss */ "./src/components/HBargraph.scss");
-/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_HBargraph_scss__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _VBargraph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./VBargraph */ "./src/components/VBargraph.ts");
+/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HBargraph.scss */ "./src/components/HBargraph.scss");
+/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_HBargraph_scss__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _VBargraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VBargraph */ "./src/components/VBargraph.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIHBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_3__["FaustUIVBargraph"] {
+class FaustUIHBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["FaustUIVBargraph"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "hbargraph");
+    _defineProperty(this, "className", "hbargraph");
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.input.style.fontSize = "".concat(style.fontsize || style.height * 0.2, "px");
     this.input.style.color = style.textcolor;
@@ -2967,7 +2891,7 @@ class FaustUIHBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_3__["FaustUIV
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         barwidth = _this$defaultProps$st.barwidth,
         barbgcolor = _this$defaultProps$st.barbgcolor,
         coldcolor = _this$defaultProps$st.coldcolor,
@@ -3096,28 +3020,26 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIHSlider", function() { return FaustUIHSlider; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _HSlider_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HSlider.scss */ "./src/components/HSlider.scss");
-/* harmony import */ var _HSlider_scss__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_HSlider_scss__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
-/* harmony import */ var _VSlider__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./VSlider */ "./src/components/VSlider.ts");
+/* harmony import */ var _HSlider_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HSlider.scss */ "./src/components/HSlider.scss");
+/* harmony import */ var _HSlider_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_HSlider_scss__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+/* harmony import */ var _VSlider__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./VSlider */ "./src/components/VSlider.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
-
-class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_4__["FaustUIVSlider"] {
+class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["FaustUIVSlider"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "hslider");
+    _defineProperty(this, "className", "hslider");
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.input.style.fontSize = "".concat(style.fontsize || style.height * 0.2, "px");
     this.input.style.color = style.textcolor;
@@ -3129,7 +3051,7 @@ class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_4__["FaustUIVSlid
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         sliderwidth = _this$defaultProps$st.sliderwidth,
         sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
         sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
@@ -3157,10 +3079,10 @@ class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_4__["FaustUIVSlid
     grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgoncolor);
     grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgcolor);
     ctx.fillStyle = grd;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_3__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
+    Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
 
     ctx.fillStyle = slidercolor;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_3__["fillRoundedRect"])(ctx, left + drawWidth * distance - drawHeight, top - drawHeight, drawHeight * 2, drawHeight * 3, borderRadius);
+    Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left + drawWidth * distance - drawHeight, top - drawHeight, drawHeight * 2, drawHeight * 3, borderRadius);
   }
 
 }
@@ -3207,39 +3129,37 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIKnob", function() { return FaustUIKnob; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Knob.scss */ "./src/components/Knob.scss");
-/* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Knob_scss__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Knob.scss */ "./src/components/Knob.scss");
+/* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Knob_scss__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
-
-class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "knob");
+    _defineProperty(this, "className", "knob");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "canvas", void 0);
+    _defineProperty(this, "canvas", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "input", void 0);
+    _defineProperty(this, "input", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "ctx", void 0);
+    _defineProperty(this, "ctx", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleChange", e => {
+    _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
       this.paint();
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDrag", e => {
+    _defineProperty(this, "handlePointerDrag", e => {
       var newValue = this.getValueFromDelta(e);
       if (newValue !== this.state.value) this.setValue(newValue);
     });
@@ -3247,8 +3167,8 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -3281,7 +3201,7 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.input.style.fontSize = "".concat(style.fontsize || style.height * 0.1, "px");
     this.input.style.color = style.textcolor;
@@ -3337,7 +3257,7 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         knobwidth = _this$defaultProps$st.knobwidth,
         knobcolor = _this$defaultProps$st.knobcolor,
         knoboncolor = _this$defaultProps$st.knoboncolor,
@@ -3355,7 +3275,7 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
     canvas.height = height;
     var start = 5 / 8 * Math.PI;
     var end = 19 / 8 * Math.PI;
-    var valPos = start + Object(_utils__WEBPACK_IMPORTED_MODULE_4__["toRad"])(distance * 315);
+    var valPos = start + Object(_utils__WEBPACK_IMPORTED_MODULE_2__["toRad"])(distance * 315);
     var dialHeight = Math.min(width, height) * 0.75;
     var dialRadius = dialHeight * 0.5;
     var dialCenterX = width * 0.5;
@@ -3450,38 +3370,36 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUILed", function() { return FaustUILed; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Led.scss */ "./src/components/Led.scss");
-/* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Led_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Led.scss */ "./src/components/Led.scss");
+/* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Led_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "led");
+    _defineProperty(this, "className", "led");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "canvas", void 0);
+    _defineProperty(this, "canvas", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "tempCanvas", void 0);
+    _defineProperty(this, "tempCanvas", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "ctx", void 0);
+    _defineProperty(this, "ctx", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "tempCtx", void 0);
+    _defineProperty(this, "tempCtx", void 0);
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -3514,7 +3432,7 @@ class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.label.style.fontSize = "".concat(style.height * 0.25, "px");
     this.label.style.color = style.labelcolor;
@@ -3554,7 +3472,7 @@ class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         shape = _this$defaultProps$st.shape,
         ledbgcolor = _this$defaultProps$st.ledbgcolor,
         coldcolor = _this$defaultProps$st.coldcolor,
@@ -3642,36 +3560,34 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIMenu", function() { return FaustUIMenu; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Menu.scss */ "./src/components/Menu.scss");
-/* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Menu_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Menu.scss */ "./src/components/Menu.scss");
+/* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Menu_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIMenu extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIMenu extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "menu");
+    _defineProperty(this, "className", "menu");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "select", void 0);
+    _defineProperty(this, "select", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleChange", e => {
+    _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
     });
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -3712,7 +3628,7 @@ class FaustUIMenu extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.select.style.backgroundColor = style.bgcolor;
     this.select.style.borderColor = style.bordercolor;
@@ -3786,36 +3702,34 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUINentry", function() { return FaustUINentry; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Nentry.scss */ "./src/components/Nentry.scss");
-/* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Nentry_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Nentry.scss */ "./src/components/Nentry.scss");
+/* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Nentry_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUINentry extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUINentry extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "nentry");
+    _defineProperty(this, "className", "nentry");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "input", void 0);
+    _defineProperty(this, "input", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleChange", e => {
+    _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
     });
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -3842,7 +3756,7 @@ class FaustUINentry extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.input.style.backgroundColor = style.bgcolor;
     this.input.style.borderColor = style.bordercolor;
@@ -3913,32 +3827,30 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUINumerical", function() { return FaustUINumerical; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Numerical.scss */ "./src/components/Numerical.scss");
-/* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Numerical_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Numerical.scss */ "./src/components/Numerical.scss");
+/* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Numerical_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUINumerical extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUINumerical extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "numerical");
+    _defineProperty(this, "className", "numerical");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "input", void 0);
+    _defineProperty(this, "input", void 0);
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -3962,7 +3874,7 @@ class FaustUINumerical extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"]
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     this.input.style.backgroundColor = style.bgcolor;
     this.input.style.borderColor = style.bordercolor;
@@ -4029,36 +3941,34 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIRadio", function() { return FaustUIRadio; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Radio.scss */ "./src/components/Radio.scss");
-/* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_Radio_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Radio.scss */ "./src/components/Radio.scss");
+/* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Radio_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIRadio extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIRadio extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "radio");
+    _defineProperty(this, "className", "radio");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "group", void 0);
+    _defineProperty(this, "group", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleChange", e => {
+    _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
     });
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -4115,7 +4025,7 @@ class FaustUIRadio extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     var fontSize = Math.min(style.height * 0.1, style.width * 0.1);
     this.group.style.backgroundColor = style.bgcolor;
@@ -4190,44 +4100,42 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIVBargraph", function() { return FaustUIVBargraph; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./VBargraph.scss */ "./src/components/VBargraph.scss");
-/* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_VBargraph_scss__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VBargraph.scss */ "./src/components/VBargraph.scss");
+/* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_VBargraph_scss__WEBPACK_IMPORTED_MODULE_1__);
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-
-class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "vbargraph");
+    _defineProperty(this, "className", "vbargraph");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "canvas", void 0);
+    _defineProperty(this, "canvas", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "input", void 0);
+    _defineProperty(this, "input", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "flexDiv", void 0);
+    _defineProperty(this, "flexDiv", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "ctx", void 0);
+    _defineProperty(this, "ctx", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "paintValue", 0);
+    _defineProperty(this, "paintValue", 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "maxValue", -Infinity);
+    _defineProperty(this, "maxValue", -Infinity);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "maxTimer", void 0);
+    _defineProperty(this, "maxTimer", void 0);
   }
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -4261,7 +4169,7 @@ class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"]
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     var fontSize = Math.min(style.height * 0.05, style.width * 0.2);
     this.input.style.fontSize = "".concat(style.fontsize || fontSize, "px");
@@ -4309,7 +4217,7 @@ class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"]
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         barwidth = _this$defaultProps$st.barwidth,
         barbgcolor = _this$defaultProps$st.barbgcolor,
         coldcolor = _this$defaultProps$st.coldcolor,
@@ -4438,50 +4346,48 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FaustUIVSlider", function() { return FaustUIVSlider; });
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/objectSpread */ "./node_modules/@babel/runtime/helpers/objectSpread.js");
-/* harmony import */ var _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
-/* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
-/* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./VSlider.scss */ "./src/components/VSlider.scss");
-/* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_VSlider_scss__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+/* harmony import */ var _Base__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base */ "./src/components/Base.ts");
+/* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VSlider.scss */ "./src/components/VSlider.scss");
+/* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_VSlider_scss__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
 
-
-class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
+class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
   constructor() {
     super(...arguments);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "className", "vslider");
+    _defineProperty(this, "className", "vslider");
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "label", void 0);
+    _defineProperty(this, "label", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "canvas", void 0);
+    _defineProperty(this, "canvas", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "input", void 0);
+    _defineProperty(this, "input", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "flexDiv", void 0);
+    _defineProperty(this, "flexDiv", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "ctx", void 0);
+    _defineProperty(this, "ctx", void 0);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "interactionRect", [0, 0, 0, 0]);
+    _defineProperty(this, "interactionRect", [0, 0, 0, 0]);
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handleChange", e => {
+    _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
       this.paint();
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDown", e => {
+    _defineProperty(this, "handlePointerDown", e => {
       var value = this.state.value;
       if (e.x < this.interactionRect[0] || e.x > this.interactionRect[0] + this.interactionRect[2] || e.y < this.interactionRect[1] || e.y > this.interactionRect[1] + this.interactionRect[3]) return;
       var newValue = this.getValueFromPos(e);
       if (newValue !== value) this.setValue(this.getValueFromPos(e));
     });
 
-    _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "handlePointerDrag", e => {
+    _defineProperty(this, "handlePointerDrag", e => {
       var newValue = this.getValueFromPos(e);
       if (newValue !== this.state.value) this.setValue(newValue);
     });
@@ -4489,8 +4395,8 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
 
   static get defaultProps() {
     var inherited = super.defaultProps;
-    return _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited, {
-      style: _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, inherited.style, {
+    return _objectSpread({}, inherited, {
+      style: _objectSpread({}, inherited.style, {
         fontname: "Arial",
         fontsize: undefined,
         fontface: "regular",
@@ -4525,7 +4431,7 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   setStyle() {
-    var style = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style);
+    var style = _objectSpread({}, this.defaultProps.style, this.state.style);
 
     var fontSize = Math.min(style.height * 0.05, style.width * 0.2);
     this.input.style.fontSize = "".concat(style.fontsize || fontSize, "px");
@@ -4583,7 +4489,7 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
   }
 
   paint() {
-    var _this$defaultProps$st = _babel_runtime_helpers_objectSpread__WEBPACK_IMPORTED_MODULE_0___default()({}, this.defaultProps.style, this.state.style),
+    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
         sliderwidth = _this$defaultProps$st.sliderwidth,
         sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
         sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
@@ -4609,10 +4515,10 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_2__["FaustUIItem"] {
     grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgcolor);
     grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgoncolor);
     ctx.fillStyle = grd;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_4__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
+    Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
 
     ctx.fillStyle = slidercolor;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_4__["fillRoundedRect"])(ctx, left - drawWidth, top + drawHeight * (1 - distance) - drawWidth, drawWidth * 3, drawWidth * 2, borderRadius);
+    Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left - drawWidth, top + drawHeight * (1 - distance) - drawWidth, drawWidth * 3, drawWidth * 2, borderRadius);
   }
 
   get trueSteps() {
@@ -4803,4 +4709,4 @@ window.faustUI = faustUI;
 
 /******/ });
 });
-//# sourceMappingURL=faust_ui.js.map
+//# sourceMappingURL=index.js.map
