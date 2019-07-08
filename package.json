@@ -4,8 +4,8 @@
   "description": "Faust Editor",
   "main": "src/index.ts",
   "scripts": {
-    "build": "node ./src/listEx.js && webpack --mode development",
-    "dist": "node ./src/listEx.js && webpack --mode production"
+    "build": "node ./src/listEx.js && node ./src/faust-ui.js && webpack --mode development",
+    "dist": "node ./src/listEx.js && node ./src/faust-ui.js && webpack --mode production"
   },
   "repository": {
     "type": "git",
@@ -67,5 +67,7 @@
     "webpack-cli": "^3.3.5",
     "window-function": "^2.1.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "faust-ui": "github:fr0stbyter/faust-ui"
+  }
 }
