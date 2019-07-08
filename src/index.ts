@@ -316,6 +316,16 @@ $(async () => {
                 audioEnv.dspConnectedToOutput = true;
             }
         });
+        const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+        /**
+         * set handler for param changed of dsp
+         * send current value to window
+         */
+        node.setOutputParamHandler((path: string, value: number) => {
+            const msg = { path, value, type: "param" };
+            if (uiWindow) uiWindow.postMessage(msg, "*");
+            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+        });
         /**
          * Bind dsp params to ui interface
          * as UI is in an iframe and a popup window,
@@ -330,15 +340,6 @@ $(async () => {
                  */
                 uiWindow.postMessage(msg, "*");
                 if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                /**
-                 * set handler for param changed of dsp
-                 * send current value to window
-                 */
-                node.setOutputParamHandler((path: string, value: number) => {
-                    const msg = { path, value, type: "param" };
-                    uiWindow.postMessage(msg, "*");
-                    if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                });
                 /**
                  * Post current param values
                  */
@@ -356,7 +357,6 @@ $(async () => {
             /**
              * if window is opened, bind directly, else bind when window is loaded.
              */
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
             else {
                 uiEnv.uiPopup = window.open("faust_ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
@@ -1231,6 +1231,37 @@ $(async () => {
     });
     // Close DSP UI Popup when main window is closed
     $(window).on("beforeunload", () => (uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined));
+    $("#nav-item-faust-ui .btn-popup").on("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const node = audioEnv.dsp;
+        if (!node) return;
+        const callback = () => {
+            const msg = { type: "ui", ui: node.getUI() };
+            /**
+             * Post param list json
+             */
+            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+            /**
+             * Post current param values
+             */
+            const params = node.getParams();
+            for (const path in dspParams) {
+                if (params.indexOf(path) !== -1) {
+                    const msg = { path, value: dspParams[path], type: "param" };
+                    if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+                }
+            }
+        };
+        /**
+         * if window is opened, bind directly, else bind when window is loaded.
+         */
+        if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();
+        else {
+            uiEnv.uiPopup = window.open("faust_ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+            uiEnv.uiPopup.onload = callback;
+        }
+    });
     $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -1247,13 +1278,7 @@ $(async () => {
         }
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();
-        const msg = { type: "clear" };
-        const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
-        uiWindow.postMessage(msg, "*");
-        if (uiEnv.uiPopup) {
-            uiEnv.uiPopup.postMessage(msg, "*");
-            uiEnv.uiPopup.close();
-        }
+        if (uiEnv.uiPopup) uiEnv.uiPopup.close();
         $("#faust-ui-default").show();
         $("#iframe-faust-ui").css("visibility", "hidden");
         $("#output-analyser-ui").hide();
