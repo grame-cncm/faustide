@@ -103,12 +103,12 @@ export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number
  * @returns
  */
 export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint-disable-line arrow-body-style
-    return fft.forward(apply(t, blackman)).reduce((acc: Float32Array, cur: number, idx: number) => {
-        if (idx >= t.length) return acc;
-        if (idx % 2 === 0) acc[idx / 2] = cur;
-        else acc[(idx - 1) / 2] = 20 * Math.log10((acc[(idx - 1) / 2] ** 2 + cur ** 2) ** 0.5 / t.length);
-        return acc;
-    }, new Float32Array(t.length / 2));
+    const ffted = fft.forward(apply(t, blackman));
+    const f = new Float32Array(t.length / 2);
+    for (let i = 0; i < f.length; i++) {
+        f[i] = 20 * Math.log10((ffted[i * 2] ** 2 + ffted[i * 2 + 1] ** 2) ** 0.5 / f.length * 2.38328);
+    }
+    return f;
 };
 
 export const estimateFreq = (fft: Float32Array, sampleRate: number) => {

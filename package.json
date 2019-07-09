@@ -46,6 +46,7 @@
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.18.0",
+    "faust-ui": "github:fr0stbyter/faust-ui",
     "faust2webaudio": "github:fr0stbyter/faust2webaudio",
     "file-loader": "^3.0.1",
     "jquery": "^3.4.1",
@@ -67,7 +68,5 @@
     "webpack-cli": "^3.3.5",
     "window-function": "^2.1.0"
   },
-  "dependencies": {
-    "faust-ui": "github:fr0stbyter/faust-ui"
-  }
+  "dependencies": {}
 }

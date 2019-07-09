@@ -327,7 +327,7 @@ export class StaticScope {
                     continue;
                 }
                 const x = (j - $0) * gridX + left;
-                const y = hCh * (i + 1 - Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1)));
+                const y = hCh * (i + 1 - Math.min(1, Math.max(0, maxInStep / 100 + 1)));
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -528,16 +528,17 @@ export class StaticScope {
         for (let i = 0; i < channels; i++) {
             let y = (i + 0.5) * hCh;
             let $ = 0.5;
-            let yLabel = mode === EScopeMode.Spectrogram ? indexToFreq(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-110 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2);
+            const getYLabel = () => (mode === EScopeMode.Spectrogram ? indexToFreq(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-100 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2));
+            let yLabel = getYLabel();
             drawHLine(y, yLabel);
             for (let j = vStep; j < yFactor; j += vStep) {
                 $ = 0.5 - j / yFactor / 2;
                 y = (i + 0.5 + j / yFactor / 2) * hCh;
-                yLabel = mode === EScopeMode.Spectrogram ? indexToFreq(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-110 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2);
+                yLabel = getYLabel();
                 drawHLine(y, yLabel);
                 $ = 0.5 + j / yFactor / 2;
                 y = (i + 0.5 - j / yFactor / 2) * hCh;
-                yLabel = mode === EScopeMode.Spectrogram ? indexToFreq(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-110 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2);
+                yLabel = getYLabel();
                 drawHLine(y, yLabel);
             }
         }
