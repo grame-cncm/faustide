@@ -287,7 +287,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-vslider {\n  ali
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-root {\n  position: absolute;\n  display: block;\n  overflow: auto;\n  width: 100%;\n  height: 100%; }\n  .faust-ui-root .faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid; }\n    .faust-ui-root .faust-ui-group .faust-ui-group-label {\n      position: relative;\n      font-weight: bold;\n      margin: 4px;\n      font-size: 12px;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      max-width: 100%;\n      overflow: hidden;\n      user-select: none;\n      color: rgba(255, 255, 255, 0.7); }\n    .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs {\n      position: absolute;\n      display: inline-block; }\n      .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n        position: relative;\n        display: inline-block;\n        border-radius: 5px;\n        cursor: pointer;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        user-select: none;\n        margin: 10px;\n        text-align: center;\n        background-color: rgba(255, 255, 255, 0.5); }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n          background-color: white; }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n          background-color: #282828;\n          color: white; }\n  .faust-ui-root .faust-ui-item {\n    position: absolute;\n    display: block; }\n", ""]);
+exports.push([module.i, ".faust-ui-root {\n  position: absolute;\n  display: block;\n  overflow: auto;\n  width: 100%;\n  height: 100%;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; }\n  .faust-ui-root .faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid; }\n    .faust-ui-root .faust-ui-group .faust-ui-group-label {\n      position: relative;\n      font-weight: bold;\n      margin: 4px;\n      font-size: 12px;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      max-width: 100%;\n      overflow: hidden;\n      user-select: none;\n      color: rgba(255, 255, 255, 0.7); }\n    .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs {\n      position: absolute;\n      display: inline-block; }\n      .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n        position: relative;\n        display: inline-block;\n        border-radius: 5px;\n        cursor: pointer;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        user-select: none;\n        margin: 10px;\n        text-align: center;\n        background-color: rgba(255, 255, 255, 0.5); }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n          background-color: white; }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n          background-color: #282828;\n          color: white; }\n  .faust-ui-root .faust-ui-item {\n    position: absolute;\n    display: block; }\n", ""]);
 
 
 /***/ }),
@@ -2220,6 +2220,10 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_2__["Component"] {
 
     _defineProperty(this, "className", void 0);
 
+    _defineProperty(this, "$raf", void 0);
+
+    _defineProperty(this, "raf", () => {});
+
     _defineProperty(this, "handleKeyDown", e => {});
 
     _defineProperty(this, "handleKeyUp", e => {});
@@ -2474,7 +2478,10 @@ class FaustUIItem extends _Component__WEBPACK_IMPORTED_MODULE_2__["Component"] {
 
   componentDidUnmount() {}
 
-  paint() {}
+  paint() {
+    window.cancelAnimationFrame(this.$raf);
+    this.$raf = window.requestAnimationFrame(this.raf);
+  }
 
   mount() {
     this.resize();
@@ -2876,6 +2883,92 @@ class FaustUIHBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["FaustUIV
     super(...arguments);
 
     _defineProperty(this, "className", "hbargraph");
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          barwidth = _this$defaultProps$st.barwidth,
+          barbgcolor = _this$defaultProps$st.barbgcolor,
+          coldcolor = _this$defaultProps$st.coldcolor,
+          warmcolor = _this$defaultProps$st.warmcolor,
+          hotcolor = _this$defaultProps$st.hotcolor,
+          overloadcolor = _this$defaultProps$st.overloadcolor;
+
+      var _this$state = this.state,
+          min = _this$state.min,
+          max = _this$state.max,
+          value = _this$state.value;
+      var ctx = this.ctx;
+      var canvas = this.canvas;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      canvas.width = width;
+      canvas.height = height;
+      var drawWidth = width * 0.9;
+      var drawHeight = barwidth || Math.min(height / 3, drawWidth * 0.05);
+      var left = width * 0.05;
+      var top = (height - drawHeight) * 0.5;
+      this.paintValue = value;
+      var paintValue = this.paintValue;
+
+      if (paintValue > this.maxValue) {
+        this.maxValue = paintValue;
+        if (this.maxTimer) window.clearTimeout(this.maxTimer);
+        this.maxTimer = window.setTimeout(() => {
+          this.maxValue = this.paintValue;
+          this.maxTimer = undefined;
+        }, 1000);
+      }
+
+      if (paintValue < this.maxValue && typeof this.maxTimer === "undefined") {
+        this.maxTimer = window.setTimeout(() => {
+          this.maxValue = this.paintValue;
+          this.maxTimer = undefined;
+        }, 1000);
+      }
+
+      var maxValue = this.maxValue;
+      var coldStop = (-18 - min) / (max - min);
+      var warmStop = (-6 - min) / (max - min);
+      var hotStop = (-3 - min) / (max - min);
+      var overloadStop = -min / (max - min);
+      var gradient = ctx.createLinearGradient(left, 0, drawWidth, 0);
+      if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
+      if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
+      if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
+      if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
+      ctx.fillStyle = barbgcolor;
+      if (paintValue < 0) ctx.fillRect(left, top, drawWidth * overloadStop, drawHeight);
+      if (paintValue < max) ctx.fillRect(left + drawWidth * overloadStop + 1, top, drawWidth * (1 - overloadStop) - 1, drawHeight);
+      ctx.fillStyle = gradient;
+
+      if (paintValue > min) {
+        var distance = (Math.min(0, paintValue) - min) / (max - min);
+        ctx.fillRect(left, top, distance * drawWidth, drawHeight);
+      }
+
+      if (paintValue > 0) {
+        var _distance = Math.min(max, paintValue) / (max - min);
+
+        ctx.fillRect(left + overloadStop * drawWidth + 1, top, _distance * drawWidth - 1, drawHeight);
+      }
+
+      if (maxValue > paintValue) {
+        if (maxValue <= 0) {
+          var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
+
+          ctx.fillRect(left + _distance2 * drawWidth - 1, top, 1, drawHeight);
+        }
+
+        if (maxValue > 0) {
+          var _distance3 = Math.min(max, maxValue) / (max - min);
+
+          ctx.fillRect(left + Math.min(drawWidth - 1, (overloadStop + _distance3) * drawWidth), top, 1, drawHeight);
+        }
+      }
+    });
   }
 
   setStyle() {
@@ -2888,92 +2981,6 @@ class FaustUIHBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["FaustUIV
     this.container.style.backgroundColor = style.bgcolor;
     this.container.style.borderColor = style.bordercolor;
     this.paint();
-  }
-
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        barwidth = _this$defaultProps$st.barwidth,
-        barbgcolor = _this$defaultProps$st.barbgcolor,
-        coldcolor = _this$defaultProps$st.coldcolor,
-        warmcolor = _this$defaultProps$st.warmcolor,
-        hotcolor = _this$defaultProps$st.hotcolor,
-        overloadcolor = _this$defaultProps$st.overloadcolor;
-
-    var _this$state = this.state,
-        min = _this$state.min,
-        max = _this$state.max,
-        value = _this$state.value;
-    var ctx = this.ctx;
-    var canvas = this.canvas;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    canvas.width = width;
-    canvas.height = height;
-    var drawWidth = width * 0.9;
-    var drawHeight = barwidth || Math.min(height / 3, drawWidth * 0.05);
-    var left = width * 0.05;
-    var top = (height - drawHeight) * 0.5;
-    this.paintValue = value;
-    var paintValue = this.paintValue;
-
-    if (paintValue > this.maxValue) {
-      this.maxValue = paintValue;
-      if (this.maxTimer) window.clearTimeout(this.maxTimer);
-      this.maxTimer = window.setTimeout(() => {
-        this.maxValue = this.paintValue;
-        this.maxTimer = undefined;
-      }, 1000);
-    }
-
-    if (paintValue < this.maxValue && typeof this.maxTimer === "undefined") {
-      this.maxTimer = window.setTimeout(() => {
-        this.maxValue = this.paintValue;
-        this.maxTimer = undefined;
-      }, 1000);
-    }
-
-    var maxValue = this.maxValue;
-    var coldStop = (-18 - min) / (max - min);
-    var warmStop = (-6 - min) / (max - min);
-    var hotStop = (-3 - min) / (max - min);
-    var overloadStop = -min / (max - min);
-    var gradient = ctx.createLinearGradient(left, 0, drawWidth, 0);
-    if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
-    if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
-    if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
-    if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
-    ctx.fillStyle = barbgcolor;
-    if (paintValue < 0) ctx.fillRect(left, top, drawWidth * overloadStop, drawHeight);
-    if (paintValue < max) ctx.fillRect(left + drawWidth * overloadStop + 1, top, drawWidth * (1 - overloadStop) - 1, drawHeight);
-    ctx.fillStyle = gradient;
-
-    if (paintValue > min) {
-      var distance = (Math.min(0, paintValue) - min) / (max - min);
-      ctx.fillRect(left, top, distance * drawWidth, drawHeight);
-    }
-
-    if (paintValue > 0) {
-      var _distance = Math.min(max, paintValue) / (max - min);
-
-      ctx.fillRect(left + overloadStop * drawWidth + 1, top, _distance * drawWidth - 1, drawHeight);
-    }
-
-    if (maxValue > paintValue) {
-      if (maxValue <= 0) {
-        var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
-
-        ctx.fillRect(left + _distance2 * drawWidth - 1, top, 1, drawHeight);
-      }
-
-      if (maxValue > 0) {
-        var _distance3 = Math.min(max, maxValue) / (max - min);
-
-        ctx.fillRect(left + Math.min(drawWidth - 1, (overloadStop + _distance3) * drawWidth), top, 1, drawHeight);
-      }
-    }
   }
 
 }
@@ -3036,6 +3043,41 @@ class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["FaustUIVSlid
     super(...arguments);
 
     _defineProperty(this, "className", "hslider");
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          sliderwidth = _this$defaultProps$st.sliderwidth,
+          sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
+          sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
+          slidercolor = _this$defaultProps$st.slidercolor;
+
+      var ctx = this.ctx;
+      var canvas = this.canvas;
+      var distance = this.distance;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      width = Math.floor(width);
+      height = Math.floor(height);
+      canvas.width = width;
+      canvas.height = height;
+      var drawWidth = width * 0.9;
+      var drawHeight = sliderwidth || Math.min(height / 3, drawWidth * 0.05);
+      var left = width * 0.05;
+      var top = (height - drawHeight) * 0.5;
+      var borderRadius = drawHeight * 0.25;
+      this.interactionRect = [left, 0, drawWidth, height];
+      var grd = ctx.createLinearGradient(left, 0, left + drawWidth, 0);
+      grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgoncolor);
+      grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgcolor);
+      ctx.fillStyle = grd;
+      Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
+
+      ctx.fillStyle = slidercolor;
+      Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left + drawWidth * distance - drawHeight, top - drawHeight, drawHeight * 2, drawHeight * 3, borderRadius);
+    });
   }
 
   setStyle() {
@@ -3048,41 +3090,6 @@ class FaustUIHSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["FaustUIVSlid
     this.container.style.backgroundColor = style.bgcolor;
     this.container.style.borderColor = style.bordercolor;
     this.paint();
-  }
-
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        sliderwidth = _this$defaultProps$st.sliderwidth,
-        sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
-        sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
-        slidercolor = _this$defaultProps$st.slidercolor;
-
-    var ctx = this.ctx;
-    var canvas = this.canvas;
-    var distance = this.distance;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    width = Math.floor(width);
-    height = Math.floor(height);
-    canvas.width = width;
-    canvas.height = height;
-    var drawWidth = width * 0.9;
-    var drawHeight = sliderwidth || Math.min(height / 3, drawWidth * 0.05);
-    var left = width * 0.05;
-    var top = (height - drawHeight) * 0.5;
-    var borderRadius = drawHeight * 0.25;
-    this.interactionRect = [left, 0, drawWidth, height];
-    var grd = ctx.createLinearGradient(left, 0, left + drawWidth, 0);
-    grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgoncolor);
-    grd.addColorStop(Math.max(0, Math.min(1, distance)), sliderbgcolor);
-    ctx.fillStyle = grd;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
-
-    ctx.fillStyle = slidercolor;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left + drawWidth * distance - drawHeight, top - drawHeight, drawHeight * 2, drawHeight * 3, borderRadius);
   }
 
 }
@@ -3157,6 +3164,60 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
       this.paint();
+    });
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          knobwidth = _this$defaultProps$st.knobwidth,
+          knobcolor = _this$defaultProps$st.knobcolor,
+          knoboncolor = _this$defaultProps$st.knoboncolor,
+          needlecolor = _this$defaultProps$st.needlecolor;
+
+      var ctx = this.ctx;
+      var canvas = this.canvas;
+      var distance = this.distance;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      canvas.width = width;
+      canvas.height = height;
+      var start = 5 / 8 * Math.PI;
+      var end = 19 / 8 * Math.PI;
+      var valPos = start + Object(_utils__WEBPACK_IMPORTED_MODULE_2__["toRad"])(distance * 315);
+      var dialHeight = Math.min(width, height) * 0.75;
+      var dialRadius = dialHeight * 0.5;
+      var dialCenterX = width * 0.5;
+      var dialCenterY = height * 0.5; // const arcStartX = dialCenterX + (dialHeight * 0.5 * Math.cos(start));
+      // const arcStartY = dialCenterY + (dialHeight * 0.5 * Math.sin(start));
+      // const arcEndX = dialCenterX + (dialHeight * 0.5 * Math.cos(end));
+      // const arcEndY = dialCenterY + (dialHeight * 0.5 * Math.sin(end));
+
+      var valuePosX = dialCenterX + dialHeight * 0.5 * Math.cos(valPos);
+      var valuePosY = dialCenterY + dialHeight * 0.5 * Math.sin(valPos);
+      var lineWidth = knobwidth || dialRadius * 0.2;
+      ctx.strokeStyle = knobcolor;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = "round"; // draw background arc
+
+      ctx.beginPath();
+      ctx.arc(dialCenterX, dialCenterY, dialRadius, valPos, end);
+      ctx.stroke(); // draw value arc
+
+      if (distance) {
+        ctx.strokeStyle = knoboncolor;
+        ctx.beginPath();
+        ctx.arc(dialCenterX, dialCenterY, dialRadius, start, valPos);
+        ctx.stroke();
+      } // draw dial needle
+
+
+      ctx.strokeStyle = needlecolor;
+      ctx.beginPath();
+      ctx.moveTo(dialCenterX, dialCenterY);
+      ctx.lineTo(valuePosX, valuePosY);
+      ctx.stroke();
     });
 
     _defineProperty(this, "handlePointerDrag", e => {
@@ -3256,60 +3317,6 @@ class FaustUIKnob extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     return super.mount();
   }
 
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        knobwidth = _this$defaultProps$st.knobwidth,
-        knobcolor = _this$defaultProps$st.knobcolor,
-        knoboncolor = _this$defaultProps$st.knoboncolor,
-        needlecolor = _this$defaultProps$st.needlecolor;
-
-    var ctx = this.ctx;
-    var canvas = this.canvas;
-    var distance = this.distance;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    canvas.width = width;
-    canvas.height = height;
-    var start = 5 / 8 * Math.PI;
-    var end = 19 / 8 * Math.PI;
-    var valPos = start + Object(_utils__WEBPACK_IMPORTED_MODULE_2__["toRad"])(distance * 315);
-    var dialHeight = Math.min(width, height) * 0.75;
-    var dialRadius = dialHeight * 0.5;
-    var dialCenterX = width * 0.5;
-    var dialCenterY = height * 0.5; // const arcStartX = dialCenterX + (dialHeight * 0.5 * Math.cos(start));
-    // const arcStartY = dialCenterY + (dialHeight * 0.5 * Math.sin(start));
-    // const arcEndX = dialCenterX + (dialHeight * 0.5 * Math.cos(end));
-    // const arcEndY = dialCenterY + (dialHeight * 0.5 * Math.sin(end));
-
-    var valuePosX = dialCenterX + dialHeight * 0.5 * Math.cos(valPos);
-    var valuePosY = dialCenterY + dialHeight * 0.5 * Math.sin(valPos);
-    var lineWidth = knobwidth || dialRadius * 0.2;
-    ctx.strokeStyle = knobcolor;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = "round"; // draw background arc
-
-    ctx.beginPath();
-    ctx.arc(dialCenterX, dialCenterY, dialRadius, valPos, end);
-    ctx.stroke(); // draw value arc
-
-    if (distance) {
-      ctx.strokeStyle = knoboncolor;
-      ctx.beginPath();
-      ctx.arc(dialCenterX, dialCenterY, dialRadius, start, valPos);
-      ctx.stroke();
-    } // draw dial needle
-
-
-    ctx.strokeStyle = needlecolor;
-    ctx.beginPath();
-    ctx.moveTo(dialCenterX, dialCenterY);
-    ctx.lineTo(valuePosX, valuePosY);
-    ctx.stroke();
-  }
-
   getValueFromDelta(e) {
     var _this$state = this.state,
         type = _this$state.type,
@@ -3394,6 +3401,51 @@ class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     _defineProperty(this, "ctx", void 0);
 
     _defineProperty(this, "tempCtx", void 0);
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          shape = _this$defaultProps$st.shape,
+          ledbgcolor = _this$defaultProps$st.ledbgcolor,
+          coldcolor = _this$defaultProps$st.coldcolor,
+          warmcolor = _this$defaultProps$st.warmcolor,
+          hotcolor = _this$defaultProps$st.hotcolor,
+          overloadcolor = _this$defaultProps$st.overloadcolor;
+
+      var _this$state = this.state,
+          min = _this$state.min,
+          max = _this$state.max;
+      var canvas = this.canvas,
+          ctx = this.ctx,
+          tempCanvas = this.tempCanvas,
+          tempCtx = this.tempCtx,
+          distance = this.distance;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      canvas.width = width;
+      canvas.height = height;
+      var drawHeight = Math.min(height, width) * 0.75;
+      var drawWidth = drawHeight;
+      var left = (width - drawWidth) * 0.5;
+      var top = (height - drawHeight) * 0.5;
+      var coldStop = (-18 - min) / (max - min);
+      var warmStop = (-6 - min) / (max - min);
+      var hotStop = (-3 - min) / (max - min);
+      var overloadStop = -min / (max - min);
+      var gradient = tempCtx.createLinearGradient(0, 0, tempCanvas.width, 0);
+      if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
+      if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
+      if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
+      if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
+      tempCtx.fillStyle = gradient;
+      tempCtx.fillRect(0, 0, tempCanvas.width, 10);
+      var d = tempCtx.getImageData(Math.min(tempCanvas.width - 1, distance * tempCanvas.width), 0, 1, 1).data;
+      if (distance) ctx.fillStyle = "rgb(".concat(d[0], ", ").concat(d[1], ", ").concat(d[2], ")");else ctx.fillStyle = ledbgcolor;
+      if (shape === "circle") ctx.arc(width / 2, height / 2, width / 2 - left, 0, 2 * Math.PI);else ctx.rect(left, top, drawWidth, drawHeight);
+      ctx.fill();
+    });
   }
 
   static get defaultProps() {
@@ -3469,51 +3521,6 @@ class FaustUILed extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     this.container.appendChild(this.label);
     this.container.appendChild(this.canvas);
     return super.mount();
-  }
-
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        shape = _this$defaultProps$st.shape,
-        ledbgcolor = _this$defaultProps$st.ledbgcolor,
-        coldcolor = _this$defaultProps$st.coldcolor,
-        warmcolor = _this$defaultProps$st.warmcolor,
-        hotcolor = _this$defaultProps$st.hotcolor,
-        overloadcolor = _this$defaultProps$st.overloadcolor;
-
-    var _this$state = this.state,
-        min = _this$state.min,
-        max = _this$state.max;
-    var canvas = this.canvas,
-        ctx = this.ctx,
-        tempCanvas = this.tempCanvas,
-        tempCtx = this.tempCtx,
-        distance = this.distance;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    canvas.width = width;
-    canvas.height = height;
-    var drawHeight = Math.min(height, width) * 0.75;
-    var drawWidth = drawHeight;
-    var left = (width - drawWidth) * 0.5;
-    var top = (height - drawHeight) * 0.5;
-    var coldStop = (-18 - min) / (max - min);
-    var warmStop = (-6 - min) / (max - min);
-    var hotStop = (-3 - min) / (max - min);
-    var overloadStop = -min / (max - min);
-    var gradient = tempCtx.createLinearGradient(0, 0, tempCanvas.width, 0);
-    if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
-    if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
-    if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
-    if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
-    tempCtx.fillStyle = gradient;
-    tempCtx.fillRect(0, 0, tempCanvas.width, 10);
-    var d = tempCtx.getImageData(Math.min(tempCanvas.width - 1, distance * tempCanvas.width), 0, 1, 1).data;
-    if (distance) ctx.fillStyle = "rgb(".concat(d[0], ", ").concat(d[1], ", ").concat(d[2], ")");else ctx.fillStyle = ledbgcolor;
-    if (shape === "circle") ctx.arc(width / 2, height / 2, width / 2 - left, 0, 2 * Math.PI);else ctx.rect(left, top, drawWidth, drawHeight);
-    ctx.fill();
   }
 
 }
@@ -4130,6 +4137,92 @@ class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"]
     _defineProperty(this, "maxValue", -Infinity);
 
     _defineProperty(this, "maxTimer", void 0);
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          barwidth = _this$defaultProps$st.barwidth,
+          barbgcolor = _this$defaultProps$st.barbgcolor,
+          coldcolor = _this$defaultProps$st.coldcolor,
+          warmcolor = _this$defaultProps$st.warmcolor,
+          hotcolor = _this$defaultProps$st.hotcolor,
+          overloadcolor = _this$defaultProps$st.overloadcolor;
+
+      var _this$state = this.state,
+          min = _this$state.min,
+          max = _this$state.max,
+          value = _this$state.value;
+      var ctx = this.ctx;
+      var canvas = this.canvas;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      canvas.width = width;
+      canvas.height = height;
+      var drawHeight = height * 0.9;
+      var drawWidth = barwidth || Math.min(width / 3, drawHeight * 0.05);
+      var left = (width - drawWidth) * 0.5;
+      var top = height * 0.05;
+      this.paintValue = value;
+      var paintValue = this.paintValue;
+
+      if (paintValue > this.maxValue) {
+        this.maxValue = paintValue;
+        if (this.maxTimer) window.clearTimeout(this.maxTimer);
+        this.maxTimer = window.setTimeout(() => {
+          this.maxValue = this.paintValue;
+          this.maxTimer = undefined;
+        }, 1000);
+      }
+
+      if (paintValue < this.maxValue && typeof this.maxTimer === "undefined") {
+        this.maxTimer = window.setTimeout(() => {
+          this.maxValue = this.paintValue;
+          this.maxTimer = undefined;
+        }, 1000);
+      }
+
+      var maxValue = this.maxValue;
+      var coldStop = (-18 - min) / (max - min);
+      var warmStop = (-6 - min) / (max - min);
+      var hotStop = (-3 - min) / (max - min);
+      var overloadStop = -min / (max - min);
+      var gradient = ctx.createLinearGradient(0, drawHeight, 0, top);
+      if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
+      if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
+      if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
+      if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
+      ctx.fillStyle = barbgcolor;
+      if (paintValue < 0) ctx.fillRect(left, top + (1 - overloadStop) * drawHeight, drawWidth, drawHeight * overloadStop);
+      if (paintValue < max) ctx.fillRect(left, top, drawWidth, (1 - overloadStop) * drawHeight - 1);
+      ctx.fillStyle = gradient;
+
+      if (paintValue > min) {
+        var distance = (Math.min(0, paintValue) - min) / (max - min);
+        ctx.fillRect(left, top + (1 - distance) * drawHeight, drawWidth, drawHeight * distance);
+      }
+
+      if (paintValue > 0) {
+        var _distance = Math.min(max, paintValue) / (max - min);
+
+        ctx.fillRect(left, top + (1 - overloadStop - _distance) * drawHeight, drawWidth, drawHeight * _distance - 1);
+      }
+
+      if (maxValue > paintValue) {
+        if (maxValue <= 0) {
+          var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
+
+          ctx.fillRect(left, top + (1 - _distance2) * drawHeight, drawWidth, 1);
+        }
+
+        if (maxValue > 0) {
+          var _distance3 = Math.min(max, maxValue) / (max - min);
+
+          ctx.fillRect(left, Math.max(0, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
+        }
+      }
+    });
   }
 
   static get defaultProps() {
@@ -4216,92 +4309,6 @@ class FaustUIVBargraph extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"]
     return super.mount();
   }
 
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        barwidth = _this$defaultProps$st.barwidth,
-        barbgcolor = _this$defaultProps$st.barbgcolor,
-        coldcolor = _this$defaultProps$st.coldcolor,
-        warmcolor = _this$defaultProps$st.warmcolor,
-        hotcolor = _this$defaultProps$st.hotcolor,
-        overloadcolor = _this$defaultProps$st.overloadcolor;
-
-    var _this$state = this.state,
-        min = _this$state.min,
-        max = _this$state.max,
-        value = _this$state.value;
-    var ctx = this.ctx;
-    var canvas = this.canvas;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    canvas.width = width;
-    canvas.height = height;
-    var drawHeight = height * 0.9;
-    var drawWidth = barwidth || Math.min(width / 3, drawHeight * 0.05);
-    var left = (width - drawWidth) * 0.5;
-    var top = height * 0.05;
-    this.paintValue = value;
-    var paintValue = this.paintValue;
-
-    if (paintValue > this.maxValue) {
-      this.maxValue = paintValue;
-      if (this.maxTimer) window.clearTimeout(this.maxTimer);
-      this.maxTimer = window.setTimeout(() => {
-        this.maxValue = this.paintValue;
-        this.maxTimer = undefined;
-      }, 1000);
-    }
-
-    if (paintValue < this.maxValue && typeof this.maxTimer === "undefined") {
-      this.maxTimer = window.setTimeout(() => {
-        this.maxValue = this.paintValue;
-        this.maxTimer = undefined;
-      }, 1000);
-    }
-
-    var maxValue = this.maxValue;
-    var coldStop = (-18 - min) / (max - min);
-    var warmStop = (-6 - min) / (max - min);
-    var hotStop = (-3 - min) / (max - min);
-    var overloadStop = -min / (max - min);
-    var gradient = ctx.createLinearGradient(0, drawHeight, 0, top);
-    if (coldStop <= 1 && coldStop >= 0) gradient.addColorStop(coldStop, coldcolor);else if (coldStop > 1) gradient.addColorStop(1, coldcolor);
-    if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
-    if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
-    if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
-    ctx.fillStyle = barbgcolor;
-    if (paintValue < 0) ctx.fillRect(left, top + (1 - overloadStop) * drawHeight, drawWidth, drawHeight * overloadStop);
-    if (paintValue < max) ctx.fillRect(left, top, drawWidth, (1 - overloadStop) * drawHeight - 1);
-    ctx.fillStyle = gradient;
-
-    if (paintValue > min) {
-      var distance = (Math.min(0, paintValue) - min) / (max - min);
-      ctx.fillRect(left, top + (1 - distance) * drawHeight, drawWidth, drawHeight * distance);
-    }
-
-    if (paintValue > 0) {
-      var _distance = Math.min(max, paintValue) / (max - min);
-
-      ctx.fillRect(left, top + (1 - overloadStop - _distance) * drawHeight, drawWidth, drawHeight * _distance - 1);
-    }
-
-    if (maxValue > paintValue) {
-      if (maxValue <= 0) {
-        var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
-
-        ctx.fillRect(left, top + (1 - _distance2) * drawHeight, drawWidth, 1);
-      }
-
-      if (maxValue > 0) {
-        var _distance3 = Math.min(max, maxValue) / (max - min);
-
-        ctx.fillRect(left, Math.max(0, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
-      }
-    }
-  }
-
 }
 
 /***/ }),
@@ -4378,6 +4385,39 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     _defineProperty(this, "handleChange", e => {
       this.setValue(+e.currentTarget.value);
       this.paint();
+    });
+
+    _defineProperty(this, "raf", () => {
+      var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
+          sliderwidth = _this$defaultProps$st.sliderwidth,
+          sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
+          sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
+          slidercolor = _this$defaultProps$st.slidercolor;
+
+      var ctx = this.ctx;
+      var canvas = this.canvas;
+      var distance = this.distance;
+
+      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
+          width = _canvas$getBoundingCl.width,
+          height = _canvas$getBoundingCl.height;
+
+      canvas.width = width;
+      canvas.height = height;
+      var drawHeight = height * 0.9;
+      var drawWidth = sliderwidth || Math.min(width / 3, drawHeight * 0.05);
+      var left = (width - drawWidth) * 0.5;
+      var top = height * 0.05;
+      var borderRadius = drawWidth * 0.25;
+      this.interactionRect = [0, top, width, drawHeight];
+      var grd = ctx.createLinearGradient(0, top, 0, top + drawHeight);
+      grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgcolor);
+      grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgoncolor);
+      ctx.fillStyle = grd;
+      Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
+
+      ctx.fillStyle = slidercolor;
+      Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left - drawWidth, top + drawHeight * (1 - distance) - drawWidth, drawWidth * 3, drawWidth * 2, borderRadius);
     });
 
     _defineProperty(this, "handlePointerDown", e => {
@@ -4486,39 +4526,6 @@ class FaustUIVSlider extends _Base__WEBPACK_IMPORTED_MODULE_0__["FaustUIItem"] {
     this.container.appendChild(this.label);
     this.container.appendChild(this.flexDiv);
     return super.mount();
-  }
-
-  paint() {
-    var _this$defaultProps$st = _objectSpread({}, this.defaultProps.style, this.state.style),
-        sliderwidth = _this$defaultProps$st.sliderwidth,
-        sliderbgcolor = _this$defaultProps$st.sliderbgcolor,
-        sliderbgoncolor = _this$defaultProps$st.sliderbgoncolor,
-        slidercolor = _this$defaultProps$st.slidercolor;
-
-    var ctx = this.ctx;
-    var canvas = this.canvas;
-    var distance = this.distance;
-
-    var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-        width = _canvas$getBoundingCl.width,
-        height = _canvas$getBoundingCl.height;
-
-    canvas.width = width;
-    canvas.height = height;
-    var drawHeight = height * 0.9;
-    var drawWidth = sliderwidth || Math.min(width / 3, drawHeight * 0.05);
-    var left = (width - drawWidth) * 0.5;
-    var top = height * 0.05;
-    var borderRadius = drawWidth * 0.25;
-    this.interactionRect = [0, top, width, drawHeight];
-    var grd = ctx.createLinearGradient(0, top, 0, top + drawHeight);
-    grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgcolor);
-    grd.addColorStop(Math.max(0, Math.min(1, 1 - distance)), sliderbgoncolor);
-    ctx.fillStyle = grd;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left, top, drawWidth, drawHeight, borderRadius); // draw slider
-
-    ctx.fillStyle = slidercolor;
-    Object(_utils__WEBPACK_IMPORTED_MODULE_2__["fillRoundedRect"])(ctx, left - drawWidth, top + drawHeight * (1 - distance) - drawWidth, drawWidth * 3, drawWidth * 2, borderRadius);
   }
 
   get trueSteps() {
