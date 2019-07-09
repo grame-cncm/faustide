@@ -427,6 +427,14 @@ body {
                         }
                     }
                 }
+                & > #input-gain {
+                    position: relative;
+                    margin-top: 10px;
+                    & > canvas {
+                        position: relative;
+                        width: 100%;
+                    }
+                }
             }
             & > #dsp-ui {
                 display: flex;

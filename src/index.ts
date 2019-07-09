@@ -26,6 +26,7 @@ import "./index.scss";
 import { StaticScope } from "./StaticScope";
 import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
+import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 
 declare global {
     interface Window {
@@ -50,6 +51,8 @@ type FaustEditorEnv = {
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
+    meterInput?: MeterNode;
+    gainInput?: GainNode;
     splitterInput?: ChannelSplitterNode;
     analyserInput?: AnalyserNode;
     splitterOutput?: ChannelSplitterNode;
@@ -240,7 +243,7 @@ $(async () => {
     const runDsp = async (codeIn: string): Promise<{ success: boolean; error?: Error }> => {
         const code = `declare filename "${uiEnv.fileManager.mainFileName}"; declare name "${uiEnv.fileManager.mainFileNameWithoutSuffix}"; ${codeIn}`;
         const audioCtx = audioEnv.audioCtx;
-        const input = audioEnv.inputs[audioEnv.currentInput];
+        const meter = audioEnv.meterInput;
         let splitter = audioEnv.splitterOutput;
         const analyser = audioEnv.analyserOutput;
         if (!audioCtx) { // If audioCtx not init yet
@@ -273,7 +276,7 @@ $(async () => {
         if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
-                input.disconnect(dsp);
+                meter.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
             }
             dsp.disconnect();
@@ -306,8 +309,8 @@ $(async () => {
                 uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
                 splitter.connect(analyser, uiEnv.outputScope.channel);
             }
-            if (audioEnv.inputEnabled && node.getNumInputs()) {
-                audioEnv.inputs[audioEnv.currentInput].connect(node);
+            if (audioEnv.meterInput && node.getNumInputs()) {
+                audioEnv.meterInput.connect(node);
                 audioEnv.dspConnectedToInput = true;
             }
             node.connect(splitter);
@@ -846,12 +849,10 @@ $(async () => {
         const id = e.currentTarget.value;
         if (audioEnv.currentInput === id) return;
         if (audioEnv.audioCtx) {
-            const splitter = audioEnv.splitterInput;
-            const dsp = audioEnv.dsp;
+            const gain = audioEnv.gainInput;
             const input = audioEnv.inputs[audioEnv.currentInput];
-            if (splitter) input.disconnect(splitter);
-            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
-                input.disconnect(dsp);
+            if (gain && audioEnv.dspConnectedToInput) { // Disconnect
+                input.disconnect(gain);
                 audioEnv.dspConnectedToInput = false;
             }
         }
@@ -898,16 +899,12 @@ $(async () => {
         }
         // init audio environment and connect to dsp if necessary
         await initAudioCtx(audioEnv, id);
-        const splitter = audioEnv.splitterInput;
-        const dsp = audioEnv.dsp;
+        const gain = audioEnv.gainInput;
         const input = audioEnv.inputs[id];
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
-        if (splitter) input.connect(splitter);
-        if (dsp && dsp.getNumInputs()) {
-            input.connect(dsp);
-            audioEnv.dspConnectedToInput = true;
-        }
+        if (gain) input.connect(gain);
+        audioEnv.dspConnectedToInput = true;
     }).change();
     /**
      * Audio Outputs
@@ -962,13 +959,10 @@ $(async () => {
             // Stop the propagation of the event
             e.preventDefault();
             e.stopPropagation();
-            const splitter = audioEnv.splitterInput;
-            const analyser = audioEnv.analyserInput;
-            const dsp = audioEnv.dsp;
+            const gain = audioEnv.gainInput;
             let input = audioEnv.inputs[-1];
-            if (analyser && input) input.disconnect(splitter);
-            if (dsp && audioEnv.dspConnectedToInput && dsp.getNumInputs()) { // Disconnect
-                input.disconnect(dsp);
+            if (gain && audioEnv.dspConnectedToInput) { // Disconnect
+                input.disconnect(gain);
                 audioEnv.dspConnectedToInput = false;
             }
             audioEnv.inputEnabled = false;
@@ -986,9 +980,8 @@ $(async () => {
                 input = audioEnv.inputs[-1];
             }
             audioEnv.inputEnabled = true;
-            if (analyser && input) input.connect(splitter);
-            if (dsp && dsp.getNumInputs()) {
-                input.connect(dsp);
+            if (gain) {
+                input.connect(gain);
                 audioEnv.dspConnectedToInput = true;
             }
         }
@@ -1266,10 +1259,10 @@ $(async () => {
         e.stopPropagation();
         e.preventDefault();
         if (audioEnv.dsp) { // Disconnect current
-            const input = audioEnv.inputs[audioEnv.currentInput];
+            const meter = audioEnv.meterInput;
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
-                input.disconnect(dsp);
+                meter.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
             }
             dsp.disconnect();
@@ -1485,7 +1478,13 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
         }
     }
+    if (!audioEnv.meterInput) audioEnv.meterInput = createMeterNode(audioEnv.audioCtx);
+    if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
+    audioEnv.gainInput.connect(audioEnv.meterInput, 0, 0);
+    const gainUI = new GainUI($<HTMLDivElement>("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
+    gainUI.value = 0;
     if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
+    audioEnv.meterInput.connect(audioEnv.splitterInput, 0, 0);
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
