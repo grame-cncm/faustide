@@ -18,9 +18,7 @@ body {
             flex: 0 0 200px;
             min-width: 200px;
             max-width: 200px;
-            padding-top: 15px;
-            padding-left: 15px;
-            padding-right: 15px;
+            padding: 15px;
             overflow: auto;
             scrollbar-width: none;
             &::-webkit-scrollbar {
@@ -352,7 +350,7 @@ body {
         & > #right {
             position: relative;
             display: flex;
-            padding: 0px;
+            padding: 15px;
             margin: 0px;
             width: 200px;
             height: 100%;

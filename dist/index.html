@@ -8,7 +8,7 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27" content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
     <title>Faust Editor</title>
-	<script src="index.js?v=1.0.0"></script>
+	<script src="index.js?v=1.0.1"></script>
 </head>
 <body>
 	<div id="root">
@@ -287,7 +287,7 @@
 		</div>
 		<div id="right">
 			<div id="right-resizable" class="resizable resizable-left"></div>
-			<div id="midi-ui" class="container mt-2">
+			<div id="midi-ui">
 				<form class="input-group input-group-sm">
 					<div class="form-row">
 						<label for="midi-ui">MIDI Input</label>
@@ -300,7 +300,7 @@
 					</div>
 				</form>
 			</div>
-			<div id="input-ui" class="container mt-2">
+			<div id="input-ui" class="mt-2">
 				<form class="input-group input-group-sm">
 					<div class="form-row">
 						<label for="input-ui">Audio Input</label>
@@ -337,7 +337,7 @@
 					</div>
 				</div>
 			</div>
-			<div id="dsp-ui" class="container mt-2">
+			<div id="dsp-ui" class="mt-2">
 				<div class="form-row">
 					<label for="dsp-ui">DSP</label>
 					<button id="dsp-ui-default" class="btn badge badge-warning ml-2 mb-2" data-toggle="tooltip" data-placement="top" title="Switch AudioWorklet / ScriptProcessor">no DSP yet</button>
@@ -358,7 +358,23 @@
 					</div>
 				</div>
 			</div>
-			<div id="output-ui" class="container mb-2">
+			<div id="recorder-ui" class="input-group" role="group">
+				<div class="input-group-prepend">
+					<button id="recorder-aim" type="button" class="btn btn-light btn-block" data-toggle="tooltip" data-placement="left" title="Start Record">
+						<i class="fas fa-circle fa-sm"></i>
+					</button>
+				</div>
+				<span id="recorder-time" class="input-group-append input-group-prepend form-control">
+				  	0:00.000
+				</span>
+				<div class="input-group-append">
+					<button id="recorder-save" type="button" class="btn btn-light btn-block" data-toggle="tooltip" data-placement="top" title="Save">
+						<i class="fas fa-save fa-sm"></i>
+						<a id="a-recorder-save" target="_blank"></a>
+					</button>
+				</div>
+			</div>
+			<div id="output-ui" class="mb-2">
 				<!--
 				<form class="input-group input-group-sm">
 					<div class="form-row">

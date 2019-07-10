@@ -26,6 +26,7 @@ import { StaticScope } from "./StaticScope";
 import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
 import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
+import { Recorder } from "./Recorder";
 
 declare global {
     interface Window {
@@ -47,6 +48,7 @@ type FaustEditorEnv = {
     editor: monaco.editor.IStandaloneCodeEditor;
     jQuery: JQueryStatic;
     faust: Faust;
+    recorder: Recorder;
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
@@ -100,7 +102,7 @@ type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 
 $(async () => {
     /**
@@ -252,10 +254,21 @@ $(async () => {
         }
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        const plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
+            uiEnv.analyser.plotHandler(plotted, index, events);
+            const t = faustEnv.recorder.append(plotted, index);
+            requestAnimationFrame(() => {
+                const d = new Date(t * 1000);
+                const min = d.getMinutes();
+                const sec = `0${d.getSeconds()}`.slice(-2);
+                const ms = `00${d.getMilliseconds()}`.slice(-3);
+                $("#recorder-time").text(`${min}:${sec}.${ms}`);
+            });
+        };
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler: uiEnv.analyser.plotHandler });
+            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler });
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
@@ -381,7 +394,7 @@ $(async () => {
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
     const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
-    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust };
+    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
     localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
@@ -851,10 +864,7 @@ $(async () => {
         if (audioEnv.audioCtx) {
             const gain = audioEnv.gainInput;
             const input = audioEnv.inputs[audioEnv.currentInput];
-            if (gain && audioEnv.dspConnectedToInput) { // Disconnect
-                input.disconnect(gain);
-                audioEnv.dspConnectedToInput = false;
-            }
+            if (gain) input.disconnect(gain); // Disconnect
         }
         // MediaElementSource, Waveform
         if (id === "-1") {
@@ -904,7 +914,6 @@ $(async () => {
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
         if (gain) input.connect(gain);
-        audioEnv.dspConnectedToInput = true;
     }).change();
     /**
      * Audio Outputs
@@ -914,6 +923,7 @@ $(async () => {
         if (!supportMediaStreamDestination) return;
         const id = e.currentTarget.value;
         await initAudioCtx(audioEnv);
+        faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
         const audio = $<HTMLAudioElement>("#output-audio-stream")[0];
         audio.setSinkId(id);
     }).change();
@@ -961,10 +971,7 @@ $(async () => {
             e.stopPropagation();
             const gain = audioEnv.gainInput;
             let input = audioEnv.inputs[-1];
-            if (gain && audioEnv.dspConnectedToInput) { // Disconnect
-                input.disconnect(gain);
-                audioEnv.dspConnectedToInput = false;
-            }
+            if (gain) input.disconnect(gain); // Disconnect
             audioEnv.inputEnabled = false;
 
             const file = event.dataTransfer.files[0];
@@ -980,10 +987,7 @@ $(async () => {
                 input = audioEnv.inputs[-1];
             }
             audioEnv.inputEnabled = true;
-            if (gain) {
-                input.connect(gain);
-                audioEnv.dspConnectedToInput = true;
-            }
+            if (gain) input.connect(gain);
         }
     });
     // Append connected audio devices
@@ -1052,6 +1056,24 @@ $(async () => {
             if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
         });
     } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
+    // Record
+    $("#recorder-aim").on("click", (e) => {
+        const recorder = faustEnv.recorder;
+        if ($(e.currentTarget).hasClass("btn-light")) {
+            $(e.currentTarget).removeClass("btn-light").addClass("btn-danger");
+            recorder.enabled = true;
+        } else {
+            $(e.currentTarget).addClass("btn-light").removeClass("btn-danger");
+            recorder.enabled = false;
+        }
+    });
+    $("#recorder-save").on("click", async () => {
+        const recorder = faustEnv.recorder;
+        const b = new Blob([await recorder.encode()], { type: "audio/wav" });
+        const url = URL.createObjectURL(b);
+        $("#a-recorder-save").attr({ href: url, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.wav` })[0].click();
+    });
+    $("#a-recorder-save").on("click", e => e.stopPropagation());
     // Output switch to connect / disconnect dsp form destination
     $(".btn-dac").on("click", async () => {
         /*
