@@ -5,8 +5,7 @@
 // webworkerify
 // bargraph in scopes
 // init params with getNode
-// popup plot
-// gain for input
+// popup plot => too heavy drawing
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
@@ -53,6 +52,7 @@ type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
     meterInput?: MeterNode;
     gainInput?: GainNode;
+    gainUIInput?: GainUI;
     splitterInput?: ChannelSplitterNode;
     analyserInput?: AnalyserNode;
     splitterOutput?: ChannelSplitterNode;
@@ -1481,8 +1481,8 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.meterInput) audioEnv.meterInput = createMeterNode(audioEnv.audioCtx);
     if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
     audioEnv.gainInput.connect(audioEnv.meterInput, 0, 0);
-    const gainUI = new GainUI($<HTMLDivElement>("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
-    gainUI.value = 0;
+    if (!audioEnv.gainUIInput) audioEnv.gainUIInput = new GainUI($<HTMLDivElement>("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
+    audioEnv.gainUIInput.value = 0;
     if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
     audioEnv.meterInput.connect(audioEnv.splitterInput, 0, 0);
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
