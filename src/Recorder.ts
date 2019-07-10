@@ -16,8 +16,8 @@ export class Recorder {
         this.data = [];
     }
     append(buffer: Float32Array[], index: number) {
-        if (!this.enabled) return null;
-        if (index === 0 || this.data.length === 0 || index !== ++this.$last) this.reset(index);
+        if (!this.enabled) return this.totalSec;
+        if (index === 0 || !this.data || this.data.length === 0 || index !== ++this.$last) this.reset(index);
         this.data.push(buffer);
         return this.totalSec;
     }
