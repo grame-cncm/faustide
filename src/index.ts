@@ -1069,6 +1069,7 @@ $(async () => {
     });
     $("#recorder-save").on("click", async () => {
         const recorder = faustEnv.recorder;
+        if (recorder.totalSec === 0) return;
         const b = new Blob([await recorder.encode()], { type: "audio/wav" });
         const url = URL.createObjectURL(b);
         $("#a-recorder-save").attr({ href: url, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.wav` })[0].click();
