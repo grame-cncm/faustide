@@ -11,6 +11,7 @@ import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unreso
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
+import * as JSZip from "jszip";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
@@ -655,10 +656,12 @@ $(async () => {
         reader.readAsText(file);
     }).on("click", e => e.stopPropagation());
     // Save as //TODO zip
-    $("#btn-save").on("click", () => {
-        const text = uiEnv.fileManager.selectedCode;
-        const uri = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
-        $("#a-save").attr({ href: uri, download: uiEnv.fileManager.selected })[0].click();
+    $("#btn-save").on("click", async () => {
+        const zip = new JSZip();
+        uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
+        const b = await zip.generateAsync({ type: "blob" });
+        const uri = URL.createObjectURL(b);
+        $("#a-save").attr({ href: uri, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.zip` })[0].click();
     });
     $("#a-save").on("click", e => e.stopPropagation());
     // Docs
