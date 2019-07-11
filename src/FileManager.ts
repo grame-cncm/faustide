@@ -354,8 +354,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     getValue(fileNameIn?: string) {
         const fileName = fileNameIn || this.selected;
-        if (fileName.endsWith(".dsp") || fileName.endsWith(".lib")) return this.fs.readFile(this.path + fileName, { encoding: "utf8" });
-        return null;
+        return this.fs.readFile(this.path + fileName, { encoding: "utf8" });
     }
     get selected() {
         for (let i = 0; i < this.divFiles.children.length; i++) {
