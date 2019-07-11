@@ -6,6 +6,8 @@
 // bargraph in scopes
 // init params with getNode
 // popup plot => too heavy drawing
+// bypass
+// plot vzoom
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
