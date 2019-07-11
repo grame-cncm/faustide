@@ -131,8 +131,8 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
+        let $zerox = 0;
         if (drawMode === "continuous") { // Stablize
-            let $zerox = 0;
             const thresh = 0.001;
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
@@ -155,7 +155,7 @@ export class StaticScope {
         const left = 50;
         const bottom = 20;
         const hCh = (h - bottom) / t.length; // Height per channel
-        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Interleaved);
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, yFactor, d, EScopeMode.Interleaved);
         const gridX = (w - left) / ($1 - $0 - 1);
         const step = Math.max(1, Math.round(1 / gridX)); // horizontal draw step for optimization
         ctx.lineWidth = 2;
@@ -196,7 +196,7 @@ export class StaticScope {
             const $cursor = Math.round($0 + (cursor.x - left) / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX + left;
-            statsToDraw.xLabel = $cursor.toFixed(0);
+            statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
             const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
@@ -223,8 +223,8 @@ export class StaticScope {
         }
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
+        let $zerox = 0;
         if (drawMode === "continuous") { // Stablize
-            let $zerox = 0;
             const thresh = 0.001;
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
@@ -246,7 +246,7 @@ export class StaticScope {
         }
         const left = 50;
         const bottom = 20;
-        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, yFactor, d, EScopeMode.Oscilloscope);
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, yFactor, d, EScopeMode.Oscilloscope);
         const gridX = (w - left) / ($1 - $0 - 1);
         const step = Math.max(1, Math.round(1 / gridX));
         ctx.lineWidth = 2;
@@ -287,7 +287,7 @@ export class StaticScope {
             const $cursor = Math.round($0 + (cursor.x - left) / gridX);
             statsToDraw.values = [];
             statsToDraw.x = ($cursor - $0) * gridX + left;
-            statsToDraw.xLabel = $cursor.toFixed(0);
+            statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
             const $j = wrap($cursor, $, l);
             for (let i = 0; i < t.length; i++) {
                 const samp = t[i][$j];
