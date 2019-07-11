@@ -705,7 +705,7 @@ $(async () => {
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                     try {
-                        const expandedCode = faust.expandCode(editor.getValue(), compileOptions.args);
+                        const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
                         form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
                     } catch (e) {
                         $("#export-loading").css("display", "none");
