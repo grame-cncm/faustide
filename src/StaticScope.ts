@@ -48,6 +48,7 @@ export class StaticScope {
     divDefault: HTMLDivElement;
     private _mode = EScopeMode.Oscilloscope;
     private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
+    private _vzoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
     data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128, fftSize: 256, fftOverlap: 2 };
     cursor: { x: number; y: number };
@@ -113,7 +114,7 @@ export class StaticScope {
         this.cursor = undefined;
         this.draw();
     }
-    static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
+    static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, vzoom: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, t, freqEstimated, sampleRate, drawMode } = d;
@@ -129,6 +130,7 @@ export class StaticScope {
                 if (abs > yFactor) yFactor = abs;
             }
         }
+        yFactor *= vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
@@ -205,7 +207,7 @@ export class StaticScope {
             this.drawStats(ctx, w, h, statsToDraw);
         }
     }
-    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor?: { x: number; y: number }) {
+    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, vzoom: number, cursor?: { x: number; y: number }) {
         this.drawBackground(ctx, w, h);
         if (!d) return;
         const { $, t, freqEstimated, sampleRate, drawMode } = d;
@@ -221,6 +223,7 @@ export class StaticScope {
                 if (abs > yFactor) yFactor = abs;
             }
         }
+        yFactor *= vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
@@ -794,10 +797,17 @@ export class StaticScope {
         this.canvas.addEventListener("click", () => {
         });
         this.canvas.addEventListener("wheel", (e) => {
+            const left = 50;
+            const bottom = 20;
             const multiplier = 1.5 ** (e.deltaY > 0 ? -1 : 1);
-            if (multiplier !== 1) this.zoom *= 1.5 ** (e.deltaY > 0 ? -1 : 1);
-            if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
-            this.handleMouseMove(e);
+            if (e.offsetX < left && e.offsetY < this.canvas.height - bottom) {
+                if (multiplier !== 1) this.vzoom *= 1 / multiplier;
+                this.draw();
+            } else {
+                if (multiplier !== 1) this.zoom *= multiplier;
+                if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
+                this.handleMouseMove(e);
+            }
         });
         this.btnZoomOut.addEventListener("click", () => {
             this.zoom /= 1.5;
@@ -835,8 +845,8 @@ export class StaticScope {
             if (this.canvas.width !== w) this.canvas.width = w;
             if (this.canvas.height !== h) this.canvas.height = h;
             if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);
-            else if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
-            else if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+            else if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
+            else if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
             else if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
             else if (this.mode === EScopeMode.Spectrogram) StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         });
@@ -847,6 +857,13 @@ export class StaticScope {
             : this.mode === EScopeMode.Spectrogram
                 ? "spectrogram"
                 : "oscilloscope";
+    }
+    get vzoom() {
+        return this._vzoom[this.zoomType];
+    }
+    set vzoom(zoomIn) {
+        const maxZoom = 16;
+        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
     }
     get zoom() {
         return this._zoom[this.zoomType];
