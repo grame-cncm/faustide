@@ -1988,6 +1988,7 @@ class Layout {
       groupLayout.width = Math.max(groupLayout.width, tabs * this.itemLayoutMap.tab.width + 2 * this.padding);
     }
 
+    if (groupLayout.width < 1) groupLayout.width += 1;
     return groupLayout;
   }
 
