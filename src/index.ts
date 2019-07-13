@@ -866,21 +866,11 @@ $(async () => {
     $<HTMLSelectElement>("#select-audio-input").on("change", async (e) => {
         const id = e.currentTarget.value;
         if (audioEnv.currentInput === id) return;
-        if (audioEnv.audioCtx) {
+        if (audioEnv.audioCtx && audioEnv.currentInput) {
             const gain = audioEnv.gainInput;
             const input = audioEnv.inputs[audioEnv.currentInput];
             if (gain) input.disconnect(gain); // Disconnect
         }
-        // MediaElementSource, Waveform
-        if (id === "-1") {
-            $("#source-ui").show();
-            $("#input-analyser-ui").hide();
-        } else {
-            $("#source-ui").hide();
-            $("#input-analyser-ui").show();
-        }
-        await initAudioCtx(audioEnv);
-        initAnalysersUI(uiEnv, audioEnv);
         if (!wavesurfer) {
             wavesurfer = WaveSurfer.create({
                 container: $("#source-waveform")[0],
@@ -907,19 +897,29 @@ $(async () => {
                     $("#input-analyser-ui").hide();
                 }
             });
+            wavesurfer.on("waveform-ready", () => {
+                audioEnv.gainUIInput.channels = wavesurfer.backend.buffer.numberOfChannels;
+            });
             wavesurfer.load("./02-XYLO1.mp3");
-            if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
-            }
         }
-        // init audio environment and connect to dsp if necessary
+        // MediaElementSource, Waveform
+        if (id === "-1") {
+            $("#source-ui").show();
+            $("#input-analyser-ui").hide();
+            audioEnv.gainUIInput.channels = wavesurfer.backend.buffer ? wavesurfer.backend.buffer.numberOfChannels : 2;
+        } else {
+            $("#source-ui").hide();
+            $("#input-analyser-ui").show();
+            audioEnv.gainUIInput.channels = 2;
+        }
+        // init audio environment
         await initAudioCtx(audioEnv, id);
         const gain = audioEnv.gainInput;
         const input = audioEnv.inputs[id];
         audioEnv.currentInput = id;
         audioEnv.inputEnabled = true;
         if (gain) input.connect(gain);
-    }).change();
+    });
     /**
      * Audio Outputs
      * Choose and audio stream <audio />
@@ -1453,6 +1453,9 @@ $(async () => {
         }
     }).resize();
     // autorunning
+    await initAudioCtx(audioEnv);
+    initAnalysersUI(uiEnv, audioEnv);
+    $<HTMLSelectElement>("#select-audio-input").change();
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);

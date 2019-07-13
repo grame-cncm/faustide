@@ -26,7 +26,7 @@ declare interface PointerUpEvent {
     originalEvent: MouseEvent | TouchEvent;
 }
 export const createMeterNode = (audioCtx: AudioContext, gain?: number, averaging?: number, gainHandler?: (gains: number[]) => any) => {
-    const node = audioCtx.createScriptProcessor(512) as MeterNode;
+    const node = audioCtx.createScriptProcessor(512, 8, 8) as MeterNode;
     node.levelHandler = gainHandler;
     node.averaging = averaging || 0.95;
     node.gain = gain || 1;
@@ -73,6 +73,7 @@ export class GainUI {
     container: HTMLDivElement;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    channels = 2;
     interactionRect: number[] = [0, 0, 0, 0];
     $raf: number;
     paintLevels: number[] = [-Infinity];
@@ -214,7 +215,7 @@ export class GainUI {
     raf = () => {
         const { barwidth, barbgcolor, coldcolor, warmcolor, hotcolor, overloadcolor, tribordercolor, tricolor, textcolor } = this.state;
         const { min, max, value, levels } = this.state;
-        const channels = levels.length;
+        const channels = Math.min(this.channels, levels.length);
         const ctx = this.ctx;
         const canvas = this.canvas;
         const distance = this.distance;
@@ -256,7 +257,7 @@ export class GainUI {
         if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);
         else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
 
-        for (let i = 0; i < paintLevels.length; i++) {
+        for (let i = 0; i < channels; i++) {
             const level = paintLevels[i];
             const maxLevel = maxLevels[i];
             ctx.fillStyle = barbgcolor;
