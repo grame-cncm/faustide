@@ -4717,4 +4717,4 @@ window.faustUI = faustUI;
 
 /******/ });
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=faust_ui.js.map
