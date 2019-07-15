@@ -257,10 +257,13 @@ $(async () => {
         }
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        let mediaLengthRaf: number;
         const plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
             uiEnv.analyser.plotHandler(plotted, index, events);
             const t = faustEnv.recorder.append(plotted, index);
-            requestAnimationFrame(() => {
+            if (!faustEnv.recorder.enabled) return;
+            if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
+            mediaLengthRaf = requestAnimationFrame(() => {
                 const d = new Date(t * 1000);
                 const min = d.getMinutes();
                 const sec = `0${d.getSeconds()}`.slice(-2);
