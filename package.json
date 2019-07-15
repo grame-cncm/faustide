@@ -48,7 +48,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.18.0",
     "faust-ui": "github:fr0stbyter/faust-ui",
-    "faust2webaudio": "github:fr0stbyter/faust2webaudio",
+    "faust2webaudio": "file:../faust2webaudio",
     "file-loader": "^3.0.1",
     "jquery": "^3.4.1",
     "jszip": "^3.2.2",
