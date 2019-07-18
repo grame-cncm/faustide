@@ -76,6 +76,8 @@ export class GainUI {
     channels = 2;
     interactionRect: number[] = [0, 0, 0, 0];
     $raf: number;
+    $frame = 0;
+    frameReduce = 3;
     paintLevels: number[] = [-Infinity];
     maxLevels: number[] = [-Infinity];
     maxTimer: number;
@@ -213,6 +215,12 @@ export class GainUI {
         this.paint();
     }
     raf = () => {
+        this.$frame++;
+        if (this.$frame % this.frameReduce !== 0) {
+            window.cancelAnimationFrame(this.$raf);
+            this.$raf = window.requestAnimationFrame(this.raf);
+            return;
+        }
         const { barwidth, barbgcolor, coldcolor, warmcolor, hotcolor, overloadcolor, tribordercolor, tricolor, textcolor } = this.state;
         const { min, max, value, levels } = this.state;
         const channels = Math.min(this.channels, levels.length);
