@@ -1236,8 +1236,9 @@ $(async () => {
      * Bind message event for changing dsp params on receiving msg from ui window
      */
     $(window).on("message", (e) => {
-        if (!(e.originalEvent as MessageEvent).data) return;
-        const data = (e.originalEvent as MessageEvent).data;
+        const $e = (e.originalEvent as MessageEvent);
+        if (!$e.data) return;
+        const { data, source } = $e;
         if (!data.type) return;
         if (data.type === "param") {
             if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
@@ -1245,8 +1246,8 @@ $(async () => {
             if (compileOptions.saveParams) saveDspParams();
             const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
             const msg = { path: data.path, value: +data.value, type: "param" };
-            uiWindow.postMessage(msg, "*");
-            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+            if (uiWindow !== source) uiWindow.postMessage(msg, "*");
+            if (uiEnv.uiPopup && uiEnv.uiPopup !== source) uiEnv.uiPopup.postMessage(msg, "*");
             return;
         }
         // Pass keyboard midi messages even inner window is focused
