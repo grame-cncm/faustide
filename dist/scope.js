@@ -1915,4 +1915,4 @@ var indexToFreq = (i, fftBins, sampleRate) => i % fftBins / fftBins * sampleRate
 
 /******/ });
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=scope.js.map
