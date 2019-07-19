@@ -81,6 +81,7 @@ export class FileManager {
         if (!this.btnNewFile) {
             const btnNewFile = document.createElement("button");
             btnNewFile.classList.add("filemanager-btn-new-file", "filemanager-btn-icon");
+            btnNewFile.title = "New File";
             this.divLabel.appendChild(btnNewFile);
             this.btnNewFile = btnNewFile;
         }
@@ -183,10 +184,13 @@ export class FileManager {
         if (editing) spanName.contentEditable = "true";
         const btnMain = document.createElement("button");
         btnMain.classList.add("filemanager-btn-main", "filemanager-btn-icon");
+        btnMain.title = "Set as main DSP";
         const btnRename = document.createElement("button");
         btnRename.classList.add("filemanager-btn-rename", "filemanager-btn-icon");
+        btnRename.title = "Rename";
         const btnDelete = document.createElement("button");
         btnDelete.classList.add("filemanager-btn-delete", "filemanager-btn-icon");
+        btnDelete.title = "Delete";
         divFile.appendChild(btnMain);
         divFile.appendChild(spanName);
         divFile.appendChild(btnRename);
