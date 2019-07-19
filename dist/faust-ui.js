@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component .faust-ui-component-label {\n    position: relative;\n    font-weight: bold;\n    margin-bottom: 4px;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n    overflow: hidden;\n    user-select: none; }\n", ""]);
+exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component .faust-ui-component-label {\n    position: relative;\n    font-weight: bold;\n    margin-bottom: 4px;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n    overflow: hidden;\n    user-select: none; }\n  .faust-ui-component input {\n    box-shadow: none; }\n", ""]);
 
 
 /***/ }),
@@ -147,7 +147,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-checkbox > div {
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > canvas {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    min-width: 80%;\n    margin: auto; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: inherit; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px; }\n", ""]);
 
 
 /***/ }),
@@ -161,7 +161,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .fau
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-hslider > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > canvas {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    min-width: 80%;\n    margin: auto; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px;\n    -moz-appearance: textfield; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-outer-spin-button {\n      -webkit-appearance: none;\n      margin: 0; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-hslider > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: auto; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px;\n    -moz-appearance: textfield; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-outer-spin-button {\n      -webkit-appearance: none;\n      margin: 0; }\n", ""]);
 
 
 /***/ }),
@@ -189,7 +189,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-knob {\n  align-
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-led {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-led > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-led > canvas {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    width: 100%; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-led {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-led > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-led > .faust-ui-component-led-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    width: 100%; }\n    .faust-ui-component.faust-ui-component-led > .faust-ui-component-led-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n", ""]);
 
 
 /***/ }),
@@ -259,7 +259,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-radio {\n  align
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-vbargraph {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv {\n    position: relative;\n    display: flex;\n    flex-direction: column;\n    flex: 1 1 auto;\n    width: 100%; }\n    .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv > canvas {\n      position: relative;\n      display: block;\n      flex: 1 1 auto;\n      min-height: 75%;\n      height: 95%;\n      width: 100%; }\n    .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv > input {\n      position: relative;\n      display: block;\n      flex: 0 1 auto;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.25);\n      margin: 5px auto auto auto;\n      border-width: 0px;\n      border-radius: 4px;\n      height: 5%;\n      width: calc(100% - 8px);\n      padding: 2px 4px; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-vbargraph {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv {\n    position: relative;\n    display: flex;\n    flex-direction: column;\n    flex: 1 1 auto;\n    width: 100%;\n    height: inherit; }\n    .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv > .faust-ui-component-vbargraph-canvasdiv {\n      position: relative;\n      display: block;\n      flex: 1 1 auto;\n      width: 100%; }\n      .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv > .faust-ui-component-vbargraph-canvasdiv > canvas {\n        position: absolute;\n        display: block;\n        height: 100%;\n        width: 100%; }\n    .faust-ui-component.faust-ui-component-vbargraph > .faust-ui-component-vbargraph-flexdiv > input {\n      position: relative;\n      display: block;\n      flex: 0 1 auto;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.25);\n      margin: 5px auto auto auto;\n      border-width: 0px;\n      border-radius: 4px;\n      height: 5%;\n      width: calc(100% - 8px);\n      padding: 2px 4px; }\n", ""]);
 
 
 /***/ }),
@@ -273,7 +273,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-vbargraph {\n  a
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-vslider {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv {\n    position: relative;\n    display: flex;\n    flex-direction: column;\n    flex: 1 1 auto;\n    width: 100%; }\n    .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv canvas {\n      position: relative;\n      display: block;\n      flex: 1 1 auto;\n      min-height: 75%;\n      height: 95%;\n      width: 100%; }\n    .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input {\n      position: relative;\n      display: block;\n      flex: 0 1 auto;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.25);\n      margin: 5px auto auto auto;\n      border-width: 0px;\n      border-radius: 4px;\n      height: 5%;\n      max-width: calc(100% - 8px);\n      padding: 2px 4px;\n      -moz-appearance: textfield; }\n      .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input::-webkit-outer-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-vslider {\n  align-items: center; }\n  .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-label {\n    flex: 0 0 auto; }\n  .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv {\n    position: relative;\n    display: flex;\n    flex-direction: column;\n    flex: 1 1 auto;\n    width: 100%;\n    height: auto; }\n    .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv > .faust-ui-component-vslider-canvasdiv {\n      position: relative;\n      display: block;\n      flex: 1 1 auto;\n      width: 100%; }\n      .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv > .faust-ui-component-vslider-canvasdiv > canvas {\n        position: absolute;\n        display: block;\n        height: 100%;\n        width: 100%; }\n    .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input {\n      position: relative;\n      display: block;\n      flex: 0 1 auto;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.25);\n      margin: 5px auto auto auto;\n      border-width: 0px;\n      border-radius: 4px;\n      height: 5%;\n      max-width: calc(100% - 8px);\n      padding: 2px 4px;\n      -moz-appearance: textfield; }\n      .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-vslider > .faust-ui-component-vslider-flexdiv input::-webkit-outer-spin-button {\n        -webkit-appearance: none;\n        margin: 0; }\n", ""]);
 
 
 /***/ }),
@@ -287,7 +287,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-vslider {\n  ali
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-root {\n  position: absolute;\n  display: block;\n  overflow: auto;\n  width: 100%;\n  height: 100%;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; }\n  .faust-ui-root .faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid; }\n    .faust-ui-root .faust-ui-group .faust-ui-group-label {\n      position: relative;\n      font-weight: bold;\n      margin: 4px;\n      font-size: 12px;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      max-width: 100%;\n      overflow: hidden;\n      user-select: none;\n      color: rgba(255, 255, 255, 0.7); }\n    .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs {\n      position: absolute;\n      display: inline-block; }\n      .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n        position: relative;\n        display: inline-block;\n        border-radius: 5px;\n        cursor: pointer;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        user-select: none;\n        margin: 10px;\n        text-align: center;\n        background-color: rgba(255, 255, 255, 0.5); }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n          background-color: white; }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n          background-color: #282828;\n          color: white; }\n  .faust-ui-root .faust-ui-item {\n    position: absolute;\n    display: block; }\n", ""]);
+exports.push([module.i, ".faust-ui-root {\n  position: absolute;\n  display: block;\n  overflow: hidden;\n  width: 100%;\n  height: 100%;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; }\n  .faust-ui-root .faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid; }\n    .faust-ui-root .faust-ui-group .faust-ui-group-label {\n      position: relative;\n      font-weight: bold;\n      margin: 4px;\n      font-size: 12px;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      max-width: 100%;\n      overflow: hidden;\n      user-select: none;\n      color: rgba(255, 255, 255, 0.7); }\n    .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs {\n      position: absolute;\n      display: inline-block; }\n      .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n        position: relative;\n        display: inline-block;\n        border-radius: 5px;\n        cursor: pointer;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        user-select: none;\n        margin: 10px;\n        text-align: center;\n        background-color: rgba(255, 255, 255, 0.5); }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n          background-color: white; }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n          background-color: #282828;\n          color: white; }\n  .faust-ui-root .faust-ui-item {\n    position: absolute;\n    display: block; }\n", ""]);
 
 
 /***/ }),
@@ -1525,11 +1525,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base.scss */ "./src/components/Base.scss");
 /* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_Base_scss__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Component */ "./src/components/Component.ts");
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
+
 
 
 /**
@@ -1717,7 +1721,7 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
       focus: false
     }));
 
-    this.state.style = _objectSpread({}, this.defaultProps.style, props.style);
+    this.state.style = _objectSpread({}, this.defaultProps.style, {}, props.style);
     if (this.state.emitter) this.state.emitter.register(this.state.address, this);
     return this;
   }
@@ -1833,20 +1837,19 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
     return this;
   }
 
-  get steps() {
+  get stepsCount() {
     var _this$state = this.state,
         type = _this$state.type,
         max = _this$state.max,
         min = _this$state.min,
         step = _this$state.step,
         enums = _this$state.enums;
-    var full = 100;
-    var maxSteps = type === "enum" ? enums.length : type === "int" ? max - min : full;
+    var maxSteps = type === "enum" ? enums.length : type === "int" ? max - min : (max - min) / step;
 
     if (step) {
       if (type === "enum") return enums.length;
       if (type === "int") return Math.min(Math.floor((max - min) / (Math.round(step) || 1)), maxSteps);
-      return Math.min(Math.floor((max - min) / step), maxSteps);
+      return Math.floor((max - min) / step);
     }
 
     return maxSteps;
@@ -1865,8 +1868,27 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
         max = _this$state2.max,
         min = _this$state2.min,
         value = _this$state2.value,
-        enums = _this$state2.enums;
-    return type === "enum" ? value / enums.length : (value - min) / (max - min);
+        enums = _this$state2.enums,
+        scale = _this$state2.scale;
+    return AbstractItem.getDistance({
+      type,
+      max,
+      min,
+      value,
+      enums,
+      scale
+    });
+  }
+
+  static getDistance(state) {
+    var type = state.type,
+        max = state.max,
+        min = state.min,
+        value = state.value,
+        enums = state.enums,
+        scale = state.scale;
+    var normalized = type === "enum" ? value / enums.length : (value - min) / (max - min);
+    return scale === "exp" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normLog"])(normalized) : scale === "log" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normExp"])(normalized) : normalized;
   }
   /**
    * Mousemove pixels for each step
@@ -1878,8 +1900,8 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
 
   get stepRange() {
     var full = 100;
-    var trueSteps = this.steps;
-    return full / trueSteps;
+    var stepsCount = this.stepsCount;
+    return full / stepsCount;
   }
 
 }
@@ -1895,7 +1917,7 @@ _defineProperty(AbstractItem, "defaultProps", {
   enums: {},
   type: "float",
   unit: "",
-  exponent: 1,
+  scale: "linear",
   step: 0.01,
   style: {
     width: 45,
@@ -1987,7 +2009,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Button.scss */ "./src/components/Button.scss");
 /* harmony import */ var _Button_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Button_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -2160,7 +2184,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
 /* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -2238,7 +2264,7 @@ class Component extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"] {
 
     _defineProperty(this, "tasks", []);
 
-    this.state = _objectSpread({}, this.defaultProps, props);
+    this.state = _objectSpread({}, this.defaultProps, {}, props);
     return this;
   }
   /**
@@ -2475,7 +2501,8 @@ class Group extends _Component__WEBPACK_IMPORTED_MODULE_0__["Component"] {
         enums = _this$parseMeta.enums;
 
     var tooltip = metaObject.tooltip,
-        unit = metaObject.unit;
+        unit = metaObject.unit,
+        scale = metaObject.scale;
     var label = ioItem.label,
         min = ioItem.min,
         max = ioItem.max,
@@ -2486,6 +2513,7 @@ class Group extends _Component__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       address,
       tooltip,
       unit,
+      scale: scale || "linear",
       emitter,
       enums,
       style: {
@@ -2712,10 +2740,12 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["VBargraph"] {
       var ctx = this.ctx;
       var canvas = this.canvas;
 
-      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-          width = _canvas$getBoundingCl.width,
-          height = _canvas$getBoundingCl.height;
+      var _this$canvasDiv$getBo = this.canvasDiv.getBoundingClientRect(),
+          width = _this$canvasDiv$getBo.width,
+          height = _this$canvasDiv$getBo.height;
 
+      width = Math.floor(width);
+      height = Math.floor(height);
       canvas.width = width;
       canvas.height = height;
       var drawWidth = width * 0.9;
@@ -2851,8 +2881,8 @@ class HSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["VSlider"] {
           labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
-      this.input.style.fontSize = "".concat(fontsize || height * grid * 0.2, "px");
-      this.input.style.color = textcolor;
+      this.inputNumber.style.fontSize = "".concat(fontsize || height * grid * 0.2, "px");
+      this.inputNumber.style.color = textcolor;
       this.label.style.fontSize = "".concat(height * grid * 0.2, "px");
       this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
@@ -2869,9 +2899,9 @@ class HSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["VSlider"] {
       var canvas = this.canvas;
       var distance = this.distance;
 
-      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-          width = _canvas$getBoundingCl.width,
-          height = _canvas$getBoundingCl.height;
+      var _this$canvasDiv$getBo = this.canvasDiv.getBoundingClientRect(),
+          width = _this$canvasDiv$getBo.width,
+          height = _this$canvasDiv$getBo.height;
 
       width = Math.floor(width);
       height = Math.floor(height);
@@ -2942,7 +2972,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Knob.scss */ "./src/components/Knob.scss");
 /* harmony import */ var _Knob_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Knob_scss__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3065,6 +3097,8 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
   componentWillMount() {
     super.componentWillMount();
     this.canvas = document.createElement("canvas");
+    this.canvas.width = 10;
+    this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
     this.label = document.createElement("div");
     this.label.className = "faust-ui-component-label";
@@ -3137,13 +3171,24 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     var _this$state = this.state,
         type = _this$state.type,
         min = _this$state.min,
-        max = _this$state.max;
+        max = _this$state.max,
+        enums = _this$state.enums,
+        scale = _this$state.scale;
     var stepRange = this.stepRange;
-    var trueSteps = this.steps;
-    var step = type === "enum" ? 1 : (max - min) / trueSteps;
-    var prevSteps = type === "enum" ? e.prevValue : (e.prevValue - min) / step;
-    var dSteps = Math.round((e.fromY - e.y) / stepRange);
-    var steps = Math.min(trueSteps, Math.max(0, prevSteps + dSteps));
+    var stepsCount = this.stepsCount;
+    var step = type === "enum" ? 1 : (max - min) / stepsCount;
+    var range = 100;
+    var prevDistance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"].getDistance({
+      value: e.prevValue,
+      type,
+      min,
+      max,
+      enums,
+      scale
+    }) * range;
+    var distance = prevDistance + e.fromY - e.y;
+    var steps = Math.round((scale === "exp" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normExp"])(distance / range) : scale === "log" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normLog"])(distance / range) : distance / range) * range / stepRange);
+    steps = Math.min(stepsCount, Math.max(0, steps));
     if (type === "enum") return steps;
     if (type === "int") return Math.round(steps * step + min);
     return steps * step + min;
@@ -3196,7 +3241,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Led.scss */ "./src/components/Led.scss");
 /* harmony import */ var _Led_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Led_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3209,6 +3256,8 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     _defineProperty(this, "className", "led");
 
     _defineProperty(this, "label", void 0);
+
+    _defineProperty(this, "canvasDiv", void 0);
 
     _defineProperty(this, "canvas", void 0);
 
@@ -3299,7 +3348,11 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
   componentWillMount() {
     super.componentWillMount();
+    this.canvasDiv = document.createElement("div");
+    this.canvasDiv.className = "faust-ui-component-".concat(this.className, "-canvasdiv");
     this.canvas = document.createElement("canvas");
+    this.canvas.width = 10;
+    this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
     this.tempCanvas = document.createElement("canvas");
     this.tempCtx = this.tempCanvas.getContext("2d");
@@ -3332,8 +3385,9 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
   }
 
   mount() {
+    this.canvasDiv.appendChild(this.canvas);
     this.container.appendChild(this.label);
-    this.container.appendChild(this.canvas);
+    this.container.appendChild(this.canvasDiv);
     return super.mount();
   }
 
@@ -3384,7 +3438,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Menu.scss */ "./src/components/Menu.scss");
 /* harmony import */ var _Menu_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Menu_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3540,7 +3596,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Nentry.scss */ "./src/components/Nentry.scss");
 /* harmony import */ var _Nentry_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Nentry_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3688,7 +3746,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Numerical.scss */ "./src/components/Numerical.scss");
 /* harmony import */ var _Numerical_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Numerical_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3816,7 +3876,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Radio.scss */ "./src/components/Radio.scss");
 /* harmony import */ var _Radio_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_Radio_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -3990,7 +4052,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
 /* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VBargraph.scss */ "./src/components/VBargraph.scss");
 /* harmony import */ var _VBargraph_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_VBargraph_scss__WEBPACK_IMPORTED_MODULE_1__);
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -4009,6 +4073,8 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
     _defineProperty(this, "input", void 0);
 
     _defineProperty(this, "flexDiv", void 0);
+
+    _defineProperty(this, "canvasDiv", void 0);
 
     _defineProperty(this, "ctx", void 0);
 
@@ -4052,10 +4118,12 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
       var ctx = this.ctx;
       var canvas = this.canvas;
 
-      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-          width = _canvas$getBoundingCl.width,
-          height = _canvas$getBoundingCl.height;
+      var _this$canvasDiv$getBo = this.canvasDiv.getBoundingClientRect(),
+          width = _this$canvasDiv$getBo.width,
+          height = _this$canvasDiv$getBo.height;
 
+      width = Math.floor(width);
+      height = Math.floor(height);
       canvas.width = width;
       canvas.height = height;
       var drawHeight = height * 0.9;
@@ -4148,7 +4216,11 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
     super.componentWillMount();
     this.flexDiv = document.createElement("div");
     this.flexDiv.className = "faust-ui-component-".concat(this.className, "-flexdiv");
+    this.canvasDiv = document.createElement("div");
+    this.canvasDiv.className = "faust-ui-component-".concat(this.className, "-canvasdiv");
     this.canvas = document.createElement("canvas");
+    this.canvas.width = 10;
+    this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
     this.label = document.createElement("div");
     this.label.className = "faust-ui-component-label";
@@ -4175,7 +4247,7 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
 
     this.on("label", () => this.schedule(labelChange));
 
-    var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString();
+    var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString() + (this.state.unit || "");
 
     this.on("value", () => {
       this.schedule(valueChange);
@@ -4189,7 +4261,8 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
   }
 
   mount() {
-    this.flexDiv.appendChild(this.canvas);
+    this.canvasDiv.appendChild(this.canvas);
+    this.flexDiv.appendChild(this.canvasDiv);
     this.flexDiv.appendChild(this.input);
     this.container.appendChild(this.label);
     this.container.appendChild(this.flexDiv);
@@ -4244,7 +4317,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VSlider.scss */ "./src/components/VSlider.scss");
 /* harmony import */ var _VSlider_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_VSlider_scss__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -4261,16 +4336,21 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
 
     _defineProperty(this, "canvas", void 0);
 
+    _defineProperty(this, "inputNumber", void 0);
+
     _defineProperty(this, "input", void 0);
 
     _defineProperty(this, "flexDiv", void 0);
+
+    _defineProperty(this, "canvasDiv", void 0);
 
     _defineProperty(this, "ctx", void 0);
 
     _defineProperty(this, "interactionRect", [0, 0, 0, 0]);
 
     _defineProperty(this, "handleChange", e => {
-      this.setValue(+e.currentTarget.value); // this.schedule(this.paint);
+      this.inputNumber.value = parseFloat(e.currentTarget.value).toFixed(3).toString();
+      this.setValue(+this.inputNumber.value); // this.schedule(this.paint);
     });
 
     _defineProperty(this, "setStyle", () => {
@@ -4284,8 +4364,8 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       var fontSize = Math.min(height * grid * 0.05, width * grid * 0.2);
-      this.input.style.fontSize = "".concat(fontsize || fontSize, "px");
-      this.input.style.color = textcolor;
+      this.inputNumber.style.fontSize = "".concat(fontsize || fontSize, "px");
+      this.inputNumber.style.color = textcolor;
       this.label.style.fontSize = "".concat(fontSize, "px");
       this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
@@ -4302,10 +4382,12 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
       var canvas = this.canvas;
       var distance = this.distance;
 
-      var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-          width = _canvas$getBoundingCl.width,
-          height = _canvas$getBoundingCl.height;
+      var _this$canvasDiv$getBo = this.canvasDiv.getBoundingClientRect(),
+          width = _this$canvasDiv$getBo.width,
+          height = _this$canvasDiv$getBo.height;
 
+      width = Math.floor(width);
+      height = Math.floor(height);
       canvas.width = width;
       canvas.height = height;
       var drawHeight = height * 0.9;
@@ -4360,17 +4442,24 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
     super.componentWillMount();
     this.flexDiv = document.createElement("div");
     this.flexDiv.className = "faust-ui-component-".concat(this.className, "-flexdiv");
+    this.canvasDiv = document.createElement("div");
+    this.canvasDiv.className = "faust-ui-component-".concat(this.className, "-canvasdiv");
     this.canvas = document.createElement("canvas");
+    this.canvas.width = 10;
+    this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
     this.label = document.createElement("div");
     this.label.className = "faust-ui-component-label";
     this.label.innerText = this.state.label;
+    this.inputNumber = document.createElement("input");
+    this.inputNumber.type = "number";
+    this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
+    this.inputNumber.max = this.state.max.toString();
+    this.inputNumber.min = this.state.min.toString();
+    this.inputNumber.step = this.state.step.toString();
     this.input = document.createElement("input");
-    this.input.type = "number";
-    this.input.value = (+this.state.value.toFixed(3)).toString();
-    this.input.max = this.state.max.toString();
-    this.input.min = this.state.min.toString();
-    this.input.step = this.state.step.toString();
+    this.input.value = this.inputNumber.value + (this.state.unit || "");
+    this.input.spellcheck = false;
     this.setStyle();
     return this;
   }
@@ -4391,28 +4480,31 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
 
     this.on("label", () => this.schedule(labelChange));
 
-    var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString();
+    var valueChange = () => {
+      this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
+      this.input.value = this.inputNumber.value + (this.state.unit || "");
+    };
 
     this.on("value", () => {
       this.schedule(valueChange);
       this.schedule(this.paint);
     });
 
-    var maxChange = () => this.input.max = this.state.max.toString();
+    var maxChange = () => this.inputNumber.max = this.state.max.toString();
 
     this.on("max", () => {
       this.schedule(maxChange);
       this.schedule(this.paint);
     });
 
-    var minChange = () => this.input.min = this.state.min.toString();
+    var minChange = () => this.inputNumber.min = this.state.min.toString();
 
     this.on("min", () => {
       this.schedule(minChange);
       this.schedule(this.paint);
     });
 
-    var stepChange = () => this.input.step = this.state.step.toString();
+    var stepChange = () => this.inputNumber.step = this.state.step.toString();
 
     this.on("step", () => {
       this.schedule(stepChange);
@@ -4423,27 +4515,27 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
   }
 
   mount() {
-    this.flexDiv.appendChild(this.canvas);
+    this.canvasDiv.appendChild(this.canvas);
+    this.flexDiv.appendChild(this.canvasDiv);
     this.flexDiv.appendChild(this.input);
     this.container.appendChild(this.label);
     this.container.appendChild(this.flexDiv);
     return super.mount();
   }
 
-  get trueSteps() {
+  get stepsCount() {
     var _this$state = this.state,
         type = _this$state.type,
         max = _this$state.max,
         min = _this$state.min,
         step = _this$state.step,
         enums = _this$state.enums;
-    var full = this.interactionRect[this.className === "vslider" ? 3 : 2];
-    var maxSteps = type === "enum" ? enums.length : type === "int" ? max - min : full;
+    var maxSteps = type === "enum" ? enums.length : type === "int" ? max - min : (max - min) / step;
 
     if (step) {
       if (type === "enum") return enums.length;
       if (type === "int") return Math.min(Math.floor((max - min) / (Math.round(step) || 0)), maxSteps);
-      return Math.min(Math.floor((max - min) / step), maxSteps);
+      return Math.floor((max - min) / step);
     }
 
     return maxSteps;
@@ -4451,20 +4543,23 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
 
   get stepRange() {
     var full = this.interactionRect[this.className === "vslider" ? 3 : 2];
-    var trueSteps = this.trueSteps;
-    return full / trueSteps;
+    var stepsCount = this.stepsCount;
+    return full / stepsCount;
   }
 
   getValueFromPos(e) {
     var _this$state2 = this.state,
         type = _this$state2.type,
         min = _this$state2.min,
-        max = _this$state2.max;
+        max = _this$state2.max,
+        scale = _this$state2.scale;
     var stepRange = this.stepRange;
-    var trueSteps = this.trueSteps;
-    var step = type === "enum" ? 1 : (max - min) / trueSteps;
-    var steps = Math.round((this.className === "vslider" ? this.interactionRect[3] - (e.y - this.interactionRect[1]) : e.x - this.interactionRect[0]) / stepRange);
-    steps = Math.min(trueSteps, Math.max(0, steps));
+    var stepsCount = this.stepsCount;
+    var step = type === "enum" ? 1 : (max - min) / stepsCount;
+    var distance = this.className === "vslider" ? this.interactionRect[3] - (e.y - this.interactionRect[1]) : e.x - this.interactionRect[0];
+    var range = this.className === "vslider" ? this.interactionRect[3] : this.interactionRect[2];
+    var steps = Math.round((scale === "exp" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normExp"])(distance / range) : scale === "log" ? Object(_utils__WEBPACK_IMPORTED_MODULE_2__["normLog"])(distance / range) : distance / range) * range / stepRange);
+    steps = Math.min(stepsCount, Math.max(0, steps));
     if (type === "enum") return steps;
     if (type === "int") return Math.round(steps * step + min);
     return steps * step + min;
@@ -4478,7 +4573,7 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
 /*!*********************************!*\
   !*** ./src/components/utils.ts ***!
   \*********************************/
-/*! exports provided: toMIDI, toRad, atodb, dbtoa, roundedRect, fillRoundedRect */
+/*! exports provided: toMIDI, toRad, atodb, dbtoa, normLog, normExp, roundedRect, fillRoundedRect */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4487,12 +4582,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "toRad", function() { return toRad; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "atodb", function() { return atodb; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "dbtoa", function() { return dbtoa; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "normLog", function() { return normLog; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "normExp", function() { return normExp; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "roundedRect", function() { return roundedRect; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "fillRoundedRect", function() { return fillRoundedRect; });
 var toMIDI = f => ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][(f % 12 + 12) % 12] + Math.round(f / 12 - 2);
 var toRad = degrees => degrees * Math.PI / 180;
 var atodb = a => 20 * Math.log10(a);
 var dbtoa = db => Math.pow(10, db / 20);
+var normLog = x => Math.log10(x * 99 + 1) / 2 || 0;
+var normExp = x => (Math.pow(10, 2 * x) - 1) / 99;
 var roundedRect = (ctx, x, y, width, height, radius) => {
   var radii = [0, 0, 0, 0];
   if (typeof radius === "number") radii.fill(radius);else radius.forEach((v, i) => radii[i] = v);
