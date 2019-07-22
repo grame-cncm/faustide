@@ -2,6 +2,14 @@ import { FFTR } from "kissfft-js";
 import { TDrawOptions } from "./StaticScope";
 import { sliceWrap, getFrequencyDomainData, setWrap, estimateFreq } from "./utils";
 
+/**
+ * This class provides a default handler for a buffer given by Faust2WebAudio.
+ * The handler analyses the buffer with FFT, then saves both time-domain and frequency-domain data.
+ * After each buffer is analysed, a drawHandler is called to display data.
+ *
+ * @export
+ * @class Analyser
+ */
 export class Analyser {
     /**
      * Time Domain Data
@@ -62,13 +70,19 @@ export class Analyser {
      */
     private _fft: FFTR;
     private _fftSize: 256 | 1024 | 4096;
-    private _fftOverlap: 1 | 2 | 4 | 8 = 2;
+    private _fftOverlap: 1 | 2 | 4 | 8;
+    /**
+     * This function property can be overwritten, will be called after each buffer received.
+     *
+     * @memberof Analyser
+     */
     drawHandler: (options: TDrawOptions) => any;
     freqEstimated: number;
     constructor(buffers?: number, drawMode?: "offline" | "continuous" | "onevent" | "manual", drawHandler?: (options: TDrawOptions) => any) {
         this.buffers = buffers || 0;
         this.drawMode = drawMode || "manual";
         this.drawHandler = drawHandler;
+        this._fftOverlap = 2;
         this.capturing = -1;
         this.fftSize = 256;
     }
@@ -128,6 +142,11 @@ export class Analyser {
         if (this.drawMode === "continuous" || this.capturing > 0) this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, fftOverlap, freqEstimated, sampleRate, t, f, e });
         else this.drawHandler({ $, $buffer, bufferSize, drawMode, fftSize, fftOverlap, freqEstimated, sampleRate, t: this.t.map(a => a.slice()), f: this.f.map(a => a.slice()), e: this.e.slice() });
     }
+    /**
+     * The function property can be overwritten to get the sampleRate differently.
+     *
+     * @memberof Analyser
+     */
     getSampleRate = () => 48000;
     get sampleRate() {
         try {

@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component .faust-ui-component-label {\n    position: relative;\n    font-weight: bold;\n    margin-bottom: 4px;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n    overflow: hidden;\n    user-select: none; }\n  .faust-ui-component input {\n    box-shadow: none; }\n", ""]);
+exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component > .faust-ui-component-label {\n    position: relative;\n    margin-top: 4px;\n    max-width: 100%;\n    user-select: none; }\n    .faust-ui-component > .faust-ui-component-label > canvas {\n      position: relative;\n      display: block;\n      width: 100%;\n      height: 100%; }\n  .faust-ui-component input {\n    box-shadow: none; }\n", ""]);
 
 
 /***/ }),
@@ -1588,6 +1588,146 @@ class FaustUI {
 
 /***/ }),
 
+/***/ "./src/components/AbstractComponent.ts":
+/*!*********************************************!*\
+  !*** ./src/components/AbstractComponent.ts ***!
+  \*********************************************/
+/*! exports provided: AbstractComponent */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractComponent", function() { return AbstractComponent; });
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
+/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+class AbstractComponent extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"] {
+  on(type, listener) {
+    return super.on(type, listener);
+  }
+
+  once(type, listener) {
+    return super.once(type, listener);
+  }
+
+  off(type, listener) {
+    return super.off(type, listener);
+  }
+
+  removeAllListeners(type) {
+    return super.removeAllListeners(type);
+  }
+
+  emit(type, e) {
+    return super.emit(type, e);
+  }
+  /**
+   * The default state of the component.
+   *
+   * @static
+   * @type {{ [key: string]: any }}
+   * @memberof Component
+   */
+
+
+  get defaultProps() {
+    return this.constructor.defaultProps;
+  }
+  /**
+   * Here stores corrent state of component
+   * change the state with `setState` method to fire state events
+   * then UI parts will get notified and rerender
+   *
+   * @type {T}
+   * @memberof Component
+   */
+
+
+  /**
+   * Initiate default state with incoming state.
+   * @param {T} [props]
+   * @memberof AbstractItem
+   */
+  constructor(props) {
+    super();
+
+    _defineProperty(this, "state", void 0);
+
+    _defineProperty(this, "$frame", 0);
+
+    _defineProperty(this, "frameReduce", 1);
+
+    _defineProperty(this, "$raf", void 0);
+
+    _defineProperty(this, "raf", () => {
+      this.$frame++;
+
+      if (this.$frame % this.frameReduce !== 0) {
+        if (this.$raf) window.cancelAnimationFrame(this.$raf);
+        this.$raf = window.requestAnimationFrame(this.raf);
+        return;
+      }
+
+      this.tasks.forEach(f => f());
+      this.tasks = [];
+    });
+
+    _defineProperty(this, "tasks", []);
+
+    this.state = _objectSpread({}, this.defaultProps, {}, props);
+    return this;
+  }
+  /**
+   * set internal state and fire events for UI parts subscribed
+   *
+   * @param {{ [K in keyof T]?: T[K] }} newState
+   * @returns
+   * @memberof Component
+   */
+
+
+  setState(newState) {
+    var shouldUpdate = false;
+
+    for (var _key in newState) {
+      var stateKey = _key;
+      var stateValue = newState[stateKey];
+
+      if (stateKey in this.state && this.state[stateKey] !== stateValue) {
+        this.state[stateKey] = stateValue;
+        shouldUpdate = true;
+      } else return;
+
+      if (shouldUpdate) this.emit(stateKey, this.state[stateKey]);
+    }
+  }
+  /**
+   * Use this method to request a new rendering
+   * schedule what you need to do in next render tick in `raf` callback
+   *
+   * @returns
+   * @memberof Component
+   */
+
+
+  schedule(func) {
+    if (this.tasks.indexOf(func) === -1) this.tasks.push(func);
+    if (this.$raf) window.cancelAnimationFrame(this.$raf);
+    this.$raf = window.requestAnimationFrame(this.raf);
+  }
+
+}
+
+_defineProperty(AbstractComponent, "defaultProps", {});
+
+/***/ }),
+
 /***/ "./src/components/AbstractItem.ts":
 /*!****************************************!*\
   !*** ./src/components/AbstractItem.ts ***!
@@ -1600,7 +1740,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractItem", function() { return AbstractItem; });
 /* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Base.scss */ "./src/components/Base.scss");
 /* harmony import */ var _Base_scss__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_Base_scss__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Component */ "./src/components/Component.ts");
+/* harmony import */ var _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./AbstractComponent */ "./src/components/AbstractComponent.ts");
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils */ "./src/components/utils.ts");
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -1631,12 +1771,26 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
  * @template T
  */
 
-class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] {
+class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__["AbstractComponent"] {
   /**
    * The default state of the component.
    *
    * @static
    * @type {FaustUIItemProps<FaustUIItemStyle>}
+   * @memberof AbstractItem
+   */
+
+  /**
+   * DOM Div container of label canvas
+   *
+   * @type {HTMLDivElement}
+   * @memberof AbstractItem
+   */
+
+  /**
+   * Use canvas as label to fit full text in.
+   *
+   * @type {HTMLCanvasElement}
    * @memberof AbstractItem
    */
 
@@ -1661,6 +1815,12 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
     super(props);
 
     _defineProperty(this, "container", void 0);
+
+    _defineProperty(this, "label", void 0);
+
+    _defineProperty(this, "labelCanvas", void 0);
+
+    _defineProperty(this, "labelCtx", void 0);
 
     _defineProperty(this, "className", void 0);
 
@@ -1897,6 +2057,10 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
     this.container.tabIndex = 1;
     this.container.id = this.state.address;
     if (this.state.tooltip) this.container.title = this.state.tooltip;
+    this.label = document.createElement("div");
+    this.label.className = "faust-ui-component-label";
+    this.labelCanvas = document.createElement("canvas");
+    this.labelCtx = this.labelCanvas.getContext("2d");
     return this;
   }
   /**
@@ -1908,6 +2072,30 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
 
 
   mount() {
+    this.label.appendChild(this.labelCanvas);
+    return this;
+  }
+
+  paintLabel() {
+    var label = this.state.label;
+    var color = this.state.style.labelcolor;
+    var ctx = this.labelCtx;
+    var canvas = this.labelCanvas;
+
+    var _this$label$getBoundi = this.label.getBoundingClientRect(),
+        width = _this$label$getBoundi.width,
+        height = _this$label$getBoundi.height;
+
+    if (!width || !height) return this;
+    width = Math.floor(width);
+    height = Math.floor(height);
+    canvas.height = height;
+    canvas.width = width;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = color;
+    ctx.textBaseline = "middle";
+    ctx.font = "bold ".concat(height * 0.9, "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"");
+    ctx.fillText(label, 0, height / 2, width);
     return this;
   }
   /**
@@ -1930,6 +2118,8 @@ class AbstractItem extends _Component__WEBPACK_IMPORTED_MODULE_1__["Component"] 
       this.container.style.height = "".concat(height * grid, "px");
       this.container.style.left = "".concat(left * grid, "px");
       this.container.style.top = "".concat(top * grid, "px");
+      this.label.style.height = "".concat(grid * 0.25, "px");
+      this.paintLabel();
     };
 
     this.on("style", () => this.schedule(handleResize));
@@ -2030,10 +2220,11 @@ _defineProperty(AbstractItem, "defaultProps", {
     width: 45,
     height: 15,
     left: 0,
-    top: 0
+    top: 0,
+    labelcolor: "rgba(226, 222, 255, 0.5)"
   }
   /**
-   * DOM Div container of the componnt
+   * DOM Div container of the component
    *
    * @type {HTMLDivElement}
    * @memberof AbstractItem
@@ -2279,146 +2470,6 @@ class Checkbox extends _Button__WEBPACK_IMPORTED_MODULE_0__["Button"] {
 
 /***/ }),
 
-/***/ "./src/components/Component.ts":
-/*!*************************************!*\
-  !*** ./src/components/Component.ts ***!
-  \*************************************/
-/*! exports provided: Component */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! events */ "./node_modules/events/events.js");
-/* harmony import */ var events__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(events__WEBPACK_IMPORTED_MODULE_0__);
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-
-class Component extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"] {
-  on(type, listener) {
-    return super.on(type, listener);
-  }
-
-  once(type, listener) {
-    return super.once(type, listener);
-  }
-
-  off(type, listener) {
-    return super.off(type, listener);
-  }
-
-  removeAllListeners(type) {
-    return super.removeAllListeners(type);
-  }
-
-  emit(type, e) {
-    return super.emit(type, e);
-  }
-  /**
-   * The default state of the component.
-   *
-   * @static
-   * @type {{ [key: string]: any }}
-   * @memberof Component
-   */
-
-
-  get defaultProps() {
-    return this.constructor.defaultProps;
-  }
-  /**
-   * Here stores corrent state of component
-   * change the state with `setState` method to fire state events
-   * then UI parts will get notified and rerender
-   *
-   * @type {T}
-   * @memberof Component
-   */
-
-
-  /**
-   * Initiate default state with incoming state.
-   * @param {T} [props]
-   * @memberof AbstractItem
-   */
-  constructor(props) {
-    super();
-
-    _defineProperty(this, "state", void 0);
-
-    _defineProperty(this, "$frame", 0);
-
-    _defineProperty(this, "frameReduce", 1);
-
-    _defineProperty(this, "$raf", void 0);
-
-    _defineProperty(this, "raf", () => {
-      this.$frame++;
-
-      if (this.$frame % this.frameReduce !== 0) {
-        window.cancelAnimationFrame(this.$raf);
-        this.$raf = window.requestAnimationFrame(this.raf);
-        return;
-      }
-
-      this.tasks.forEach(f => f());
-      this.tasks = [];
-    });
-
-    _defineProperty(this, "tasks", []);
-
-    this.state = _objectSpread({}, this.defaultProps, {}, props);
-    return this;
-  }
-  /**
-   * set internal state and fire events for UI parts subscribed
-   *
-   * @param {{ [K in keyof T]?: T[K] }} newState
-   * @returns
-   * @memberof Component
-   */
-
-
-  setState(newState) {
-    var shouldUpdate = false;
-
-    for (var _key in newState) {
-      var stateKey = _key;
-      var stateValue = newState[stateKey];
-
-      if (stateKey in this.state && this.state[stateKey] !== stateValue) {
-        this.state[stateKey] = stateValue;
-        shouldUpdate = true;
-      } else return;
-
-      if (shouldUpdate) this.emit(stateKey, this.state[stateKey]);
-    }
-  }
-  /**
-   * Use this method to request a new rendering
-   * schedule what you need to do in next render tick in `raf` callback
-   *
-   * @returns
-   * @memberof Component
-   */
-
-
-  schedule(func) {
-    if (this.tasks.indexOf(func) === -1) this.tasks.push(func);
-    window.cancelAnimationFrame(this.$raf);
-    this.$raf = window.requestAnimationFrame(this.raf);
-  }
-
-}
-
-_defineProperty(Component, "defaultProps", {});
-
-/***/ }),
-
 /***/ "./src/components/Group.scss":
 /*!***********************************!*\
   !*** ./src/components/Group.scss ***!
@@ -2459,7 +2510,7 @@ if(false) {}
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Group", function() { return Group; });
-/* harmony import */ var _Component__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Component */ "./src/components/Component.ts");
+/* harmony import */ var _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractComponent */ "./src/components/AbstractComponent.ts");
 /* harmony import */ var _HSlider__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HSlider */ "./src/components/HSlider.ts");
 /* harmony import */ var _VSlider__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./VSlider */ "./src/components/VSlider.ts");
 /* harmony import */ var _Nentry__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Nentry */ "./src/components/Nentry.ts");
@@ -2492,7 +2543,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
-class Group extends _Component__WEBPACK_IMPORTED_MODULE_0__["Component"] {
+class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractComponent"] {
   constructor() {
     super(...arguments);
 
@@ -2527,7 +2578,7 @@ class Group extends _Component__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       this.container.style.top = "".concat(top * grid, "px");
       this.container.style.width = "".concat(width * grid, "px");
       this.container.style.height = "".concat(height * grid, "px");
-      this.container.className = ["".concat(isRoot ? "faust-ui-root" : ""), "faust-ui-group", "faust-ui-".concat(type)].join(" ");
+      this.container.className = ["faust-ui-group", "faust-ui-".concat(type), "".concat(isRoot ? "faust-ui-root" : "")].join(" ");
       items.forEach(item => {
         if (item.type.endsWith("group")) {
           var component = Group.getComponent(item, emitter, grid);
@@ -2854,13 +2905,10 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["VBargraph"] {
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.input.style.fontSize = "".concat(fontsize || height * grid * 0.2, "px");
       this.input.style.color = textcolor;
-      this.label.style.fontSize = "".concat(height * grid * 0.2, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -3018,13 +3066,10 @@ class HSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["VSlider"] {
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.input.style.fontSize = "".concat(fontsize || height * grid * 0.2, "px");
       this.input.style.color = textcolor;
-      this.label.style.fontSize = "".concat(height * grid * 0.2, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -3127,8 +3172,6 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
     _defineProperty(this, "className", "knob");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "canvas", void 0);
 
     _defineProperty(this, "inputNumber", void 0);
@@ -3154,13 +3197,10 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
           height = _this$state$style.height,
           grid = _this$state$style.grid,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.input.style.fontSize = "".concat(fontsize || height * grid * 0.1, "px");
       this.input.style.color = textcolor;
-      this.label.style.fontSize = "".concat(height * grid * 0.1, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -3249,9 +3289,6 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     this.canvas.width = 10;
     this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.inputNumber = document.createElement("input");
     this.inputNumber.type = "number";
     this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
@@ -3276,10 +3313,7 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
       this.schedule(this.setStyle);
       this.schedule(this.paint);
     });
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
 
     var valueChange = () => {
       this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
@@ -3410,8 +3444,6 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
     _defineProperty(this, "className", "led");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "canvasDiv", void 0);
 
     _defineProperty(this, "canvas", void 0);
@@ -3424,13 +3456,8 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
     _defineProperty(this, "setStyle", () => {
       var _this$state$style = this.state.style,
-          height = _this$state$style.height,
-          grid = _this$state$style.grid,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
-      this.label.style.fontSize = "".concat(height * grid * 0.25, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -3513,9 +3540,6 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     this.tempCtx = this.tempCanvas.getContext("2d");
     this.tempCanvas.width = 128;
     this.tempCanvas.height = 1;
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.setStyle();
     return this;
   }
@@ -3527,10 +3551,7 @@ class Led extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
       passive: false
     });
     this.on("style", () => this.schedule(this.setStyle));
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
     this.on("value", () => this.schedule(this.paint));
     this.on("max", () => this.schedule(this.paint));
     this.on("min", () => this.schedule(this.paint));
@@ -3607,8 +3628,6 @@ class Menu extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
     _defineProperty(this, "className", "menu");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "select", void 0);
 
     _defineProperty(this, "handleChange", e => {
@@ -3621,15 +3640,12 @@ class Menu extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.select.style.backgroundColor = bgcolor;
       this.select.style.borderColor = bordercolor;
       this.select.style.color = textcolor;
       this.select.style.fontSize = "".concat(fontsize || height * grid / 4, "px");
-      this.label.style.fontSize = "".concat(height * grid / 4, "px");
-      this.label.style.color = labelcolor;
     });
   }
 
@@ -3650,9 +3666,6 @@ class Menu extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
   componentWillMount() {
     super.componentWillMount();
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.select = document.createElement("select");
     this.getOptions();
     this.setStyle();
@@ -3681,10 +3694,7 @@ class Menu extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     super.componentDidMount();
     this.select.addEventListener("change", this.handleChange);
     this.on("style", () => this.schedule(this.setStyle));
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
     this.on("enums", () => this.schedule(this.getOptions));
 
     var valueChange = () => {
@@ -3765,8 +3775,6 @@ class Nentry extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] 
 
     _defineProperty(this, "className", "nentry");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "input", void 0);
 
     _defineProperty(this, "handleChange", e => {
@@ -3779,15 +3787,12 @@ class Nentry extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] 
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.input.style.backgroundColor = bgcolor;
       this.input.style.borderColor = bordercolor;
       this.input.style.color = textcolor;
       this.input.style.fontSize = "".concat(fontsize || height * grid / 4, "px");
-      this.label.style.fontSize = "".concat(height * grid / 4, "px");
-      this.label.style.color = labelcolor;
     });
   }
 
@@ -3808,9 +3813,6 @@ class Nentry extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] 
 
   componentWillMount() {
     super.componentWillMount();
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.input = document.createElement("input");
     this.input.type = "number";
     this.input.value = (+this.state.value.toFixed(3)).toString();
@@ -3825,10 +3827,7 @@ class Nentry extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] 
     super.componentDidMount();
     this.input.addEventListener("change", this.handleChange);
     this.on("style", () => this.schedule(this.setStyle));
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
 
     var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString();
 
@@ -3915,8 +3914,6 @@ class Numerical extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
 
     _defineProperty(this, "className", "numerical");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "input", void 0);
 
     _defineProperty(this, "setStyle", () => {
@@ -3925,15 +3922,12 @@ class Numerical extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       this.input.style.backgroundColor = bgcolor;
       this.input.style.borderColor = bordercolor;
       this.input.style.color = textcolor;
       this.input.style.fontSize = "".concat(fontsize || height * grid / 4, "px");
-      this.label.style.fontSize = "".concat(height * grid / 4, "px");
-      this.label.style.color = labelcolor;
     });
   }
 
@@ -3954,9 +3948,6 @@ class Numerical extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
 
   componentWillMount() {
     super.componentWillMount();
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.input = document.createElement("input");
     this.input.disabled = true;
     this.input.value = (+this.state.value.toFixed(3)).toString() + (this.state.unit || "");
@@ -3967,10 +3958,7 @@ class Numerical extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
   componentDidMount() {
     super.componentDidMount();
     this.on("style", () => this.schedule(this.setStyle));
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
 
     var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString() + (this.state.unit || "");
 
@@ -4048,8 +4036,6 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
     _defineProperty(this, "className", "radio");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "group", void 0);
 
     _defineProperty(this, "getOptions", () => {
@@ -4094,7 +4080,6 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       var fontSize = Math.min(height * grid * 0.1, width * grid * 0.1);
@@ -4102,8 +4087,6 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
       this.group.style.borderColor = bordercolor;
       this.group.style.color = textcolor;
       this.group.style.fontSize = "".concat(fontsize || fontSize, "px");
-      this.label.style.fontSize = "".concat(fontSize, "px");
-      this.label.style.color = labelcolor;
     });
   }
 
@@ -4124,9 +4107,6 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
 
   componentWillMount() {
     super.componentWillMount();
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.group = document.createElement("div");
     this.group.className = "faust-ui-component-radio-group";
     this.getOptions();
@@ -4137,10 +4117,7 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
   componentDidMount() {
     super.componentDidMount();
     this.on("style", () => this.schedule(this.setStyle));
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
     this.on("enums", () => this.schedule(this.getOptions));
 
     var valueChange = () => {
@@ -4221,8 +4198,6 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
 
     _defineProperty(this, "className", "vbargraph");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "canvas", void 0);
 
     _defineProperty(this, "input", void 0);
@@ -4240,14 +4215,11 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       var fontSize = Math.min(height * grid * 0.05, width * grid * 0.2);
       this.input.style.fontSize = "".concat(fontsize || fontSize, "px");
       this.input.style.color = textcolor;
-      this.label.style.fontSize = "".concat(fontSize, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -4379,9 +4351,6 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
     this.canvas.width = 10;
     this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.input = document.createElement("input");
     this.input.disabled = true;
     this.input.value = (+this.state.value.toFixed(3)).toString() + (this.state.unit || "");
@@ -4399,10 +4368,7 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
       this.schedule(this.setStyle);
       this.schedule(this.paint);
     });
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
 
     var valueChange = () => this.input.value = (+this.state.value.toFixed(3)).toString() + (this.state.unit || "");
 
@@ -4489,8 +4455,6 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
 
     _defineProperty(this, "className", "vslider");
 
-    _defineProperty(this, "label", void 0);
-
     _defineProperty(this, "canvas", void 0);
 
     _defineProperty(this, "inputNumber", void 0);
@@ -4523,14 +4487,11 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
           grid = _this$state$style.grid,
           fontsize = _this$state$style.fontsize,
           textcolor = _this$state$style.textcolor,
-          labelcolor = _this$state$style.labelcolor,
           bgcolor = _this$state$style.bgcolor,
           bordercolor = _this$state$style.bordercolor;
       var fontSize = Math.min(height * grid * 0.05, width * grid * 0.2);
       this.input.style.fontSize = "".concat(fontsize || fontSize, "px");
       this.input.style.color = textcolor;
-      this.label.style.fontSize = "".concat(fontSize, "px");
-      this.label.style.color = labelcolor;
       this.container.style.backgroundColor = bgcolor;
       this.container.style.borderColor = bordercolor;
     });
@@ -4611,9 +4572,6 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
     this.canvas.width = 10;
     this.canvas.height = 10;
     this.ctx = this.canvas.getContext("2d");
-    this.label = document.createElement("div");
-    this.label.className = "faust-ui-component-label";
-    this.label.innerText = this.state.label;
     this.inputNumber = document.createElement("input");
     this.inputNumber.type = "number";
     this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
@@ -4638,10 +4596,7 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"]
       this.schedule(this.setStyle);
       this.schedule(this.paint);
     });
-
-    var labelChange = () => this.label.innerText = this.state.label;
-
-    this.on("label", () => this.schedule(labelChange));
+    this.on("label", () => this.schedule(this.paintLabel));
 
     var valueChange = () => {
       this.inputNumber.value = (+this.state.value.toFixed(3)).toString();
@@ -5274,7 +5229,7 @@ class Knob extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInp
     _defineProperty(this, "layout", {
       type: "knob",
       width: 1,
-      height: 2,
+      height: 1.75,
       sizing: "none"
     });
   }
