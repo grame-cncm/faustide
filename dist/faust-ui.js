@@ -138,6 +138,20 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-checkbox > div {
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/Group.scss":
+/*!******************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/Group.scss ***!
+  \******************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
+// Module
+exports.push([module.i, ".faust-ui-group {\n  position: absolute;\n  display: block;\n  background-color: rgba(80, 80, 80, 0.75);\n  border-radius: 4px;\n  border: 1px rgba(255, 255, 255, 0.25) solid; }\n  .faust-ui-group .faust-ui-group-label {\n    position: relative;\n    font-weight: bold;\n    margin: 4px;\n    font-size: 12px;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n    overflow: hidden;\n    user-select: none;\n    color: rgba(255, 255, 255, 0.7); }\n  .faust-ui-group .faust-ui-tgroup-tabs {\n    position: absolute;\n    display: inline-block; }\n    .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n      position: relative;\n      display: inline-block;\n      border-radius: 5px;\n      cursor: pointer;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      user-select: none;\n      margin: 10px;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.5); }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n        background-color: white; }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n        background-color: #282828;\n        color: white; }\n", ""]);
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/HBargraph.scss":
 /*!**********************************************************************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/HBargraph.scss ***!
@@ -287,7 +301,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-vslider {\n  ali
 
 exports = module.exports = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-root {\n  position: absolute;\n  display: block;\n  overflow: hidden;\n  width: 100%;\n  height: 100%;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; }\n  .faust-ui-root .faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid; }\n    .faust-ui-root .faust-ui-group .faust-ui-group-label {\n      position: relative;\n      font-weight: bold;\n      margin: 4px;\n      font-size: 12px;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      max-width: 100%;\n      overflow: hidden;\n      user-select: none;\n      color: rgba(255, 255, 255, 0.7); }\n    .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs {\n      position: absolute;\n      display: inline-block; }\n      .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n        position: relative;\n        display: inline-block;\n        border-radius: 5px;\n        cursor: pointer;\n        text-overflow: ellipsis;\n        white-space: nowrap;\n        user-select: none;\n        margin: 10px;\n        text-align: center;\n        background-color: rgba(255, 255, 255, 0.5); }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n          background-color: white; }\n        .faust-ui-root .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n          background-color: #282828;\n          color: white; }\n  .faust-ui-root .faust-ui-item {\n    position: absolute;\n    display: block; }\n", ""]);
+exports.push([module.i, ".faust-ui-root {\n  margin: 0px auto;\n  flex: 1 0 auto;\n  position: relative !important;\n  background-color: transparent !important;\n  border: none !important;\n  font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"; }\n", ""]);
 
 
 /***/ }),
@@ -1381,7 +1395,22 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
+
+/**
+ * The main class of UI constructor,
+ * listening to `resize` window event to resize component,
+ * listening to `message` window event to change UI or param value.
+ * See readme.
+ *
+ * @export
+ * @class FaustUI
+ */
 class FaustUI {
+  /**
+   * Calculate incoming UI's layout, bind window events
+   * @param {TOptions} options
+   * @memberof FaustUI
+   */
   constructor(options) {
     _defineProperty(this, "componentMap", {});
 
@@ -1396,6 +1425,15 @@ class FaustUI {
     _defineProperty(this, "_ui", void 0);
 
     _defineProperty(this, "_layout", void 0);
+
+    _defineProperty(this, "paramChangeByUI", (path, value) => {
+      if (!this.hostWindow) return;
+      this.hostWindow.postMessage({
+        path,
+        value,
+        type: "param"
+      }, "*");
+    });
 
     var root = options.root,
         uiIn = options.ui;
@@ -1420,6 +1458,12 @@ class FaustUI {
       }
     });
   }
+  /**
+   * Render the UI to DOM root
+   *
+   * @memberof FaustUI
+   */
+
 
   mount() {
     this.componentMap = {};
@@ -1444,26 +1488,44 @@ class FaustUI {
     this.DOMroot.appendChild(this.faustUIRoot.container);
     this.faustUIRoot.componentDidMount();
   }
+  /**
+   * This method should be called by components to register itself to map.
+   *
+   * @param {string} path
+   * @param {AbstractItem<any>} item
+   * @memberof FaustUI
+   */
+
 
   register(path, item) {
     if (this.componentMap[path]) this.componentMap[path].push(item);else this.componentMap[path] = [item];
   }
+  /**
+   * Notify the component to change its value.
+   *
+   * @param {string} path
+   * @param {number} value
+   * @memberof FaustUI
+   */
+
 
   paramChangeByDSP(path, value) {
     if (this.componentMap[path]) this.componentMap[path].forEach(item => item.setState({
       value
     }));
   }
+  /**
+   * Can be overriden, called by components when its value is changed by user.
+   *
+   * @memberof FaustUI
+   */
 
-  paramChangeByUI(path, value) {
-    if (!this.hostWindow) return;
-    this.hostWindow.postMessage({
-      path,
-      value,
-      type: "param"
-    }, "*");
-  }
 
+  /**
+   * Calculate UI layout in grid then calculate grid size.
+   *
+   * @memberof FaustUI
+   */
   calc() {
     var _Layout$calc = _layout_Layout__WEBPACK_IMPORTED_MODULE_0__["Layout"].calc(this.ui),
         items = _Layout$calc.items,
@@ -1473,6 +1535,13 @@ class FaustUI {
     this._layout = layout;
     this.calcGrid();
   }
+  /**
+   * Calculate grid size by DOM root size and layout size in grids.
+   *
+   * @returns
+   * @memberof FaustUI
+   */
+
 
   calcGrid() {
     var _this$DOMroot$getBoun = this.DOMroot.getBoundingClientRect(),
@@ -1483,6 +1552,13 @@ class FaustUI {
     this.grid = grid;
     return grid;
   }
+  /**
+   * Force recalculate grid size and resize UI
+   *
+   * @returns
+   * @memberof FaustUI
+   */
+
 
   resize() {
     if (!this.faustUIRoot) return;
@@ -2343,6 +2419,36 @@ _defineProperty(Component, "defaultProps", {});
 
 /***/ }),
 
+/***/ "./src/components/Group.scss":
+/*!***********************************!*\
+  !*** ./src/components/Group.scss ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+var content = __webpack_require__(/*! !../../node_modules/css-loader/dist/cjs.js!../../node_modules/sass-loader/lib/loader.js!./Group.scss */ "./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/lib/loader.js!./src/components/Group.scss");
+
+if(typeof content === 'string') content = [[module.i, content, '']];
+
+var transform;
+var insertInto;
+
+
+
+var options = {"hmr":true}
+
+options.transform = transform
+options.insertInto = undefined;
+
+var update = __webpack_require__(/*! ../../node_modules/style-loader/lib/addStyles.js */ "./node_modules/style-loader/lib/addStyles.js")(content, options);
+
+if(content.locals) module.exports = content.locals;
+
+if(false) {}
+
+/***/ }),
+
 /***/ "./src/components/Group.ts":
 /*!*********************************!*\
   !*** ./src/components/Group.ts ***!
@@ -2367,7 +2473,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _HBargraph__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./HBargraph */ "./src/components/HBargraph.ts");
 /* harmony import */ var _VBargraph__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./VBargraph */ "./src/components/VBargraph.ts");
 /* harmony import */ var _layout_Layout__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../layout/Layout */ "./src/layout/Layout.ts");
+/* harmony import */ var _Group_scss__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./Group.scss */ "./src/components/Group.scss");
+/* harmony import */ var _Group_scss__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_Group_scss__WEBPACK_IMPORTED_MODULE_14__);
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 
 
 
@@ -2418,7 +2527,7 @@ class Group extends _Component__WEBPACK_IMPORTED_MODULE_0__["Component"] {
       this.container.style.top = "".concat(top * grid, "px");
       this.container.style.width = "".concat(width * grid, "px");
       this.container.style.height = "".concat(height * grid, "px");
-      this.container.className = ["faust-ui-group", "faust-ui-".concat(type), "".concat(isRoot ? "faust-ui-root" : "")].join(" ");
+      this.container.className = ["".concat(isRoot ? "faust-ui-root" : ""), "faust-ui-group", "faust-ui-".concat(type)].join(" ");
       items.forEach(item => {
         if (item.type.endsWith("group")) {
           var component = Group.getComponent(item, emitter, grid);
@@ -4185,6 +4294,7 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
         this.maxTimer = window.setTimeout(() => {
           this.maxValue = this.paintValue;
           this.maxTimer = undefined;
+          this.schedule(this.paint);
         }, 1000);
       }
 
@@ -4192,6 +4302,7 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
         this.maxTimer = window.setTimeout(() => {
           this.maxValue = this.paintValue;
           this.maxTimer = undefined;
+          this.schedule(this.paint);
         }, 1000);
       }
 
@@ -4231,7 +4342,7 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem
         if (maxValue > 0) {
           var _distance3 = Math.min(max, maxValue) / (max - min);
 
-          ctx.fillRect(left, Math.max(0, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
+          ctx.fillRect(left, Math.max(top, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
         }
       }
     });
@@ -5435,6 +5546,7 @@ class Radio extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractIn
       type: "radio",
       width: 2,
       height: 2,
+      // TODO: vradio and hradio
       sizing: "both"
     });
   }
