@@ -213,6 +213,7 @@ export class FileManager {
             (e.currentTarget as HTMLSpanElement).contentEditable = "false";
         });
         spanName.addEventListener("keydown", (e) => {
+            e.stopPropagation();
             if (e.key === "Enter") (e.currentTarget as HTMLSpanElement).blur();
             if (e.key.match(/[^a-zA-Z0-9_.]/)) e.preventDefault();
         });
