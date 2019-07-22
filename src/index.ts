@@ -1204,7 +1204,7 @@ $(async () => {
                     $menu.append($item);
                 } else {
                     const $item = $("<div>").addClass(["dropright", "submenu"]);
-                    const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
+                    const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).on("click", e => e.stopImmediatePropagation()).attr("href", "#").text(treeIn.name);
                     const $submenu = $("<div>").addClass("dropdown-menu");
                     $item.append($a, $submenu);
                     treeIn.children.forEach(v => parseTree(v, $submenu));
