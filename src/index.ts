@@ -105,7 +105,7 @@ type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-const VERSION = "1.0.4";
+const VERSION = "1.0.5";
 
 $(async () => {
     /**
@@ -151,6 +151,11 @@ $(async () => {
             return {};
         }
     };
+    /**
+     * To load dsp params from localStorage
+     *
+     * @returns {{ [path: string]: number }}
+     */
     const loadDspParams = (): { [path: string]: number } => {
         const str = localStorage.getItem("faust_editor_dsp_params");
         if (!str) return {};
@@ -160,6 +165,9 @@ $(async () => {
             return {};
         }
     };
+    /**
+     * To save dsp params to localStorage
+     */
     const saveDspParams = () => {
         const str = JSON.stringify(dspParams);
         localStorage.setItem("faust_editor_dsp_params", str);
@@ -200,7 +208,7 @@ $(async () => {
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
     const editor = await initEditor();
-    editor.layout(); // Each time force editor to fill div
+    editor.layout(); // Force editor to fill div
     // Editor and Diagram
     let editorDecoration: string[] = []; // lines with error
     /**
@@ -257,6 +265,7 @@ $(async () => {
         }
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        // Recorder, show current recorded length without too many refreshes
         let mediaLengthRaf: number;
         let mediaLengthFrame = 0;
         const mediaLengthSpan = $<HTMLSpanElement>("#recorder-time")[0];
@@ -272,6 +281,7 @@ $(async () => {
             const ms = `00${d.getMilliseconds()}`.slice(-3);
             mediaLengthSpan.innerText = `${min}:${sec}.${ms}`;
         };
+        // Receives buffer from DSP, send it to analyzer for scopes, and recorder
         const plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
             uiEnv.analyser.plotHandler(plotted, index, events);
             if (!faustEnv.recorder.enabled) return;

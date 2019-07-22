@@ -22,6 +22,12 @@ type TFileSystem = {
     readFile: (path: string, opt?: { encoding?: string; flags?: string }) => any;
 };
 
+/**
+ * FileManager UI, interactive with Emscripten Virtual File System
+ *
+ * @export
+ * @class FileManager
+ */
 export class FileManager {
     divLabel: HTMLDivElement;
     btnExpand: HTMLButtonElement;
@@ -30,9 +36,34 @@ export class FileManager {
     divFiles: HTMLDivElement;
     divOverlay: HTMLDivElement;
     container: HTMLDivElement;
+    /**
+     * Root path in Emscripten FS
+     *
+     * @type {string}
+     * @memberof FileManager
+     */
     path: string = "./";
+    /**
+     * Index of main DSP to execute
+     *
+     * @type {number}
+     * @memberof FileManager
+     */
     $mainFile: number = 0;
+    /**
+     * Project files list
+     *
+     * @type {string[]}
+     * @memberof FileManager
+     */
     _fileList: string[];
+    /**
+     * File System reference
+     *
+     * @private
+     * @type {TFileSystem}
+     * @memberof FileManager
+     */
     private _fs: TFileSystem;
     selectHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
     saveHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
@@ -44,7 +75,6 @@ export class FileManager {
         this.getChildren();
         this.getFiles();
         this.bind();
-        this.setMain(this.$mainFile);
     }
     getChildren() {
         for (let i = 0; i < this.container.children.length; i++) {
@@ -100,9 +130,15 @@ export class FileManager {
     }
     bind() {
         this.divLabel.addEventListener("click", () => {
-            this.expanded = !this.expanded;
+            this.expanded = !this.expanded; // File Manager UI can be folded.
         });
-        this.btnNewFile.addEventListener("click", (e) => {
+        /**
+         * create a new file with name `untitled\d*.dsp`,
+         * Select the filename as editing
+         *
+         * @param {MouseEvent} e
+         */
+        const newFileHandler: (this: HTMLButtonElement, ev: MouseEvent) => any = (e: MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
             let i = 1;
@@ -121,7 +157,9 @@ export class FileManager {
             const sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-        });
+        };
+        this.btnNewFile.addEventListener("click", newFileHandler);
+        // File drag and drop
         const dragenterHandler = (e: DragEvent) => {
             if (e.dataTransfer && e.dataTransfer.items.length && e.dataTransfer.items[0].kind === "file") {
                 e.preventDefault();
@@ -138,6 +176,12 @@ export class FileManager {
             e.preventDefault();
             e.stopPropagation();
         };
+        /**
+         * Drop a new file into file manager
+         * if the filename exists or has illegal name, replace it by `untitled\d*.dsp`
+         *
+         * @param {DragEvent} e
+         */
         const dropHandler = (e: DragEvent) => {
             this.divOverlay.style.display = "";
             if (e.dataTransfer && e.dataTransfer.files.length) {
@@ -146,21 +190,8 @@ export class FileManager {
                 const file = e.dataTransfer.files[0];
                 const reader = new FileReader();
                 reader.onload = () => {
-                    let fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "");
-                    if (!fileName) {
-                        let i = 1;
-                        fileName = "untitled" + i + ".dsp";
-                        while (this._fileList.indexOf(fileName) !== -1) {
-                            fileName = "untitled" + (++i) + ".dsp";
-                        }
-                    }
-                    const content = reader.result.toString();
-                    this.fs.writeFile(this.path + fileName, content);
-                    this._fileList.push(fileName);
-                    const divFile = this.createFileDiv(fileName, false);
-                    this.divFiles.appendChild(divFile);
+                    const fileName = this.newFile(file.name, reader.result.toString());
                     this.select(fileName);
-                    if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
                 };
                 reader.onerror = () => undefined;
                 reader.readAsText(file);
@@ -174,6 +205,14 @@ export class FileManager {
         this.divOverlay.addEventListener("dragend", dragendHandler);
         this.divOverlay.addEventListener("drop", dropHandler);
     }
+    /**
+     * create a new file container with buttons
+     *
+     * @param {string} name
+     * @param {boolean} [editing]
+     * @returns
+     * @memberof FileManager
+     */
     createFileDiv(name: string, editing?: boolean) {
         const divFile = document.createElement("div");
         divFile.classList.add("filemanager-file");
@@ -226,14 +265,9 @@ export class FileManager {
             this._fileList.splice(i, 1);
             divFile.remove();
             if (this._fileList.length === 0) {
-                const fileName = "untitled.dsp";
-                this.fs.writeFile(this.path + fileName, "");
-                this._fileList.push(fileName);
-                const divFile = this.createFileDiv(fileName, false);
-                this.divFiles.appendChild(divFile);
-                this.select(fileName);
-                this.setValue(`import("stdfaust.lib");
+                const fileName = this.newFile("untitled.dsp", `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`);
+                this.select(fileName);
             } else {
                 this.select(this._fileList[0]);
             }
@@ -246,6 +280,13 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         divFile.addEventListener("touchstart", handlePointerDown);
         return divFile;
     }
+    /**
+     * Change main DSP file with index in file list.
+     *
+     * @param {number} $
+     * @returns
+     * @memberof FileManager
+     */
     setMain($: number) {
         if ($ >= this._fileList.length) return;
         this.$mainFile = $;
@@ -259,6 +300,11 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         }
         if (this.mainFileChangeHandler) this.mainFileChangeHandler($, this.mainCode);
     }
+    /**
+     * Get files from Emscripten Virtual File System.
+     *
+     * @memberof FileManager
+     */
     getFiles() {
         this.divFiles.innerHTML = "";
         this._fileList = this.fs.readdir(this.path).filter(fileName => fileName !== "." && fileName !== ".." && this.fs.isFile(this.fs.stat(this.path + fileName).mode));
@@ -267,22 +313,14 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             this.divFiles.appendChild(divFile);
         });
         if (this._fileList.length === 0) {
-            let i = 1;
-            let fileName = "untitled" + i + ".dsp";
-            while (this._fileList.indexOf(fileName) !== -1) {
-                fileName = "untitled" + (++i) + ".dsp";
-            }
-            this.fs.writeFile(this.path + fileName, "");
-            this._fileList.push(fileName);
-            const divFile = this.createFileDiv(fileName, false);
-            this.divFiles.appendChild(divFile);
-            this.select(fileName);
-            this.setValue(`import("stdfaust.lib");
+            const fileName = this.newFile("untitled.dsp", `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`);
+            this.select(fileName);
         } else {
             this.select(this._fileList[0]);
         }
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
+        else this.setMain(this.$mainFile);
     }
     rename(oldName: string, newName: string) {
         if (oldName === newName) return false;
@@ -315,9 +353,9 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     renameSelected(newName: string) {
         this.rename(this.selected, newName);
     }
-    newFile(fileNameIn: string, content?: string) {
-        let fileName = fileNameIn;
-        if (this._fileList.indexOf(fileName) !== -1) {
+    newFile(fileNameIn?: string, content?: string) {
+        let fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
+        if (!fileName || this._fileList.indexOf(fileName) !== -1) {
             let i = 1;
             fileName = "untitled" + i + ".dsp";
             while (this._fileList.indexOf(fileName) !== -1) {
@@ -329,6 +367,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         const divFile = this.createFileDiv(fileName, false);
         this.divFiles.appendChild(divFile);
         if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
+        return fileName;
     }
     select(fileName: string) {
         for (let i = 0; i < this.divFiles.children.length; i++) {

@@ -46,6 +46,8 @@ npm run build
 
 To test, put the directory in a local server, then open page: `./dist/index.html`
 
+If you need to update the editor's version using `git pull`, as the repository has other dependencies hosted on Github, you may run `npm update` to make sure everything is up to date.
+
 ### Useful links
 
 - [Faust Editor](https://fr0stbyter.github.io/fausteditorweb/dist)

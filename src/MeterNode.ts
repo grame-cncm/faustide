@@ -25,7 +25,17 @@ declare interface PointerUpEvent {
     y: number;
     originalEvent: MouseEvent | TouchEvent;
 }
-export const createMeterNode = (audioCtx: AudioContext, gain?: number, averaging?: number, gainHandler?: (gains: number[]) => any) => {
+/**
+ * Returns a ScriptProcessor that measures the RMSs of each channel in a buffer.
+ * The processor calls a `levelHandler` callback after calculating each buffer.
+ *
+ * @param {AudioContext} audioCtx
+ * @param {number} [gain]
+ * @param {number} [averaging]
+ * @param {(gains: number[]) => any} [gainHandler]
+ * @returns {MeterNode}
+ */
+export const createMeterNode = (audioCtx: AudioContext, gain?: number, averaging?: number, gainHandler?: (gains: number[]) => any): MeterNode => {
     const node = audioCtx.createScriptProcessor(512, 8, 8) as MeterNode;
     node.levelHandler = gainHandler;
     node.averaging = averaging || 0.95;
@@ -66,6 +76,15 @@ declare interface GainUIProps {
     tribordercolor?: string;
     tricolor?: string;
 }
+/**
+ * A Live-like meter UI with a gain controller.
+ * Range from -70dB to +10dB, linear in dB unit.
+ * Needs a MeterNode described above
+ * and a WebAudio GainNode to get the gain controller functional.
+ *
+ * @export
+ * @class GainUI
+ */
 export class GainUI {
     state: GainUIProps;
     meterNode: MeterNode;
@@ -244,12 +263,14 @@ export class GainUI {
             this.maxTimer = window.setTimeout(() => {
                 this.maxLevels = [...this.paintLevels];
                 this.maxTimer = undefined;
+                this.raf();
             }, 1000);
         }
         if (paintLevels.find((v, i) => v < this.maxLevels[i]) && typeof this.maxTimer === "undefined") {
             this.maxTimer = window.setTimeout(() => {
                 this.maxLevels = [...this.paintLevels];
                 this.maxTimer = undefined;
+                this.raf();
             }, 1000);
         }
         const maxLevels = this.maxLevels;

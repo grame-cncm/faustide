@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component > .faust-ui-component-label {\n    position: relative;\n    margin-top: 4px;\n    max-width: 100%;\n    user-select: none; }\n    .faust-ui-component > .faust-ui-component-label > canvas {\n      position: relative;\n      display: block;\n      width: 100%;\n      height: 100%; }\n  .faust-ui-component input {\n    box-shadow: none; }\n", ""]);
+exports.push([module.i, ".faust-ui-component {\n  display: flex;\n  position: absolute;\n  flex-direction: column;\n  overflow: hidden; }\n  .faust-ui-component:focus {\n    outline: none; }\n  .faust-ui-component > .faust-ui-component-label {\n    position: relative;\n    margin-top: 4px;\n    width: 100%;\n    user-select: none; }\n    .faust-ui-component > .faust-ui-component-label > canvas {\n      position: relative;\n      display: block;\n      width: 100%;\n      height: 100%; }\n  .faust-ui-component input {\n    box-shadow: none; }\n", ""]);
 
 
 /***/ }),
@@ -2056,7 +2056,7 @@ class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__["Abst
     this.container.className = ["faust-ui-component", "faust-ui-component-" + this.className].join(" ");
     this.container.tabIndex = 1;
     this.container.id = this.state.address;
-    if (this.state.tooltip) this.container.title = this.state.tooltip;
+    this.container.title = this.state.tooltip;
     this.label = document.createElement("div");
     this.label.className = "faust-ui-component-label";
     this.labelCanvas = document.createElement("canvas");
@@ -2076,7 +2076,7 @@ class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__["Abst
     return this;
   }
 
-  paintLabel() {
+  paintLabel(align) {
     var label = this.state.label;
     var color = this.state.style.labelcolor;
     var ctx = this.labelCtx;
@@ -2094,8 +2094,9 @@ class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__["Abst
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = color;
     ctx.textBaseline = "middle";
+    ctx.textAlign = align || "center";
     ctx.font = "bold ".concat(height * 0.9, "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"");
-    ctx.fillText(label, 0, height / 2, width);
+    ctx.fillText(label, align === "left" ? 0 : align === "right" ? width : width / 2, height / 2, width);
     return this;
   }
   /**
@@ -3001,6 +3002,10 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__["VBargraph"] {
     });
   }
 
+  paintLabel() {
+    return super.paintLabel("left");
+  }
+
 }
 
 /***/ }),
@@ -3107,6 +3112,10 @@ class HSlider extends _VSlider__WEBPACK_IMPORTED_MODULE_2__["VSlider"] {
       ctx.fillStyle = slidercolor;
       Object(_utils__WEBPACK_IMPORTED_MODULE_1__["fillRoundedRect"])(ctx, left + drawWidth * distance - drawHeight, top - drawHeight, drawHeight * 2, drawHeight * 3, borderRadius);
     });
+  }
+
+  paintLabel() {
+    return super.paintLabel("left");
   }
 
 }
