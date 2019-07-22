@@ -112,11 +112,25 @@ export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint
 };
 
 export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
-    const i = fft.reduce((acc, cur, idx, arr) => {
-        if (cur > arr[acc]) acc = idx;
-        return acc;
-    }, 0);
-    return sampleRate / 2 * i / fft.length;
+    let index = 0;
+    let max = -Infinity;
+    let i = fft.length;
+    while (i--) {
+        const cur = fft[i];
+        if (cur <= max) continue;
+        max = cur;
+        index = i;
+    }
+    return sampleRate / 2 * index / fft.length;
 };
 
 export const indexToFreq = (i: number, fftBins: number, sampleRate: number) => (i % fftBins) / fftBins * sampleRate / 2;
+
+export const getRms = (t: Float32Array) => {
+    let i = t.length;
+    let squareSum = 0;
+    while (i--) {
+        squareSum += t[i] ** 2;
+    }
+    return (squareSum / t.length) ** 0.5;
+};

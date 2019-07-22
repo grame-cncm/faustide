@@ -258,18 +258,26 @@ $(async () => {
         const { useWorklet, bufferSize, voices, args } = compileOptions;
         let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
         let mediaLengthRaf: number;
+        let mediaLengthFrame = 0;
+        const mediaLengthSpan = $<HTMLSpanElement>("#recorder-time")[0];
+        const mediaLengthDisplay = (t: number) => {
+            mediaLengthFrame++;
+            if (mediaLengthFrame % 3 !== 0) {
+                if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
+                mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
+            }
+            const d = new Date(t * 1000);
+            const min = d.getMinutes();
+            const sec = `0${d.getSeconds()}`.slice(-2);
+            const ms = `00${d.getMilliseconds()}`.slice(-3);
+            mediaLengthSpan.innerText = `${min}:${sec}.${ms}`;
+        };
         const plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
             uiEnv.analyser.plotHandler(plotted, index, events);
-            const t = faustEnv.recorder.append(plotted, index);
             if (!faustEnv.recorder.enabled) return;
+            const t = faustEnv.recorder.append(plotted, index);
             if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
-            mediaLengthRaf = requestAnimationFrame(() => {
-                const d = new Date(t * 1000);
-                const min = d.getMinutes();
-                const sec = `0${d.getSeconds()}`.slice(-2);
-                const ms = `00${d.getMilliseconds()}`.slice(-3);
-                $("#recorder-time").text(`${min}:${sec}.${ms}`);
-            });
+            mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
         };
         try {
             // const getDiagramResult = getDiagram(code);

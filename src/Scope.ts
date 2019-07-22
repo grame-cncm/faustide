@@ -1,4 +1,5 @@
 import "./Scope.scss";
+import { estimateFreq, getRms } from "./utils";
 
 enum TScopeType {
     Oscilloscope = 0,
@@ -321,9 +322,9 @@ export class Scope {
                 this.analyser.getByteTimeDomainData(this.ti);
                 this.ti.forEach((v, i) => this.t[i] = v / 128 - 1);
             }
-            const freq = this.f.indexOf(Math.max(...this.f)) / this.f.length * sr / 2;
+            const freq = estimateFreq(this.f, sr);
             const samp = this.t[this.t.length - 1];
-            const rms = (this.t.reduce((a, v) => a += v ** 2, 0) / this.t.length) ** 0.5; // eslint-disable-line no-param-reassign
+            const rms = getRms(this.t);
             if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.f, this.spectCol$);
             if (this.type === TScopeType.Oscilloscope) {
                 Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
