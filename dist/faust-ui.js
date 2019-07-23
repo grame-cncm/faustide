@@ -147,7 +147,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-checkbox > div {
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-group {\n  position: absolute;\n  display: block;\n  background-color: rgba(80, 80, 80, 0.75);\n  border-radius: 4px;\n  border: 1px rgba(255, 255, 255, 0.25) solid; }\n  .faust-ui-group .faust-ui-group-label {\n    position: relative;\n    font-weight: bold;\n    margin: 4px;\n    font-size: 12px;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n    overflow: hidden;\n    user-select: none;\n    color: rgba(255, 255, 255, 0.7); }\n  .faust-ui-group .faust-ui-tgroup-tabs {\n    position: absolute;\n    display: inline-block; }\n    .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n      position: relative;\n      display: inline-block;\n      border-radius: 5px;\n      cursor: pointer;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      user-select: none;\n      margin: 10px;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.5); }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n        background-color: white; }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n        background-color: #282828;\n        color: white; }\n", ""]);
+exports.push([module.i, ".faust-ui-group {\n  position: absolute;\n  display: block;\n  background-color: rgba(80, 80, 80, 0.75);\n  border-radius: 4px;\n  border: 1px rgba(255, 255, 255, 0.25) solid; }\n  .faust-ui-group > .faust-ui-group-label {\n    position: relative;\n    margin: 4px;\n    width: calc(100% - 8px);\n    user-select: none; }\n    .faust-ui-group > .faust-ui-group-label > canvas {\n      position: relative;\n      display: block;\n      width: 100%;\n      height: 100%; }\n  .faust-ui-group .faust-ui-tgroup-tabs {\n    position: absolute;\n    display: inline-block; }\n    .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n      position: relative;\n      display: inline-block;\n      border-radius: 5px;\n      cursor: pointer;\n      text-overflow: ellipsis;\n      white-space: nowrap;\n      user-select: none;\n      margin: 10px;\n      text-align: center;\n      background-color: rgba(255, 255, 255, 0.5); }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n        background-color: white; }\n      .faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n        background-color: #282828;\n        color: white; }\n", ""]);
 
 
 /***/ }),
@@ -2056,7 +2056,7 @@ class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__["Abst
     this.container.className = ["faust-ui-component", "faust-ui-component-" + this.className].join(" ");
     this.container.tabIndex = 1;
     this.container.id = this.state.address;
-    this.container.title = this.state.tooltip;
+    if (this.state.tooltip) this.container.title = this.state.tooltip;
     this.label = document.createElement("div");
     this.label.className = "faust-ui-component-label";
     this.labelCanvas = document.createElement("canvas");
@@ -2552,6 +2552,10 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
 
     _defineProperty(this, "label", void 0);
 
+    _defineProperty(this, "labelCanvas", void 0);
+
+    _defineProperty(this, "labelCtx", void 0);
+
     _defineProperty(this, "tabs", void 0);
 
     _defineProperty(this, "children", void 0);
@@ -2561,7 +2565,6 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
     _defineProperty(this, "updateUI", () => {
       this.children = [];
       var _this$state = this.state,
-          label = _this$state.label,
           style = _this$state.style,
           type = _this$state.type,
           items = _this$state.items,
@@ -2572,9 +2575,7 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
           top = style.top,
           width = style.width,
           height = style.height;
-      this.label.innerText = label;
-      this.label.title = label;
-      this.label.style.fontSize = "".concat(0.25 * grid, "px");
+      this.label.style.height = "".concat(grid * 0.3, "px");
       this.container.style.left = "".concat(left * grid, "px");
       this.container.style.top = "".concat(top * grid, "px");
       this.container.style.width = "".concat(width * grid, "px");
@@ -2679,7 +2680,8 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
           width: _layout.width,
           height: _layout.height,
           left: _layout.offsetLeft,
-          top: _layout.offsetTop
+          top: _layout.offsetTop,
+          labelcolor: "rgba(255, 255, 255, 0.7)"
         },
         emitter
       };
@@ -2716,8 +2718,8 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
         top: layout.offsetTop
       },
       type: "float",
-      min: isFinite(+min) ? +min : Number.MIN_VALUE,
-      max: isFinite(+max) ? +max : Number.MAX_VALUE,
+      min: isFinite(min) ? min : 0,
+      max: isFinite(max) ? max : 1,
       step: "step" in item ? +item.step : 1,
       value: "init" in item ? +item.init || 0 : 0
     };
@@ -2774,12 +2776,39 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
     this.tabs.className = "faust-ui-tgroup-tabs";
     this.label = document.createElement("div");
     this.label.className = "faust-ui-group-label";
+    this.labelCanvas = document.createElement("canvas");
+    this.labelCtx = this.labelCanvas.getContext("2d");
     this.updateUI();
     this.children.forEach(item => item.componentWillMount());
     return this;
   }
 
+  paintLabel() {
+    var label = this.state.label;
+    var color = this.state.style.labelcolor;
+    var ctx = this.labelCtx;
+    var canvas = this.labelCanvas;
+
+    var _this$label$getBoundi = this.label.getBoundingClientRect(),
+        width = _this$label$getBoundi.width,
+        height = _this$label$getBoundi.height;
+
+    if (!width || !height) return this;
+    width = Math.floor(width);
+    height = Math.floor(height);
+    canvas.height = height;
+    canvas.width = width;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = color;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    ctx.font = "bold ".concat(height * 0.9, "px -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"");
+    ctx.fillText(label, 0, height / 2, width);
+    return this;
+  }
+
   mount() {
+    this.label.appendChild(this.labelCanvas);
     this.container.appendChild(this.label);
     if (this.tabs.children.length) this.container.appendChild(this.tabs);
     this.children.forEach(item => {
@@ -2797,7 +2826,7 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
           top = _this$state$style.top,
           width = _this$state$style.width,
           height = _this$state$style.height;
-      this.label.style.fontSize = "".concat(0.25 * grid, "px");
+      this.label.style.height = "".concat(grid * 0.3, "px");
       this.container.style.width = "".concat(width * grid, "px");
       this.container.style.height = "".concat(height * grid, "px");
       this.container.style.left = "".concat(left * grid, "px");
@@ -2816,6 +2845,7 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
         }
       }
 
+      this.paintLabel();
       this.children.forEach(item => item.setState({
         style: {
           grid
@@ -2833,11 +2863,12 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["AbstractCom
     this.on("items", () => this.schedule(itemsChange));
 
     var labelChange = () => {
-      this.label.innerText = this.state.label;
+      this.paintLabel();
       this.label.title = this.state.label;
     };
 
     this.on("label", () => this.schedule(labelChange));
+    this.paintLabel();
     if (this.tabs && this.tabs.children.length) this.tabs.children[0].click();
     this.children.forEach(item => item.componentDidMount());
     return this;
