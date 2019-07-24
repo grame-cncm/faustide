@@ -4,8 +4,8 @@
   "description": "Faust Editor",
   "main": "src/index.ts",
   "scripts": {
-    "build": "node ./src/listEx.js && node ./src/faust-ui.js && webpack --mode development",
-    "dist": "node ./src/listEx.js && node ./src/faust-ui.js && webpack --mode production",
+    "build": "node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode development",
+    "dist": "node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode production",
     "version": "npm run build"
   },
   "repository": {
