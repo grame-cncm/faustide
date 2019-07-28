@@ -409,6 +409,7 @@ $(async () => {
         $("#nav-item-faust-ui").show(); // Show DSP UI tab
         $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
         $("#output-analyser-ui").show(); // Show dsp info on right panel
+        if (uiEnv.outputScope) uiEnv.outputScope.paused = false;
         refreshDspUI(node); // update dsp info
         saveEditorDspTable(); // Save the new DSP table to localStorage
         return { success: true };
@@ -906,16 +907,19 @@ $(async () => {
             wavesurfer.on("play", () => {
                 $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
                 $("#input-analyser-ui").show();
+                if (uiEnv.inputScope) uiEnv.inputScope.paused = false;
             });
             wavesurfer.on("pause", () => {
                 $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
                 $("#input-analyser-ui").hide();
+                if (uiEnv.inputScope) uiEnv.inputScope.paused = true;
             });
             wavesurfer.on("finish", () => {
                 if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
                 else {
                     $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
                     $("#input-analyser-ui").hide();
+                    if (uiEnv.inputScope) uiEnv.inputScope.paused = true;
                 }
             });
             wavesurfer.on("waveform-ready", () => {
@@ -927,10 +931,12 @@ $(async () => {
         if (id === "-1") {
             $("#source-ui").show();
             $("#input-analyser-ui").hide();
+            if (uiEnv.inputScope) uiEnv.inputScope.paused = true;
             audioEnv.gainUIInput.channels = wavesurfer.backend.buffer ? wavesurfer.backend.buffer.numberOfChannels : 2;
         } else {
             $("#source-ui").hide();
             $("#input-analyser-ui").show();
+            if (uiEnv.inputScope) uiEnv.inputScope.paused = false;
             audioEnv.gainUIInput.channels = 2;
         }
         // init audio environment
@@ -1325,6 +1331,7 @@ $(async () => {
         $("#faust-ui-default").show();
         $("#iframe-faust-ui").css("visibility", "hidden");
         $("#output-analyser-ui").hide();
+        if (uiEnv.outputScope) uiEnv.outputScope.paused = true;
         refreshDspUI();
     });
     let svgDragged = false;
@@ -1382,6 +1389,7 @@ $(async () => {
     });
     // Analysers
     $("#output-analyser-ui").hide();
+    if (uiEnv.outputScope) uiEnv.outputScope.paused = true;
     // Keys
     $(document).on("keydown", (e) => {
         if (e.ctrlKey) {
@@ -1571,14 +1579,16 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         analyser: audioEnv.analyserInput,
         splitter: audioEnv.splitterInput,
         channels: 2,
-        container: $<HTMLDivElement>("#input-analyser-ui")[0]
+        container: $<HTMLDivElement>("#input-analyser-ui")[0],
+        paused: true
     });
     uiEnv.outputScope = new Scope({
         audioCtx: audioEnv.audioCtx,
         analyser: audioEnv.analyserOutput,
         splitter: audioEnv.splitterOutput,
         channels: 1,
-        container: $<HTMLDivElement>("#output-analyser-ui")[0]
+        container: $<HTMLDivElement>("#output-analyser-ui")[0],
+        paused: true
     });
     uiEnv.analysersInited = true;
 };

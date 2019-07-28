@@ -13,6 +13,7 @@ type TOptions = {
     channels: number;
     container: HTMLDivElement;
     type?: TScopeType;
+    paused?: boolean;
 };
 
 export class Scope {
@@ -190,8 +191,8 @@ export class Scope {
         this.f = new Float32Array(this.analyser.frequencyBinCount);
         this.getChildren();
         this.bind();
-        this.draw();
         if (!window.AudioWorklet) this.paused = true;
+        else if (typeof options.paused === "undefined") this.paused = false;
     }
     getChildren() {
         this.spectTempCtx = document.createElement("canvas").getContext("2d");
@@ -366,11 +367,12 @@ export class Scope {
         return this._paused;
     }
     set paused(pausedIn) {
+        if (pausedIn === this._paused) return;
         if (pausedIn) {
             cancelAnimationFrame(this.raf);
-            requestAnimationFrame(this.drawPause);
+            this.raf = requestAnimationFrame(this.drawPause);
         } else {
-            requestAnimationFrame(this.draw);
+            this.raf = requestAnimationFrame(this.draw);
         }
         this._paused = pausedIn;
     }
