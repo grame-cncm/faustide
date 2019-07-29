@@ -51,8 +51,17 @@ export class Scope {
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
         ctx.beginPath();
+        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
+        let min = d[0];
+        let max = d[0];
+        let i = d.length;
+        while (i--) {
+            const s = d[i];
+            if (s < min) min = s;
+            else if (s > max) max = s;
+        }
         let $zerox = 0;
-        const thresh = 0.01;
+        const thresh = (min + max) * 0.5; // the zero-crossing with "offset"
         const period = sr / freq;
         const times = Math.floor(l / period) - 1;
         while (d[$zerox++] > 0 && $zerox < l);

@@ -120,22 +120,24 @@ export class StaticScope {
         const { $, t, freqEstimated, sampleRate, drawMode } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
-        // Fastest way to get highest abs value in buffer
-        let yFactor = 1;
+        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
+        let min = t[0][0];
+        let max = t[0][0];
         let i = t.length;
         while (i--) {
             let j = l;
             while (j--) {
-                const abs = Math.abs(t[i][j]);
-                if (abs > yFactor) yFactor = abs;
+                const s = t[i][j];
+                if (s < min) min = s;
+                else if (s > max) max = s;
             }
         }
-        yFactor *= vzoom;
+        const yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
         if (drawMode === "continuous") { // Stablize
-            const thresh = 0.001;
+            const thresh = (min + max) * 0.5; // the zero-crossing with "offset"
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
             while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l);
@@ -213,22 +215,24 @@ export class StaticScope {
         const { $, t, freqEstimated, sampleRate, drawMode } = d;
         if (!t || !t.length || !t[0].length) return;
         const l = t[0].length;
-        // Fastest way to get highest abs value in buffer
-        let yFactor = 1;
+        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
+        let min = t[0][0];
+        let max = t[0][0];
         let i = t.length;
         while (i--) {
             let j = l;
             while (j--) {
-                const abs = Math.abs(t[i][j]);
-                if (abs > yFactor) yFactor = abs;
+                const s = t[i][j];
+                if (s < min) min = s;
+                else if (s > max) max = s;
             }
         }
-        yFactor *= vzoom;
+        const yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
         if (drawMode === "continuous") { // Stablize
-            const thresh = 0.001;
+            const thresh = (min + max) * 0.5; // the zero-crossing with "offset"
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
             while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l); // Find first raise

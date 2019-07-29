@@ -115,7 +115,7 @@ export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
     let index = 0;
     let max = -Infinity;
     let i = fft.length;
-    while (i--) {
+    while (i-- > 1) {
         const cur = fft[i];
         if (cur <= max) continue;
         max = cur;
