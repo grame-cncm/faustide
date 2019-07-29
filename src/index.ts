@@ -8,6 +8,10 @@
 // popup plot => too heavy drawing
 // bypass
 // shared buffer
+// PWA
+// link params with export
+// snippets
+// indexDB
 
 import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
@@ -212,12 +216,12 @@ $(async () => {
     // Editor and Diagram
     let editorDecoration: string[] = []; // lines with error
     /**
-     * Generate diagram only
+     * Generate diagram and insert the svg into diagram container
      *
      * @param {string} code
      * @returns {{ success: boolean; error?: Error }}
      */
-    const getDiagram = (code: string): { success: boolean; error?: Error } => {
+    const updateDiagram = (code: string): { success: boolean; error?: Error } => {
         let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
@@ -308,8 +312,8 @@ $(async () => {
          * Push get diagram to end of scheduler
          * generate diagram only when the tab is active
          */
-        if ($("#tab-diagram").hasClass("active")) setTimeout(getDiagram, 0, code);
-        $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => getDiagram(code));
+        if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
+        $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
         if (audioEnv.dsp) { // Disconnect current
             const dsp = audioEnv.dsp;
             if (audioEnv.dspConnectedToInput) {
@@ -445,7 +449,7 @@ $(async () => {
                 showError(e);
             }
             clearTimeout(rtCompileTimer);
-            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 1000, mainCode);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
         },
         deleteHandler: (fileName) => {
             let project: { [name: string]: string };
@@ -461,7 +465,7 @@ $(async () => {
             compileOptions.mainFileIndex = index;
             saveEditorParams();
             clearTimeout(rtCompileTimer);
-            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : getDiagram, 100, mainCode);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
         }
     });
     if (compileOptions.saveDsp) loadEditorDspTable();
@@ -502,7 +506,7 @@ $(async () => {
         $("#input-plot-samps").change();
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-    });
+    }); 
     // Save Params
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
         compileOptions.saveCode = e.currentTarget.checked;
@@ -527,7 +531,7 @@ $(async () => {
         if (compileOptions.realtimeCompile) {
             const code = uiEnv.fileManager.mainCode;
             if (audioEnv.dsp) runDsp(code);
-            else getDiagram(code);
+            else updateDiagram(code);
         }
     });
     // Save Params
@@ -673,7 +677,7 @@ $(async () => {
             uiEnv.fileManager.newFile(`${name}.dsp`, code);
             if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                else getDiagram(uiEnv.fileManager.mainCode);
+                else updateDiagram(uiEnv.fileManager.mainCode);
             }
         };
         reader.onerror = () => undefined;
@@ -1183,7 +1187,7 @@ $(async () => {
                 // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
                     if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                    else getDiagram(uiEnv.fileManager.mainCode);
+                    else updateDiagram(uiEnv.fileManager.mainCode);
                 }
             };
             reader.onerror = () => undefined;
@@ -1238,7 +1242,7 @@ $(async () => {
                     uiEnv.fileManager.newFile(`${fileName}.dsp`, code);
                     if (compileOptions.realtimeCompile) {
                         if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                        else getDiagram(uiEnv.fileManager.mainCode);
+                        else updateDiagram(uiEnv.fileManager.mainCode);
                     }
                 });
         }
@@ -1500,7 +1504,7 @@ $(async () => {
     $("#input-plot-samps").change();
     $("#check-draw-spectrogram").change();
     $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
-    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(getDiagram, 0, uiEnv.fileManager.mainCode);
+    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
     window.faustEnv = faustEnv;
 });
 /**

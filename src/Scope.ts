@@ -61,14 +61,14 @@ export class Scope {
             else if (s > max) max = s;
         }
         let $zerox = 0;
-        const thresh = (min + max) * 0.5; // the zero-crossing with "offset"
+        const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
         const period = sr / freq;
         const times = Math.floor(l / period) - 1;
-        while (d[$zerox++] > 0 && $zerox < l);
+        while (d[$zerox++] > thresh && $zerox < l);
         if ($zerox >= l - 1) {
             $zerox = 0;
         } else {
-            while (d[$zerox++] < 0 + thresh && $zerox < l);
+            while (d[$zerox++] < thresh && $zerox < l);
             if ($zerox >= l - 1) {
                 $zerox = 0;
             }

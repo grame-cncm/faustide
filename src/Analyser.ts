@@ -149,13 +149,7 @@ export class Analyser {
      */
     getSampleRate = () => 48000;
     get sampleRate() {
-        try {
-            const sr = this.getSampleRate();
-            if (typeof sr !== "number") return 48000;
-            return sr;
-        } catch (e) {
-            return 48000;
-        }
+        return this.getSampleRate();
     }
     get drawMode() {
         return this._drawMode;
