@@ -76,7 +76,7 @@ const config = {
       skipWaiting: true,
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
       globDirectory: 'dist/',
-      globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './02-XYLO1.mp3', './primitives.lib', './examples.json']
+      globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './02-XYLO1.mp3', './primitives.lib', './examples.json', './manifest.json']
     })
   ]
 };

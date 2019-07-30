@@ -112,16 +112,6 @@ const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 const VERSION = "1.0.6";
 
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js");
-        /* .then((registration) => {
-            console.log("SW registered: ", registration);
-        }).catch((registrationError) => {
-            console.log("SW registration failed: ", registrationError);
-        }); */
-    });
-}
 $(async () => {
     /**
      * Async Load Faust Core
