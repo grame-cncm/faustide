@@ -194,7 +194,7 @@ export class StaticScope {
             }
             ctx.stroke();
         }
-        eventsToDraw.forEach(params => this.drawEvent(...params));
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
         if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = Math.round($0 + (cursor.x - left) / gridX);
@@ -288,7 +288,7 @@ export class StaticScope {
             }
             ctx.stroke();
         }
-        eventsToDraw.forEach(params => this.drawEvent(...params));
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
         if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = Math.round($0 + (cursor.x - left) / gridX);
@@ -343,7 +343,7 @@ export class StaticScope {
             ctx.closePath();
             ctx.fill();
         }
-        eventsToDraw.forEach(params => this.drawEvent(...params));
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
         if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
             const $cursor = $0 + Math.round((cursor.x - left) / gridX);
@@ -387,7 +387,7 @@ export class StaticScope {
             ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, left, 0, w - left, h - bottom);
         }
         ctx.restore();
-        eventsToDraw.forEach(params => this.drawEvent(...params));
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
         if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
             const gridX = (w - left) / ($1fft - $0fft);
@@ -465,7 +465,7 @@ export class StaticScope {
         const fftBins = fftSize / 2;
         const channels = mode === EScopeMode.Oscilloscope ? 1 : t.length;
         const unit = mode === EScopeMode.Spectrogram ? "Hz/frame" : mode === EScopeMode.Spectroscope ? "dB/Hz" : "lvl/samp";
-        const eventsToDraw: [CanvasRenderingContext2D, number, number, number, { type: string; data: any }[]][] = [];
+        const eventsToDraw: [number, { type: string; data: any }[]][] = [];
         let $0buffer = $0 / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1);
         let $1buffer = $1 / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1);
         const hStep = 2 ** Math.ceil(Math.log2($1buffer - $0buffer)) / 8;
@@ -513,7 +513,7 @@ export class StaticScope {
                 if (e[$buffer + j] && e[$buffer + j].length) {
                     const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
                     ctx.strokeStyle = eventStrokeStyle;
-                    eventsToDraw.push([ctx, w, h, x, e[$buffer + j]]);
+                    eventsToDraw.push([x, e[$buffer + j]]);
                     ctx.beginPath();
                     ctx.moveTo(x, 0);
                     ctx.lineTo(x, h - bottom);

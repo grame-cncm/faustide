@@ -506,7 +506,7 @@ $(async () => {
         $("#input-plot-samps").change();
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-    }); 
+    });
     // Save Params
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
         compileOptions.saveCode = e.currentTarget.checked;
@@ -1218,7 +1218,7 @@ $(async () => {
                     $a.on("click", (e) => {
                         e.stopImmediatePropagation();
                         e.preventDefault();
-                    })
+                    });
                     const $submenu = $("<div>").addClass("dropdown-menu");
                     $item.append($a, $submenu);
                     treeIn.children.forEach(v => parseTree(v, $submenu));

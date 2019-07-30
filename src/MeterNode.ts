@@ -224,7 +224,7 @@ export class GainUI {
         return full / trueSteps;
     }
     paint() {
-        window.cancelAnimationFrame(this.$raf);
+        if (this.$raf) return;
         this.$raf = window.requestAnimationFrame(this.raf);
     }
     levelHandler = (levels: number[]) => {
@@ -236,10 +236,10 @@ export class GainUI {
     raf = () => {
         this.$frame++;
         if (this.$frame % this.frameReduce !== 0) {
-            window.cancelAnimationFrame(this.$raf);
             this.$raf = window.requestAnimationFrame(this.raf);
             return;
         }
+        this.$raf = undefined;
         const { barwidth, barbgcolor, coldcolor, warmcolor, hotcolor, overloadcolor, tribordercolor, tricolor, textcolor } = this.state;
         const { min, max, value, levels } = this.state;
         const channels = Math.min(this.channels, levels.length);
