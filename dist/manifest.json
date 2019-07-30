@@ -3,7 +3,7 @@
     "short_name": "Faust IDE",
     "description": "Progressive Web App for Faust IDE",
     "icons": [{
-        "src": "./favicon.png",
+        "src": "./icon/icon_192.png",
             "sizes": "192x192",
             "type": "image/png"
         }],

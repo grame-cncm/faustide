@@ -828,6 +828,10 @@ self.__precacheManifest = [
     "revision": "8c793ef1d04148eb48e9595e54950310"
   },
   {
+    "url": "icon/icon_192.png",
+    "revision": "ee7ec1719955d2f9c0bbea290b088d20"
+  },
+  {
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   },
@@ -841,7 +845,7 @@ self.__precacheManifest = [
   },
   {
     "url": "manifest.json",
-    "revision": "d5dbc92280ac1e76e195d1c381b72b51"
+    "revision": "a05913b0ec3de887aff05ceba84f3048"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
