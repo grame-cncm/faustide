@@ -520,18 +520,6 @@ self.__precacheManifest = [
     "revision": "19ed80bd495e6e6d1a723fa273f00329"
   },
   {
-    "url": "examples/physicalModeling/old/harpe.dsp",
-    "revision": "9c634cb7fc0c6a6add726b83c8534f54"
-  },
-  {
-    "url": "examples/physicalModeling/old/karplus.dsp",
-    "revision": "a63ff763fecd3726c7b6d06624a9ea9c"
-  },
-  {
-    "url": "examples/physicalModeling/old/karplus32.dsp",
-    "revision": "eae07cd145b0314a4f04b0113df6136d"
-  },
-  {
     "url": "examples/physicalModeling/russianBell.dsp",
     "revision": "3a83da099c9f0ea802d217fb18686606"
   },
@@ -849,7 +837,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples.json",
-    "revision": "6b50c720cf1bec177b7385abef6ecd34"
+    "revision": "554f7989a24e9a0e1e648456e5fdccb5"
   },
   {
     "url": "manifest.json",
