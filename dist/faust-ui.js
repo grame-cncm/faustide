@@ -3749,6 +3749,7 @@ class Menu extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     };
 
     this.on("value", () => this.schedule(valueChange));
+    valueChange();
     return this;
   }
 
@@ -4115,10 +4116,6 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
       }
     });
 
-    _defineProperty(this, "handleChange", e => {
-      this.setValue(+e.currentTarget.value);
-    });
-
     _defineProperty(this, "setStyle", () => {
       var _this$state$style = this.state.style,
           height = _this$state$style.height,
@@ -4174,6 +4171,7 @@ class Radio extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
     };
 
     this.on("value", () => this.schedule(valueChange));
+    valueChange();
     return this;
   }
 
