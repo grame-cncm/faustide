@@ -1395,9 +1395,6 @@ $(async () => {
         const w = $svg.width();
         $svg.width(w * (1 - d * 0.25));
     });
-    // Analysers
-    $("#output-analyser-ui").hide();
-    if (uiEnv.outputScope) uiEnv.outputScope.disabled = true;
     // Keys
     $(document).on("keydown", (e) => {
         if (e.ctrlKey) {
@@ -1492,7 +1489,10 @@ $(async () => {
     }).resize();
     // autorunning
     await initAudioCtx(audioEnv);
+    // Analysers
     initAnalysersUI(uiEnv, audioEnv);
+    $("#output-analyser-ui").hide();
+    uiEnv.outputScope.disabled = true;
     $<HTMLSelectElement>("#select-audio-input").change();
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
