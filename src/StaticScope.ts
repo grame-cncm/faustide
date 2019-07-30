@@ -509,10 +509,11 @@ export class StaticScope {
             }
         }
         if (e) {
+            ctx.strokeStyle = eventStrokeStyle;
             for (let j = Math.ceil($0buffer); j < $1buffer; j++) {
                 if (e[$buffer + j] && e[$buffer + j].length) {
                     const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
-                    ctx.strokeStyle = eventStrokeStyle;
+                    if (x < left) continue;
                     eventsToDraw.push([x, e[$buffer + j]]);
                     ctx.beginPath();
                     ctx.moveTo(x, 0);
