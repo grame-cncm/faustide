@@ -364,50 +364,6 @@ self.__precacheManifest = [
     "revision": "1ca60a8b2274c0ad7d27d444b3f7e8c9"
   },
   {
-    "url": "examples/old/freeverb.dsp",
-    "revision": "89d957e170467d12d8d5974ef3afb422"
-  },
-  {
-    "url": "examples/old/README.md",
-    "revision": "0ad173fa31b44cdb8da700c1c92ba92f"
-  },
-  {
-    "url": "examples/old/rewriting/fact.dsp",
-    "revision": "8bb71363e9693b3257bf7a18d5b1249d"
-  },
-  {
-    "url": "examples/old/rewriting/fold.dsp",
-    "revision": "2fe5b0bd8b95ca4576f71341971a8797"
-  },
-  {
-    "url": "examples/old/rewriting/Makefile",
-    "revision": "aa774e504196338493bf4cd252c25f60"
-  },
-  {
-    "url": "examples/old/rewriting/mesh.dsp",
-    "revision": "3822850c4dc57d9083671c1092dadbfa"
-  },
-  {
-    "url": "examples/old/rewriting/mesh.pd",
-    "revision": "bf5b86aefc03d6ee83da3c08047c4876"
-  },
-  {
-    "url": "examples/old/rewriting/sample.pd",
-    "revision": "6ef58d977699b6688c40c6646bcf0e42"
-  },
-  {
-    "url": "examples/old/rewriting/serial.dsp",
-    "revision": "ea1bb9e75d8125d4d4e3b3d983a465e9"
-  },
-  {
-    "url": "examples/old/rewriting/sum.dsp",
-    "revision": "579d4b19258827ba8b3a259f46601b3b"
-  },
-  {
-    "url": "examples/old/rewriting/test.pd",
-    "revision": "bcbac68d2694387ec38ba8ed5de30146"
-  },
-  {
     "url": "examples/phasing/flanger.dsp",
     "revision": "ea139603b7884145abfd0d6721f57d65"
   },
@@ -893,7 +849,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples.json",
-    "revision": "8efa73b6cf2c31d39bc463124ad8a0cf"
+    "revision": "6b50c720cf1bec177b7385abef6ecd34"
   },
   {
     "url": "manifest.json",
