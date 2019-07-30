@@ -81,17 +81,17 @@ export class StaticScope {
         const origZoom = this.zoom;
         const origOffset = this.zoomOffset;
         let prevX = eDown instanceof MouseEvent ? eDown.pageX : eDown.touches[0].pageX;
-        let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
+        // let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
         const handleMouseMove = (eMove: MouseEvent | TouchEvent) => {
             const x = eMove instanceof MouseEvent ? eMove.pageX : eMove.touches[0].pageX;
-            const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
+            // const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
             const dX = x - prevX;
-            const dY = y - prevY;
+            // const dY = y - prevY;
             prevX = x;
-            prevY = y;
-            const multiplier = 1 / 1.015 ** dY;
+            // prevY = y;
+            // const multiplier = 1 / 1.015 ** dY;
             const offset = -dX / this.zoom / this.canvas.width;
-            if (multiplier !== 1) this.zoom *= multiplier;
+            // if (multiplier !== 1) this.zoom *= multiplier;
             if (offset !== 0) this.zoomOffset += offset;
             if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw();
         };
