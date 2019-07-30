@@ -25,11 +25,11 @@ In this version, users can:
 
     use microphone and MIDI device as inputs
 
-    use ScriptProcessor or AudioWorklet WebAudio AudioNode
+    choose to use ScriptProcessorNode or AudioWorkletNode
 
     change buffer size
 
-    change voices in Faust's `poly` mode
+    change number of voices in Faust's `poly` mode
 
     change parameters in real-time in a GUI
 

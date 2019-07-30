@@ -833,6 +833,7 @@ export class StaticScope {
         this.canvas.addEventListener("touchend", this.handleMouseLeave);
     }
     drawCallback = () => {
+        this.raf = undefined;
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) {
             if (this.divDefault.style.display === "none") {
                 this.divDefault.style.display = "block";
@@ -853,7 +854,7 @@ export class StaticScope {
     };
     draw = (data?: TDrawOptions) => {
         if (data) this.data = data;
-        if (this.raf) cancelAnimationFrame(this.raf);
+        if (this.raf) return;
         this.raf = requestAnimationFrame(this.drawCallback);
     }
     get zoomType() {

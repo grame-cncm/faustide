@@ -1669,11 +1669,11 @@ class AbstractComponent extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitte
       this.$frame++;
 
       if (this.$frame % this.frameReduce !== 0) {
-        if (this.$raf) window.cancelAnimationFrame(this.$raf);
         this.$raf = window.requestAnimationFrame(this.raf);
         return;
       }
 
+      this.$raf = undefined;
       this.tasks.forEach(f => f());
       this.tasks = [];
     });
@@ -1718,7 +1718,7 @@ class AbstractComponent extends events__WEBPACK_IMPORTED_MODULE_0__["EventEmitte
 
   schedule(func) {
     if (this.tasks.indexOf(func) === -1) this.tasks.push(func);
-    if (this.$raf) window.cancelAnimationFrame(this.$raf);
+    if (this.$raf) return;
     this.$raf = window.requestAnimationFrame(this.raf);
   }
 
@@ -4968,17 +4968,26 @@ _defineProperty(AbstractGroup, "spaceBetween", 0.1);
 /*!*****************************************!*\
   !*** ./src/layout/AbstractInputItem.ts ***!
   \*****************************************/
-/*! exports provided: AbstractOutputItem */
+/*! exports provided: AbstractInputItem */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractOutputItem", function() { return AbstractOutputItem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractInputItem", function() { return AbstractInputItem; });
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/layout/AbstractItem.ts");
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-class AbstractOutputItem extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
+
+class AbstractInputItem extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
   constructor(item) {
     super(item);
+
+    _defineProperty(this, "init", void 0);
+
+    _defineProperty(this, "step", void 0);
+
+    this.init = +item.init || 0;
+    this.step = +item.step || 1;
   }
 
 }
@@ -5030,26 +5039,17 @@ class AbstractItem {
 /*!******************************************!*\
   !*** ./src/layout/AbstractOutputItem.ts ***!
   \******************************************/
-/*! exports provided: AbstractInputItem */
+/*! exports provided: AbstractOutputItem */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractInputItem", function() { return AbstractInputItem; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbstractOutputItem", function() { return AbstractOutputItem; });
 /* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/layout/AbstractItem.ts");
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-
-class AbstractInputItem extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
+class AbstractOutputItem extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["AbstractItem"] {
   constructor(item) {
     super(item);
-
-    _defineProperty(this, "init", void 0);
-
-    _defineProperty(this, "step", void 0);
-
-    this.init = +item.init || 0;
-    this.step = +item.step || 1;
   }
 
 }
@@ -5066,11 +5066,11 @@ class AbstractInputItem extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["Abst
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Button", function() { return Button; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Button extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Button extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5096,11 +5096,11 @@ class Button extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractI
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Checkbox", function() { return Checkbox; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Checkbox extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Checkbox extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5126,11 +5126,11 @@ class Checkbox extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["Abstrac
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HBargraph", function() { return HBargraph; });
-/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
+/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class HBargraph extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
+class HBargraph extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5229,11 +5229,11 @@ class HGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HSlider", function() { return HSlider; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class HSlider extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class HSlider extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5259,11 +5259,11 @@ class HSlider extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["Abstract
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Knob", function() { return Knob; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Knob extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Knob extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5410,11 +5410,11 @@ class Layout {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Led", function() { return Led; });
-/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
+/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Led extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
+class Led extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5440,11 +5440,11 @@ class Led extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutpu
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Menu", function() { return Menu; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Menu extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Menu extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5470,11 +5470,11 @@ class Menu extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInp
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Nentry", function() { return Nentry; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Nentry extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Nentry extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5500,11 +5500,11 @@ class Nentry extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractI
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Numerical", function() { return Numerical; });
-/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
+/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Numerical extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
+class Numerical extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5530,11 +5530,11 @@ class Numerical extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["Abstrac
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Radio", function() { return Radio; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class Radio extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class Radio extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5628,11 +5628,11 @@ _defineProperty(TGroup, "tabLayout", {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VBargraph", function() { return VBargraph; });
-/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
+/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class VBargraph extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
+class VBargraph extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractOutputItem"] {
   constructor() {
     super(...arguments);
 
@@ -5730,11 +5730,11 @@ class VGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VSlider", function() { return VSlider; });
-/* harmony import */ var _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractOutputItem */ "./src/layout/AbstractOutputItem.ts");
+/* harmony import */ var _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractInputItem */ "./src/layout/AbstractInputItem.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
-class VSlider extends _AbstractOutputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
+class VSlider extends _AbstractInputItem__WEBPACK_IMPORTED_MODULE_0__["AbstractInputItem"] {
   constructor() {
     super(...arguments);
 

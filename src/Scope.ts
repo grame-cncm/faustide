@@ -22,6 +22,7 @@ export class Scope {
     ctx: CanvasRenderingContext2D;
     spectTempCtx: CanvasRenderingContext2D;
     spectCol$ = 0;
+    private _disabled = false;
     private _paused = false;
     frame = 0;
     readonly audioCtx: AudioContext;
@@ -376,14 +377,28 @@ export class Scope {
         return this._paused;
     }
     set paused(pausedIn) {
-        if (pausedIn === this._paused) return;
-        if (pausedIn) {
+        if (pausedIn === this.paused) return;
+        this._paused = pausedIn;
+        if (this.disabled) return;
+        if (this.paused) {
             cancelAnimationFrame(this.raf);
             this.raf = requestAnimationFrame(this.drawPause);
         } else {
             this.raf = requestAnimationFrame(this.draw);
         }
-        this._paused = pausedIn;
+    }
+    get disabled() {
+        return this._disabled;
+    }
+    set disabled(disabledIn) {
+        if (disabledIn === this.disabled) return;
+        this._disabled = disabledIn;
+        if (this.paused) return;
+        if (this.disabled) {
+            cancelAnimationFrame(this.raf);
+        } else {
+            this.raf = requestAnimationFrame(this.draw);
+        }
     }
     get channel() {
         return this._channel;
