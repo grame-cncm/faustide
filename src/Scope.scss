@@ -1,0 +1,47 @@
+div.scope-ui {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 100px;
+    & > .scope-controller {
+        position: absolute;
+        display: flex;
+        top: 0px;
+        z-index: 5;
+        opacity: 0.4;
+        transition: opacity 0.15s ease-in-out;
+    }
+    &:hover {
+        & > .scope-controller {
+            opacity: 1;
+        }
+    }
+    & > canvas {
+        position: absolute;
+        width: 100%;
+        height: auto;
+    }
+    & .btn-overlay {
+        font-size: 12px;
+        border-color: transparent;
+        border-radius: 0px;
+        padding: 0rem 0.1rem;
+        z-index: 3;
+        &.active {
+            color: unset !important;
+            background-color: unset !important;
+            border-color: transparent transparent #f8f9fa transparent !important;
+            border-bottom-color: #f8f9fa !important;
+            &:hover {
+                color: #212529 !important;
+                background-color: #f8f9fa !important;
+                border-color: #f8f9fa !important;
+            }
+        }
+        &:focus {
+            box-shadow: none !important;
+        }
+        &.btn-overlay-icon {
+            width: 20px;
+        }
+    }
+}

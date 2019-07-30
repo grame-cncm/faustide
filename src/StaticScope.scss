@@ -1,0 +1,93 @@
+
+div.static-scope {
+    background-color: #181818;
+    & > div {
+        position: absolute;
+    }
+    & > div.static-scope-data {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        flex-direction: column;
+        font-size: 0.75em;
+        font-family: Consolas, monospace;
+        overflow-x: auto;
+        & > .static-scope-channel {
+            display: grid;
+            position: relative;
+            width: 1px; // for Safari
+            flex: 1 1 auto;
+            grid-template-columns: repeat(auto-fill, 80px);
+            grid-template-rows: repeat(auto-fill, 20px);
+            grid-auto-flow: column;
+            border-bottom: #505050 dashed 1px;
+            & > .static-scope-cell {
+                display: block;
+                width: 80px;
+                height: 20px;
+                background-color: inherit;
+                & > span {
+                    display: inline-block;
+                    border: #606060 solid 1px;
+                    text-align: right;
+                    padding: 0px 1px;
+                    &:first-child {
+                        width: 30px;
+                        color: #ffffa0;
+                    }
+                    &:last-child {
+                        width: 50px;
+                    }
+                }
+                &.highlight > span {
+                    border-color: #ff8800;
+                    background-color: #552200
+                }
+            }
+        }
+    }
+    & > canvas.static-scope-canvas {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+    }
+    & > .static-scope-ui-controller {
+        display: flex;
+        opacity: 0.4;
+        transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    }
+    &:hover {
+        & > .static-scope-ui-controller {
+            opacity: 1;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    }
+    & > .static-scope-default {
+        position: relative;
+        top: 20%;
+    }
+    & .btn-overlay {
+        font-size: 12px;
+        border-color: transparent;
+        border-radius: 0px;
+        padding: 0rem 0.1rem;
+        z-index: 3;
+        &.active {
+            color: unset !important;
+            background-color: unset !important;
+            border-color: transparent transparent #f8f9fa transparent !important;
+            border-bottom-color: #f8f9fa !important;
+            &:hover {
+                color: #212529 !important;
+                background-color: #f8f9fa !important;
+                border-color: #f8f9fa !important;
+            }
+        }
+        &:focus {
+            box-shadow: none !important;
+        }
+        &.btn-overlay-icon {
+            width: 20px;
+        }
+    }
+}
