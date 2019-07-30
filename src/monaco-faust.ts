@@ -57,8 +57,8 @@ const faustFunctions = [
     "seq", "par", "sum", "prod"
 ];
 const getFile = async (fileName: string) => {
-    if (window.faustEnv && window.faustEnv.faust && window.faustEnv.faust.fs) {
-        const fs = window.faustEnv.faust.fs;
+    if (window.faust && window.faust.fs) {
+        const fs = window.faust.fs;
         return fs.readFile("libraries/" + fileName, { encoding: "utf8" });
     }
     const libPath = "https://faust.grame.fr/tools/editor/libraries/";
@@ -114,7 +114,7 @@ export const getProviders = async (): Promise<FaustLanguageProviders> => {
             const res = await fetch(libPath + fileName);
             return res.text();
         });
-    } catch (e) {} // eslint-disable-line no-empty
+    } catch (e) { console.error(e); } // eslint-disable-line no-empty, no-console
     const faustLib = Object.keys(libDocs);
     const hoverProvider: monaco.languages.HoverProvider = {
         provideHover: (model, position) => {

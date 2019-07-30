@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 
 const config = {
   entry: './src/index.ts',
@@ -67,6 +68,15 @@ const config = {
       jQuery: 'jquery',
       'window.$': 'jquery',
       'window.jQuery': 'jquery'
+    }),
+    new WorkboxPlugin.GenerateSW({
+      // these options encourage the ServiceWorkers to get in there fast
+      // and not allow any straggling "old" SWs to hang around
+      clientsClaim: true,
+      skipWaiting: true,
+      maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+      globDirectory: 'dist/',
+      globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './02-XYLO1.mp3', './primitives.lib', './examples.json']
     })
   ]
 };

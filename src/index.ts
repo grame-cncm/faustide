@@ -41,6 +41,7 @@ declare global {
         webkitAudioContext: typeof AudioContext;
         AudioWorklet?: typeof AudioWorklet; // eslint-disable-line no-undef
         faustEnv: FaustEditorEnv;
+        faust: Faust;
     }
     interface HTMLMediaElement extends HTMLElement {
         setSinkId?(sinkId: string): Promise<undefined>;
@@ -111,6 +112,16 @@ const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 const VERSION = "1.0.6";
 
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js");
+        /* .then((registration) => {
+            console.log("SW registered: ", registration);
+        }).catch((registrationError) => {
+            console.log("SW registration failed: ", registrationError);
+        }); */
+    });
+}
 $(async () => {
     /**
      * Async Load Faust Core
@@ -119,6 +130,7 @@ $(async () => {
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust({ wasmLocation: "./libfaust-wasm.wasm", dataLocation: "./libfaust-wasm.data" });
     await faust.ready;
+    window.faust = faust;
     /**
      * To save dsp table to localStorage
      */
@@ -403,7 +415,7 @@ $(async () => {
              */
             if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
             else {
-                uiEnv.uiPopup = window.open(`faust-ui.html?v=${VERSION}`, "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+                uiEnv.uiPopup = window.open("faust-ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
                 uiEnv.uiPopup.onload = callback;
             }
         };
@@ -640,8 +652,10 @@ $(async () => {
             const codeURL = urlParams.get("code");
             const name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
             uiEnv.fileManager.renameSelected(`${name}.dsp`);
-            const response = await fetch(codeURL);
-            code = await response.text();
+            try {
+                const response = await fetch(codeURL);
+                code = await response.text();
+            } catch (e) {} // eslint-disable-line no-empty
         }
         if (urlParams.has("code_string")) {
             code = urlParams.get("code_string");
@@ -781,7 +795,8 @@ $(async () => {
                         $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
                     });
                 });
-            });
+            })
+            .catch(() => undefined);
     };
     $<HTMLInputElement>("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value)).change();
     // Share
@@ -1227,7 +1242,7 @@ $(async () => {
                 }
             };
             if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
-        });
+        }).catch(() => undefined);
     // Load an example
     $("#tab-examples").on("click", ".faust-example", (e) => {
         e.preventDefault();
@@ -1315,7 +1330,7 @@ $(async () => {
          */
         if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();
         else {
-            uiEnv.uiPopup = window.open(`faust-ui.html?v=${VERSION}`, "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+            uiEnv.uiPopup = window.open("faust-ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
             uiEnv.uiPopup.onload = callback;
         }
     });

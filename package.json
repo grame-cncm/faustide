@@ -70,7 +70,8 @@
     "webmidi": "^2.3.3",
     "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6",
-    "window-function": "^2.1.0"
+    "window-function": "^2.1.0",
+    "workbox-webpack-plugin": "^4.3.1"
   },
   "dependencies": {}
 }
