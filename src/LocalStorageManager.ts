@@ -8,7 +8,7 @@ export class LocalStorageManager {
     set dspTable(dspTableIn: string) {
         this.localStorage.setItem(this.$dspTable, dspTableIn);
     }
-    get dspTable(): string {
+    get dspTable(): string | null {
         return this.localStorage.getItem(this.$dspTable);
     }
     set compileOptions(compileOptionsIn: FaustEditorCompileOptions) {
@@ -58,10 +58,15 @@ export class LocalStorageManager {
             return {};
         }
     }
+    changeProject(fileName: string, content: string) {
+        const project = this.project;
+        this.project[fileName] = content;
+        this.project = project;
+    }
     set version(versionIn: string) {
         this.localStorage.setItem(this.$version, versionIn);
     }
-    get version(): string {
+    get version(): string | null {
         return this.localStorage.getItem(this.$version);
     }
 }
