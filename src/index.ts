@@ -19,7 +19,7 @@ import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as JSZip from "jszip";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
-import { Key2Midi } from "./KeyToMidi";
+import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import * as faustlang from "./monaco-faust";
 import "bootstrap/js/dist/dropdown";
