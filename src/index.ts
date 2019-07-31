@@ -19,7 +19,7 @@ import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as JSZip from "jszip";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
-import { Key2Midi } from "./Key2Midi";
+import { Key2Midi } from "./KeyToMidi";
 import { Scope } from "./Scope";
 import * as faustlang from "./monaco-faust";
 import "bootstrap/js/dist/dropdown";
@@ -87,24 +87,6 @@ type FaustEditorUIEnv = {
     uiPopup?: Window;
     analyser: Analyser;
     fileManager: FileManager;
-};
-type FaustEditorCompileOptions = {
-    mainFileIndex?: number;
-    useWorklet: boolean;
-    bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096;
-    saveCode: boolean;
-    saveParams: boolean;
-    saveDsp: boolean;
-    realtimeCompile: boolean;
-    popup: boolean;
-    voices: number;
-    plotMode: "offline" | "continuous" | "onevent" | "manual";
-    plot: number;
-    plotSR: number;
-    plotFFT: 256 | 1024 | 4096;
-    plotFFTOverlap: 1 | 2 | 4 | 8;
-    drawSpectrogram: boolean;
-    args: { [key: string]: any };
 };
 type FaustExportTargets = { [platform: string]: string[] };
 
