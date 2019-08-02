@@ -17,6 +17,8 @@ importScripts(
   "precache-manifest.750fbc1cb28b0c5c792d1b917f8a68e7.js"
 );
 
+workbox.core.setCacheNameDetails({prefix: "1.0.6"});
+
 workbox.core.skipWaiting();
 
 workbox.core.clientsClaim();
@@ -821,7 +823,7 @@ self.__precacheManifest = [
   },
   {
     "url": "index.html",
-    "revision": "d5c27b90d6007acbd6d4d6def1c5d8c3"
+    "revision": "5b0cb2896c99afb8b9d91c0aba21cdbc"
   },
   {
     "url": "favicon.png",

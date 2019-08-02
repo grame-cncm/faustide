@@ -75,6 +75,7 @@ const config = {
       clientsClaim: true,
       skipWaiting: true,
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+      cacheId: "1.0.6",
       globDirectory: 'dist/',
       globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './icon/*', './02-XYLO1.mp3', './primitives.lib', './examples.json', './manifest.json']
     })
