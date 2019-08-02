@@ -9,7 +9,7 @@
             "type": "image/png"
         },
         {
-            "src": "./icon/splash.png",
+            "src": "./icon/splash-512.png",
             "sizes": "1024x655",
             "type": "image/png"
         }
@@ -17,5 +17,5 @@
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#2b2b2b",
-    "theme_color": "#2b2b2b",
+    "theme_color": "#2b2b2b"
 }
