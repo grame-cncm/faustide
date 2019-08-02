@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.5dc310710b8d9bb768af40c1601fc7fa.js"
+  "precache-manifest.750fbc1cb28b0c5c792d1b917f8a68e7.js"
 );
 
 workbox.core.skipWaiting();
@@ -841,7 +841,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples.json",
-    "revision": "554f7989a24e9a0e1e648456e5fdccb5"
+    "revision": "2945f413ac48fea4621af7c22b88bc19"
   },
   {
     "url": "manifest.json",

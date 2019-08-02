@@ -1222,7 +1222,7 @@ $(async () => {
         const path = $(e.currentTarget).data("path");
         const name = $(e.currentTarget).text();
         if (path) {
-            fetch("../" + path)
+            fetch(path)
                 .then(response => response.text())
                 .then((code) => {
                     const fileName = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
