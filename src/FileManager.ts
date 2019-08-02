@@ -142,9 +142,9 @@ export class FileManager {
             e.stopPropagation();
             e.preventDefault();
             let i = 1;
-            let fileName = "untitled" + i + ".dsp";
+            let fileName = `untitled${i}.dsp`;
             while (this._fileList.indexOf(fileName) !== -1) {
-                fileName = "untitled" + (++i) + ".dsp";
+                fileName = `untitled${++i}.dsp`;
             }
             this.fs.writeFile(this.path + fileName, "");
             this._fileList.push(fileName);
@@ -355,11 +355,12 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     newFile(fileNameIn?: string, content?: string) {
         let fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
+        const extension = fileNameIn.split(".").slice(-1) || "lib";
         if (!fileName || this._fileList.indexOf(fileName) !== -1) {
             let i = 1;
-            fileName = "untitled" + i + ".dsp";
+            fileName = `untitled${i}.${extension}`;
             while (this._fileList.indexOf(fileName) !== -1) {
-                fileName = "untitled" + (++i) + ".dsp";
+                fileName = `untitled${++i}.${extension}`;
             }
         }
         this.fs.writeFile(this.path + fileName, content || "");
@@ -367,6 +368,8 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         const divFile = this.createFileDiv(fileName, false);
         this.divFiles.appendChild(divFile);
         if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
+        this.select(fileName);
+        if (fileName.endsWith(".dsp")) this.setMain(this._fileList.length - 1);
         return fileName;
     }
     select(fileName: string) {
