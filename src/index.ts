@@ -658,9 +658,9 @@ $(async () => {
         const file = e.currentTarget.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            const name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+            const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
             const code = reader.result.toString();
-            uiEnv.fileManager.newFile(`${name}.dsp`, code);
+            uiEnv.fileManager.newFile(fileName, code);
             if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
                 else updateDiagram(uiEnv.fileManager.mainCode);
@@ -1168,9 +1168,9 @@ $(async () => {
             const reader = new FileReader();
             reader.onload = () => {
                 // Update filename
-                const name = file.name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
                 const code = reader.result.toString();
-                uiEnv.fileManager.newFile(`${name}.dsp`, code);
+                uiEnv.fileManager.newFile(fileName, code);
                 // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
                     if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
@@ -1222,11 +1222,11 @@ $(async () => {
         const path = $(e.currentTarget).data("path");
         const name = $(e.currentTarget).text();
         if (path) {
-            fetch("../" + path)
+            fetch(path)
                 .then(response => response.text())
                 .then((code) => {
-                    const fileName = name.split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    uiEnv.fileManager.newFile(`${fileName}.dsp`, code);
+                    const fileName = name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
+                    uiEnv.fileManager.newFile(fileName, code);
                     if (compileOptions.realtimeCompile) {
                         if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
                         else updateDiagram(uiEnv.fileManager.mainCode);
