@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.f1de9231ebcb5e188be2457ba2c0fd99.js"
+  "precache-manifest.c704770feebb9bedbdbcdd6c08c3d02f.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "1.0.6"});
@@ -834,6 +834,10 @@ self.__precacheManifest = [
     "revision": "ee7ec1719955d2f9c0bbea290b088d20"
   },
   {
+    "url": "icon/splash-512.png",
+    "revision": "bdc766a26b1357103120fc06e4cd8a9f"
+  },
+  {
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   },
@@ -847,7 +851,7 @@ self.__precacheManifest = [
   },
   {
     "url": "manifest.json",
-    "revision": "a05913b0ec3de887aff05ceba84f3048"
+    "revision": "b09c62e94a3fa8599f9556b43e9ea7bf"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
