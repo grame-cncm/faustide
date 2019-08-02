@@ -10,7 +10,7 @@
         },
         {
             "src": "./icon/splash-512.png",
-            "sizes": "1024x655",
+            "sizes": "512x512",
             "type": "image/png"
         }
     ],
