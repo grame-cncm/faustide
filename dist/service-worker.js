@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.c704770feebb9bedbdbcdd6c08c3d02f.js"
+  "precache-manifest.eb7e70f6375de35b3e7a51978f1ee9fc.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "1.0.6"});
@@ -59,55 +59,63 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/bela/AdditiveSynth_Analog.dsp",
-    "revision": "84964e080c0fc4fe0a0f171d97f32abd"
+    "revision": "5e7938d264c274d8e7f99233e998502c"
   },
   {
     "url": "examples/bela/AdditiveSynth.dsp",
-    "revision": "6f6f44d46a2c71aa0bb8615793527975"
+    "revision": "3684a5047e34ae51e8de425a14fcb215"
   },
   {
     "url": "examples/bela/crossDelay2.dsp",
-    "revision": "e98e28a899eb69dfcf11c3d8a74d6b7b"
+    "revision": "846ebd21681312771dba0b301c345dce"
   },
   {
     "url": "examples/bela/Faust-complement.lib",
-    "revision": "176974235ecb98204f97eeb7775e6bda"
+    "revision": "1cce7f46cea6d60aee3a02ea5e65ba5a"
   },
   {
     "url": "examples/bela/FMSynth2_Analog.dsp",
-    "revision": "87d6a3b7d1586c43ffa3ad34e7e1ce65"
+    "revision": "fa357019e74f690094c8e4e40335734b"
   },
   {
     "url": "examples/bela/FMSynth2_FX_Analog.dsp",
-    "revision": "c5463839af3cfe3bfe60a32299e6497d"
+    "revision": "a08876f9bc8557721c880f2fb0dd2d1c"
   },
   {
     "url": "examples/bela/FMSynth2_FX.dsp",
-    "revision": "9d7b91e13cc11a656484d6cbfe3f2875"
+    "revision": "4f7d9e79e45b2d85f54470d4d7acc412"
   },
   {
     "url": "examples/bela/FMSynth2.dsp",
-    "revision": "3f0f43e98627269198f116717898cc70"
+    "revision": "b8f831feeb090cf7e41e75dc6d11daf5"
   },
   {
     "url": "examples/bela/FXChaine2.dsp",
-    "revision": "f2787a3e07b0ee7d9b2b27ecf4075f60"
+    "revision": "aa96863646b6d03aaa991d17c7e03fc5"
   },
   {
     "url": "examples/bela/GrainGenerator.dsp",
-    "revision": "070ba42357a63a44aea8fe5f936fd7b7"
+    "revision": "3c59036855ca69ccf5e6bdb71abaaf06"
   },
   {
     "url": "examples/bela/granulator.dsp",
-    "revision": "48a61f94576d77966b146b76804101d1"
+    "revision": "a98b1d817ba305a916ec82ce4bd2b4c8"
+  },
+  {
+    "url": "examples/bela/latency-measure.maxpat",
+    "revision": "98cb08ef75d757fcad5a2a317fda2688"
+  },
+  {
+    "url": "examples/bela/ReadMe.pdf",
+    "revision": "f0ef7f0c31c54f853dffa99ed80ee1f5"
   },
   {
     "url": "examples/bela/repeater.dsp",
-    "revision": "5bcf8a0852f3bbaf06189ba8c7224bb8"
+    "revision": "e9443be37f5df97d1e6942bf06611931"
   },
   {
     "url": "examples/bela/simpleFX_Analog.dsp",
-    "revision": "7aaaab7eeb33ebcf008fb833f12d3491"
+    "revision": "46aec578a8f735f40af7cfb97cd66902"
   },
   {
     "url": "examples/bela/simpleFX.dsp",
@@ -115,35 +123,35 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/bela/simpleSynth_Analog.dsp",
-    "revision": "4a87647e2b328e8a8f956014080babcd"
+    "revision": "615ea7025782044310e77d14e3a3172f"
   },
   {
     "url": "examples/bela/simpleSynth_FX_Analog.dsp",
-    "revision": "3c7fa36f8451a737d0b84321acf46fb0"
+    "revision": "dc8ac3c27c32ffffd4490629738a38e5"
   },
   {
     "url": "examples/bela/simpleSynth_FX.dsp",
-    "revision": "5f7a1d7c0ed565a2bc8e9a8d08f09b2a"
+    "revision": "2cdcd6577104fd515ac96c8abc688d1d"
   },
   {
     "url": "examples/bela/simpleSynth.dsp",
-    "revision": "1126ba1d0729af05c5cfdad80fc0c989"
+    "revision": "3ffa9c4d4b274708e3333bafaa66b924"
   },
   {
     "url": "examples/bela/WaveSynth_Analog.dsp",
-    "revision": "bcebe8722741af15b471173851897a06"
+    "revision": "c6f075b6f03af7b04996586d1e8a4e67"
   },
   {
     "url": "examples/bela/WaveSynth_FX_Analog.dsp",
-    "revision": "8545eadc7b618a25a9c85ede1cdf0438"
+    "revision": "452060418f39ee5fbd3fbf7b560190a4"
   },
   {
     "url": "examples/bela/WaveSynth_FX.dsp",
-    "revision": "2ce139c945818a33f3ac61c54137091d"
+    "revision": "6da063c108b4f098bdad383e8d694c14"
   },
   {
     "url": "examples/bela/WaveSynth.dsp",
-    "revision": "074c50ce1f12b9cb723a3f2dace0be08"
+    "revision": "4ee091bfb2f0ee9f6f1e368e36e4ca9c"
   },
   {
     "url": "examples/delayEcho/echo.dsp",
@@ -163,7 +171,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/delayEcho/tapiir.dsp",
-    "revision": "9bb1333749bb77a705722f95b0bd43fc"
+    "revision": "5005016ecf00e7ffc9022ca95a7835e8"
   },
   {
     "url": "examples/dynamic/compressor.dsp",
@@ -202,6 +210,10 @@ self.__precacheManifest = [
     "revision": "a5e420786671c5fb0f4d7b2e690c78b0"
   },
   {
+    "url": "examples/filtering/diodeLadder.dsp",
+    "revision": "9bd5311aeae2069c9f484a2187a0cac1"
+  },
+  {
     "url": "examples/filtering/DNN.dsp",
     "revision": "bbf5fa9890ceb398ef6619ad27cc2709"
   },
@@ -220,6 +232,14 @@ self.__precacheManifest = [
   {
     "url": "examples/filtering/HPF.dsp",
     "revision": "59c67ce105ccefa6d421aff98aa6ddc3"
+  },
+  {
+    "url": "examples/filtering/korg35HPF.dsp",
+    "revision": "dfb8e5089ff7d9493885b59eeda391d0"
+  },
+  {
+    "url": "examples/filtering/korg35LPF.dsp",
+    "revision": "70bb92bdb74dca9d5fd0f97b3e4d5d39"
   },
   {
     "url": "examples/filtering/lfBoost.dsp",
@@ -242,16 +262,44 @@ self.__precacheManifest = [
     "revision": "eb5ab62470d21be58af3ec9464d99b4a"
   },
   {
+    "url": "examples/filtering/moogHalfLadder.dsp",
+    "revision": "8953899c75cf06c982d52fd474e683a3"
+  },
+  {
+    "url": "examples/filtering/moogLadder.dsp",
+    "revision": "558fd596b20b8099623f92b4f49e7a2b"
+  },
+  {
     "url": "examples/filtering/moogVCF.dsp",
     "revision": "708340d07f59f9738222321ce453d159"
   },
   {
     "url": "examples/filtering/multibandFilter.dsp",
-    "revision": "e66a350bd2a51501ff84fbbf2d770aaf"
+    "revision": "6c9134ccae9632f20695f5e8c9a594c2"
   },
   {
     "url": "examples/filtering/notch.dsp",
     "revision": "cb0c2ef5f17b3a80f289627d36f17e2f"
+  },
+  {
+    "url": "examples/filtering/oberheim.dsp",
+    "revision": "6b0435b55b32d2b3f6a59b5cf562b4bd"
+  },
+  {
+    "url": "examples/filtering/oberheimBPF.dsp",
+    "revision": "03e9637b29c0d3a5854e3154495e1c71"
+  },
+  {
+    "url": "examples/filtering/oberheimBSF.dsp",
+    "revision": "4d24cbbce7034b91956ca675d2952821"
+  },
+  {
+    "url": "examples/filtering/oberheimHPF.dsp",
+    "revision": "077fa7e14c462b662bb4d573879ad30b"
+  },
+  {
+    "url": "examples/filtering/oberheimLPF.dsp",
+    "revision": "ea0fb373d3e93439ed12e631e6c7dd14"
   },
   {
     "url": "examples/filtering/parametricEqLab.dsp",
@@ -268,6 +316,34 @@ self.__precacheManifest = [
   {
     "url": "examples/filtering/peakNotch.dsp",
     "revision": "8ac3cc5375d2fd3c424b63296e800366"
+  },
+  {
+    "url": "examples/filtering/sallenKey2ndOrder.dsp",
+    "revision": "dda20093d5573cde4ee28b48be4716fb"
+  },
+  {
+    "url": "examples/filtering/sallenKey2ndOrderBPF.dsp",
+    "revision": "1563279ac037ea830cf577efaf1586d8"
+  },
+  {
+    "url": "examples/filtering/sallenKey2ndOrderHPF.dsp",
+    "revision": "9be5b182130ba75dc069e2baae70696c"
+  },
+  {
+    "url": "examples/filtering/sallenKey2ndOrderLPF.dsp",
+    "revision": "b95bf25dc6f12e81f11db9b14f00ef3c"
+  },
+  {
+    "url": "examples/filtering/sallenKeyOnePole.dsp",
+    "revision": "46cb4cefd4378095aad2c1a9ec7eb3e0"
+  },
+  {
+    "url": "examples/filtering/sallenKeyOnePoleHPF.dsp",
+    "revision": "609817e756b23df54e303dea27c8c550"
+  },
+  {
+    "url": "examples/filtering/sallenKeyOnePoleLPF.dsp",
+    "revision": "b628f58cdf954420ed8d29cb0fd84043"
   },
   {
     "url": "examples/filtering/spectralTilt.dsp",
@@ -311,11 +387,11 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/generator/osc.dsp",
-    "revision": "b50f738cf5e789298dc4011157b3c094"
+    "revision": "c45be4e432d219c71af5622f7efaa4c9"
   },
   {
     "url": "examples/generator/osci.dsp",
-    "revision": "74fbc457b01c3230e48abac8aa3c3fc0"
+    "revision": "4ce510671a7bfee73cf81c9b432621df"
   },
   {
     "url": "examples/generator/sawtoothLab.dsp",
@@ -330,12 +406,28 @@ self.__precacheManifest = [
     "revision": "57bd8159053e642ad03328df31cba231"
   },
   {
+    "url": "examples/Makefile.cudacompile",
+    "revision": "846f4b149c834850b29b54c4b887835a"
+  },
+  {
+    "url": "examples/Makefile.javacompile",
+    "revision": "a0654d91b7013d17dc1debec3d9396fc"
+  },
+  {
+    "url": "examples/Makefile.llvmcompile",
+    "revision": "7c06866bef216b4b8990c305dab9bc82"
+  },
+  {
+    "url": "examples/Makefile.wacompile",
+    "revision": "97750bb8247762146e89f81752b5fc08"
+  },
+  {
     "url": "examples/misc/capture.dsp",
-    "revision": "4fa1f1c6ef91b2aaf09c995b8c2697c7"
+    "revision": "e7acfb2d353f6efe806b8e136229aafb"
   },
   {
     "url": "examples/misc/guitarix.dsp",
-    "revision": "3ab16a4515f32595d12a94a587a2e3e6"
+    "revision": "52e7301657a20a3d2434d37d8e978acf"
   },
   {
     "url": "examples/misc/matrix.dsp",
@@ -343,7 +435,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/misc/midiTester.dsp",
-    "revision": "3d4694924bf8b97e30d1cb6993b059e9"
+    "revision": "153567b14c82e0fb929993af1526c949"
   },
   {
     "url": "examples/misc/mixer.dsp",
@@ -364,6 +456,50 @@ self.__precacheManifest = [
   {
     "url": "examples/misc/UITester.dsp",
     "revision": "1ca60a8b2274c0ad7d27d444b3f7e8c9"
+  },
+  {
+    "url": "examples/old/freeverb.dsp",
+    "revision": "e05465aeb14f425f82f5f0a99299dbd6"
+  },
+  {
+    "url": "examples/old/README.md",
+    "revision": "1f6be801ea7331e84b560f2f100d75f2"
+  },
+  {
+    "url": "examples/old/rewriting/fact.dsp",
+    "revision": "e43b90048519f893124bf3fcefefae6e"
+  },
+  {
+    "url": "examples/old/rewriting/fold.dsp",
+    "revision": "8035c053eba058b57beb42d8368a6b2a"
+  },
+  {
+    "url": "examples/old/rewriting/Makefile",
+    "revision": "5c641a4cc188654508a3522bfaf7490f"
+  },
+  {
+    "url": "examples/old/rewriting/mesh.dsp",
+    "revision": "a9b9f2c7e735d6114c0a5eb8329435cc"
+  },
+  {
+    "url": "examples/old/rewriting/mesh.pd",
+    "revision": "f67377e6ddf19faa0dc70479e043558f"
+  },
+  {
+    "url": "examples/old/rewriting/sample.pd",
+    "revision": "645c8245599a53b4b683d63dc6f8cbcf"
+  },
+  {
+    "url": "examples/old/rewriting/serial.dsp",
+    "revision": "df391e1e749ce614b54c5f806d45402d"
+  },
+  {
+    "url": "examples/old/rewriting/sum.dsp",
+    "revision": "c56b67fec33772bf828955a0d4500824"
+  },
+  {
+    "url": "examples/old/rewriting/test.pd",
+    "revision": "bdb34cdb04c790abb4287704c5872c9c"
   },
   {
     "url": "examples/phasing/flanger.dsp",
@@ -414,6 +550,10 @@ self.__precacheManifest = [
     "revision": "70f99854e2819a60a798510d5d9af96c"
   },
   {
+    "url": "examples/physicalModeling/faust-stk/bass.h",
+    "revision": "684ce93e2edac5a42072bdb91bb2fac2"
+  },
+  {
     "url": "examples/physicalModeling/faust-stk/blowBottle.dsp",
     "revision": "d7ffd2d473e279244771f212e85095e4"
   },
@@ -446,8 +586,20 @@ self.__precacheManifest = [
     "revision": "a6de1a788e404903d1f825012b104ef6"
   },
   {
+    "url": "examples/physicalModeling/faust-stk/harpsichord.h",
+    "revision": "e3e6e8b396205590a4609eb31c7b7595"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/instrument.h",
+    "revision": "1eea31c1b2062cecb1856bc3f2a59c25"
+  },
+  {
     "url": "examples/physicalModeling/faust-stk/modalBar.dsp",
     "revision": "e29ce141112ab1adbdfd141440c80e5d"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/modalBar.h",
+    "revision": "40b03ca35d751af8796e3f18370ad6c3"
   },
   {
     "url": "examples/physicalModeling/faust-stk/NLFeks.dsp",
@@ -458,8 +610,196 @@ self.__precacheManifest = [
     "revision": "c9667c4fe04e52a35622a56000c460ed"
   },
   {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/bottle.pd",
+    "revision": "5bc733ed1be0199fd0001d1e4e1cfe8d"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/clarinets.pd",
+    "revision": "07475cc7ed4f80020ac4ceb14f663ac4"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/canon/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/canon/bass.pd",
+    "revision": "dae394aa10f54664ab66e0765f4965b6"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/canon/canon.pd",
+    "revision": "a1b3a475494f91f72744cf5e3284218d"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/canon/flute.pd",
+    "revision": "65b12257d07611c9f50295cfe3d8366d"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/canon/pachelbel.mid",
+    "revision": "33fbb8edc6b5667644fa0d4127ddb6de"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/daisy/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/daisy/daisy.mid",
+    "revision": "af8d7e8df001ead8f0c0095d12406486"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/daisy/daisy.pd",
+    "revision": "eb0450ee6a33c0492d6a6848c02bbf86"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/daisy/piano.pd",
+    "revision": "9f8ed1d57bf8a72d5fc7b8df6e29f55a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/daisy/voiceForm.pd",
+    "revision": "a1fe7a0e4101c4345a070ab3ebeff4ed"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/take5/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/take5/blowHole.pd",
+    "revision": "69e092fd9b97cc6909ed706c622aa6c3"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/take5/piano.pd",
+    "revision": "2cedb2be2f17da345dc213da98577795"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/take5/take5.mid",
+    "revision": "3d0218463004575f6605f62a8c28105b"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/take5/take5.pd",
+    "revision": "a1f961b16851bfd02ef7979d1f7f406a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/turkish-march/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/turkish-march/harpsi.pd",
+    "revision": "5d206e95b5587737e7818bbc1292a2d9"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/turkish-march/turkish-march.mid",
+    "revision": "d25f39809c472102cdb9b3ee348b1f94"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/turkish-march/turkish-march.pd",
+    "revision": "754837ef0843e38d02e72db72a35bcfa"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/audio-out.pd",
+    "revision": "3a16ea201b7e5af71e7ad9347a2f932a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/bass.pd",
+    "revision": "56a0b824aaa4c7f72113fc1d80b19511"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/modalBar.pd",
+    "revision": "8bcaca3dca68597816572fe771124a41"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/piano.pd",
+    "revision": "1660790087c05d4a019caba599f77a80"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/what_a_friend.mid",
+    "revision": "df01382a1e93742e9459f1ff73aba9ac"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fancy/what-a-friend/what-a-friend.pd",
+    "revision": "f5a65731bcfb3340faf060d26f7220d8"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/flutes.pd",
+    "revision": "ee7290a974869fa7ba662524de522b1a"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/fm.pd",
+    "revision": "cb4fe2cab00bb1bf9bb8fe486b9ef7df"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/glassBare.pd",
+    "revision": "1b8b5ea7956108b5908d52b6913bbdc4"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/harpsichord-poly.pd",
+    "revision": "a119d4ffdb6ba6bef17afc6f86e8a789"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/ironBare.pd",
+    "revision": "47a29e51320943fd2bc681350a987b48"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/midi-in.pd",
+    "revision": "78de87c8929d2472b0a4426bb9a8ee74"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/modal.pd",
+    "revision": "eff23b028db898c714bfa8c6bacbf669"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/osc.pd",
+    "revision": "8445357fdfd382672bc7d08fb68d947f"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/piano-poly.pd",
+    "revision": "b23b4016fd98357e0484843b9165de9d"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/plucked.pd",
+    "revision": "6a80151228e1ad0cc1e60359bbea29a4"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/saxophone.pd",
+    "revision": "6bbebdd0d398b1644d6635f9908420be"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/tibetan.pd",
+    "revision": "40d5f228f2499bb6b4453686915356c2"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/trumpet.pd",
+    "revision": "1cfeb0d62f9bee5befbe9dd6870c2b23"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/violin.pd",
+    "revision": "58f0b89fe99f45f92fde65fde1b2ac51"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/voiceSynth.pd",
+    "revision": "38d25808befc39777aed9904008eaad8"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/pd-patches/woodenBare.pd",
+    "revision": "e90c13211b1f53aa58d2868234b84b84"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/phonemes.h",
+    "revision": "a6ab1ef24c390983fb121fe37eb96c1f"
+  },
+  {
     "url": "examples/physicalModeling/faust-stk/piano.dsp",
     "revision": "86c4bf0649511cfd53567a35f76086f2"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/piano.h",
+    "revision": "a60071ff11c4c2d18a94a6edc77471ea"
+  },
+  {
+    "url": "examples/physicalModeling/faust-stk/README",
+    "revision": "2847806d56d80555f28292d0af288712"
   },
   {
     "url": "examples/physicalModeling/faust-stk/saxophony.dsp",
@@ -522,6 +862,18 @@ self.__precacheManifest = [
     "revision": "19ed80bd495e6e6d1a723fa273f00329"
   },
   {
+    "url": "examples/physicalModeling/old/harpe.dsp",
+    "revision": "f355c082e32e5a8bf1026fb3482012e6"
+  },
+  {
+    "url": "examples/physicalModeling/old/karplus.dsp",
+    "revision": "5560728988a8f4be38e0266af3c98dbd"
+  },
+  {
+    "url": "examples/physicalModeling/old/karplus32.dsp",
+    "revision": "be3c0487fde38a438548edc7108a5689"
+  },
+  {
     "url": "examples/physicalModeling/russianBell.dsp",
     "revision": "3a83da099c9f0ea802d217fb18686606"
   },
@@ -562,6 +914,10 @@ self.__precacheManifest = [
     "revision": "eebb583e71557b35bdab830722f3dedc"
   },
   {
+    "url": "examples/README.md",
+    "revision": "1530ad5d9c773e6b3f41c65183465400"
+  },
+  {
     "url": "examples/reverb/fdnRev.dsp",
     "revision": "2f6d09723ecb770a3cf5ec15cfca7206"
   },
@@ -594,6 +950,10 @@ self.__precacheManifest = [
     "revision": "9573d7064cdf6a9f956ea75744c85d09"
   },
   {
+    "url": "examples/SAM/16_channel_volume/README.md",
+    "revision": "9b973aaf4fdbead3d897a594cddf93ad"
+  },
+  {
     "url": "examples/SAM/chorus/chorus.dsp",
     "revision": "1ba8532ecbe1b1736282d4829e110d46"
   },
@@ -606,6 +966,14 @@ self.__precacheManifest = [
     "revision": "12586fadff5974927ef4422134c9486c"
   },
   {
+    "url": "examples/SAM/chorus/MIDI Mappings Chorus.xlsx",
+    "revision": "100d5934d36b65073b5808ac45d95cac"
+  },
+  {
+    "url": "examples/SAM/chorus/README.md",
+    "revision": "ae4712d605b1749b31057e4655da3e58"
+  },
+  {
     "url": "examples/SAM/echo/echo.dsp",
     "revision": "b777b81da4d263360a4bddb6de8dd68a"
   },
@@ -616,6 +984,14 @@ self.__precacheManifest = [
   {
     "url": "examples/SAM/echo/layout2.dsp",
     "revision": "12586fadff5974927ef4422134c9486c"
+  },
+  {
+    "url": "examples/SAM/echo/MIDI Mappings Echo.xlsx",
+    "revision": "d372c96263bc2fed62602d266d78a3e2"
+  },
+  {
+    "url": "examples/SAM/echo/README.md",
+    "revision": "805b99d72c46ba3a9b9d2143b0e980f4"
   },
   {
     "url": "examples/SAM/effects/chorus.dsp",
@@ -646,6 +1022,14 @@ self.__precacheManifest = [
     "revision": "12586fadff5974927ef4422134c9486c"
   },
   {
+    "url": "examples/SAM/effects/MIDI Mappings Effects.xlsx",
+    "revision": "e112893aa92233d9b3564f252a33ebb7"
+  },
+  {
+    "url": "examples/SAM/effects/README.md",
+    "revision": "1ac968fac5e5c8558e569331f11f65e8"
+  },
+  {
     "url": "examples/SAM/flanger/flanger.dsp",
     "revision": "7c95b96672323f7cd0b66a3d6613512c"
   },
@@ -656,6 +1040,14 @@ self.__precacheManifest = [
   {
     "url": "examples/SAM/flanger/layout2.dsp",
     "revision": "12586fadff5974927ef4422134c9486c"
+  },
+  {
+    "url": "examples/SAM/flanger/MIDI Mappings Flanger.xlsx",
+    "revision": "d6ea195903f3434b150f16d18def9e58"
+  },
+  {
+    "url": "examples/SAM/flanger/README.md",
+    "revision": "5c87d25f117b4500a02a1977a3abdef5"
   },
   {
     "url": "examples/SAM/freeverb/freeverb.dsp",
@@ -670,20 +1062,44 @@ self.__precacheManifest = [
     "revision": "12586fadff5974927ef4422134c9486c"
   },
   {
+    "url": "examples/SAM/freeverb/MIDI Mappings Freeverb.xlsx",
+    "revision": "bec138bff17da7b0c98f8c3696ea08bc"
+  },
+  {
+    "url": "examples/SAM/freeverb/README.md",
+    "revision": "929b72873f3b2a156f74109cb9cc8281"
+  },
+  {
+    "url": "examples/SAM/sawtooth_synth/README.md",
+    "revision": "6bbc30c83132b24f49fe4b45d92cb792"
+  },
+  {
     "url": "examples/SAM/sawtooth_synth/sawtooth_synth.dsp",
     "revision": "2078b3cb87b19fd698f843c2649166dc"
   },
   {
+    "url": "examples/SAM/sine_synth/README.md",
+    "revision": "e2e3f8900ce624ab5e72663905255394"
+  },
+  {
     "url": "examples/SAM/sine_synth/sine_synth.dsp",
-    "revision": "106939549c8e66c41be3c438b1cc7cd2"
+    "revision": "6134db55a32f030f50a284d08ba8de8f"
   },
   {
     "url": "examples/SAM/virtualAnalog/layout2.dsp",
     "revision": "12586fadff5974927ef4422134c9486c"
   },
   {
+    "url": "examples/SAM/virtualAnalog/MIDI Mappings VA.xlsx",
+    "revision": "5682b84f6d9e69eb311e58d18de8c964"
+  },
+  {
+    "url": "examples/SAM/virtualAnalog/README.md",
+    "revision": "9e88641d2daa92269b8f548dc687bce8"
+  },
+  {
     "url": "examples/SAM/virtualAnalog/virtualAnalog.dsp",
-    "revision": "e81aebf319bec39714b12eed421ebbae"
+    "revision": "74cda607108ed914c9ffba7ce34319f7"
   },
   {
     "url": "examples/SAM/virtualAnalog/virtualAnalog.touchosc",
@@ -691,11 +1107,15 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/SAM/virtualAnalog/virtualAnalogForBrowser.dsp",
-    "revision": "1e99a343f48b2d5d4077b5e0225802c5"
+    "revision": "5a37f7bdaf1a6d0f0da75ff9554716c4"
   },
   {
     "url": "examples/SAM/virtualAnalog/virtualAnalogWithEffectsForBrowser.dsp",
-    "revision": "1c1e99fa75d401f2f10cb7e2a0ffbb09"
+    "revision": "cf6e91f80e6e835a9f41afbd06df869b"
+  },
+  {
+    "url": "examples/SAM/volume/README.md",
+    "revision": "2b861f35eb537e33ad9ee4dee38dfce3"
   },
   {
     "url": "examples/SAM/volume/volume.dsp",
@@ -763,11 +1183,11 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/smartKeyboard/midiOnly.dsp",
-    "revision": "e2f03382937f57177df4a06299a3f60c"
+    "revision": "09e1d9967d7daa792de2fea3e6981f20"
   },
   {
     "url": "examples/smartKeyboard/multiSynth.dsp",
-    "revision": "cc9c66161d53dec81afe7756c3a8f231"
+    "revision": "e61eb4d284ef24d3cdfd192e82da8289"
   },
   {
     "url": "examples/smartKeyboard/toy.dsp",
@@ -775,7 +1195,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/smartKeyboard/trumpet.dsp",
-    "revision": "f5a49c93646060b84352054a5c93f7f7"
+    "revision": "5811096cf3c60a5eb0a211f286fd99df"
   },
   {
     "url": "examples/smartKeyboard/turenas.dsp",
@@ -815,11 +1235,11 @@ self.__precacheManifest = [
   },
   {
     "url": "libfaust-wasm.data",
-    "revision": "46428c4c37c26fa96364f60e5960b3b0"
+    "revision": "d108ddc3097f9af4c9a9c2173b8e233c"
   },
   {
     "url": "libfaust-wasm.wasm",
-    "revision": "627178a82427e5046655c14478f2a3e9"
+    "revision": "0ab46f1bf79b34999457c3cea449fdcf"
   },
   {
     "url": "index.html",
@@ -847,7 +1267,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples.json",
-    "revision": "2945f413ac48fea4621af7c22b88bc19"
+    "revision": "15f877e242b9772d795691811df30b68"
   },
   {
     "url": "manifest.json",

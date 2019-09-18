@@ -39,6 +39,13 @@ Install dev dependencies:
 npm install
 ```
 
+Updating the faust2webaudio and faust-ui subprojects
+
+```bash
+npm uninstall grame-cncm/faust2webaudio npm i -D grame-cncm/faust2webaudio
+npm uninstall grame-cncm/faust-ui npm i -D grame-cncm/faust-ui
+```
+
 To build everything (using Webpack 4, Babel 7, TypeScript), this will produce `dist/index.js`
 ```bash
 npm run build
