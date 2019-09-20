@@ -161,7 +161,7 @@ exports.push([module.i, ".faust-ui-group {\n  position: absolute;\n  display: bl
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: inherit; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: auto; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > .faust-ui-component-hbargraph-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hbargraph > .faust-ui-component-hbargraph-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px; }\n", ""]);
 
 
 /***/ }),
@@ -175,7 +175,7 @@ exports.push([module.i, ".faust-ui-component.faust-ui-component-hbargraph > .fau
 
 exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js")(false);
 // Module
-exports.push([module.i, ".faust-ui-component.faust-ui-component-hslider > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: inherit; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px;\n    -moz-appearance: textfield; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-outer-spin-button {\n      -webkit-appearance: none;\n      margin: 0; }\n", ""]);
+exports.push([module.i, ".faust-ui-component.faust-ui-component-hslider > .faust-ui-component-label {\n  flex: 0 0 auto; }\n\n.faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv {\n  position: relative;\n  display: flex;\n  flex-direction: row-reverse;\n  flex: 1 1 auto;\n  width: 100%;\n  height: auto; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv {\n    position: relative;\n    display: block;\n    flex: 1 1 auto;\n    height: 100%;\n    margin: auto; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > .faust-ui-component-hslider-canvasdiv > canvas {\n      position: absolute;\n      display: block;\n      height: 100%;\n      width: 100%; }\n  .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input {\n    position: relative;\n    display: block;\n    flex: 0 1 auto;\n    text-align: center;\n    background-color: rgba(255, 255, 255, 0.25);\n    margin: auto 5px auto auto;\n    border-width: 0px;\n    border-radius: 4px;\n    width: calc(20% - 13px);\n    padding: 2px 4px;\n    -moz-appearance: textfield; }\n    .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-inner-spin-button, .faust-ui-component.faust-ui-component-hslider > .faust-ui-component-hslider-flexdiv > input::-webkit-outer-spin-button {\n      -webkit-appearance: none;\n      margin: 0; }\n", ""]);
 
 
 /***/ }),
@@ -4891,41 +4891,6 @@ class AbstractGroup {
     };
   }
   /**
-   * Adjust group width and height by its items' dimensions
-   *
-   * @returns {this}
-   * @memberof AbstractGroup
-   */
-
-
-  adjust() {
-    return this;
-  }
-  /**
-   * Expand flexible items within a group
-   *
-   * @param {number} dX - Extra horizontal spaces that this group could take
-   * @param {number} dY - Extra vertical spaces that this group could take
-   * @returns {this}
-   * @memberof AbstractGroup
-   */
-
-
-  expand(dX, dY) {
-    return this;
-  }
-  /**
-   * calculate all the items' absolute coordination (in grids)
-   *
-   * @returns {this}
-   * @memberof AbstractGroup
-   */
-
-
-  offset() {
-    return this;
-  }
-  /**
    * find recursively if the group has horizontal-sizable item
    *
    * @readonly
@@ -5031,6 +4996,18 @@ class AbstractItem {
     Object.assign(this, item);
     this.min = isFinite(+this.min) ? +this.min : 0;
     this.max = isFinite(+this.max) ? +this.max : 1;
+  }
+
+  adjust() {
+    return this;
+  }
+
+  expand(dX, dY) {
+    return this;
+  }
+
+  offset() {
+    return this;
   }
 
 }
@@ -5163,7 +5140,7 @@ __webpack_require__.r(__webpack_exports__);
 class HGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"] {
   adjust() {
     this.items.forEach(item => {
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.adjust();
+      item.adjust();
       this.layout.width += item.layout.width;
       this.layout.height = Math.max(this.layout.height, item.layout.height + 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding + _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].labelHeight);
     });
@@ -5192,7 +5169,7 @@ class HGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
         item.layout.height += dY$;
       }
 
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.expand(dX$, dY$);
+      item.expand(dX$, dY$);
     });
     return this;
   }
@@ -5211,7 +5188,7 @@ class HGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
       item.layout.offsetTop += (height - labelHeight - item.layout.height) / 2 - padding;
       item.layout.left = (this.layout.left || 0) + item.layout.offsetLeft;
       item.layout.top = (this.layout.top || 0) + item.layout.offsetTop;
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.offset();
+      item.offset();
       $left += item.layout.width + spaceBetween;
     });
     return this;
@@ -5570,7 +5547,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 class TGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"] {
   adjust() {
     this.items.forEach(item => {
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.adjust();
+      item.adjust();
       this.layout.width = Math.max(this.layout.width, item.layout.width + 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding);
       this.layout.height = Math.max(this.layout.height, item.layout.height + 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding + TGroup.labelHeight);
     });
@@ -5584,14 +5561,12 @@ class TGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
   expand() {
     var tabsCount = this.items.length;
     this.items.forEach(item => {
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) {
-        var dY$ = 0; // Space available to expand for current item
+      var dY$ = 0; // Space available to expand for current item
 
-        var dX$ = 0;
-        if (item.layout.sizing === "both" || item.layout.sizing === "horizontal") dX$ = this.layout.width - 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding - item.layout.width;
-        if (item.layout.sizing === "both" || item.layout.sizing === "vertical") dY$ = this.layout.height - 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding - _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].labelHeight - (tabsCount ? TGroup.tabLayout.height : 0) - item.layout.height;
-        item.expand(dX$, dY$);
-      }
+      var dX$ = 0;
+      if (item.layout.sizing === "both" || item.layout.sizing === "horizontal") dX$ = this.layout.width - 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding - item.layout.width;
+      if (item.layout.sizing === "both" || item.layout.sizing === "vertical") dY$ = this.layout.height - 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding - _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].labelHeight - (tabsCount ? TGroup.tabLayout.height : 0) - item.layout.height;
+      item.expand(dX$, dY$);
     });
     return this;
   }
@@ -5606,7 +5581,7 @@ class TGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
       item.layout.offsetTop = $top;
       item.layout.left = (this.layout.left || 0) + item.layout.offsetLeft;
       item.layout.top = (this.layout.top || 0) + item.layout.offsetTop;
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.offset();
+      item.offset();
     });
     return this;
   }
@@ -5665,7 +5640,7 @@ __webpack_require__.r(__webpack_exports__);
 class VGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"] {
   adjust() {
     this.items.forEach(item => {
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.adjust();
+      item.adjust();
       this.layout.width = Math.max(this.layout.width, item.layout.width + 2 * _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"].padding);
       this.layout.height += item.layout.height;
     });
@@ -5693,7 +5668,7 @@ class VGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
         item.layout.height += dY$;
       }
 
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.expand(dX$, dY$);
+      item.expand(dX$, dY$);
     });
     return this;
   }
@@ -5712,7 +5687,7 @@ class VGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"
       item.layout.offsetLeft += (width - item.layout.width) / 2 - padding;
       item.layout.left = (this.layout.left || 0) + item.layout.offsetLeft;
       item.layout.top = (this.layout.top || 0) + item.layout.offsetTop;
-      if (item instanceof _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["AbstractGroup"]) item.offset();
+      item.offset();
       $top += item.layout.height + spaceBetween;
     });
     return this;
