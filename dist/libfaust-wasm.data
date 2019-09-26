@@ -857,7 +857,7 @@ hz2midikey(f) = 12.0*ma.log2(f/440.0) + 69.0;
 //
 // Where:
 //
-// * `semi`: semitone
+// * `semi`: number of semitone 
 //-----------------------------
 semi2ratio(semi) = pow(2.0, semi/12.0);
 
@@ -874,7 +874,7 @@ semi2ratio(semi) = pow(2.0, semi/12.0);
 //
 // Where:
 //
-// * `ratio`: a frequency multiplicative ratio
+// * `ratio`: frequency multiplicative ratio
 //-----------------------------
 ratio2semi(ratio) = 12.0*log(ratio)/log(2.0);
 
@@ -1068,7 +1068,7 @@ pulse(p) = period(p)==0;
 //
 // Where:
 //
-// * `n`: the length of the pulse as a number of samples
+// * `n`: pulse length as a number of samples
 // * `p`: period as a number of samples
 //------------------------
 // NOTE: may be this should go in oscillators.lib
@@ -1323,6 +1323,22 @@ selector(i,n) = par(j, n, S(i, j))    with { S(i,i) = _; S(i,j) = !; };
 cselector(i,n) = par(j, n, S(i, j))   with { S(i,i) = (_,_); S(i,j) = (!,!); }; // for complex numbers
 
 
+//--------------------`(ba.)select2stereo`--------------------
+// Select between 2 stereo signals.
+//
+// #### Usage
+//
+// ```
+// _,_,_,_ : select2stereo(bpc) : _,_    
+// ```
+//
+// Where:
+//
+// * `bpc`: the selector switch (0/1)
+//------------------------------------------------------------
+select2stereo(bpc) = ro.cross2 : select2(bpc), select2(bpc) : _,_;
+
+
 //-----------------------------`(ba.)selectn`---------------------------------
 // Selects the ith input among N at run time.
 //
@@ -1378,7 +1394,7 @@ with {
 //
 // Where:
 //
-// * `n`: number of samples for the crossfade
+// * `n`: crossfade in samples
 // * `lgen`: list of circuits
 // * `id`: circuit to select (int, numbered from 0)
 //
@@ -1391,38 +1407,19 @@ with {
 //-----------------------------------------------------------------------------
 selectmulti(n, lgen, id) = selectmultiX(ins, lgen, id)
 with {
-    selectmultiX(0, lgen, id) = selector;                    // Zero inputs
+    selectmultiX(0, lgen, id) = selector;                    // No inputs
     selectmultiX(N, lgen, id) = par(i, ins, _) <: selector;  // General case
 
     selector = lgen : ro.interleave(outs, N) : par(i, outs, selectnX(N, id, xfade))
     with {
         // crossfade of 'n' samples between 'x' and 'y' channels when the channel index changes
-        xfade(i, j, x, y) = x*(1-xb) + y*xb
-        with {
-            xb = ramp(n, (i >= j));
-        };
+        xfade(i, j, x, y) = x*(1-xb) + y*xb with { xb = ramp(n, (i >= j)); };
     };
 
     outs = outputs(take(1, lgen));  // Number of outputs of the first item (all should have the same value)
     ins = inputs(take(1, lgen));    // Number of inputs of the first item (all should have the same value)
     N = outputs(lgen)/outs;         // Number of items in the list
 };
-
-
-//--------------------`(ba.)select2stereo`--------------------
-// Select between 2 stereo signals.
-//
-// #### Usage
-//
-// ```
-// _,_,_,_ : select2stereo(bpc) : _,_    
-// ```
-//
-// Where:
-//
-// * `bpc`: the selector switch (0/1)
-//------------------------------------------------------------
-select2stereo(bpc) = ro.cross2 : select2(bpc), select2(bpc) : _,_;
 
 
 //=====================================Other==============================================
@@ -1504,17 +1501,21 @@ peakhold = (*,_:max) ~ _;
 
 
 //------------------`(ba.)peakholder`---------------------------
-// Tracks abs peak and holds peak for 'holdtime' samples.
+// Tracks abs peak and holds peak for 'n' samples.
 //
 // #### Usage
 //
 // ```
-// _ : peakholder(holdtime) : _;
+// _ : peakholder(n) : _;
 // ```
+//
+// Where:
+//
+// * `n`: number of samples
 //----------------------------------------------------------------
 // TODO: author Jonatan Liljedahl
-peakholder(holdtime) = peakhold2 ~ reset : (!,_) with {
-    reset = sweep(holdtime) > 0;
+peakholder(n) = peakhold2 ~ reset : (!,_) with {
+    reset = sweep(n) > 0;
     // first out is gate that is 1 while holding last peak
     peakhold2 = _,abs <: peakhold,!,_ <: >=,_,!;
 };
@@ -1531,7 +1532,7 @@ peakholder(holdtime) = peakhold2 ~ reset : (!,_) with {
 // button("gate") : impulsify;
 // ```
 //----------------------------------------------------------------
-impulsify = _ <: _,mem : - <: >(0)*_;
+impulsify(x) = x > x';
 
 
 //-----------------------`(ba.)automat`------------------------------
@@ -1596,7 +1597,7 @@ bpf = environment
   	// Start a break-point function
   	start(x0,y0) = \(x).(x0,y0,x,y0);
   	// Add a break-point
-  	point(x1,y1) = \(x0,y0,x,y).(x1, y1, x , if(x < x0, y, if(x < x1, y0 + (x-x0)*(y1-y0)/(x1-x0), y1)));
+  	point(x1,y1) = \(x0,y0,x,y).(x1, y1, x, if(x < x0, y, if(x < x1, y0 + (x-x0)*(y1-y0)/(x1-x0), y1)));
   	// End a break-point function
   	end(x1,y1) = \(x0,y0,x,y).(if(x < x0, y, if(x < x1, y0 + (x-x0)*(y1-y0)/(x1-x0), y1)));
 };
@@ -1646,6 +1647,7 @@ with {
     inswitch = select2(bpc,_,0);
 };
 
+
 //-------------------`(ba.)bypass2`-------------------------
 // Takes a stereo input signal, route it to `e` and bypass it if `bpc = 1`.
 // `bypass2` is a standard Faust function.
@@ -1667,6 +1669,7 @@ bypass2(bpc,e) = _,_ <: ((inswitch:e),_,_) : select2stereo(bpc)
 with {
     inswitch = _,_ : (select2(bpc,_,0), select2(bpc,_,0)) : _,_;
 };
+
 
 //-------------------`(ba.)bypass1to2`-------------------------
 // Bypass switch for effect `e` having mono input signal and stereo output.
@@ -1941,7 +1944,7 @@ selectoutn(n, s) = _ <: par(i, n, *(s==i));
 //
 // Then it becomes a matter of:
 //
-// * lining up all the different block sizes in parallel:  the first `par()`
+// * lining up all the different block sizes in parallel: the first `par()`
 //  statement
 // * delaying each the appropriate amount: `sumOfPrevBlockSizes()`
 // * turning it on or off: `useVal()`
@@ -1999,31 +2002,36 @@ slidingReduce(op,N,maxN,disabledVal,x) =
   par(i,maxNrBits,fixedDelayOp(pow2(i),x)@sumOfPrevBlockSizes(N,maxN,i)
     : useVal(i)) : combine(maxNrBits)
 with {
-    // apply <op> to the last <N> values of <x>, where <N> is fixed
+
+    // Apply <op> to the last <N> values of <x>, where <N> is fixed
     fixedDelayOp = case {
       (1,x) => x;
-      (N,x) =>  op(fixedDelayOp(N/2,x) , fixedDelayOp(N/2,x)@(N/2));
+      (N,x) => op(fixedDelayOp(N/2,x), fixedDelayOp(N/2,x)@(N/2));
     };
+    
     // The sum of all the sizes of the previous blocks
     sumOfPrevBlockSizes(N,maxN,0) = 0;
     sumOfPrevBlockSizes(N,maxN,i) = (subseq((allBlockSizes(N,maxN)),0,i):>_);
     allBlockSizes(N,maxN) = par(i, maxNrBits, (pow2(i)) * isUsed(i));
     maxNrBits = int2nrOfBits(maxN);
-    // Apply <op> to <N> parallel inputsignals
+    
+    // Apply <op> to <N> parallel input signals
     combine(2) = op;
     combine(N) = op(combine(N-1),_);
+    
     // Decide wether or not to use a certain value, based on N
     // Basically only the second <select2> is needed,
     // but this version also works for N == 0
-    // 'works' in this case means 'does the same as reduce
+    // 'works' in this case means 'does the same as reduce'
     useVal(i) =
       _ <: select2(
         (i==0) & (N==0),
-        select2(isUsed(i) , disabledVal,_),
+        select2(isUsed(i), disabledVal,_),
         _
       );
+      
     // useVal(i) =
-    //     select2(isUsed(i) , disabledVal,_);
+    //     select2(isUsed(i), disabledVal,_);
     isUsed(i) = take(i+1,(int2bin(N,maxN)));
     pow2(i) = 1<<i;
     // same as:
@@ -6863,16 +6871,44 @@ smoothEnvelope(ar,t) = t : si.smooth(ba.tau2pole(ar));
 // #### Usage
 //
 // ```
-// ar(a,r,t) : _
+// ar(at,rt,t) : _
 // ```
 //
 // Where:
 //
-// * `a`: attack (sec)
-// * `r`: release (sec)
+// * `at`: attack (sec)
+// * `rt`: release (sec)
 // * `t`: trigger signal (attack is triggered when `t>0`, release is triggered 
 // when `t=0`)
 //-----------------------------------------------------
+declare ar author "Yann Orlarey, Stéphane Letz";
+ar(at,rt,gate) = AR : max(0) 
+with {
+
+    // Durations in samples
+    an = max(1, at*ma.SR);  
+    rn = max(1, rt*ma.SR);
+
+    // Deltas per samples
+    adelta = 1/an;
+    rdelta = 1/rn;
+    
+    // Attack time (starts at gate upfront and raises infinitely)
+    atime = (\(s).(s + (s > 0)) * (gate <= gate') + (gate > gate')) ~ _;
+	
+    // Attack curve
+    A = atime * adelta;
+    
+    // Release curve
+    D0 = 1 + an * rdelta;
+    D = D0 - atime * rdelta;
+
+    // AR part
+    AR = min(A, D);
+    
+};
+
+/*
 // Author: RM
 ar(a,r,t) = cnt(totalTime,totalTime,on) : ba.bpf.start(0,0) :
 	ba.bpf.point(attTime,1) : ba.bpf.end(attTime+relTime,0)
@@ -6883,6 +6919,7 @@ with{
 	relTime = ma.SR*r;
 	totalTime = attTime+relTime;
 };
+*/
 
 //------------------------`(en.)arfe`----------------------
 // ARFE (Attack and Release-to-Final-value Exponentially) envelope generator.
@@ -6905,8 +6942,6 @@ with{
 // License: STK-4.3
 arfe(attT60,relT60,fv,gate) = envelope with {
   ugate = gate>0;
-  samps = ugate : +~(*(ugate)); // ramp time in samples
-  attSamps = int(attT60 * ma.SR);
   target = select2(ugate, fv, float(gate));
   t60 = select2(ugate, relT60, attT60);
   pole = ba.tau2pole(t60/6.91);
@@ -6941,17 +6976,47 @@ are(attT60,relT60,gate) = arfe(attT60,relT60,0,gate);
 // #### Usage
 //
 // ```
-// asr(a,s,r,t) : _
+// asr(at,sl,rt,t) : _
 // ```
 //
 // Where:
 //
-// * `a`: attack (sec)
-// * `s`: sustain (fraction of `t`: 0-1) 
+// * `at`: attack (sec)
+// * `sl`: sustain level (between 0..1) 
 // * `r`: release (sec)
 // * `t`: trigger signal (attack is triggered when `t>0`, release is triggered 
 // when `t=0`)
 //-----------------------------------------------------
+declare asr author "Yann Orlarey, Stéphane Letz";
+asr(at,sl,rt,gate) = AS - R : max(0)
+with {
+
+    // Durations in samples
+    an = max(1, at*ma.SR);  
+    rn = max(1, rt*ma.SR);
+
+    // Deltas per samples
+    adelta = sl/an;
+    rdelta = sl/rn;
+
+    // Attack time (starts when gate changes and raises until gate == 0)
+    atime = +(gate) ~ *(gate' >= gate);
+
+    // Attack curve
+    A = atime * adelta;
+
+    // AS part
+    AS = min(A, sl);
+
+    // Release time starts when gate is 0 
+    rtime = (+(1) : *(gate == 0)) ~ _;
+
+    // Release curve starts when gate is 0 with the current value of the envelope
+    R = rtime * rdelta;
+
+};
+
+/*
 // Author: RM
 asr(a,s,r,t) = on*(as) : ba.sAndH(on) : rel
 with{
@@ -6964,6 +7029,7 @@ with{
 		ba.bpf.end(attTime,sustainGain);
 	rel = _,ba.countup(relTime,on) : ba.bpf.start(0) : ba.bpf.end(relTime,0);
 };
+*/
 
 //------------------------`(en.)adsr`----------------------
 // ADSR (Attack, Decay, Sustain, Release) envelope generator.
@@ -6986,38 +7052,39 @@ with{
 //-----------------------------------------------------
 declare adsr author "Yann Orlarey";
 adsr(at,dt,sl,rt,gate) = ADS - R : max(0)
+with {
 
-    with {
+    // Durations in samples
+    an = max(1, at*ma.SR);  
+    dn = max(1, dt*ma.SR);
+    rn = max(1, rt*ma.SR);
 
-        // durations in samples
-        an = max(1, at*ma.SR);
-        dn = max(1, dt*ma.SR);
-        rn = max(1, rt*ma.SR);
+    // Deltas per samples
+    adelta = 1/an;
+    ddelta = (1-sl)/dn;
+    rdelta = sl/rn;
 
-        // deltas per samples
-        adelta = 1/an;
-        ddelta = (1-sl)/dn;
-        rdelta = sl/rn;
+    // Attack time (starts when gate changes and raises until gate == 0)
+    atime = +(gate) ~ *(gate' >= gate);
 
-        // Envelop time
-        time = +(gate) ~ *(gate' >= gate);
-        rime = (+(1) : *(gate==0)) ~ _;
+    // Attack curve
+    A = atime * adelta;
 
-        // Decay curve
-        D0 = 1 + an * ddelta;
-        D = D0 - time * ddelta;
+    // Decay curve
+    D0 = 1 + an * ddelta;
+    D = D0 - atime * ddelta;
 
-        // Attack curve
-        A = time * adelta;
+    // ADS part
+    ADS = min(A, max(D, sl));
 
-        // ADS part
-        ADS = min(A, max(D,sl));
+    // Release time starts when gate is 0
+    rtime = (+(1) : *(gate == 0)) ~ _;
 
-        // Release curve (starts at the end of the trig signal)
-        // with the current value of the envelop
-        R = rime*rdelta;
+    // Release curve starts when gate is 0 with the current value of the envelope
+    R = rtime * rdelta;
 
-    };
+};
+
 
 //-----------------------------------------------------
 // Old version of ADSR (originally from music.lib)...
@@ -7096,7 +7163,6 @@ adsre(attT60,decT60,susLvl,relT60,gate) = envelope with {
 // License: STK-4.3
 asre(attT60,susLvl,relT60,gate) = envelope with {
   ugate = gate>0;
-  samps = ugate : +~(*(ugate)); // ramp time in samples
   target = select2(ugate, 0.0, (susLvl)*float(ugate));
   t60 = select2(ugate, relT60, attT60);
   pole = ba.tau2pole(t60/6.91);
@@ -12306,7 +12372,7 @@ Use-case with 'waveform'. Here the signal given to 'interpolator_XXX' uses the '
 // waveform and index step
 waveform_interpolator(wf, step, interp) = interp(gen, idv)
 with {
-    gen(idx) = wf, (idx:max(0):min(size)) : rdtable with { size = wf:(_,!); };   // waveform size
+    gen(idx) = wf, (idx:max(0):min(size-1)) : rdtable with { size = wf:(_,!); };   // waveform size
     index = (+(step)~_)-step;  // starting from 0
     idv = ru.make_idv(index);  // build the signal for interpolation in a generic way
 };
@@ -12324,7 +12390,7 @@ with {
 // waveform and index 
 waveform_interpolator1(wf, idv, interp) = interp(gen, idv)
 with {
-    gen(idx) = wf, (idx:max(0):min(size)) : rdtable with { size = wf:(_,!); };   // waveform size
+    gen(idx) = wf, (idx:max(0):min(size-1)) : rdtable with { size = wf:(_,!); };   // waveform size
 };
 
 waveform_linear1(wf, idv) = waveform_interpolator1(wf, idv, it.interpolator_linear);
@@ -13499,6 +13565,7 @@ decimal = frac;
 // backward compatibility.
 // decimal(n) = n - floor(n);
 
+
 //-------------------------------`(ma.)modulo`---------------------------------------
 // Modulus operation.
 //
@@ -13724,7 +13791,7 @@ filtercoeff(f0, dBgain, Q) = environment
 				    a2 =   1 - alpha;
  				};
 
-  	  	snotch = rbjcoef(a0, a1, a2, b0, b1, b2)
+  	  	notch = rbjcoef(a0, a1, a2, b0, b1, b2)
   				with {
 				    b0 =   1;
 				    b1 =  -2*cos(w0);
