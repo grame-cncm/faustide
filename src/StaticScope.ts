@@ -56,6 +56,7 @@ export class StaticScope {
     spectTempCtx: CanvasRenderingContext2D;
     lastSpect$: number = 0;
     drawSpectrogram: boolean = false;
+    newDataArrived: boolean = false;
 
     handleMouseMove = (e: MouseEvent | TouchEvent) => {
         if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
@@ -841,7 +842,7 @@ export class StaticScope {
                 return;
             }
         } else if (this.divDefault.style.display !== "none") this.divDefault.style.display = "none";
-        if (this.data && this.drawSpectrogram) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
+        if (this.data && this.newDataArrived && this.drawSpectrogram) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
         if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
         const w = this.container.clientWidth;
         const h = this.container.clientHeight;
@@ -852,9 +853,13 @@ export class StaticScope {
         else if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
         else if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
         else if (this.mode === EScopeMode.Spectrogram) StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
+        this.newDataArrived = false;
     };
     draw = (data?: TDrawOptions) => {
-        if (data) this.data = data;
+        if (data) {
+            this.data = data;
+            this.newDataArrived = true;
+        }
         if (this.raf) return;
         this.raf = requestAnimationFrame(this.drawCallback);
     }
