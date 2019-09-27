@@ -7,7 +7,8 @@
 	<link rel="manifest" href="manifest.json">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27" content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
+	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27"
+		content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
 	<title>Faust IDE</title>
 	<script>
 		if ("serviceWorker" in navigator) {
@@ -23,41 +24,52 @@
 	</script>
 	<script src="index.js"></script>
 </head>
+
 <body>
 	<div id="root">
 		<div id="left">
 			<div id="filemanager" class="filemanager">
 			</div>
 			<div id="btns" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<button id="btn-run" type="button" class="btn-run btn btn-outline-secondary btn-lg" data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP" disabled>
+				<button id="btn-run" type="button" class="btn-run btn btn-outline-secondary btn-lg"
+					data-toggle="tooltip" data-placement="right" title="(CTRL-R) Compile and run the Faust DSP"
+					disabled>
 					<i class="fas fa-play fa-sm"></i>
 					<span>Run</span>
 				</button>
-				<button id="btn-share" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="modal" data-target="#modal-share" data-placement="right" title="Share your code">
+				<button id="btn-share" type="button" class="btn btn-outline-secondary btn-lg" data-toggle="modal"
+					data-target="#modal-share" data-placement="right" title="Share your code">
 					<i class="fas fa-share-alt fa-sm"></i>
 					<span>Share</span>
 				</button>
-				<button id="btn-upload" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Upload/Edit a local file">
+				<button id="btn-upload" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip"
+					data-placement="right" title="Upload/Edit a local file">
 					<i class="fas fa-upload fa-sm"></i>
 					<span>Upload</span>
 					<input id="input-upload" type="file" type="file" />
 				</button>
-				<button id="btn-save" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="Download/Save as a local file">
+				<button id="btn-save" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip"
+					data-placement="right" title="Download/Save as a local file">
 					<i class="fas fa-save fa-sm"></i>
 					<span>Save As</span>
 					<a id="a-save" target="_blank"></a>
 				</button>
-				<button id="btn-docs" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="right" title="(CTRL-D) Open the online documentation">
+				<button id="btn-docs" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="tooltip"
+					data-placement="right" title="(CTRL-D) Open the online documentation">
 					<i class="fas fa-book fa-sm"></i>
 					<span>Docs</span>
-					<a id="a-docs" target="_blank" href="https://faust.grame.fr/tools/editor/libraries/doc/library.html"></a>
+					<a id="a-docs" target="_blank"
+						href="https://faust.grame.fr/tools/editor/libraries/doc/library.html"></a>
 				</button>
-				<button id="btn-export" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#modal-export" data-placement="right" title="Export/compile to specific plateform binary code">
+				<button id="btn-export" type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal"
+					data-target="#modal-export" data-placement="right"
+					title="Export/compile to specific plateform binary code">
 					<i class="fas fa-truck fa-sm"></i>
 					<span>Export</span>
 				</button>
 			</div>
-			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Poly mode will work with polyphonic-ready code">
+			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right"
+				title="Poly mode will work with polyphonic-ready code">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Poly Voices</span>
 				</div>
@@ -73,7 +85,8 @@
 					<option value="128">128</option>
 				</select>
 			</form>
-			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right" title="Will be fixed at 128 frames in AudioWorklet mode">
+			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right"
+				title="Will be fixed at 128 frames in AudioWorklet mode">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Buffer Size</span>
 				</div>
@@ -87,7 +100,8 @@
 					<option value="8192">8192</option>
 				</select>
 			</form>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="(recommended) Chrome supports AudioWorklet">
+			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+				title="(recommended) Chrome supports AudioWorklet">
 				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
 				<label class="form-check-label" for="check-worklet">
 					Use AudioWorklet
@@ -99,7 +113,8 @@
 					Save DSP Code
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP parameters">
+			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+				title="Save locally DSP parameters">
 				<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-params">
 					Save Params State
@@ -111,7 +126,8 @@
 					Save DSP Cache
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Try to compile in real-time">
+			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+				title="Try to compile in real-time">
 				<input id="check-realtime-compile" class="form-check-input" type="checkbox" value="" checked />
 				<label class="form-check-label" for="check-realtime-compile">
 					Real-time Compile
@@ -125,7 +141,8 @@
 			</div>
 			<div id="form-plot" class="form form-row">
 				<label>Plot</label>
-				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select samples display mode">
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Select samples display mode">
 					<div class="input-group-prepend">
 						<span class="input-group-text">Mode</span>
 					</div>
@@ -136,19 +153,24 @@
 						<option value="manual" selected>Manual</option>
 					</select>
 				</div>
-				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Samples to plot">
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Samples to plot">
 					<div class="input-group-prepend">
 						<span class="input-group-text">Samples</span>
 					</div>
-					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256" min="0" step="128" />
+					<input id="input-plot-samps" type="number" class="form-control" placeholder="Samps" value="256"
+						min="0" step="128" />
 				</div>
-				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Sample rate to plot (Fixed in real-time plot)">
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Sample rate to plot (Fixed in real-time plot)">
 					<div class="input-group-prepend">
 						<span class="input-group-text input-group-text-sm">Sample Rate</span>
 					</div>
-					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000" min="100" step="100" />
+					<input id="input-plot-sr" type="number" class="form-control" placeholder="Samps" value="48000"
+						min="100" step="100" />
 				</div>
-				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Size">
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Select analysis FFT Size">
 					<div class="input-group-prepend">
 						<span class="input-group-text">FFT Size</span>
 					</div>
@@ -158,7 +180,8 @@
 						<option value="4096">4096</option>
 					</select>
 				</div>
-				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right" title="Select analysis FFT Overlap">
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Select analysis FFT Overlap">
 					<div class="input-group-prepend">
 						<span class="input-group-text">FFT Overlap</span>
 					</div>
@@ -169,7 +192,8 @@
 						<option value="8">8</option>
 					</select>
 				</div>
-				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Draw spectrogram (Increase CPU usage)">
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
+					title="Draw spectrogram (Increase CPU usage)">
 					<input id="check-draw-spectrogram" class="form-check-input" type="checkbox" value="" />
 					<label class="form-check-label" for="check-draw-spectrogram">
 						Draw Spectrogram
@@ -185,16 +209,20 @@
 			<div id="top">
 				<ul id="editor-top" class="nav nav-tabs" role="tablist">
 					<div class="btn-group" role="group" aria-label="Button group">
-						<button type="button" class="btn-show-left btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Show left panel">
+						<button type="button" class="btn-show-left btn btn-outline-secondary btn-sm"
+							data-toggle="tooltip" data-placement="bottom" title="Show left panel">
 							<i class="fas fa-wrench fa-sm"></i>
 						</button>
-						<button type="button" class="btn-run btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="(CTRL-R) Compile and run the Faust DSP" disabled>
+						<button type="button" class="btn-run btn btn-outline-secondary btn-sm" data-toggle="tooltip"
+							data-placement="bottom" title="(CTRL-R) Compile and run the Faust DSP" disabled>
 							<i class="fas fa-play fa-sm"></i>
 						</button>
 					</div>
 					<li class="nav-item dropdown" data-toggle="tooltip" data-placement="right" title="Try an example">
-						<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Examples</a>
-						<div id="tab-examples" class="dropdown-menu"><!-- 
+						<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
+							aria-haspopup="true" aria-expanded="false">Examples</a>
+						<div id="tab-examples" class="dropdown-menu">
+							<!-- 
 							<a class="dropdown-item" href="#">Action</a>
 							<div class="dropright submenu">
 								<a class="dropdown-item dropdown-toggle submenu-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Examples</a>
@@ -206,10 +234,12 @@
 						</div>
 					</li>
 					<div class="btn-group" role="group" aria-label="Button group">
-						<button type="button" class="btn-dac btn btn-light btn-block btn-sm" data-toggle="tooltip" data-placement="bottom" title="Audio Output Switch">
+						<button type="button" class="btn-dac btn btn-light btn-block btn-sm" data-toggle="tooltip"
+							data-placement="bottom" title="Audio Output Switch">
 							<i class="fas fa-volume-up fa-sm"></i>
 						</button>
-						<button type="button" class="btn-show-right btn btn-outline-secondary btn-sm" data-toggle="tooltip" data-placement="bottom" title="Show right panel">
+						<button type="button" class="btn-show-right btn btn-outline-secondary btn-sm"
+							data-toggle="tooltip" data-placement="bottom" title="Show right panel">
 							<i class="fas fa-ellipsis-h fa-sm"></i>
 						</button>
 					</div>
@@ -224,18 +254,23 @@
 			<div id="bottom">
 				<ul id="bottom-tab" class="nav nav-tabs" role="tablist">
 					<li class="nav-item">
-						<a id="tab-diagram" class="nav-link active" data-toggle="tab" href="#diagram" role="tab" aria-controls="diagram" aria-selected="false">Diagram</a>
+						<a id="tab-diagram" class="nav-link active" data-toggle="tab" href="#diagram" role="tab"
+							aria-controls="diagram" aria-selected="false">Diagram</a>
 					</li>
 					<li id="nav-item-plot-ui" class="nav-item">
-						<a id="tab-plot-ui" class="nav-link" data-toggle="tab" href="#plot-ui" role="tab" aria-controls="plot-ui" aria-selected="true">
+						<a id="tab-plot-ui" class="nav-link" data-toggle="tab" href="#plot-ui" role="tab"
+							aria-controls="plot-ui" aria-selected="true">
 							<span>Plot</span>
 						</a>
 					</li>
 					<li id="nav-item-faust-ui" class="nav-item">
-						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab" aria-controls="faust-ui" aria-selected="true">
+						<a id="tab-faust-ui" class="nav-link" data-toggle="tab" href="#faust-ui" role="tab"
+							aria-controls="faust-ui" aria-selected="true">
 							<span>DSP</span>
-							<button type="button" class="btn btn-outline-light btn-popup" data-toggle="tooltip" data-placement="top" title="Popup"><i class="fas fa-share-square fa-xs"></i></button>
-							<button type="button" class="btn btn-outline-light btn-close-tab" data-toggle="tooltip" data-placement="top" title="Stop DSP">&times;</button>
+							<button type="button" class="btn btn-outline-light btn-popup" data-toggle="tooltip"
+								data-placement="top" title="Popup"><i class="fas fa-share-square fa-xs"></i></button>
+							<button type="button" class="btn btn-outline-light btn-close-tab" data-toggle="tooltip"
+								data-placement="top" title="Stop DSP">&times;</button>
 						</a>
 					</li>
 				</ul>
@@ -266,7 +301,9 @@
 						</div>
 						<canvas class="static-scope-canvas"></canvas>
 						<div class="static-scope-ui-controller">
-							<button class="static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Interleaved Scope / Stacked Scope / Data">
+							<button class="static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay"
+								data-toggle="tooltip" data-placement="top"
+								title="Interleaved Scope / Stacked Scope / Data">
 								<i class="fas fa-wave-square fa-sm"></i>
 							</button>
 						</div>
@@ -276,14 +313,18 @@
 					</div>
 				</div>
 			</div>
-			<div id="alert-faust-code" class="alert-faust-code alert alert-danger alert-dismissible fade show ml-4 mr-4 mb-4" role="alert">
+			<div id="alert-faust-code"
+				class="alert-faust-code alert alert-danger alert-dismissible fade show ml-4 mr-4 mb-4" role="alert">
 				<span>Error in faust code</span>
-				<a class="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal" data-target="#modal-alert-faust-code-detail">Detail</a>
-				<button id="alert-faust-code-dismiss" type="button" class="close" data-dismiss="alert" aria-label="Close">
-				  	<span aria-hidden="true">&times;</span>
+				<a class="a-alert-faust-code-detail" href="#" class="ml-2" data-toggle="modal"
+					data-target="#modal-alert-faust-code-detail">Detail</a>
+				<button id="alert-faust-code-dismiss" type="button" class="close" data-dismiss="alert"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
-			<div id="modal-alert-faust-code-detail" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="a-alert-faust-code-detail" aria-hidden="true">
+			<div id="modal-alert-faust-code-detail" class="modal fade" tabindex="-1" role="dialog"
+				aria-labelledby="a-alert-faust-code-detail" aria-hidden="true">
 				<div class="modal-dialog modal-lg" role="document">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -325,63 +366,83 @@
 				</form>
 				<div id="source-ui" class="mt-2">
 					<div id="source-overlay"></div>
-					<div id="source-waveform" data-toggle="tooltip" data-placement="left" title="Drag and drop to replace"></div>
+					<div id="source-waveform" data-toggle="tooltip" data-placement="left"
+						title="Drag and drop to replace"></div>
 					<div id="source-controller">
-						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="From beginning">
+						<button id="btn-source-rewind" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon"
+							data-toggle="tooltip" data-placement="bottom" title="From beginning">
 							<i class="fas fa-step-backward fa-sm"></i>
 						</button>
-						<button id="btn-source-play" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
+						<button id="btn-source-play" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon"
+							data-toggle="tooltip" data-placement="bottom" title="Play/Pause">
 							<i class="fas fa-play fa-sm"></i>
 						</button>
-						<button id="btn-source-loop" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="bottom" title="Loop">
+						<button id="btn-source-loop" class="btn btn-outline-light btn-sm btn-overlay btn-overlay-icon"
+							data-toggle="tooltip" data-placement="bottom" title="Loop">
 							<i class="fas fa-undo fa-sm"></i>
 						</button>
 					</div>
 				</div>
 				<div id="input-gain"></div>
 				<div id="input-analyser-ui" class="scope-ui mt-2">
-					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left" title="Input analyser"></canvas>
+					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left"
+						title="Input analyser"></canvas>
 					<div class="scope-controller">
-						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
+						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon"
+							data-toggle="tooltip" data-placement="top"
+							title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
-						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
-						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
+						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip"
+							data-placement="top" title="Analyser Size">2048 samps</button>
+						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip"
+							data-placement="top" title="Current Channel">ch 1</button>
 					</div>
 				</div>
 			</div>
 			<div id="dsp-ui" class="mt-2">
 				<div class="form-row">
 					<label for="dsp-ui">DSP</label>
-					<button id="dsp-ui-default" class="btn badge badge-warning ml-2 mb-2" data-toggle="tooltip" data-placement="top" title="Switch AudioWorklet / ScriptProcessor">no DSP yet</button>
+					<button id="dsp-ui-default" class="btn badge badge-warning ml-2 mb-2" data-toggle="tooltip"
+						data-placement="top" title="Switch AudioWorklet / ScriptProcessor">no DSP yet</button>
 					<ul id="dsp-ui-detail" class="list-group list-group-flush">
-						<li class="list-group-item d-flex justify-content-between align-items-center">Inputs : <span id="dsp-ui-detail-inputs" class="badge">0</span></li>
-						<li class="list-group-item d-flex justify-content-between align-items-center">Outputs : <span id="dsp-ui-detail-outputs" class="badge">0</span></li>
-						<li class="list-group-item d-flex justify-content-between align-items-center">Params : <span id="dsp-ui-detail-params" class="badge">0</span></li>
+						<li class="list-group-item d-flex justify-content-between align-items-center">Inputs : <span
+								id="dsp-ui-detail-inputs" class="badge">0</span></li>
+						<li class="list-group-item d-flex justify-content-between align-items-center">Outputs : <span
+								id="dsp-ui-detail-outputs" class="badge">0</span></li>
+						<li class="list-group-item d-flex justify-content-between align-items-center">Params : <span
+								id="dsp-ui-detail-params" class="badge">0</span></li>
 					</ul>
 				</div>
 				<div id="output-analyser-ui" class="scope-ui mt-2">
-					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left" title="Output Analyser"></canvas>
+					<canvas class="scope-canvas" data-toggle="tooltip" data-placement="left"
+						title="Output Analyser"></canvas>
 					<div class="scope-controller">
-						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon" data-toggle="tooltip" data-placement="top" title="Oscilloscope / Spectroscope / Spectrogram">
+						<button class="scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon"
+							data-toggle="tooltip" data-placement="top"
+							title="Oscilloscope / Spectroscope / Spectrogram">
 							<i class="fas fa-wave-square fa-sm"></i>
 						</button>
-						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Analyser Size">2048 samps</button>
-						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip" data-placement="top" title="Current Channel">ch 1</button>
+						<button class="scope-btn-size btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip"
+							data-placement="top" title="Analyser Size">2048 samps</button>
+						<button class="scope-btn-ch btn btn-outline-light btn-sm btn-overlay" data-toggle="tooltip"
+							data-placement="top" title="Current Channel">ch 1</button>
 					</div>
 				</div>
 			</div>
 			<div id="recorder-ui" class="input-group" role="group">
 				<div class="input-group-prepend">
-					<button id="recorder-aim" type="button" class="btn btn-light btn-block" data-toggle="tooltip" data-placement="left" title="Start Record">
+					<button id="recorder-aim" type="button" class="btn btn-light btn-block" data-toggle="tooltip"
+						data-placement="left" title="Start Record">
 						<i class="fas fa-circle fa-sm"></i>
 					</button>
 				</div>
 				<span id="recorder-time" class="input-group-append input-group-prepend form-control">
-				  	0:00.000
+					0:00.000
 				</span>
 				<div class="input-group-append">
-					<button id="recorder-save" type="button" class="btn btn-light btn-block" data-toggle="tooltip" data-placement="top" title="Save">
+					<button id="recorder-save" type="button" class="btn btn-light btn-block" data-toggle="tooltip"
+						data-placement="top" title="Save">
 						<i class="fas fa-save fa-sm"></i>
 						<a id="a-recorder-save" target="_blank"></a>
 					</button>
@@ -399,13 +460,15 @@
 				</form>
 				<audio id="output-audio-stream" autoplay></audio>
 				-->
-				<button id="btn-dac" type="button" class="btn-dac btn btn-light btn-block" data-toggle="tooltip" data-placement="left" title="Audio Output Switch">
-					<i class="fas fa-volume-up fa-sm"></i>
+				<button id="btn-dac" type="button" class="btn-dac btn btn-light btn-block" data-toggle="tooltip"
+					data-placement="left" title="Audio Output Switch">
+					<i id="volume-icon" class="fas fa-volume-up fa-sm"></i>
 					<span>Output is Off</span>
 				</button>
 			</div>
 		</div>
-		<div id="modal-export" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-export-label" aria-hidden="true">
+		<div id="modal-export" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-export-label"
+			aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -417,12 +480,14 @@
 					<div class="modal-body">
 						<div class="form-group">
 							<label for="export-server">Server</label>
-							<input id="export-server" type="text" class="form-control form-control-sm" placeholder="Server" />
+							<input id="export-server" type="text" class="form-control form-control-sm"
+								placeholder="Server" />
 						</div>
 						<div class="form-group">
 							<label for="export-name">File Name</label>
 							<div class="input-group input-group-sm">
-								<input id="export-name" type="text" class="form-control form-control-sm" placeholder="File Name" />
+								<input id="export-name" type="text" class="form-control form-control-sm"
+									placeholder="File Name" />
 								<div class="input-group-append">
 									<span class="input-group-text">.dsp</span>
 								</div>
@@ -460,7 +525,8 @@
 				</div>
 			</div>
 		</div>
-		<div id="modal-share" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-share-label" aria-hidden="true">
+		<div id="modal-share" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="faust-share-label"
+			aria-hidden="true">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -481,9 +547,10 @@
 						<div class="input-group">
 							<input id="share-url" type="text" class="form-control" />
 							<div class="input-group-append">
-							<button id="share-btn-copy" class="input-group-text btn btn-outline-primary" type="button" data-toggle="tooltip" data-placement="top" title="Copy to Clipboard">
-								Copy
-							</button>
+								<button id="share-btn-copy" class="input-group-text btn btn-outline-primary"
+									type="button" data-toggle="tooltip" data-placement="top" title="Copy to Clipboard">
+									Copy
+								</button>
 							</div>
 						</div>
 					</div>
@@ -492,4 +559,5 @@
 		</div>
 	</div>
 </body>
+
 </html>

@@ -1116,14 +1116,17 @@ $(async () => {
         }
         */
         if (audioEnv.outputEnabled) {
-            $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
-                .children("span").html("Output is Off");
+            // disable audio output
             audioEnv.outputEnabled = false;
             if (audioEnv.dspConnectedToOutput) {
                 audioEnv.dsp.disconnect(audioEnv.destination);
                 audioEnv.dspConnectedToOutput = false;
             }
+            $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
+            $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute")
+
         } else {
+            // enable audio output
             audioEnv.outputEnabled = true;
             if (!audioEnv.audioCtx) {
                 await initAudioCtx(audioEnv);
@@ -1134,6 +1137,8 @@ $(async () => {
             }
             $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
                 .children("span").html("Output is On");
+            $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up")
+
         }
     });
     /**
