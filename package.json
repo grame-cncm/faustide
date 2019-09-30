@@ -3,9 +3,10 @@
   "version": "1.0.10",
   "description": "Faust Editor",
   "main": "src/index.ts",
-  "scripts": {
-    "build": "node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode development",
-    "dist": "node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode production",
+   "scripts": {
+    "prebuild": "node ./src/cleanup.js && node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js",
+    "build": "npm run prebuild && webpack --mode development",
+    "dist": "npm run prebuild && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode production",
     "version": "npm run build"
   },
   "repository": {
