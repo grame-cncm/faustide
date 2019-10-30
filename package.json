@@ -1,9 +1,9 @@
 {
   "name": "fausteditorweb",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Faust Editor",
   "main": "src/index.ts",
-   "scripts": {
+  "scripts": {
     "prebuild": "node ./src/cleanup.js && node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js",
     "build": "npm run prebuild && webpack --mode development",
     "dist": "npm run prebuild && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode production",

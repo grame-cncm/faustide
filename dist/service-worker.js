@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.2f540048edf062ac33e02bf931c1b364.js"
+  "precache-manifest.0c611ff311f12c73a9ae1926e060edb2.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "1.0.10"});
+workbox.core.setCacheNameDetails({prefix: "1.0.11"});
 
 workbox.core.skipWaiting();
 
@@ -95,7 +95,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/bela/GrainGenerator.dsp",
-    "revision": "3c59036855ca69ccf5e6bdb71abaaf06"
+    "revision": "acf9ad0948ad6994f05ddf495f294fdd"
   },
   {
     "url": "examples/bela/granulator.dsp",
@@ -123,19 +123,19 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/bela/simpleSynth_Analog.dsp",
-    "revision": "615ea7025782044310e77d14e3a3172f"
+    "revision": "5cf58590f483e8485a9fd6e6b1976685"
   },
   {
     "url": "examples/bela/simpleSynth_FX_Analog.dsp",
-    "revision": "dc8ac3c27c32ffffd4490629738a38e5"
+    "revision": "a84e365e73b172369b965291527906dd"
   },
   {
     "url": "examples/bela/simpleSynth_FX.dsp",
-    "revision": "2cdcd6577104fd515ac96c8abc688d1d"
+    "revision": "8f3dcb7da48dd80431f5fa5bca73a588"
   },
   {
     "url": "examples/bela/simpleSynth.dsp",
-    "revision": "3ffa9c4d4b274708e3333bafaa66b924"
+    "revision": "b9f06e66e59d1fbece4570964da565fc"
   },
   {
     "url": "examples/bela/WaveSynth_Analog.dsp",
@@ -427,7 +427,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/misc/guitarix.dsp",
-    "revision": "52e7301657a20a3d2434d37d8e978acf"
+    "revision": "dac4fb0721902282accefa422dcdd926"
   },
   {
     "url": "examples/misc/matrix.dsp",
@@ -571,15 +571,15 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/physicalModeling/faust-stk/flute.dsp",
-    "revision": "ff1514b7f9a02ca225b30952d0520632"
+    "revision": "443e84f96002fd8b4ca8fd5bbf445a50"
   },
   {
     "url": "examples/physicalModeling/faust-stk/fluteStk.dsp",
-    "revision": "3df72dedf1ffdfa009964f6899e072f6"
+    "revision": "ba158454ff62bdebe31fca07fbf4b835"
   },
   {
     "url": "examples/physicalModeling/faust-stk/glassHarmonica.dsp",
-    "revision": "366a7eb1f1688fba887264cbf7855ea1"
+    "revision": "49a803a1056961f3542ea0c91f8e452f"
   },
   {
     "url": "examples/physicalModeling/faust-stk/harpsi.dsp",
@@ -607,7 +607,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/physicalModeling/faust-stk/NLFfm.dsp",
-    "revision": "c9667c4fe04e52a35622a56000c460ed"
+    "revision": "d1ea99193ffb60358083e2b696dd7797"
   },
   {
     "url": "examples/physicalModeling/faust-stk/pd-patches/audio-out.pd",
@@ -811,15 +811,15 @@ self.__precacheManifest = [
   },
   {
     "url": "examples/physicalModeling/faust-stk/tibetanBowl.dsp",
-    "revision": "f3d2c82c84d2c95cac15356c6037dcf0"
+    "revision": "8ac929532618d6c35caf2c792444ea33"
   },
   {
     "url": "examples/physicalModeling/faust-stk/tunedBar.dsp",
-    "revision": "bbb888faf3512066ca22588cca348b84"
+    "revision": "a7585a8f4b69d5248553c7259241ddc0"
   },
   {
     "url": "examples/physicalModeling/faust-stk/uniBar.dsp",
-    "revision": "1c0d63b2a050bc2d61a6466383254e2d"
+    "revision": "4b39716334902ad17e16d627045a2a30"
   },
   {
     "url": "examples/physicalModeling/faust-stk/voiceForm.dsp",
@@ -1235,11 +1235,11 @@ self.__precacheManifest = [
   },
   {
     "url": "libfaust-wasm.data",
-    "revision": "42013d45965ad02b5b832b13c2b85401"
+    "revision": "9b21362be05992567f09fb731d20fc1e"
   },
   {
     "url": "libfaust-wasm.wasm",
-    "revision": "f6b2891e0eec195b529ff6b9e9229128"
+    "revision": "04107283a3f9a0952ab3e2c1b3fc26b3"
   },
   {
     "url": "index.html",
@@ -1267,7 +1267,7 @@ self.__precacheManifest = [
   },
   {
     "url": "examples.json",
-    "revision": "15f877e242b9772d795691811df30b68"
+    "revision": "cc98158020772a31877e3cdc5adbdf6c"
   },
   {
     "url": "manifest.json",
