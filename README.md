@@ -58,6 +58,11 @@ If you need to update the editor's version using `git pull`, as the repository h
 
 A local HTTP server has to be started with `python2 -m SimpleHTTPServer` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
 
+
+## Deploying the editor
+
+The compiled files are not on Git anymore. You'll have to generate them using `npm run build` on the deployement machine. 
+
 ## Versioning 
 
 You'll have to raise the package version number in `package.json`, `webpack.config.js` and `src/index.ts` for `npm run update` to properly work.
