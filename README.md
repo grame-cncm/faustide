@@ -33,6 +33,13 @@ Clone a copy of the repo then change to the directory:
 git clone https://github.com:grame-cncm/fausteditorweb.git
 cd fausteditorweb
 ```
+Beware: on Windows, before cloning the repository, and for the libfaust-wasm.data file line ending to be correctly handled, you'll have to do: 
+
+```bash
+git config --global core.autocrlf false
+```
+
+
 Install dev dependencies:
 
 ```bash
