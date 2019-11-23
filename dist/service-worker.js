@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.59a47bbeed548c40ec9912ecb315b593.js"
+  "precache-manifest.8a9ea9186dc9a7d920cc597039bd6e4c.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "1.0.12"});
+workbox.core.setCacheNameDetails({prefix: "1.0.13"});
 
 workbox.core.skipWaiting();
 
