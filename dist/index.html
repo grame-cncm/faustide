@@ -9,6 +9,7 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<meta http-equiv="origin-trial" data-feature="AudioWorklet" data-expires="2018-01-27"
 		content="ArOoNTa+dX8OXYD95xliibaCxzUTBxilqcXLAxKOXxf/qU2n09ry4XqX4ShkkqKgfzwwuSE2I7GqxGqvVi9aewwAAABUeyJvcmlnaW4iOiJodHRwczovL2ZhdXN0LmdyYW1lLmZyOjQ0MyIsImZlYXR1cmUiOiJBdWRpb1dvcmtsZXQiLCJleHBpcnkiOjE1MTcwMjQ1OTl9">
+	<meta name="theme-color" content="#2b2b2b" />
 	<title>Faust IDE</title>
 	<script>
 		if ("serviceWorker" in navigator) {
@@ -273,6 +274,59 @@
 								data-placement="top" title="Stop DSP">&times;</button>
 						</a>
 					</li>
+					<li id="nav-item-gui-builder" class="nav-item">
+						<a id="tab-gui-builder" class="nav-link" data-toggle="tab" href="#gui-builder" role="tab"
+							aria-controls="gui-builder" aria-selected="true">
+							<span>GUI Builder</span>
+						</a>
+					</li>
+					<div class="btn-group" role="group" aria-label="Button group">
+						<button type="button" id="btn-tab-setting" class="btn btn-outline-secondary btn-sm" data-toggle="modal"
+							data-target="#modal-tab-setting" data-placement="bottom" title="Extra Settings">
+							<i class="fas fa-cog fa-sm"></i>
+						</button>
+						<div id="modal-tab-setting" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="tab-setting-label"
+							aria-hidden="true">
+							<div class="modal-dialog modal-lg" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="tab-setting-label">Tabs Extra Settings</h5>
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									</div>
+									<div class="modal-body">
+										<form>
+											<div class="form-group row">
+												<div class="col-sm-3">
+													WAP GUI Builder
+												</div>
+												<div class="col-sm-9">
+													<div class="form-check">
+														<input class="form-check-input" type="checkbox" id="enable-gui-editor">
+														<label class="form-check-label" for="enable-gui-editor">
+															Enable
+														</label>
+													</div>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label for="gui-builder-url" class="col-sm-3 col-form-label">
+													Builder URL
+												</label>
+												<div class="col-sm-9">
+													<input id="gui-builder-url" type="text" class="form-control" placeholder="https://mainline.i3s.unice.fr/FaustWapGuiBuilder" />
+												</div>
+											</div>
+										</form>
+									</div><!--
+									<div class="modal-footer">
+									  	<button type="button" class="btn btn-primary">Save</button>
+									</div>-->
+								</div>
+							</div>
+						</div>
+					</div>
 				</ul>
 				<div id="bottom-content" class="tab-content">
 					<div id="diagram" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-diagram">
@@ -284,6 +338,13 @@
 					<div id="faust-ui" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-faust-ui">
 						<iframe id="iframe-faust-ui" src="./faust-ui.html"></iframe>
 						<div id="faust-ui-default" class="alert alert-info" role="alert">
+							<h5>DSP not running</h5>
+							<span>Click Run to compile your faust code.</span>
+						</div>
+					</div>
+					<div id="gui-builder" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-gui-builder">
+						<iframe id="iframe-gui-builder" src=""></iframe>
+						<div id="gui-builder-default" class="alert alert-info" role="alert">
 							<h5>DSP not running</h5>
 							<span>Click Run to compile your faust code.</span>
 						</div>

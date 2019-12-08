@@ -15,4 +15,6 @@ type FaustEditorCompileOptions = {
     plotFFTOverlap: 1 | 2 | 4 | 8;
     drawSpectrogram: boolean;
     args: { [key: string]: any };
+    enableGuiBuilder: boolean;
+    guiBuilderUrl: string;
 };
