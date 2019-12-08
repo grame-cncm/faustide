@@ -252,6 +252,9 @@ body {
                     & > #nav-item-faust-ui {
                         display: none;
                     }
+                    & > #nav-item-gui-builder {
+                        display: none;
+                    }
                     & button.btn-outline-light {
                         font-size: 16px;
                         border-color: transparent;
@@ -262,6 +265,24 @@ body {
                         margin-right: -6px;
                         &:hover {
                             background-color: rgba(192, 192, 192, 0.75);
+                        }
+                    }
+                    & > .btn-group {
+                        margin-left: auto;
+                        padding-left: 4px;
+                        margin-bottom: -1px;
+                        & .btn {
+                            border-color: transparent;
+                            border-bottom-left-radius: 0px;
+                            border-bottom-right-radius: 0px;
+                            $color: #bcf0ff;
+                            &:hover {
+                                background-color: darken($color, 50%);
+                                border-color: $color;
+                            }
+                            &:not(.btn-light) {
+                                color: white;
+                            }
                         }
                     }
                 }
@@ -289,6 +310,23 @@ body {
                             height: calc(100% - 10px);
                         }
                         & > #faust-ui-default {
+                            top: 20%;
+                        }
+                    }
+                    & > #gui-builder {
+                        &.tab-pane:not(.show) {
+                            display: unset;
+                            visibility: hidden;
+                        }
+                        & > #iframe-gui-builder {
+                            display: block;
+                            position: absolute;
+                            visibility: hidden;
+                            border: none;
+                            width: 100%;
+                            height: calc(100% - 10px);
+                        }
+                        & > #gui-builder-default {
                             top: 20%;
                         }
                     }

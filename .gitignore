@@ -89,3 +89,8 @@ local/
 old/
 
 .vscode/
+
+# Dist Assets
+dist/assets
+dist/js
+dist/precache-manifest.*

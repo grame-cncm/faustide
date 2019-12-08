@@ -400,13 +400,22 @@ $(async () => {
         if (uiEnv.outputScope) uiEnv.outputScope.disabled = false;
         refreshDspUI(node); // update dsp info
         saveEditorDspTable(); // Save the new DSP table to localStorage
+        if (compileOptions.enableGuiBuilder) {
+            $("#gui-builder-default").hide(); // Hide "No DSP yet" info
+            $("#nav-item-gui-builder").show(); // Show GUI Builder tab
+            $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
+            const guiBuilder = $<HTMLIFrameElement>("#iframe-gui-builder")[0];
+            guiBuilder.src = "";
+            guiBuilder.src = `${compileOptions.guiBuilderUrl}?name=${uiEnv.fileManager.mainFileName}`;
+            guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({ type: "build", ui: node.getUI(), name: `${uiEnv.fileManager.mainFileName}`, code: uiEnv.fileManager.mainCode }, "*");
+        }
         return { success: true };
     };
     let rtCompileTimer: NodeJS.Timeout;
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
+    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/FaustWapGuiBuilder", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
     localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
@@ -464,6 +473,16 @@ $(async () => {
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-share").tooltip({ trigger: "hover", boundary: "viewport" });
+    $("#btn-tab-setting").tooltip({ trigger: "hover", boundary: "viewport" });
+    $<HTMLInputElement>("#enable-gui-editor").on("change", (e) => {
+        const { checked } = e.currentTarget;
+        if (!checked) {
+            $("#nav-item-gui-builder").hide(); // Hide GUI Builder tab
+            $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
+        }
+        compileOptions.enableGuiBuilder = checked;
+    });
+    $<HTMLInputElement>("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", e => compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/FaustWapGuiBuilder");
     /**
      * Left panel options
      */
@@ -1123,8 +1142,7 @@ $(async () => {
                 audioEnv.dspConnectedToOutput = false;
             }
             $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
-            $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute")
-
+            $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
         } else {
             // enable audio output
             audioEnv.outputEnabled = true;
@@ -1135,10 +1153,8 @@ $(async () => {
                 audioEnv.dsp.connect(audioEnv.destination);
                 audioEnv.dspConnectedToOutput = true;
             }
-            $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
-                .children("span").html("Output is On");
-            $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up")
-
+            $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
+            $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
         }
     });
     /**
@@ -1277,6 +1293,41 @@ $(async () => {
         // Pass keyboard midi messages even inner window is focused
         if (data.type === "keydown") key2Midi.handleKeyDown(data.key);
         else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
+        // From GUI Builder
+        else if (data.type === "export") {
+            const form = new FormData();
+            const fileName = uiEnv.fileManager.mainFileName;
+            const name = uiEnv.fileManager.mainFileNameWithoutSuffix;
+            const plat = data.plat || "web";
+            const arch = data.arch || "wap";
+            const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            form.append("file", new File([`declare filename "${fileName}"; declare name "${name}"; ${expandedCode}`], `${fileName}`));
+            $.ajax({
+                method: "POST",
+                url: `${server}/filepost`,
+                data: form,
+                contentType: false,
+                processData: false
+            }).done((shaKey) => {
+                const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+                if (matched) {
+                    const path = `${server}/${shaKey}/${plat}/${arch}`;
+                    $.ajax({
+                        method: "GET",
+                        url: `${path}/precompile`
+                    }).done((result) => {
+                        if (result === "DONE") {
+                            const href = `${path}/binary.zip`;
+                            ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
+                        }
+                    }).fail((jqXHR, textStatus) => {
+                        throw new Error(textStatus + ": " + jqXHR.responseText);
+                    });
+                }
+            }).fail((jqXHR, textStatus) => {
+                throw new Error(textStatus + ": " + jqXHR.responseText);
+            });
+        }
     });
     // Close DSP UI Popup when main window is closed
     $(window).on("beforeunload", () => (uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined));
