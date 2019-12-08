@@ -13,7 +13,7 @@
 // snippets
 // indexDB
 
-import * as monaco from "monaco-editor"; // eslint-disable-line import/no-unresolved
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
@@ -21,7 +21,6 @@ import * as JSZip from "jszip";
 import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
-import * as faustlang from "./monaco-faust";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
@@ -34,6 +33,7 @@ import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
 import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
+import { faustLangRegister } from "./monaco-faust/register";
 
 declare global {
     interface Window {
@@ -102,6 +102,9 @@ $(async () => {
     const { Faust } = await import("faust2webaudio");
     const faust = new Faust({ wasmLocation: "./libfaust-wasm.wasm", dataLocation: "./libfaust-wasm.data" });
     await faust.ready;
+    const faustPrimitiveLibFile = await fetch("./primitives.lib");
+    const faustPrimitiveLib = await faustPrimitiveLibFile.text();
+    faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
     window.faust = faust;
     /**
      * To save dsp table to localStorage
@@ -195,7 +198,7 @@ $(async () => {
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
-    const editor = await initEditor();
+    const { editor, monaco } = await initEditor(faust);
     editor.layout(); // Force editor to fill div
     // Editor and Diagram
     let editorDecoration: string[] = []; // lines with error
@@ -1668,7 +1671,7 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
  *
  * @returns
  */
-const initEditor = async () => {
+const initEditor = async (faust: Faust) => {
     const code = `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1679,10 +1682,8 @@ process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0
     gate = button("gate");
 };
 effect = dm.freeverb_demo;`;
-    const monaco = await import("monaco-editor"); // eslint-disable-line import/no-unresolved
-    monaco.languages.register(faustlang.language);
-    monaco.languages.setLanguageConfiguration("faust", faustlang.config);
-    monaco.editor.defineTheme("vs-dark", faustlang.theme);
+    const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
+    const { faustLang, providers } = await faustLangRegister(monaco, faust);
     let saveCode = false;
     try {
         saveCode = JSON.parse(localStorage.getItem("faust_editor_params")).saveCode;
@@ -1695,24 +1696,19 @@ effect = dm.freeverb_demo;`;
         mouseWheelZoom: true,
         wordWrap: "on"
     });
-    faustlang.getProviders().then((providers) => {
-        monaco.languages.registerHoverProvider("faust", providers.hoverProvider);
-        monaco.languages.setMonarchTokensProvider("faust", providers.tokensProvider);
-        monaco.languages.registerCompletionItemProvider("faust", providers.completionItemProvider);
-        const faustDocURL = "https://faust.grame.fr/doc/libraries/";
-        const showDoc = () => {
-            const matched = faustlang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
-            if (matched) {
-                const prefix = matched.nameArray.slice();
-                prefix.pop();
-                const doc = matched.doc;
-                $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
-                return;
-            }
-            $("#a-docs").attr("href", faustDocURL)[0].click();
-        };
-        $("#btn-docs").off("click").on("click", showDoc);
-    });
+    const faustDocURL = "https://faust.grame.fr/doc/libraries/";
+    const showDoc = () => {
+        const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
+        if (matched) {
+            const prefix = matched.nameArray.slice();
+            prefix.pop();
+            const doc = matched.doc;
+            $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
+            return;
+        }
+        $("#a-docs").attr("href", faustDocURL)[0].click();
+    };
+    $("#btn-docs").off("click").on("click", showDoc);
     $(window).on("resize", () => editor.layout());
-    return editor;
+    return { editor, monaco };
 };
