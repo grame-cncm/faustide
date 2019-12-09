@@ -75,6 +75,7 @@ export class FileManager {
         this.getChildren();
         this.getFiles();
         this.bind();
+        this.select(this._fileList[options.$mainFile]);
     }
     getChildren() {
         for (let i = 0; i < this.container.children.length; i++) {
@@ -346,6 +347,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         spanName.innerText = newName;
         spanName.contentEditable = "false";
         divFile.dataset.filename = newName;
+        if (this.saveHandler) this.saveHandler(newName, this.getValue(newName), this.mainCode);
         this.select(newName);
         this.deleteHandler(oldName, this.mainCode);
         return true;

@@ -701,7 +701,6 @@ $(async () => {
     });
     $("#a-save").on("click", e => e.stopPropagation());
     // Docs
-    $("#btn-docs").on("click", () => $("#a-docs")[0].click());
     $("#a-docs").on("click", e => e.stopPropagation());
     /**
      * Export
@@ -1695,6 +1694,13 @@ effect = dm.freeverb_demo;`;
         dragAndDrop: true,
         mouseWheelZoom: true,
         wordWrap: "on"
+    });
+    editor.onKeyDown((e) => {
+        if (e.ctrlKey && e.browserEvent.key === "d") {
+            e.stopPropagation();
+            e.preventDefault();
+            showDoc();
+        }
     });
     const faustDocURL = "https://faust.grame.fr/doc/libraries/";
     const showDoc = () => {
