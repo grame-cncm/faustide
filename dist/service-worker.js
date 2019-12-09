@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.6e789706ea287f5b986dca2c9081d278.js"
+  "precache-manifest.9f95f629e218c31c9aa3c053a296f6a1.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "1.0.14"});
+workbox.core.setCacheNameDetails({prefix: "1.0.15"});
 
 workbox.core.skipWaiting();
 
@@ -1243,7 +1243,7 @@ self.__precacheManifest = [
   },
   {
     "url": "index.html",
-    "revision": "f4c2b26980967e8ff39a08bed369eb30"
+    "revision": "acdcc696f2eed69ebeea2a3316a7f0a5"
   },
   {
     "url": "favicon.png",
@@ -1254,8 +1254,8 @@ self.__precacheManifest = [
     "revision": "ee7ec1719955d2f9c0bbea290b088d20"
   },
   {
-    "url": "icon/splash-512.png",
-    "revision": "bdc766a26b1357103120fc06e4cd8a9f"
+    "url": "icon/icon_512.png",
+    "revision": "b22ed1b5b20db59704b843dd46076aa5"
   },
   {
     "url": "02-XYLO1.mp3",
@@ -1271,7 +1271,7 @@ self.__precacheManifest = [
   },
   {
     "url": "manifest.json",
-    "revision": "b09c62e94a3fa8599f9556b43e9ea7bf"
+    "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"
   }
 ].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
