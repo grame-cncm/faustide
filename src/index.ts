@@ -309,6 +309,7 @@ $(async () => {
             }
             dsp.disconnect();
             audioEnv.dspConnectedToOutput = false;
+            dsp.destroy();
             delete audioEnv.dsp;
         }
         /**
@@ -1376,6 +1377,7 @@ $(async () => {
             }
             dsp.disconnect();
             audioEnv.dspConnectedToOutput = false;
+            dsp.destroy();
             delete audioEnv.dsp;
         }
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
