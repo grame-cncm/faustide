@@ -39,7 +39,6 @@ Beware: on Windows, before cloning the repository, and for the libfaust-wasm.dat
 git config --global core.autocrlf false
 ```
 
-
 Install dev dependencies:
 
 ```bash
