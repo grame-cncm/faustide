@@ -420,7 +420,7 @@ export class Scope {
     }
     set zoom(zoomIn) {
         this._zoom = Math.min(16, Math.max(1, zoomIn));
-        this.zoomOffset = this.zoomOffset;
+        this.zoomOffset = this._zoomOffset;
     }
     get zoomOffset() {
         return this._zoomOffset;

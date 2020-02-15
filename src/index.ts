@@ -92,7 +92,7 @@ type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-const VERSION = "1.0.17";
+const VERSION = "1.0.15";
 
 $(async () => {
     /**
@@ -183,10 +183,10 @@ $(async () => {
     /**
      * To show Error at bottom of center
      *
-     * @param {string} str
+     * @param {string} e
      */
-    const showError = (str: string) => {
-        $(".alert-faust-code>span").text(str);
+    const showError = (e: Error | string) => {
+        $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
         $("#alert-faust-code").css("visibility", "visible");
     };
     /**
@@ -217,7 +217,7 @@ $(async () => {
             /**
              * Parse Faust-generated error message to locate the lines with error
              */
-            const matchLine = e.toString().match(/FaustDSP : (\d+)/);
+            const matchLine = e.message.match(/FaustDSP : (\d+)/);
             if (matchLine) {
                 const line = matchLine[1];
                 editorDecoration = editor.deltaDecorations(editorDecoration, [{
@@ -238,6 +238,7 @@ $(async () => {
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
+    let isCompilingDsp = false;
     /**
      * Generate both diagram and dsp
      *
@@ -245,6 +246,8 @@ $(async () => {
      * @returns {{ success: boolean; error?: Error }}
      */
     const runDsp = async (codeIn: string): Promise<{ success: boolean; error?: Error }> => {
+        if (isCompilingDsp) return { success: false, error: new Error("Another DSP is compiling") };
+        isCompilingDsp = true;
         const code = `declare filename "${uiEnv.fileManager.mainFileName}"; declare name "${uiEnv.fileManager.mainFileNameWithoutSuffix}"; ${codeIn}`;
         const audioCtx = audioEnv.audioCtx;
         const gain = audioEnv.gainInput;
@@ -293,6 +296,7 @@ $(async () => {
             $("#output-analyser-ui").hide();
             refreshDspUI(); */
             showError(e);
+            isCompilingDsp = false;
             return { success: false, error: e };
         }
         /**
@@ -322,32 +326,31 @@ $(async () => {
                 }
             }
         }
-        audioEnv.audioCtx.resume().then(() => { // Resume audioContext for firefox
-            /**
-             * Connect the dsp to graph (use a new splitter)
-             */
-            audioEnv.dsp = node;
-            const channelsCount = node.getNumOutputs();
-            if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-                if (splitter) splitter.disconnect();
-                splitter = audioCtx.createChannelSplitter(channelsCount);
-                delete audioEnv.splitterOutput;
-                audioEnv.splitterOutput = splitter;
-                uiEnv.outputScope.splitter = splitter;
-                uiEnv.outputScope.channels = channelsCount;
-                uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
-                splitter.connect(analyser, uiEnv.outputScope.channel);
-            }
-            if (audioEnv.gainInput && node.getNumInputs()) {
-                audioEnv.gainInput.connect(node);
-                audioEnv.dspConnectedToInput = true;
-            }
-            node.connect(splitter);
-            if (audioEnv.outputEnabled) {
-                node.connect(audioEnv.destination);
-                audioEnv.dspConnectedToOutput = true;
-            }
-        });
+        await audioEnv.audioCtx.resume(); // Resume audioContext for firefox
+        /**
+         * Connect the dsp to graph (use a new splitter)
+         */
+        audioEnv.dsp = node;
+        const channelsCount = node.getNumOutputs();
+        if (!splitter || splitter.numberOfOutputs !== channelsCount) {
+            if (splitter) splitter.disconnect();
+            splitter = audioCtx.createChannelSplitter(channelsCount);
+            delete audioEnv.splitterOutput;
+            audioEnv.splitterOutput = splitter;
+            uiEnv.outputScope.splitter = splitter;
+            uiEnv.outputScope.channels = channelsCount;
+            uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
+            splitter.connect(analyser, uiEnv.outputScope.channel);
+        }
+        if (audioEnv.gainInput && node.getNumInputs()) {
+            audioEnv.gainInput.connect(node);
+            audioEnv.dspConnectedToInput = true;
+        }
+        node.connect(splitter);
+        if (audioEnv.outputEnabled) {
+            node.connect(audioEnv.destination);
+            audioEnv.dspConnectedToOutput = true;
+        }
         const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
         /**
          * set handler for param changed of dsp
@@ -413,13 +416,14 @@ $(async () => {
             guiBuilder.src = `${compileOptions.guiBuilderUrl}?name=${uiEnv.fileManager.mainFileName}`;
             guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({ type: "build", ui: node.getUI(), name: `${uiEnv.fileManager.mainFileName}`, code: uiEnv.fileManager.mainCode }, "*");
         }
+        isCompilingDsp = false;
         return { success: true };
     };
     let rtCompileTimer: NodeJS.Timeout;
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/FaustWapGuiBuilder", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
+    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
     localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
@@ -485,8 +489,12 @@ $(async () => {
             $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
         }
         compileOptions.enableGuiBuilder = checked;
+        saveEditorParams();
+    })[0].checked = compileOptions.enableGuiBuilder;
+    $<HTMLInputElement>("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", (e) => {
+        compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/";
+        saveEditorParams();
     });
-    $<HTMLInputElement>("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", e => compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/FaustWapGuiBuilder");
     /**
      * Left panel options
      */
@@ -771,7 +779,7 @@ $(async () => {
                                     $("#qr-code").show();
                                     QRCode.toCanvas(
                                         $<HTMLCanvasElement>("#qr-code")[0],
-                                        `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`,
+                                        `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
                                     );
                                     return;
                                 }
@@ -1024,7 +1032,7 @@ $(async () => {
                 wavesurfer.load(URL.createObjectURL(file));
             } catch (e) {
                 console.error(e); // eslint-disable-line no-console
-                showError("Cannot load sound file: " + e);
+                showError("Cannot load sound file: " + e.message);
                 return;
             }
             if ($("#source-waveform audio").length) {
@@ -1397,7 +1405,7 @@ $(async () => {
         // const $svg = $("#diagram-svg>svg");
         // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = e.currentTarget.href.baseVal;
-        const strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" });
+        const strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" }) as string;
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
