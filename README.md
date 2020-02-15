@@ -71,5 +71,5 @@ The compiled files are not on Git anymore. You'll have to generate them using `n
 
 ## Versioning 
 
-You'll have to raise the package version number in `package.json`, `webpack.config.js` and `src/index.ts` for `npm run update` to properly work.
+You'll have to raise the package version number in `package.json` and `src/index.ts` for `npm run update` to properly work.
 

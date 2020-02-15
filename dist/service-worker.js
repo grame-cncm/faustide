@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.c89ec4139587275ddbf14cd0973ab44a.js"
+  "precache-manifest.23181df83fe69b75b25d025a9f0d5ee3.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "1.0.17"});
+workbox.core.setCacheNameDetails({prefix: "1.0.18"});
 
 workbox.core.skipWaiting();
 
@@ -1243,7 +1243,7 @@ self.__precacheManifest = [
   },
   {
     "url": "index.html",
-    "revision": "acdcc696f2eed69ebeea2a3316a7f0a5"
+    "revision": "3563bea62a4a298cbc607bcd0fd579e6"
   },
   {
     "url": "favicon.png",
