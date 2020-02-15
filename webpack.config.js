@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const WorkboxPlugin = require('workbox-webpack-plugin');
+const version = require("./package.json").version;
 
 const config = {
   entry: './src/index.ts',
@@ -75,7 +76,7 @@ const config = {
       clientsClaim: true,
       skipWaiting: true,
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-      cacheId: "1.0.17",
+      cacheId: version,
       globDirectory: 'dist/',
       globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './icon/*', './02-XYLO1.mp3', './primitives.lib', './examples.json', './manifest.json']
     })
