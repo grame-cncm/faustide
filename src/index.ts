@@ -853,15 +853,13 @@ $(async () => {
         const keys: number[] = [];
         const listener = (data: number[] | Uint8Array) => {
             if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
-            if (data[0] === 144) { // Show as pill midi note
-                if (data[2]) {
-                    if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
-                    $("#midi-ui-note").text(data[1]).show();
-                } else {
-                    keys.splice(keys.indexOf(data[1]), 1);
-                    if (keys.length === 0) $("#midi-ui-note").hide();
-                    else $("#midi-ui-note").text(keys[keys.length - 1]);
-                }
+            if (data[0] === 144 && data[2]) { // Show as pill midi note
+                if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
+                $("#midi-ui-note").text(data[1]).show();
+            } else if (data[0] === 128 || (data[0] === 144 && !data[2])) {
+                keys.splice(keys.indexOf(data[1]), 1);
+                if (keys.length === 0) $("#midi-ui-note").hide();
+                else $("#midi-ui-note").text(keys[keys.length - 1]);
             }
         };
         if (id === "-2") {
