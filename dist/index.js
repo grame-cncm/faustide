@@ -43,7 +43,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "js/" + {"0":"e85e88e33f79de503b01","1":"94437240f887b89620ce","2":"9e90cbaed1f442461b04"}[chunkId] + ".js"
+/******/ 		return __webpack_require__.p + "js/" + {"0":"e85e88e33f79de503b01","1":"94437240f887b89620ce","2":"8344152ff24fc0f872c0"}[chunkId] + ".js"
 /******/ 	}
 /******/
 /******/ 	// The require function
@@ -50562,7 +50562,7 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-var VERSION = "1.0.19";
+var VERSION = "1.0.20";
 $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee9() {
   var _ref2, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _ref3, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, server, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, svgDragged;
 
@@ -51583,7 +51583,9 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
 
                 try {
-                  var expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+                  // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+                  //const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+                  var expandedCode = uiEnv.fileManager.mainCode;
                   form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
                 } catch (e) {
                   $("#export-loading").css("display", "none");

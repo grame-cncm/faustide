@@ -92,7 +92,7 @@ type FaustExportTargets = { [platform: string]: string[] };
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-const VERSION = "1.0.19";
+const VERSION = "1.0.20";
 
 $(async () => {
     /**
@@ -749,7 +749,9 @@ $(async () => {
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                     try {
-                        const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+                    	// 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+                        //const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+                        const expandedCode = uiEnv.fileManager.mainCode;
                         form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
                     } catch (e) {
                         $("#export-loading").css("display", "none");
