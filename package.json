@@ -7,6 +7,7 @@
     "prebuild": "node ./src/cleanup.js && node ./src/listEx.js && node ./src/faust-ui.js && node ./src/faust-libfaust.js",
     "build": "npm run prebuild && webpack --mode development",
     "dist": "npm run prebuild && node ./src/faust-ui.js && node ./src/faust-libfaust.js && webpack --mode production",
+    "publish": "rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs",
     "version": "npm run build"
   },
   "repository": {
