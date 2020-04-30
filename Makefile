@@ -28,7 +28,7 @@ dist:
 	npm run dist
 
 publish:
-	make dist
+#	make dist
 	rm -rf docs/* 
 	git checkout docs/CNAME
 	cp -r $(DIST)/* docs
