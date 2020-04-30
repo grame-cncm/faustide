@@ -1,4 +1,4 @@
-# faustide [![Badge](https://img.shields.io/badge/link-996.icu-%23FF4D5B.svg?style=flat-square)](https://996.icu/#/en_US)
+# Faust IDE [![Badge](https://img.shields.io/badge/link-996.icu-%23FF4D5B.svg?style=flat-square)](https://996.icu/#/en_US)
 
 The online [Faust IDE](https://faustide.grame.fr) can be used to _edit_, _compile_ and _run_ Faust code from any recent Web Browser with [webassembly](http://webassembly.org) support. It works completely on the client side and it is therefore very convenient for situations with many simultaneous users (workshops, classrooms, etc.). It embeds the latest version of the Faust compiler with an efficient webassembly backend and offers polyphonic MIDI support.
 
@@ -100,3 +100,8 @@ python -m SimpleHTTPServer 8000   # python 2
 
 Then, once the site is validated commit the entire contents of the `docs` directory and push to git.
  
+
+### Useful links
+
+- [https://faustide.grame.fr](https://fausttide.grame.fr): the official link on the Faust IDE website. 
+- [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
