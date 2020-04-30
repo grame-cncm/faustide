@@ -67,7 +67,7 @@ A local HTTP server has to be started with `python2 -m SimpleHTTPServer` (or som
 
 ## Versioning 
 
-You'll have to raise the package version number in `package.json` and `src/index.ts` for `npm run update` to properly work.
+You'll have to raise the package version number in `package.json` before `npm run build` to properly work.
 
 
 ------
