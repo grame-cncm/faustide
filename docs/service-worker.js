@@ -14,10 +14,10 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "precache-manifest.01ce018ba03c7018c561b156eb808660.js"
+  "precache-manifest.ef89c4a045feb0984b5c2fc2744eb71c.js"
 );
 
-workbox.core.setCacheNameDetails({prefix: "1.0.21"});
+workbox.core.setCacheNameDetails({prefix: "1.0.22"});
 
 workbox.core.skipWaiting();
 
@@ -883,11 +883,11 @@ self.__precacheManifest = [
   },
   {
     "url": "libfaust-wasm.data",
-    "revision": "6bbb22efeae7a81b7b6252aa910241a2"
+    "revision": "70394d335820f113268e9764eb113fe5"
   },
   {
     "url": "libfaust-wasm.wasm",
-    "revision": "48998b148de6684833aeabadd941b8e9"
+    "revision": "24c91c59ae7966e3461f5aae8a287c19"
   },
   {
     "url": "index.html",
