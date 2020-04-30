@@ -34,6 +34,7 @@ import { FileManager } from "./FileManager";
 import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
+import VERSION from "./version";
 
 declare global {
     interface Window {
@@ -89,10 +90,12 @@ type FaustEditorUIEnv = {
     fileManager: FileManager;
 };
 type FaustExportTargets = { [platform: string]: string[] };
+interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
+    buffer: AudioBuffer;
+}
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-const VERSION = "1.0.22";
 
 $(async () => {
     /**
@@ -749,8 +752,8 @@ $(async () => {
                     const form = new FormData();
                     const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                     try {
-                    	// 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
-                        //const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+                        // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+                        // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
                         const expandedCode = uiEnv.fileManager.mainCode;
                         form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
                     } catch (e) {
@@ -944,7 +947,7 @@ $(async () => {
                 }
             });
             wavesurfer.on("waveform-ready", () => {
-                audioEnv.gainUIInput.channels = wavesurfer.backend.buffer.numberOfChannels;
+                audioEnv.gainUIInput.channels = (wavesurfer.backend as LegacyWaveSurferBackend).buffer.numberOfChannels;
             });
             wavesurfer.load("./02-XYLO1.mp3");
         }
@@ -953,7 +956,7 @@ $(async () => {
             $("#source-ui").show();
             $("#input-analyser-ui").hide();
             if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-            audioEnv.gainUIInput.channels = wavesurfer.backend.buffer ? wavesurfer.backend.buffer.numberOfChannels : 2;
+            audioEnv.gainUIInput.channels = (wavesurfer.backend as LegacyWaveSurferBackend).buffer ? (wavesurfer.backend as LegacyWaveSurferBackend).buffer.numberOfChannels : 2;
         } else {
             $("#source-ui").hide();
             $("#input-analyser-ui").show();

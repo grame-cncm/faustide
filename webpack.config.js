@@ -1,8 +1,10 @@
 const path = require('path');
-const webpack = require('webpack');
+const { ProvidePlugin } = require('webpack');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const WorkboxPlugin = require('workbox-webpack-plugin');
-const version = require("./package.json").version;
+const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const VERSION = require("./src/version");
 
 const config = {
   entry: './src/index.ts',
@@ -11,8 +13,10 @@ const config = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
-    chunkFilename: 'js/[chunkhash].js'
+    chunkFilename: 'js/[chunkhash].js',
+    filename: "index.js"
   },
+  devtool: 'source-map',
   node: {
     fs: 'empty'
   },
@@ -60,28 +64,35 @@ const config = {
     ]
   },
   plugins: [
+    new CleanWebpackPlugin(),
+    new CopyWebpackPlugin([
+      { from: './src/static', to: './' },
+      { from: './src/monaco-faust/primitives.lib', to: './' },
+      { from: './node_modules/faust2webaudio/dist/libfaust-wasm.*', to: './', flatten: true },
+      { from: './node_modules/faust-ui/dist/faust-ui.*', to: './', flatten: true },
+      { from: './node_modules/faust-ui/dist/index.html', to: './faust-ui.html', flatten: true }
+    ]),
     new MonacoWebpackPlugin({
       output: 'js',
       languages: []
     }),
-    new webpack.ProvidePlugin({
+    new ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery',
       'window.$': 'jquery',
       'window.jQuery': 'jquery'
     }),
-    new WorkboxPlugin.GenerateSW({
-      // these options encourage the ServiceWorkers to get in there fast
-      // and not allow any straggling "old" SWs to hang around
+    new WorkboxWebpackPlugin.GenerateSW({
+      cacheId: VERSION,
+      cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true,
       maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-      cacheId: version,
-      globDirectory: 'dist/',
-      globPatterns: ['./examples/**/*', './faust-ui*', './libfaust-wasm*', './index.html', './favicon.png', './icon/*', './02-XYLO1.mp3', './primitives.lib', './examples.json', './manifest.json']
     })
   ]
 };
+module.exports = config;
+/* 
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.devtool = 'source-map';
@@ -89,7 +100,8 @@ module.exports = (env, argv) => {
   }
   if (argv.mode === 'production') {
     config.devtool = 'source-map';
-    config.output.filename = 'index.min.js';
+    config.output.filename = 'index.js';
   }
   return config;
 };
+*/
