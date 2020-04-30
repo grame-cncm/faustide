@@ -76,12 +76,12 @@ You'll have to raise the package version number in `package.json` and `src/index
 
 Deployment remains an operation that must take place under the user control. It must be made from the master branch. The procedure consists of:
 
-1) generate the site,
-2) copy the contents of the `dist` directory into the `docs` directory
-3) check the proper functioning of the site from the `docs` directory
+1) generating the site
+2) copying the contents of the `dist` directory into the `docs` directory
+3) checking the proper functioning of the site from the `docs` directory
 
-For 1), see **Building** section above.  
-For 2), you can run
+For 1), see **Building** section above
+For 2), you can run:
 
 ```bash
 npm run publish
