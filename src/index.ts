@@ -1047,59 +1047,65 @@ $(async () => {
         }
     });
     // Append connected audio devices
-    const handleMediaDeviceChange = () => {
-        navigator.mediaDevices.enumerateDevices().then((devices) => {
-            const $selectInput = $("#select-audio-input");
-            const $selectOutput = $("#select-audio-output");
-            $selectInput.children("option").each((i, e: HTMLOptionElement) => {
-                if (e.value === "-1") return;
-                if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
-                    e.remove();
-                    if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
-                }
-            });
-            $selectOutput.children("option").each((i, e: HTMLOptionElement) => {
-                if (e.value === "-1") return;
-                if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
-                    e.remove();
-                    if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
-                }
-            });
-            devices.forEach((device) => {
-                if (device.kind === "audioinput") {
-                    if ($selectInput.find(`option[value=${device.deviceId}]`).length) return;
-                    $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
-                }
-                if (supportMediaStreamDestination && device.kind === "audiooutput") {
-                    if ($selectOutput.find(`option[value=${device.deviceId}]`).length) return;
-                    $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
-                }
-            });
+    const handleMediaDeviceChange = async () => {
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {} // eslint-disable-line no-empty
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const $selectInput = $("#select-audio-input");
+        const $selectOutput = $("#select-audio-output");
+        $selectInput.children("option").each((i, e: HTMLOptionElement) => {
+            if (e.value === "-1") return;
+            if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
+                e.remove();
+                if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
+            }
+        });
+        $selectOutput.children("option").each((i, e: HTMLOptionElement) => {
+            if (e.value === "-1") return;
+            if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
+                e.remove();
+                if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
+            }
+        });
+        devices.forEach((device) => {
+            if (!device.deviceId) return;
+            if (device.kind === "audioinput") {
+                if ($selectInput.find(`option[value=${device.deviceId}]`).length) return;
+                $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+            }
+            if (supportMediaStreamDestination && device.kind === "audiooutput") {
+                if ($selectOutput.find(`option[value=${device.deviceId}]`).length) return;
+                $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
+            }
         });
     };
     if (navigator.mediaDevices) {
-        navigator.mediaDevices.enumerateDevices().then((devices) => {
-            $("#input-ui-default").hide();
-            const $selectInput = $("#select-audio-input").prop("disabled", false);
-            let $selectOutput: JQuery<HTMLElement>;
-            if (supportMediaStreamDestination) {
-                if (devices.find(device => device.kind === "audiooutput")) {
-                    $("#output-ui-default").hide();
-                    $selectOutput = $("#select-audio-output").prop("disabled", false);
-                } else { // No audio outputs, fallback to audioCtx.destination
-                    if (audioEnv.audioCtx && audioEnv.destination) audioEnv.destination = audioEnv.audioCtx.destination;
-                    supportMediaStreamDestination = false;
-                }
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {} // eslint-disable-line no-empty
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        $("#input-ui-default").hide();
+        const $selectInput = $("#select-audio-input").prop("disabled", false);
+        let $selectOutput: JQuery<HTMLElement>;
+        if (supportMediaStreamDestination) {
+            if (devices.find(device => device.kind === "audiooutput")) {
+                $("#output-ui-default").hide();
+                $selectOutput = $("#select-audio-output").prop("disabled", false);
+            } else { // No audio outputs, fallback to audioCtx.destination
+                if (audioEnv.audioCtx && audioEnv.destination) audioEnv.destination = audioEnv.audioCtx.destination;
+                supportMediaStreamDestination = false;
             }
-            navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
-            devices.forEach((device) => {
-                if (device.kind === "audioinput") {
-                    $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
-                }
-                if (supportMediaStreamDestination && device.kind === "audiooutput") {
-                    $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
-                }
-            });
+        }
+        navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
+        devices.forEach((device) => {
+            if (!device.deviceId) return;
+            if (device.kind === "audioinput") {
+                $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+            }
+            if (supportMediaStreamDestination && device.kind === "audiooutput") {
+                $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
+            }
         });
     }
     // DSP info
