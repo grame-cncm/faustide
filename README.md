@@ -69,7 +69,6 @@ A local HTTP server has to be started with `python2 -m SimpleHTTPServer` (or som
 
 You'll have to raise the package version number in `package.json` before `npm run build` to properly work.
 
-
 ------
 
 ## Deployment
@@ -98,7 +97,7 @@ or
 python -m SimpleHTTPServer 8000   # python 2
 ```
 
-Then, once the site is validated commit the entire contents of the `docs` directory and push to git.
+Then, once the site is validated add (git add) and commit the entire contents of the `docs` directory then push to git.
  
 
 ### Useful links
