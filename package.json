@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "description": "Faust Editor",
   "main": "src/index.ts",
   "scripts": {
@@ -34,7 +34,7 @@
     "@babel/runtime": "^7.9.6",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@types/bootstrap": "^4.3.2",
-    "@types/jquery": "^3.3.36",
+    "@types/jquery": "^3.3.37",
     "@types/jszip": "^3.1.7",
     "@types/qrcode": "^1.3.4",
     "@types/wavesurfer.js": "^3.3.0",
