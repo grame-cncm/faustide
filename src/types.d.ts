@@ -17,4 +17,6 @@ type FaustEditorCompileOptions = {
     args: { [key: string]: any };
     enableGuiBuilder: boolean;
     guiBuilderUrl: string;
+    exportPlatform: string;
+    exportArch: string;
 };

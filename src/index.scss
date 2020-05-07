@@ -71,6 +71,14 @@ body {
                         border-color: $color;
                     }
                 }
+                & > #btn-target {
+                    $color: #fe5a1d;
+                    border-color: $color;
+                    &:hover {
+                        background-color: darken($color, 50%);
+                        border-color: $color;
+                    }
+                }
                 & > #btn-share {
                     $color: #aaff77;
                     border-color: $color;
@@ -206,6 +214,13 @@ body {
                     }
                     & .btn-run {
                         $color: #bcf0ff;
+                        &:hover {
+                            background-color: darken($color, 50%);
+                            border-color: $color;
+                        }
+                    }
+                    & .btn-target {
+                        $color: #fe5a1d;
                         &:hover {
                             background-color: darken($color, 50%);
                             border-color: $color;

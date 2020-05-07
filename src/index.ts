@@ -426,7 +426,7 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
+    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", exportPlatform: "owl", exportArch: "owl", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
     localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
@@ -653,6 +653,13 @@ $(async () => {
             compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : (bufferSize as 128 | 256 | 512 | 1024 | 2048 | 4096);
             saveEditorParams();
         }
+        if (urlParams.has("mode")) {
+          if(urlParams.get("mode") == "amstram"){
+            compileOptions.exportPlatform = "esp32";
+            compileOptions.exportArch = "gramophoneFlash";
+            saveEditorParams();
+          }
+        }
         let code;
         if (urlParams.has("code")) {
             const codeURL = urlParams.get("code");
@@ -731,16 +738,27 @@ $(async () => {
                 const plats = Object.keys(targets);
                 if (plats.length) {
                     plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                    targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                    console.log(compileOptions);
+                    console.log(compileOptions.exportPlatform.toString());
+                    $("#export-platform").val(compileOptions.exportPlatform.toString());
+                    console.log($("#export-platform").val());
+                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                    $("#export-arch").val(compileOptions.exportArch);
                 }
                 $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
                 $("#export-name").on("keydown", (e) => {
                     if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
                 });
                 $<HTMLSelectElement>("#export-platform").on("change", (e) => {
-                    const plat = e.currentTarget.value;
+                    compileOptions.exportPlatform = e.currentTarget.value;
+                    saveEditorParams();
                     $("#export-arch").empty();
-                    targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                });
+                $<HTMLSelectElement>("#export-arch").on("change", (e) => {
+                  compileOptions.exportArch = e.currentTarget.value;
+                  saveEditorParams();
+                  console.log(compileOptions);
                 });
                 $("#export-download").on("click", () => $("#a-export-download")[0].click());
                 $("#a-export-download").on("click", e => e.stopPropagation());
