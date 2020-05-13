@@ -1137,7 +1137,7 @@ $(async () => {
         $("#a-recorder-save").attr({ href: url, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.wav` })[0].click();
     });
     $("#a-recorder-save").on("click", e => e.stopPropagation());
-    // Output switch to connect / disconnect dsp form destination
+    // Output switch to connect / disconnect dsp from destination
     $(".btn-dac").on("click", async () => {
         /*
         if (!audioEnv.audioCtx) {
