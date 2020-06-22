@@ -135,6 +135,7 @@ $(async () => {
      * @returns {(FaustEditorCompileOptions | {})}
      */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
+      console.log("Loading editor params");
         const clientVersion = localStorage.getItem("faust_editor_version");
         if (clientVersion !== VERSION) return {};
         const str = localStorage.getItem("faust_editor_params");
@@ -657,7 +658,10 @@ $(async () => {
           if(urlParams.get("mode") == "amstram"){
             compileOptions.exportPlatform = "esp32";
             compileOptions.exportArch = "gramophoneFlash";
+            $("#btn-target-content").html("Gramophone");
             saveEditorParams();
+            getTargets(server);
+            console.log("Done parsing URL");
           }
         }
         let code;
@@ -726,6 +730,76 @@ $(async () => {
      * Append options to export model
      */
     const server = "https://faustservicecloud.grame.fr";
+    const exportProgram = (download: boolean) => {
+      $("#export-download").hide();
+      $("#export-loading").css("display", "inline-block");
+      $("#export-target-loading").css("display", "inline-block");
+      $("#qr-code").hide();
+      $("#export-error").hide();
+      const form = new FormData();
+      const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+      try {
+          // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+          // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+          const expandedCode = uiEnv.fileManager.mainCode;
+          form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
+      } catch (e) {
+          $("#export-loading").css("display", "none");
+          $("#export-target-loading").css("display", "none");
+          $("#export-error").html(e).show();
+          return;
+      }
+      $.ajax({
+          method: "POST",
+          url: `${server}/filepost`,
+          data: form,
+          contentType: false,
+          processData: false
+      }).done((shaKey) => {
+          const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+          if (matched) {
+              const plat = $("#export-platform").val();
+              const arch = $("#export-arch").val();
+              const path = `${server}/${shaKey}/${plat}/${arch}`;
+              $.ajax({
+                  method: "GET",
+                  url: `${path}/precompile`
+              }).done((result) => {
+                  if (result === "DONE") {
+                      const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                      $("#a-export-download").attr({ href });
+                      $("#export-download").show();
+                      if(download == true){ 
+                        $("#export-download").click();
+                      }
+                      $("#qr-code").show();
+                      QRCode.toCanvas(
+                          $<HTMLCanvasElement>("#qr-code")[0],
+                          `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
+                      );
+                      return;
+                  }
+                  $("#export-loading").css("display", "none");
+                  $("#export-target-loading").css("display", "none");
+                  $("#export-error").html(result).show();
+              }).fail((jqXHR, textStatus) => {
+                  $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+              }).always(() => 
+                {
+                  $("#export-loading").css("display", "none");
+                  $("#export-target-loading").css("display", "none");
+                });
+              return;
+          }
+          $("#export-loading").css("display", "none");
+          $("#export-target-loading").css("display", "none");
+          $("#export-error").html(shaKey).show();
+      }).fail((jqXHR, textStatus) => {
+          $("#export-loading").css("display", "none");
+          $("#export-target-loading").css("display", "none");
+          $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+      });
+    }
     const getTargets = (server: string) => {
         $("#export-platform").add("#export-arch").empty();
         $("#export-platform").off("change");
@@ -738,10 +812,7 @@ $(async () => {
                 const plats = Object.keys(targets);
                 if (plats.length) {
                     plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                    console.log(compileOptions);
-                    console.log(compileOptions.exportPlatform.toString());
-                    $("#export-platform").val(compileOptions.exportPlatform.toString());
-                    console.log($("#export-platform").val());
+                    $("#export-platform").val(compileOptions.exportPlatform);
                     targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                     $("#export-arch").val(compileOptions.exportArch);
                 }
@@ -763,62 +834,7 @@ $(async () => {
                 $("#export-download").on("click", () => $("#a-export-download")[0].click());
                 $("#a-export-download").on("click", e => e.stopPropagation());
                 $("#export-submit").prop("disabled", false).on("click", () => {
-                    $("#export-download").hide();
-                    $("#export-loading").css("display", "inline-block");
-                    $("#qr-code").hide();
-                    $("#export-error").hide();
-                    const form = new FormData();
-                    const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                    try {
-                        // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
-                        // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-                        const expandedCode = uiEnv.fileManager.mainCode;
-                        form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
-                    } catch (e) {
-                        $("#export-loading").css("display", "none");
-                        $("#export-error").html(e).show();
-                        return;
-                    }
-                    $.ajax({
-                        method: "POST",
-                        url: `${server}/filepost`,
-                        data: form,
-                        contentType: false,
-                        processData: false
-                    }).done((shaKey) => {
-                        const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-                        if (matched) {
-                            const plat = $("#export-platform").val();
-                            const arch = $("#export-arch").val();
-                            const path = `${server}/${shaKey}/${plat}/${arch}`;
-                            $.ajax({
-                                method: "GET",
-                                url: `${path}/precompile`
-                            }).done((result) => {
-                                if (result === "DONE") {
-                                    const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
-                                    $("#a-export-download").attr({ href });
-                                    $("#export-download").show();
-                                    $("#qr-code").show();
-                                    QRCode.toCanvas(
-                                        $<HTMLCanvasElement>("#qr-code")[0],
-                                        `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
-                                    );
-                                    return;
-                                }
-                                $("#export-loading").css("display", "none");
-                                $("#export-error").html(result).show();
-                            }).fail((jqXHR, textStatus) => {
-                                $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                            }).always(() => $("#export-loading").css("display", "none"));
-                            return;
-                        }
-                        $("#export-loading").css("display", "none");
-                        $("#export-error").html(shaKey).show();
-                    }).fail((jqXHR, textStatus) => {
-                        $("#export-loading").css("display", "none");
-                        $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                    });
+                  exportProgram(false);
                 });
             })
             .catch(() => undefined);
@@ -1309,6 +1325,10 @@ $(async () => {
         if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
+    });
+    // Default export button
+    $(".btn-target").prop("disabled", false).on("click", async () => {
+        exportProgram(true);
     });
     /**
      * Bind message event for changing dsp params on receiving msg from ui window
