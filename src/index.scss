@@ -75,8 +75,11 @@ body {
                     $color: #fe5a1d;
                     border-color: $color;
                     &:hover {
-                        background-color: darken($color, 50%);
+                        background-color: darken($color, 30%);
                         border-color: $color;
+                    }
+                    & #export-target-loading {
+                        display: none;
                     }
                 }
                 & > #btn-share {
