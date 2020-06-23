@@ -3537,7 +3537,7 @@ module.exports = exports;
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "body {\n  background-color: #2b2b2b;\n  color: whitesmoke;\n  margin: 0; }\n  body > #root {\n    width: 100%;\n    height: 100%;\n    margin: 0px;\n    position: absolute;\n    display: flex;\n    flex-direction: row;\n    overflow: hidden; }\n    body > #root > #left {\n      width: 200px;\n      margin: 0px;\n      flex: 0 0 200px;\n      min-width: 200px;\n      max-width: 200px;\n      padding: 15px;\n      overflow: auto;\n      scrollbar-width: none; }\n      body > #root > #left::-webkit-scrollbar {\n        display: none; }\n      @media screen and (max-width: 900px) {\n        body > #root > #left {\n          position: absolute;\n          top: 32px;\n          border-radius: 0px 0px 10px 10px;\n          z-index: 10;\n          padding-top: 15px;\n          padding-bottom: 15px;\n          max-height: calc(100% - 32px);\n          background-color: #2b2b2b;\n          box-shadow: 0 0 5px black; } }\n      body > #root > #left > #btns > button.btn {\n        color: whitesmoke;\n        margin: 5px; }\n        body > #root > #left > #btns > button.btn > i.fas {\n          margin-right: 5px; }\n      body > #root > #left > #btns > button.btn-lg {\n        width: 160px; }\n      body > #root > #left > #btns > button.btn-sm {\n        width: 75px; }\n        body > #root > #left > #btns > button.btn-sm > i.fas {\n          margin-right: 5px; }\n        body > #root > #left > #btns > button.btn-sm > span {\n          display: none; }\n        body > #root > #left > #btns > button.btn-sm:hover > i.fas {\n          display: none; }\n        body > #root > #left > #btns > button.btn-sm:hover > span {\n          display: inline-block; }\n      body > #root > #left > #btns > #btn-run {\n        border-color: #bcf0ff; }\n        body > #root > #left > #btns > #btn-run:hover {\n          background-color: #0092bc;\n          border-color: #bcf0ff; }\n      body > #root > #left > #btns > #btn-share {\n        border-color: #aaff77; }\n        body > #root > #left > #btns > #btn-share:hover {\n          background-color: #2d7700;\n          border-color: #aaff77; }\n      body > #root > #left > #btns > #btn-upload {\n        border-color: #ff88aa; }\n        body > #root > #left > #btns > #btn-upload:hover {\n          background-color: #880027;\n          border-color: #ff88aa; }\n        body > #root > #left > #btns > #btn-upload > #input-upload {\n          display: none; }\n      body > #root > #left > #btns > #btn-save {\n        border-color: #35a8f0; }\n        body > #root > #left > #btns > #btn-save:hover {\n          background-color: #031723;\n          border-color: #35a8f0; }\n        body > #root > #left > #btns > #btn-save > #a-save {\n          display: none; }\n      body > #root > #left > #btns > #btn-docs {\n        border-color: #3bf5e2; }\n        body > #root > #left > #btns > #btn-docs:hover {\n          background-color: #022f2a;\n          border-color: #3bf5e2; }\n        body > #root > #left > #btns > #btn-docs > #a-docs {\n          display: none; }\n      body > #root > #left > #btns > #btn-export {\n        border-color: #e3d26f; }\n        body > #root > #left > #btns > #btn-export:hover {\n          background-color: #453d0e;\n          border-color: #e3d26f; }\n      body > #root > #left > #btns > #btn-diagram {\n        border-color: #ff88a9; }\n        body > #root > #left > #btns > #btn-diagram:hover {\n          background-color: #880026;\n          border-color: #ff88a9; }\n      body > #root > #left > form, body > #root > #left > .form {\n        width: auto;\n        margin: 10px 5px; }\n        body > #root > #left > form .input-group-prepend > span, body > #root > #left > .form .input-group-prepend > span {\n          font-size: 0.8em; }\n          body > #root > #left > form .input-group-prepend > span.input-group-text-sm, body > #root > #left > .form .input-group-prepend > span.input-group-text-sm {\n            font-size: 0.75em; }\n      body > #root > #left #btn-plot {\n        color: white;\n        width: 100%;\n        font-size: 0.75em; }\n    body > #root > #center {\n      display: flex;\n      position: relative;\n      flex-direction: column;\n      padding: 0px;\n      margin: 0px;\n      flex: 1 1 auto;\n      height: 100%;\n      max-width: unset; }\n      body > #root > #center a.nav-link:not(.active) {\n        color: whitesmoke; }\n        body > #root > #center a.nav-link:not(.active):hover {\n          background-color: black;\n          border-color: black black #dee2e6 black; }\n        body > #root > #center a.nav-link:not(.active):focus {\n          border-color: black black #dee2e6 black; }\n      body > #root > #center li.nav-item.show a.nav-link {\n        color: black; }\n        body > #root > #center li.nav-item.show a.nav-link:hover {\n          color: whitesmoke; }\n      body > #root > #center > #top {\n        position: relative;\n        display: flex;\n        flex: 0 0 auto;\n        height: 50%;\n        flex-direction: column;\n        min-height: 100px;\n        max-height: calc(100% - 200px); }\n        body > #root > #center > #top > #editor-top {\n          position: relative;\n          flex: 0 0 auto;\n          flex-wrap: nowrap; }\n          body > #root > #center > #top > #editor-top > *:first-child {\n            padding-right: 4px; }\n          body > #root > #center > #top > #editor-top > *:last-child {\n            margin-left: auto;\n            padding-left: 4px; }\n          @media screen and (max-width: 400px) {\n            body > #root > #center > #top > #editor-top > .nav-item {\n              display: none; } }\n          body > #root > #center > #top > #editor-top .btn-group {\n            margin-bottom: -1px; }\n            body > #root > #center > #top > #editor-top .btn-group .btn {\n              border-bottom-left-radius: 0px;\n              border-bottom-right-radius: 0px; }\n              body > #root > #center > #top > #editor-top .btn-group .btn:not(.btn-light) {\n                color: white; }\n          body > #root > #center > #top > #editor-top .btn-run:hover {\n            background-color: #0092bc;\n            border-color: #bcf0ff; }\n          body > #root > #center > #top > #editor-top #tab-editor {\n            padding: 0px;\n            border: 0px; }\n          body > #root > #center > #top > #editor-top * {\n            font-size: 12px; }\n          body > #root > #center > #top > #editor-top .nav-link {\n            line-height: 1.2; }\n        body > #root > #center > #top > #editor-overlay {\n          position: absolute;\n          width: 100%;\n          height: 100%;\n          background-color: rgba(255, 255, 255, 0.25);\n          display: none;\n          z-index: 1; }\n        body > #root > #center > #top > #editor-container {\n          position: relative;\n          flex: 1 0 auto; }\n          body > #root > #center > #top > #editor-container > #editor {\n            position: absolute;\n            width: 100%;\n            height: 100%; }\n      body > #root > #center > #bottom {\n        position: relative;\n        display: flex;\n        flex: 1 0 auto;\n        min-height: 200px;\n        flex-direction: column; }\n        body > #root > #center > #bottom > #bottom-tab {\n          flex: 0 0 auto;\n          position: relative; }\n          body > #root > #center > #bottom > #bottom-tab > #nav-item-faust-ui {\n            display: none; }\n          body > #root > #center > #bottom > #bottom-tab > #nav-item-gui-builder {\n            display: none; }\n          body > #root > #center > #bottom > #bottom-tab button.btn-outline-light {\n            font-size: 15px;\n            border-color: transparent;\n            border-radius: 50%;\n            padding: 0rem 0.2rem 0.2rem 0.2rem;\n            line-height: 1;\n            color: inherit;\n            margin-right: -6px; }\n            body > #root > #center > #bottom > #bottom-tab button.btn-outline-light:hover {\n              background-color: rgba(192, 192, 192, 0.75); }\n          body > #root > #center > #bottom > #bottom-tab > .btn-group {\n            margin-left: auto;\n            padding-left: 4px;\n            margin-bottom: -1px; }\n            body > #root > #center > #bottom > #bottom-tab > .btn-group .btn {\n              border-color: transparent;\n              border-bottom-left-radius: 0px;\n              border-bottom-right-radius: 0px; }\n              body > #root > #center > #bottom > #bottom-tab > .btn-group .btn:hover {\n                background-color: #0092bc;\n                border-color: #bcf0ff; }\n              body > #root > #center > #bottom > #bottom-tab > .btn-group .btn:not(.btn-light) {\n                color: white; }\n        body > #root > #center > #bottom > #bottom-content {\n          position: relative;\n          flex: 1 1 auto;\n          display: flex;\n          flex-direction: column; }\n          body > #root > #center > #bottom > #bottom-content > div {\n            position: absolute;\n            width: 100%;\n            height: 100%; }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui.tab-pane:not(.show) {\n            display: unset;\n            visibility: hidden; }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui > #iframe-faust-ui {\n            display: block;\n            position: absolute;\n            visibility: hidden;\n            border: none;\n            width: 100%;\n            height: calc(100% - 10px); }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui > #faust-ui-default {\n            top: 20%; }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder.tab-pane:not(.show) {\n            display: unset;\n            visibility: hidden; }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder > #iframe-gui-builder {\n            display: block;\n            position: absolute;\n            visibility: hidden;\n            border: none;\n            width: 100%;\n            height: calc(100% - 10px); }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder > #gui-builder-default {\n            top: 20%; }\n          body > #root > #center > #bottom > #bottom-content > #diagram {\n            overflow: auto; }\n            body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-svg {\n              position: relative;\n              display: none;\n              margin: auto;\n              flex: 1 0 auto;\n              max-width: 100%;\n              max-height: 100%;\n              overflow: auto;\n              text-align: center; }\n              body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-svg > svg {\n                height: 100%;\n                width: 100%;\n                min-width: 20%;\n                max-width: 500%;\n                cursor: grab; }\n            body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-default {\n              top: 20%; }\n      body > #root > #center > #alert-faust-code {\n        position: absolute;\n        bottom: 0px;\n        left: 0px;\n        right: 0px;\n        visibility: hidden; }\n      body > #root > #center .alert-faust-code {\n        display: inline-flex; }\n        body > #root > #center .alert-faust-code > span {\n          text-overflow: ellipsis;\n          width: 100%;\n          overflow: hidden;\n          white-space: nowrap;\n          line-height: 1; }\n        body > #root > #center .alert-faust-code > a {\n          line-height: 1; }\n        body > #root > #center .alert-faust-code > button {\n          padding: 7px;\n          outline: none; }\n      body > #root > #center > #modal-alert-faust-code-detail .modal-body {\n        font-size: 0.75rem; }\n    body > #root > #right {\n      position: relative;\n      display: flex;\n      padding: 15px;\n      margin: 0px;\n      width: 200px;\n      height: 100%;\n      flex: 0 0 auto;\n      font-size: 0.8em;\n      flex-direction: column;\n      max-width: calc(100% - 600px);\n      min-width: 200px;\n      overflow: auto;\n      scrollbar-width: none; }\n      body > #root > #right::-webkit-scrollbar {\n        display: none; }\n      @media screen and (max-width: 900px) {\n        body > #root > #right {\n          position: absolute;\n          border-radius: 0px 0px 10px 10px;\n          right: 0;\n          top: 32px;\n          max-width: calc(100% - 200px);\n          max-height: calc(100% - 32px);\n          z-index: 10;\n          padding-top: 0px;\n          padding-bottom: 15px;\n          background-color: #2b2b2b;\n          box-shadow: 0 0 5px black; } }\n      body > #root > #right .form-row {\n        margin-right: 0px;\n        margin-left: 0px;\n        width: 100%; }\n      body > #root > #right wave {\n        /* stylelint-disable-line selector-type-no-unknown */\n        overflow: hidden !important; }\n      body > #root > #right > #midi-ui {\n        position: relative;\n        display: flex;\n        flex: 0 0 auto;\n        flex-direction: column;\n        overflow: hidden; }\n      body > #root > #right > #input-ui {\n        position: relative;\n        display: flex;\n        flex: 1 0 auto;\n        flex-direction: column;\n        overflow: hidden; }\n        body > #root > #right > #input-ui > #source-ui {\n          position: relative; }\n          body > #root > #right > #input-ui > #source-ui > #source-overlay {\n            position: absolute;\n            width: 100%;\n            height: 100%;\n            background-color: rgba(255, 255, 255, 0.25);\n            display: none;\n            z-index: 5; }\n          body > #root > #right > #input-ui > #source-ui > #source-waveform {\n            background-color: #000; }\n          body > #root > #right > #input-ui > #source-ui > #source-controller {\n            position: absolute;\n            display: flex;\n            bottom: 0px;\n            z-index: 5;\n            opacity: 0.4;\n            transition: opacity 0.15s ease-in-out; }\n          body > #root > #right > #input-ui > #source-ui:hover > #source-controller {\n            opacity: 1; }\n        body > #root > #right > #input-ui > #input-gain {\n          position: relative;\n          margin-top: 10px; }\n          body > #root > #right > #input-ui > #input-gain > canvas {\n            position: relative;\n            width: 100%; }\n      body > #root > #right > #dsp-ui {\n        display: flex;\n        flex: 2 1 auto;\n        flex-direction: column; }\n        body > #root > #right > #dsp-ui #dsp-ui-default:not(.switch) {\n          pointer-events: none; }\n        body > #root > #right > #dsp-ui #dsp-ui-detail {\n          display: none;\n          width: 100%; }\n          body > #root > #right > #dsp-ui #dsp-ui-detail > li {\n            padding: 0px;\n            background-color: unset;\n            border-color: rgba(255, 255, 255, 0.125); }\n        body > #root > #right > #dsp-ui > #output-analyser-ui {\n          display: none; }\n      body > #root > #right > #output-ui {\n        margin-top: auto; }\n        body > #root > #right > #output-ui audio {\n          display: none; }\n        body > #root > #right > #output-ui > #btn-dac {\n          margin-top: 4px; }\n    body > #root .modal {\n      color: black; }\n    body > #root > #modal-export #export-loading {\n      display: none; }\n    body > #root > #modal-export #export-download {\n      display: none; }\n    body > #root > #modal-export #qr-code {\n      display: none;\n      margin-left: auto;\n      margin-right: auto; }\n    body > #root > #modal-export #export-error {\n      display: none; }\n  body .resizable {\n    position: absolute;\n    display: block;\n    z-index: 1;\n    background-repeat: no-repeat;\n    background-origin: content-box; }\n    body .resizable.resizable-left, body .resizable.resizable-right {\n      cursor: ew-resize;\n      height: 40px;\n      width: 10px;\n      top: calc(50% - 20px);\n      background-image: linear-gradient(90deg, transparent, transparent 3px, rgba(255, 255, 255, 0.5) 3px, rgba(255, 255, 255, 0.5) 4px, transparent 4px, transparent 6px, rgba(255, 255, 255, 0.5) 6px, rgba(255, 255, 255, 0.5) 7px, transparent 7px); }\n    body .resizable.resizable-left {\n      left: 0; }\n    body .resizable.resizable-right {\n      right: 0; }\n    body .resizable.resizable-top, body .resizable.resizable-bottom {\n      cursor: ns-resize;\n      height: 10px;\n      width: 40px;\n      left: calc(50% - 20px);\n      background-image: linear-gradient(0deg, transparent, transparent 3px, rgba(255, 255, 255, 0.5) 3px, rgba(255, 255, 255, 0.5) 4px, transparent 4px, transparent 6px, rgba(255, 255, 255, 0.5) 6px, rgba(255, 255, 255, 0.5) 7px, transparent 7px); }\n    body .resizable.resizable-top {\n      top: 0; }\n    body .resizable.resizable-bottom {\n      bottom: 0; }\n    body .resizable.resizable-left.resizable-bottom {\n      cursor: sw-resize;\n      height: 20px;\n      width: 20px;\n      bottom: 0px;\n      top: auto;\n      left: 0px;\n      background-image: linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.5) 5px, rgba(255, 255, 255, 0.5) 6px, transparent 6px, transparent 8px, rgba(255, 255, 255, 0.5) 8px, rgba(255, 255, 255, 0.5) 9px, transparent 9px); }\n\n.btn-overlay {\n  font-size: 12px;\n  border-color: transparent;\n  border-radius: 0px;\n  padding: 0rem 0.1rem;\n  z-index: 3; }\n  .btn-overlay.active {\n    color: unset !important;\n    background-color: unset !important;\n    border-color: transparent transparent #f8f9fa transparent !important;\n    border-bottom-color: #f8f9fa !important; }\n    .btn-overlay.active:hover {\n      color: #212529 !important;\n      background-color: #f8f9fa !important;\n      border-color: #f8f9fa !important; }\n  .btn-overlay:focus {\n    box-shadow: none !important; }\n  .btn-overlay.btn-overlay-icon {\n    width: 20px; }\n\n.monaco-decoration-error {\n  background: red;\n  width: 5px !important;\n  margin-left: 3px; }\n\n.tab-content > .tab-pane {\n  z-index: -1; }\n  .tab-content > .tab-pane.active {\n    display: block;\n    z-index: 0; }\n\n.dropright .dropdown-toggle.submenu-toggle::after {\n  right: 0;\n  position: absolute;\n  padding-right: 0.8em;\n  margin-top: 0.6em; }\n\n.dropright.submenu:hover > .dropdown-menu {\n  display: block;\n  margin-left: -1px; }\n\n.btn:focus {\n  box-shadow: none !important; }\n\n@media screen and (max-width: 400px) {\n  div.tooltip {\n    display: none; } }\n", ""]);
+exports.push([module.i, "body {\n  background-color: #2b2b2b;\n  color: whitesmoke;\n  margin: 0; }\n  body > #root {\n    width: 100%;\n    height: 100%;\n    margin: 0px;\n    position: absolute;\n    display: flex;\n    flex-direction: row;\n    overflow: hidden; }\n    body > #root > #left {\n      width: 200px;\n      margin: 0px;\n      flex: 0 0 200px;\n      min-width: 200px;\n      max-width: 200px;\n      padding: 15px;\n      overflow: auto;\n      scrollbar-width: none; }\n      body > #root > #left::-webkit-scrollbar {\n        display: none; }\n      @media screen and (max-width: 900px) {\n        body > #root > #left {\n          position: absolute;\n          top: 32px;\n          border-radius: 0px 0px 10px 10px;\n          z-index: 10;\n          padding-top: 15px;\n          padding-bottom: 15px;\n          max-height: calc(100% - 32px);\n          background-color: #2b2b2b;\n          box-shadow: 0 0 5px black; } }\n      body > #root > #left > #btns > button.btn {\n        color: whitesmoke;\n        margin: 5px; }\n        body > #root > #left > #btns > button.btn > i.fas {\n          margin-right: 5px; }\n      body > #root > #left > #btns > button.btn-lg {\n        width: 160px; }\n      body > #root > #left > #btns > button.btn-sm {\n        width: 75px; }\n        body > #root > #left > #btns > button.btn-sm > i.fas {\n          margin-right: 5px; }\n        body > #root > #left > #btns > button.btn-sm > span {\n          display: none; }\n        body > #root > #left > #btns > button.btn-sm:hover > i.fas {\n          display: none; }\n        body > #root > #left > #btns > button.btn-sm:hover > span {\n          display: inline-block; }\n      body > #root > #left > #btns > #btn-run {\n        border-color: #bcf0ff; }\n        body > #root > #left > #btns > #btn-run:hover {\n          background-color: #0092bc;\n          border-color: #bcf0ff; }\n      body > #root > #left > #btns > #btn-def-exp {\n        border-color: #fe5a1d; }\n        body > #root > #left > #btns > #btn-def-exp:hover {\n          background-color: #812401;\n          border-color: #fe5a1d; }\n        body > #root > #left > #btns > #btn-def-exp #def-exp-loading {\n          display: none; }\n      body > #root > #left > #btns > #btn-share {\n        border-color: #aaff77; }\n        body > #root > #left > #btns > #btn-share:hover {\n          background-color: #2d7700;\n          border-color: #aaff77; }\n      body > #root > #left > #btns > #btn-upload {\n        border-color: #ff88aa; }\n        body > #root > #left > #btns > #btn-upload:hover {\n          background-color: #880027;\n          border-color: #ff88aa; }\n        body > #root > #left > #btns > #btn-upload > #input-upload {\n          display: none; }\n      body > #root > #left > #btns > #btn-save {\n        border-color: #35a8f0; }\n        body > #root > #left > #btns > #btn-save:hover {\n          background-color: #031723;\n          border-color: #35a8f0; }\n        body > #root > #left > #btns > #btn-save > #a-save {\n          display: none; }\n      body > #root > #left > #btns > #btn-docs {\n        border-color: #3bf5e2; }\n        body > #root > #left > #btns > #btn-docs:hover {\n          background-color: #022f2a;\n          border-color: #3bf5e2; }\n        body > #root > #left > #btns > #btn-docs > #a-docs {\n          display: none; }\n      body > #root > #left > #btns > #btn-export {\n        border-color: #e3d26f; }\n        body > #root > #left > #btns > #btn-export:hover {\n          background-color: #453d0e;\n          border-color: #e3d26f; }\n      body > #root > #left > #btns > #btn-diagram {\n        border-color: #ff88a9; }\n        body > #root > #left > #btns > #btn-diagram:hover {\n          background-color: #880026;\n          border-color: #ff88a9; }\n      body > #root > #left > form, body > #root > #left > .form {\n        width: auto;\n        margin: 10px 5px; }\n        body > #root > #left > form .input-group-prepend > span, body > #root > #left > .form .input-group-prepend > span {\n          font-size: 0.8em; }\n          body > #root > #left > form .input-group-prepend > span.input-group-text-sm, body > #root > #left > .form .input-group-prepend > span.input-group-text-sm {\n            font-size: 0.75em; }\n      body > #root > #left #btn-plot {\n        color: white;\n        width: 100%;\n        font-size: 0.75em; }\n    body > #root > #center {\n      display: flex;\n      position: relative;\n      flex-direction: column;\n      padding: 0px;\n      margin: 0px;\n      flex: 1 1 auto;\n      height: 100%;\n      max-width: unset; }\n      body > #root > #center a.nav-link:not(.active) {\n        color: whitesmoke; }\n        body > #root > #center a.nav-link:not(.active):hover {\n          background-color: black;\n          border-color: black black #dee2e6 black; }\n        body > #root > #center a.nav-link:not(.active):focus {\n          border-color: black black #dee2e6 black; }\n      body > #root > #center li.nav-item.show a.nav-link {\n        color: black; }\n        body > #root > #center li.nav-item.show a.nav-link:hover {\n          color: whitesmoke; }\n      body > #root > #center > #top {\n        position: relative;\n        display: flex;\n        flex: 0 0 auto;\n        height: 50%;\n        flex-direction: column;\n        min-height: 100px;\n        max-height: calc(100% - 200px); }\n        body > #root > #center > #top > #editor-top {\n          position: relative;\n          flex: 0 0 auto;\n          flex-wrap: nowrap; }\n          body > #root > #center > #top > #editor-top > *:first-child {\n            padding-right: 4px; }\n          body > #root > #center > #top > #editor-top > *:last-child {\n            margin-left: auto;\n            padding-left: 4px; }\n          @media screen and (max-width: 400px) {\n            body > #root > #center > #top > #editor-top > .nav-item {\n              display: none; } }\n          body > #root > #center > #top > #editor-top .btn-group {\n            margin-bottom: -1px; }\n            body > #root > #center > #top > #editor-top .btn-group .btn {\n              border-bottom-left-radius: 0px;\n              border-bottom-right-radius: 0px; }\n              body > #root > #center > #top > #editor-top .btn-group .btn:not(.btn-light) {\n                color: white; }\n          body > #root > #center > #top > #editor-top .btn-run:hover {\n            background-color: #0092bc;\n            border-color: #bcf0ff; }\n          body > #root > #center > #top > #editor-top .btn-def-exp:hover {\n            background-color: #1c0800;\n            border-color: #fe5a1d; }\n          body > #root > #center > #top > #editor-top #tab-editor {\n            padding: 0px;\n            border: 0px; }\n          body > #root > #center > #top > #editor-top * {\n            font-size: 12px; }\n          body > #root > #center > #top > #editor-top .nav-link {\n            line-height: 1.2; }\n        body > #root > #center > #top > #editor-overlay {\n          position: absolute;\n          width: 100%;\n          height: 100%;\n          background-color: rgba(255, 255, 255, 0.25);\n          display: none;\n          z-index: 1; }\n        body > #root > #center > #top > #editor-container {\n          position: relative;\n          flex: 1 0 auto; }\n          body > #root > #center > #top > #editor-container > #editor {\n            position: absolute;\n            width: 100%;\n            height: 100%; }\n      body > #root > #center > #bottom {\n        position: relative;\n        display: flex;\n        flex: 1 0 auto;\n        min-height: 200px;\n        flex-direction: column; }\n        body > #root > #center > #bottom > #bottom-tab {\n          flex: 0 0 auto;\n          position: relative; }\n          body > #root > #center > #bottom > #bottom-tab > #nav-item-faust-ui {\n            display: none; }\n          body > #root > #center > #bottom > #bottom-tab > #nav-item-gui-builder {\n            display: none; }\n          body > #root > #center > #bottom > #bottom-tab button.btn-outline-light {\n            font-size: 15px;\n            border-color: transparent;\n            border-radius: 50%;\n            padding: 0rem 0.2rem 0.2rem 0.2rem;\n            line-height: 1;\n            color: inherit;\n            margin-right: -6px; }\n            body > #root > #center > #bottom > #bottom-tab button.btn-outline-light:hover {\n              background-color: rgba(192, 192, 192, 0.75); }\n          body > #root > #center > #bottom > #bottom-tab > .btn-group {\n            margin-left: auto;\n            padding-left: 4px;\n            margin-bottom: -1px; }\n            body > #root > #center > #bottom > #bottom-tab > .btn-group .btn {\n              border-color: transparent;\n              border-bottom-left-radius: 0px;\n              border-bottom-right-radius: 0px; }\n              body > #root > #center > #bottom > #bottom-tab > .btn-group .btn:hover {\n                background-color: #0092bc;\n                border-color: #bcf0ff; }\n              body > #root > #center > #bottom > #bottom-tab > .btn-group .btn:not(.btn-light) {\n                color: white; }\n        body > #root > #center > #bottom > #bottom-content {\n          position: relative;\n          flex: 1 1 auto;\n          display: flex;\n          flex-direction: column; }\n          body > #root > #center > #bottom > #bottom-content > div {\n            position: absolute;\n            width: 100%;\n            height: 100%; }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui.tab-pane:not(.show) {\n            display: unset;\n            visibility: hidden; }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui > #iframe-faust-ui {\n            display: block;\n            position: absolute;\n            visibility: hidden;\n            border: none;\n            width: 100%;\n            height: calc(100% - 10px); }\n          body > #root > #center > #bottom > #bottom-content > #faust-ui > #faust-ui-default {\n            top: 20%; }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder.tab-pane:not(.show) {\n            display: unset;\n            visibility: hidden; }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder > #iframe-gui-builder {\n            display: block;\n            position: absolute;\n            visibility: hidden;\n            border: none;\n            width: 100%;\n            height: calc(100% - 10px); }\n          body > #root > #center > #bottom > #bottom-content > #gui-builder > #gui-builder-default {\n            top: 20%; }\n          body > #root > #center > #bottom > #bottom-content > #diagram {\n            overflow: auto; }\n            body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-svg {\n              position: relative;\n              display: none;\n              margin: auto;\n              flex: 1 0 auto;\n              max-width: 100%;\n              max-height: 100%;\n              overflow: auto;\n              text-align: center; }\n              body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-svg > svg {\n                height: 100%;\n                width: 100%;\n                min-width: 20%;\n                max-width: 500%;\n                cursor: grab; }\n            body > #root > #center > #bottom > #bottom-content > #diagram > #diagram-default {\n              top: 20%; }\n      body > #root > #center > #alert-faust-code {\n        position: absolute;\n        bottom: 0px;\n        left: 0px;\n        right: 0px;\n        visibility: hidden; }\n      body > #root > #center .alert-faust-code {\n        display: inline-flex; }\n        body > #root > #center .alert-faust-code > span {\n          text-overflow: ellipsis;\n          width: 100%;\n          overflow: hidden;\n          white-space: nowrap;\n          line-height: 1; }\n        body > #root > #center .alert-faust-code > a {\n          line-height: 1; }\n        body > #root > #center .alert-faust-code > button {\n          padding: 7px;\n          outline: none; }\n      body > #root > #center > #modal-alert-faust-code-detail .modal-body {\n        font-size: 0.75rem; }\n    body > #root > #right {\n      position: relative;\n      display: flex;\n      padding: 15px;\n      margin: 0px;\n      width: 200px;\n      height: 100%;\n      flex: 0 0 auto;\n      font-size: 0.8em;\n      flex-direction: column;\n      max-width: calc(100% - 600px);\n      min-width: 200px;\n      overflow: auto;\n      scrollbar-width: none; }\n      body > #root > #right::-webkit-scrollbar {\n        display: none; }\n      @media screen and (max-width: 900px) {\n        body > #root > #right {\n          position: absolute;\n          border-radius: 0px 0px 10px 10px;\n          right: 0;\n          top: 32px;\n          max-width: calc(100% - 200px);\n          max-height: calc(100% - 32px);\n          z-index: 10;\n          padding-top: 0px;\n          padding-bottom: 15px;\n          background-color: #2b2b2b;\n          box-shadow: 0 0 5px black; } }\n      body > #root > #right .form-row {\n        margin-right: 0px;\n        margin-left: 0px;\n        width: 100%; }\n      body > #root > #right wave {\n        /* stylelint-disable-line selector-type-no-unknown */\n        overflow: hidden !important; }\n      body > #root > #right > #midi-ui {\n        position: relative;\n        display: flex;\n        flex: 0 0 auto;\n        flex-direction: column;\n        overflow: hidden; }\n      body > #root > #right > #input-ui {\n        position: relative;\n        display: flex;\n        flex: 1 0 auto;\n        flex-direction: column;\n        overflow: hidden; }\n        body > #root > #right > #input-ui > #source-ui {\n          position: relative; }\n          body > #root > #right > #input-ui > #source-ui > #source-overlay {\n            position: absolute;\n            width: 100%;\n            height: 100%;\n            background-color: rgba(255, 255, 255, 0.25);\n            display: none;\n            z-index: 5; }\n          body > #root > #right > #input-ui > #source-ui > #source-waveform {\n            background-color: #000; }\n          body > #root > #right > #input-ui > #source-ui > #source-controller {\n            position: absolute;\n            display: flex;\n            bottom: 0px;\n            z-index: 5;\n            opacity: 0.4;\n            transition: opacity 0.15s ease-in-out; }\n          body > #root > #right > #input-ui > #source-ui:hover > #source-controller {\n            opacity: 1; }\n        body > #root > #right > #input-ui > #input-gain {\n          position: relative;\n          margin-top: 10px; }\n          body > #root > #right > #input-ui > #input-gain > canvas {\n            position: relative;\n            width: 100%; }\n      body > #root > #right > #dsp-ui {\n        display: flex;\n        flex: 2 1 auto;\n        flex-direction: column; }\n        body > #root > #right > #dsp-ui #dsp-ui-default:not(.switch) {\n          pointer-events: none; }\n        body > #root > #right > #dsp-ui #dsp-ui-detail {\n          display: none;\n          width: 100%; }\n          body > #root > #right > #dsp-ui #dsp-ui-detail > li {\n            padding: 0px;\n            background-color: unset;\n            border-color: rgba(255, 255, 255, 0.125); }\n        body > #root > #right > #dsp-ui > #output-analyser-ui {\n          display: none; }\n      body > #root > #right > #output-ui {\n        margin-top: auto; }\n        body > #root > #right > #output-ui audio {\n          display: none; }\n        body > #root > #right > #output-ui > #btn-dac {\n          margin-top: 4px; }\n    body > #root .modal {\n      color: black; }\n    body > #root > #modal-export #export-loading {\n      display: none; }\n    body > #root > #modal-export #export-download {\n      display: none; }\n    body > #root > #modal-export #qr-code {\n      display: none;\n      margin-left: auto;\n      margin-right: auto; }\n    body > #root > #modal-export #export-error {\n      display: none; }\n  body .resizable {\n    position: absolute;\n    display: block;\n    z-index: 1;\n    background-repeat: no-repeat;\n    background-origin: content-box; }\n    body .resizable.resizable-left, body .resizable.resizable-right {\n      cursor: ew-resize;\n      height: 40px;\n      width: 10px;\n      top: calc(50% - 20px);\n      background-image: linear-gradient(90deg, transparent, transparent 3px, rgba(255, 255, 255, 0.5) 3px, rgba(255, 255, 255, 0.5) 4px, transparent 4px, transparent 6px, rgba(255, 255, 255, 0.5) 6px, rgba(255, 255, 255, 0.5) 7px, transparent 7px); }\n    body .resizable.resizable-left {\n      left: 0; }\n    body .resizable.resizable-right {\n      right: 0; }\n    body .resizable.resizable-top, body .resizable.resizable-bottom {\n      cursor: ns-resize;\n      height: 10px;\n      width: 40px;\n      left: calc(50% - 20px);\n      background-image: linear-gradient(0deg, transparent, transparent 3px, rgba(255, 255, 255, 0.5) 3px, rgba(255, 255, 255, 0.5) 4px, transparent 4px, transparent 6px, rgba(255, 255, 255, 0.5) 6px, rgba(255, 255, 255, 0.5) 7px, transparent 7px); }\n    body .resizable.resizable-top {\n      top: 0; }\n    body .resizable.resizable-bottom {\n      bottom: 0; }\n    body .resizable.resizable-left.resizable-bottom {\n      cursor: sw-resize;\n      height: 20px;\n      width: 20px;\n      bottom: 0px;\n      top: auto;\n      left: 0px;\n      background-image: linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.5) 5px, rgba(255, 255, 255, 0.5) 6px, transparent 6px, transparent 8px, rgba(255, 255, 255, 0.5) 8px, rgba(255, 255, 255, 0.5) 9px, transparent 9px); }\n\n.btn-overlay {\n  font-size: 12px;\n  border-color: transparent;\n  border-radius: 0px;\n  padding: 0rem 0.1rem;\n  z-index: 3; }\n  .btn-overlay.active {\n    color: unset !important;\n    background-color: unset !important;\n    border-color: transparent transparent #f8f9fa transparent !important;\n    border-bottom-color: #f8f9fa !important; }\n    .btn-overlay.active:hover {\n      color: #212529 !important;\n      background-color: #f8f9fa !important;\n      border-color: #f8f9fa !important; }\n  .btn-overlay:focus {\n    box-shadow: none !important; }\n  .btn-overlay.btn-overlay-icon {\n    width: 20px; }\n\n.monaco-decoration-error {\n  background: red;\n  width: 5px !important;\n  margin-left: 3px; }\n\n.tab-content > .tab-pane {\n  z-index: -1; }\n  .tab-content > .tab-pane.active {\n    display: block;\n    z-index: 0; }\n\n.dropright .dropdown-toggle.submenu-toggle::after {\n  right: 0;\n  position: absolute;\n  padding-right: 0.8em;\n  margin-top: 0.6em; }\n\n.dropright.submenu:hover > .dropdown-menu {\n  display: block;\n  margin-left: -1px; }\n\n.btn:focus {\n  box-shadow: none !important; }\n\n@media screen and (max-width: 400px) {\n  div.tooltip {\n    display: none; } }\n", ""]);
 // Exports
 module.exports = exports;
 
@@ -31732,7 +31732,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, dependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.27\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.9.6\",\"@babel/plugin-proposal-class-properties\":\"^7.8.3\",\"@babel/plugin-transform-runtime\":\"^7.9.6\",\"@babel/preset-env\":\"^7.9.6\",\"@babel/preset-typescript\":\"^7.9.0\",\"@babel/runtime\":\"^7.9.6\",\"@fortawesome/fontawesome-free\":\"^5.13.0\",\"@types/bootstrap\":\"^4.3.2\",\"@types/jquery\":\"^3.3.38\",\"@types/jszip\":\"^3.1.7\",\"@types/qrcode\":\"^1.3.4\",\"@types/wavesurfer.js\":\"^3.3.0\",\"@typescript-eslint/eslint-plugin\":\"^2.33.0\",\"@typescript-eslint/parser\":\"^2.33.0\",\"babel-loader\":\"^8.1.0\",\"bootstrap\":\"^4.5.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.1\",\"css-loader\":\"^3.5.3\",\"directory-tree\":\"^2.2.4\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.1.0\",\"eslint-plugin-import\":\"^2.20.2\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.4.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.0\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.2.1\",\"stylelint\":\"^13.3.3\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.2\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.43.0\",\"webpack-cli\":\"^3.3.11\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.3\"},\"dependencies\":{}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.28\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.9.6\",\"@babel/plugin-proposal-class-properties\":\"^7.8.3\",\"@babel/plugin-transform-runtime\":\"^7.9.6\",\"@babel/preset-env\":\"^7.9.6\",\"@babel/preset-typescript\":\"^7.9.0\",\"@babel/runtime\":\"^7.9.6\",\"@fortawesome/fontawesome-free\":\"^5.13.0\",\"@types/bootstrap\":\"^4.3.2\",\"@types/jquery\":\"^3.3.38\",\"@types/jszip\":\"^3.1.7\",\"@types/qrcode\":\"^1.3.4\",\"@types/wavesurfer.js\":\"^3.3.0\",\"@typescript-eslint/eslint-plugin\":\"^2.33.0\",\"@typescript-eslint/parser\":\"^2.33.0\",\"babel-loader\":\"^8.1.0\",\"bootstrap\":\"^4.5.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.1\",\"css-loader\":\"^3.5.3\",\"directory-tree\":\"^2.2.4\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.1.0\",\"eslint-plugin-import\":\"^2.20.2\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.4.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.0\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.2.1\",\"stylelint\":\"^13.3.3\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.2\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.43.0\",\"webpack-cli\":\"^3.3.11\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.3\"},\"dependencies\":{}}");
 
 /***/ }),
 
@@ -35250,37 +35250,37 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-$( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee10() {
-  var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, server, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
+$( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee11() {
+  var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, server, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
 
-  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee10$(_context10) {
+  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee11$(_context11) {
     while (1) {
-      switch (_context10.prev = _context10.next) {
+      switch (_context11.prev = _context11.next) {
         case 0:
-          _context10.next = 2;
+          _context11.next = 2;
           return __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.t.bind(null, /*! faust2webaudio */ "./node_modules/faust2webaudio/dist/index.min.js", 7));
 
         case 2:
-          _yield$import = _context10.sent;
+          _yield$import = _context11.sent;
           Faust = _yield$import.Faust;
           faust = new Faust({
             wasmLocation: "./libfaust-wasm.wasm",
             dataLocation: "./libfaust-wasm.data"
           });
-          _context10.next = 7;
+          _context11.next = 7;
           return faust.ready;
 
         case 7:
-          _context10.next = 9;
+          _context11.next = 9;
           return fetch("./primitives.lib");
 
         case 9:
-          faustPrimitiveLibFile = _context10.sent;
-          _context10.next = 12;
+          faustPrimitiveLibFile = _context11.sent;
+          _context11.next = 12;
           return faustPrimitiveLibFile.text();
 
         case 12:
-          faustPrimitiveLib = _context10.sent;
+          faustPrimitiveLib = _context11.sent;
           faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
           window.faust = faust;
           /**
@@ -35398,11 +35398,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            */
 
 
-          _context10.next = 27;
+          _context11.next = 27;
           return initEditor(faust);
 
         case 27:
-          _yield$initEditor = _context10.sent;
+          _yield$initEditor = _context11.sent;
           editor = _yield$initEditor.editor;
           monaco = _yield$initEditor.monaco;
           editor.layout(); // Force editor to fill div
@@ -35803,7 +35803,9 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             plotFFTOverlap: 2,
             drawSpectrogram: false,
             enableGuiBuilder: false,
-            guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/"
+            guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
+            exportPlatform: "owl",
+            exportArch: "owl"
           }, loadEditorParams()), {}, {
             args: {
               "-I": ["libraries/", "project/"]
@@ -36090,33 +36092,44 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         saveEditorParams();
                       }
 
+                      if (urlParams.has("mode")) {
+                        if (urlParams.get("mode") === "amstram") {
+                          compileOptions.exportPlatform = "esp32";
+                          compileOptions.exportArch = "gramophoneFlash";
+                          $("#btn-def-exp-content").html("Gramo");
+                          saveEditorParams();
+                          $("#export-platform").val(compileOptions.exportPlatform);
+                          $("#export-arch").val(compileOptions.exportArch); // getTargets(server);
+                        }
+                      }
+
                       if (!urlParams.has("code")) {
-                        _context2.next = 19;
+                        _context2.next = 20;
                         break;
                       }
 
                       codeURL = urlParams.get("code");
                       _name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                       uiEnv.fileManager.renameSelected("".concat(_name, ".dsp"));
-                      _context2.prev = 8;
-                      _context2.next = 11;
+                      _context2.prev = 9;
+                      _context2.next = 12;
                       return fetch(codeURL);
 
-                    case 11:
+                    case 12:
                       response = _context2.sent;
-                      _context2.next = 14;
+                      _context2.next = 15;
                       return response.text();
 
-                    case 14:
+                    case 15:
                       code = _context2.sent;
-                      _context2.next = 19;
+                      _context2.next = 20;
                       break;
 
-                    case 17:
-                      _context2.prev = 17;
-                      _context2.t0 = _context2["catch"](8);
+                    case 18:
+                      _context2.prev = 18;
+                      _context2.t0 = _context2["catch"](9);
 
-                    case 19:
+                    case 20:
                       if (urlParams.has("code_string")) {
                         code = urlParams.get("code_string");
                       }
@@ -36133,39 +36146,39 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       }
 
                       if (!code) {
-                        _context2.next = 31;
+                        _context2.next = 32;
                         break;
                       }
 
                       uiEnv.fileManager.setValue(code);
 
                       if (!(urlParams.has("autorun") && urlParams.get("autorun"))) {
-                        _context2.next = 31;
+                        _context2.next = 32;
                         break;
                       }
 
-                      _context2.next = 27;
+                      _context2.next = 28;
                       return runDsp(code);
 
-                    case 27:
+                    case 28:
                       compileResult = _context2.sent;
 
                       if (compileResult.success) {
-                        _context2.next = 30;
+                        _context2.next = 31;
                         break;
                       }
 
                       return _context2.abrupt("return");
 
-                    case 30:
+                    case 31:
                       if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
 
-                    case 31:
+                    case 32:
                     case "end":
                       return _context2.stop();
                   }
                 }
-              }, _callee2, null, [[8, 17]]);
+              }, _callee2, null, [[9, 18]]);
             }));
 
             return function loadURLParams(_x2) {
@@ -36234,7 +36247,91 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * Append options to export model
            */
 
-          server = "https://faustservicecloud.grame.fr";
+          server = "https://faustservicecloud.grame.fr"; // If true, the download argument will force the download of the generated target
+
+          exportProgram = download => {
+            $("#export-download").hide();
+            $("#export-loading").css("display", "inline-block");
+            $("#def-exp-icon").hide();
+            $("#def-exp-loading").css("display", "inline-block");
+            $("#qr-code").hide();
+            $("#export-error").hide();
+            var form = new FormData();
+            var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+
+            try {
+              // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+              // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+              var expandedCode = uiEnv.fileManager.mainCode;
+              form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
+            } catch (e) {
+              $("#export-loading").css("display", "none");
+              $("#def-exp-loading").css("display", "none");
+              $("#def-exp-icon").show();
+              $("#export-error").html(e).show();
+              return;
+            }
+
+            $.ajax({
+              method: "POST",
+              url: "".concat(server, "/filepost"),
+              data: form,
+              contentType: false,
+              processData: false
+            }).done(shaKey => {
+              var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+
+              if (matched) {
+                var plat = $("#export-platform").val();
+                var arch = $("#export-arch").val();
+
+                var _path3 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
+
+                $.ajax({
+                  method: "GET",
+                  url: "".concat(_path3, "/precompile")
+                }).done(result => {
+                  if (result === "DONE") {
+                    var href = "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip");
+                    $("#a-export-download").attr({
+                      href
+                    });
+                    $("#export-download").show();
+
+                    if (download === true) {
+                      $("#export-download").click();
+                    }
+
+                    $("#qr-code").show();
+                    qrcode__WEBPACK_IMPORTED_MODULE_4__["toCanvas"]($("#qr-code")[0], "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip"));
+                    return;
+                  }
+
+                  $("#export-loading").css("display", "none");
+                  $("#def-exp-loading").css("display", "none");
+                  $("#def-exp-icon").show();
+                  $("#export-error").html(result).show();
+                }).fail((jqXHR, textStatus) => {
+                  $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                }).always(() => {
+                  $("#export-loading").css("display", "none");
+                  $("#def-exp-loading").css("display", "none");
+                  $("#def-exp-icon").show();
+                });
+                return;
+              }
+
+              $("#export-loading").css("display", "none");
+              $("#def-exp-loading").css("display", "none");
+              $("#def-exp-icon").show();
+              $("#export-error").html(shaKey).show();
+            }).fail((jqXHR, textStatus) => {
+              $("#export-loading").css("display", "none");
+              $("#def-exp-loading").css("display", "none");
+              $("#def-exp-icon").show();
+              $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+            });
+          };
 
           getTargets = server => {
             $("#export-platform").add("#export-arch").empty();
@@ -36247,7 +36344,9 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
               if (plats.length) {
                 plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                targets[plats[0]].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                $("#export-platform").val(compileOptions.exportPlatform);
+                targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                $("#export-arch").val(compileOptions.exportArch);
               }
 
               $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
@@ -36255,75 +36354,21 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
               });
               $("#export-platform").on("change", e => {
-                var plat = e.currentTarget.value;
+                compileOptions.exportPlatform = e.currentTarget.value;
+                saveEditorParams();
                 $("#export-arch").empty();
-                targets[plat].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+              });
+              $("#export-arch").on("change", e => {
+                compileOptions.exportArch = e.currentTarget.value;
+                saveEditorParams(); // eslint-disable-next-line no-console
+
+                console.log(compileOptions);
               });
               $("#export-download").on("click", () => $("#a-export-download")[0].click());
               $("#a-export-download").on("click", e => e.stopPropagation());
               $("#export-submit").prop("disabled", false).on("click", () => {
-                $("#export-download").hide();
-                $("#export-loading").css("display", "inline-block");
-                $("#qr-code").hide();
-                $("#export-error").hide();
-                var form = new FormData();
-                var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-
-                try {
-                  // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
-                  // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-                  var expandedCode = uiEnv.fileManager.mainCode;
-                  form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
-                } catch (e) {
-                  $("#export-loading").css("display", "none");
-                  $("#export-error").html(e).show();
-                  return;
-                }
-
-                $.ajax({
-                  method: "POST",
-                  url: "".concat(server, "/filepost"),
-                  data: form,
-                  contentType: false,
-                  processData: false
-                }).done(shaKey => {
-                  var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-
-                  if (matched) {
-                    var plat = $("#export-platform").val();
-                    var arch = $("#export-arch").val();
-
-                    var _path3 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
-
-                    $.ajax({
-                      method: "GET",
-                      url: "".concat(_path3, "/precompile")
-                    }).done(result => {
-                      if (result === "DONE") {
-                        var href = "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip");
-                        $("#a-export-download").attr({
-                          href
-                        });
-                        $("#export-download").show();
-                        $("#qr-code").show();
-                        qrcode__WEBPACK_IMPORTED_MODULE_4__["toCanvas"]($("#qr-code")[0], "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip"));
-                        return;
-                      }
-
-                      $("#export-loading").css("display", "none");
-                      $("#export-error").html(result).show();
-                    }).fail((jqXHR, textStatus) => {
-                      $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                    }).always(() => $("#export-loading").css("display", "none"));
-                    return;
-                  }
-
-                  $("#export-loading").css("display", "none");
-                  $("#export-error").html(shaKey).show();
-                }).fail((jqXHR, textStatus) => {
-                  $("#export-loading").css("display", "none");
-                  $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                });
+                exportProgram(false);
               });
             }).catch(() => undefined);
           };
@@ -36724,30 +36769,30 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           }();
 
           if (!navigator.mediaDevices) {
-            _context10.next = 119;
+            _context11.next = 120;
             break;
           }
 
-          _context10.prev = 104;
-          _context10.next = 107;
+          _context11.prev = 105;
+          _context11.next = 108;
           return navigator.mediaDevices.getUserMedia({
             audio: true
           });
 
-        case 107:
-          _context10.next = 111;
+        case 108:
+          _context11.next = 112;
           break;
 
-        case 109:
-          _context10.prev = 109;
-          _context10.t0 = _context10["catch"](104);
+        case 110:
+          _context11.prev = 110;
+          _context11.t0 = _context11["catch"](105);
 
-        case 111:
-          _context10.next = 113;
+        case 112:
+          _context11.next = 114;
           return navigator.mediaDevices.enumerateDevices();
 
-        case 113:
-          devices = _context10.sent;
+        case 114:
+          devices = _context11.sent;
           $("#input-ui-default").hide();
           $selectInput = $("#select-audio-input").prop("disabled", false);
 
@@ -36775,7 +36820,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           });
 
-        case 119:
+        case 120:
           // DSP info
           refreshDspUI();
 
@@ -37038,6 +37083,21 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }
             }, _callee9);
+          }))); // Default export button
+
+          $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee10() {
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee10$(_context10) {
+              while (1) {
+                switch (_context10.prev = _context10.next) {
+                  case 0:
+                    exportProgram(true);
+
+                  case 1:
+                  case "end":
+                    return _context10.stop();
+                }
+              }
+            }, _callee10);
           })));
           /**
            * Bind message event for changing dsp params on receiving msg from ui window
@@ -37342,19 +37402,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           }).resize(); // autorunning
 
-          _context10.next = 148;
+          _context11.next = 150;
           return initAudioCtx(audioEnv);
 
-        case 148:
+        case 150:
           // Analysers
           initAnalysersUI(uiEnv, audioEnv);
           $("#output-analyser-ui").hide();
           uiEnv.outputScope.disabled = true;
           $("#select-audio-input").change();
-          _context10.next = 154;
+          _context11.next = 156;
           return loadURLParams(window.location.search);
 
-        case 154:
+        case 156:
           $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
           $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
           if (supportAudioWorklet) $("#check-worklet").prop({
@@ -37370,12 +37430,12 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
           window.faustEnv = faustEnv;
 
-        case 165:
+        case 167:
         case "end":
-          return _context10.stop();
+          return _context11.stop();
       }
     }
-  }, _callee10, null, [[104, 109]]);
+  }, _callee11, null, [[105, 110]]);
 })));
 /**
  * Init audio environment, audioNodes
@@ -37386,11 +37446,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
  */
 
 var initAudioCtx = /*#__PURE__*/function () {
-  var _ref11 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee11(audioEnv, deviceId) {
+  var _ref12 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee12(audioEnv, deviceId) {
     var audioCtx, unlockAudioContext, stream;
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee11$(_context11) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee12$(_context12) {
       while (1) {
-        switch (_context11.prev = _context11.next) {
+        switch (_context12.prev = _context12.next) {
           case 0:
             if (!audioEnv.audioCtx) {
               audioCtx = new (window.webkitAudioContext || window.AudioContext)({
@@ -37424,21 +37484,21 @@ var initAudioCtx = /*#__PURE__*/function () {
             if (!audioEnv.inputs) audioEnv.inputs = {};
 
             if (!(deviceId && !audioEnv.inputs[deviceId])) {
-              _context11.next = 12;
+              _context12.next = 12;
               break;
             }
 
             if (!(deviceId === "-1")) {
-              _context11.next = 8;
+              _context12.next = 8;
               break;
             }
 
             if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
-            _context11.next = 12;
+            _context12.next = 12;
             break;
 
           case 8:
-            _context11.next = 10;
+            _context12.next = 10;
             return navigator.mediaDevices.getUserMedia({
               audio: {
                 deviceId,
@@ -37449,7 +37509,7 @@ var initAudioCtx = /*#__PURE__*/function () {
             });
 
           case 10:
-            stream = _context11.sent;
+            stream = _context12.sent;
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
 
           case 12:
@@ -37480,18 +37540,18 @@ var initAudioCtx = /*#__PURE__*/function () {
               audioEnv.destination.channelInterpretation = "discrete";
             }
 
-            return _context11.abrupt("return", audioEnv);
+            return _context12.abrupt("return", audioEnv);
 
           case 24:
           case "end":
-            return _context11.stop();
+            return _context12.stop();
         }
       }
-    }, _callee11);
+    }, _callee12);
   }));
 
   return function initAudioCtx(_x5, _x6) {
-    return _ref11.apply(this, arguments);
+    return _ref12.apply(this, arguments);
   };
 }();
 /**
@@ -37556,26 +37616,26 @@ var refreshDspUI = node => {
 
 
 var initEditor = /*#__PURE__*/function () {
-  var _ref12 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee12(faust) {
+  var _ref13 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee13(faust) {
     var code, polycode, monaco, _yield$faustLangRegis, faustLang, providers, saveCode, editor, faustDocURL, showDoc;
 
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee12$(_context12) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee13$(_context13) {
       while (1) {
-        switch (_context12.prev = _context12.next) {
+        switch (_context13.prev = _context13.next) {
           case 0:
             code = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;"; // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
             polycode = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {\n    freq = hslider(\"freq\", 440, 40, 8000, 1);\n    gain = hslider(\"gain\", 0.5, 0, 1, 0.01);\n    gate = button(\"gate\");\n};\neffect = dm.freeverb_demo;";
-            _context12.next = 4;
+            _context13.next = 4;
             return __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.t.bind(null, /*! monaco-editor/esm/vs/editor/editor.api */ "./include-loader!./node_modules/monaco-editor/esm/vs/editor/editor.api.js", 7));
 
           case 4:
-            monaco = _context12.sent;
-            _context12.next = 7;
+            monaco = _context13.sent;
+            _context13.next = 7;
             return Object(_monaco_faust_register__WEBPACK_IMPORTED_MODULE_21__["faustLangRegister"])(monaco, faust);
 
           case 7:
-            _yield$faustLangRegis = _context12.sent;
+            _yield$faustLangRegis = _context13.sent;
             faustLang = _yield$faustLangRegis.faustLang;
             providers = _yield$faustLangRegis.providers;
             saveCode = false;
@@ -37618,21 +37678,21 @@ var initEditor = /*#__PURE__*/function () {
 
             $("#btn-docs").off("click").on("click", showDoc);
             $(window).on("resize", () => editor.layout());
-            return _context12.abrupt("return", {
+            return _context13.abrupt("return", {
               editor,
               monaco
             });
 
           case 19:
           case "end":
-            return _context12.stop();
+            return _context13.stop();
         }
       }
-    }, _callee12);
+    }, _callee13);
   }));
 
   return function initEditor(_x7) {
-    return _ref12.apply(this, arguments);
+    return _ref13.apply(this, arguments);
   };
 }();
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js"), __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))

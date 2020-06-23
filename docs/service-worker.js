@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.27.1589360156086"
+    prefix: "1.0.28.1592904496453"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -108,7 +108,7 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
 
   workbox.precacheAndRoute([{
     "url": ".DS_Store",
-    "revision": "8a72fdcc69b26f1dc157cdf6a2d29e13"
+    "revision": "e46499c714a2f326cfefd9f8cd19f664"
   }, {
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
@@ -166,6 +166,9 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
   }, {
     "url": "examples.json",
     "revision": "6e2996f32cfe32386ad8034756b21d56"
+  }, {
+    "url": "examples/.DS_Store",
+    "revision": "f67f30d8845b94b99678efa6a30aa91b"
   }, {
     "url": "examples/SAM/16_channel_volume/16_channel_volume.dsp",
     "revision": "b23d1ecc4e0ecb0d904b1a905f79c990"
@@ -370,6 +373,9 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
   }, {
     "url": "examples/dynamic/volume.dsp",
     "revision": "3b0febd96a24dbcf252b271516e5ce9d"
+  }, {
+    "url": "examples/filtering/.DS_Store",
+    "revision": "a52b7828aec96e163a052906294a7144"
   }, {
     "url": "examples/filtering/APF.dsp",
     "revision": "e7997002c33fbbebcdcf9708ee00e9b6"
@@ -813,10 +819,10 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
     "revision": "b22ed1b5b20db59704b843dd46076aa5"
   }, {
     "url": "index.html",
-    "revision": "3563bea62a4a298cbc607bcd0fd579e6"
+    "revision": "978ea0e4e9f39a81e5927cb3ef1bae55"
   }, {
     "url": "index.js",
-    "revision": "4b66bc40f5a2b5c095978a10e72a82f7"
+    "revision": "2c00690767e08def110f4ef8f81a011c"
   }, {
     "url": "js/59f5246d165b91115b41.js",
     "revision": "3032c802b8fa7e27d242d603c7314b4a"
