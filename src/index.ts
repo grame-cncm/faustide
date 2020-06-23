@@ -654,13 +654,15 @@ $(async () => {
             saveEditorParams();
         }
         if (urlParams.has("mode")) {
-          if(urlParams.get("mode") == "amstram"){
-            compileOptions.exportPlatform = "esp32";
-            compileOptions.exportArch = "gramophoneFlash";
-            $("#btn-def-exp-content").html("Gramo");
-            saveEditorParams();
-            getTargets(server);
-          }
+            if (urlParams.get("mode") === "amstram") {
+                compileOptions.exportPlatform = "esp32";
+                compileOptions.exportArch = "gramophoneFlash";
+                $("#btn-def-exp-content").html("Gramo");
+                saveEditorParams();
+                $("#export-platform").val(compileOptions.exportPlatform);
+                $("#export-arch").val(compileOptions.exportArch);
+                // getTargets(server);
+            }
         }
         let code;
         if (urlParams.has("code")) {
@@ -730,81 +732,80 @@ $(async () => {
     const server = "https://faustservicecloud.grame.fr";
     // If true, the download argument will force the download of the generated target
     const exportProgram = (download: boolean) => {
-      $("#export-download").hide();
-      $("#export-loading").css("display", "inline-block");
-      $("#def-exp-icon").hide();
-      $("#def-exp-loading").css("display", "inline-block");
-      $("#qr-code").hide();
-      $("#export-error").hide();
-      const form = new FormData();
-      const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-      try {
-          // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
-          // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-          const expandedCode = uiEnv.fileManager.mainCode;
-          form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
-      } catch (e) {
-          $("#export-loading").css("display", "none");
-          $("#def-exp-loading").css("display", "none");
-          $("#def-exp-icon").show();
-          $("#export-error").html(e).show();
-          return;
-      }
-      $.ajax({
-          method: "POST",
-          url: `${server}/filepost`,
-          data: form,
-          contentType: false,
-          processData: false
-      }).done((shaKey) => {
-          const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-          if (matched) {
-              const plat = $("#export-platform").val();
-              const arch = $("#export-arch").val();
-              const path = `${server}/${shaKey}/${plat}/${arch}`;
-              $.ajax({
-                  method: "GET",
-                  url: `${path}/precompile`
-              }).done((result) => {
-                  if (result === "DONE") {
-                      const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
-                      $("#a-export-download").attr({ href });
-                      $("#export-download").show();
-                      if(download == true){ 
-                        $("#export-download").click();
-                      }
-                      $("#qr-code").show();
-                      QRCode.toCanvas(
-                          $<HTMLCanvasElement>("#qr-code")[0],
-                          `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
-                      );
-                      return;
-                  }
-                  $("#export-loading").css("display", "none");
-                  $("#def-exp-loading").css("display", "none");
-                  $("#def-exp-icon").show();
-                  $("#export-error").html(result).show();
-              }).fail((jqXHR, textStatus) => {
-                  $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-              }).always(() => 
-                {
-                  $("#export-loading").css("display", "none");
-                  $("#def-exp-loading").css("display", "none");
-                  $("#def-exp-icon").show();
+        $("#export-download").hide();
+        $("#export-loading").css("display", "inline-block");
+        $("#def-exp-icon").hide();
+        $("#def-exp-loading").css("display", "inline-block");
+        $("#qr-code").hide();
+        $("#export-error").hide();
+        const form = new FormData();
+        const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+        try {
+            // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
+            // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            const expandedCode = uiEnv.fileManager.mainCode;
+            form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
+        } catch (e) {
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(e).show();
+            return;
+        }
+        $.ajax({
+            method: "POST",
+            url: `${server}/filepost`,
+            data: form,
+            contentType: false,
+            processData: false
+        }).done((shaKey) => {
+            const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+            if (matched) {
+                const plat = $("#export-platform").val();
+                const arch = $("#export-arch").val();
+                const path = `${server}/${shaKey}/${plat}/${arch}`;
+                $.ajax({
+                    method: "GET",
+                    url: `${path}/precompile`
+                }).done((result) => {
+                    if (result === "DONE") {
+                        const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                        $("#a-export-download").attr({ href });
+                        $("#export-download").show();
+                        if (download === true) {
+                            $("#export-download").click();
+                        }
+                        $("#qr-code").show();
+                        QRCode.toCanvas(
+                            $<HTMLCanvasElement>("#qr-code")[0],
+                            `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
+                        );
+                        return;
+                    }
+                    $("#export-loading").css("display", "none");
+                    $("#def-exp-loading").css("display", "none");
+                    $("#def-exp-icon").show();
+                    $("#export-error").html(result).show();
+                }).fail((jqXHR, textStatus) => {
+                    $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+                }).always(() => {
+                    $("#export-loading").css("display", "none");
+                    $("#def-exp-loading").css("display", "none");
+                    $("#def-exp-icon").show();
                 });
-              return;
-          }
-          $("#export-loading").css("display", "none");
-          $("#def-exp-loading").css("display", "none");
-          $("#def-exp-icon").show();
-          $("#export-error").html(shaKey).show();
-      }).fail((jqXHR, textStatus) => {
-          $("#export-loading").css("display", "none");
-          $("#def-exp-loading").css("display", "none");
-          $("#def-exp-icon").show();
-          $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-      });
-    }
+                return;
+            }
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(shaKey).show();
+        }).fail((jqXHR, textStatus) => {
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+        });
+    };
     const getTargets = (server: string) => {
         $("#export-platform").add("#export-arch").empty();
         $("#export-platform").off("change");
@@ -832,14 +833,15 @@ $(async () => {
                     targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                 });
                 $<HTMLSelectElement>("#export-arch").on("change", (e) => {
-                  compileOptions.exportArch = e.currentTarget.value;
-                  saveEditorParams();
-                  console.log(compileOptions);
+                    compileOptions.exportArch = e.currentTarget.value;
+                    saveEditorParams();
+                    // eslint-disable-next-line no-console
+                    console.log(compileOptions);
                 });
                 $("#export-download").on("click", () => $("#a-export-download")[0].click());
                 $("#a-export-download").on("click", e => e.stopPropagation());
                 $("#export-submit").prop("disabled", false).on("click", () => {
-                  exportProgram(false);
+                    exportProgram(false);
                 });
             })
             .catch(() => undefined);
