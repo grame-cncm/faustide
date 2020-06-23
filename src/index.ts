@@ -135,7 +135,6 @@ $(async () => {
      * @returns {(FaustEditorCompileOptions | {})}
      */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
-      console.log("Loading editor params");
         const clientVersion = localStorage.getItem("faust_editor_version");
         if (clientVersion !== VERSION) return {};
         const str = localStorage.getItem("faust_editor_params");
@@ -658,10 +657,9 @@ $(async () => {
           if(urlParams.get("mode") == "amstram"){
             compileOptions.exportPlatform = "esp32";
             compileOptions.exportArch = "gramophoneFlash";
-            $("#btn-target-content").html("Gramophone");
+            $("#btn-def-exp-content").html("Gramo");
             saveEditorParams();
             getTargets(server);
-            console.log("Done parsing URL");
           }
         }
         let code;
@@ -730,10 +728,12 @@ $(async () => {
      * Append options to export model
      */
     const server = "https://faustservicecloud.grame.fr";
+    // If true, the download argument will force the download of the generated target
     const exportProgram = (download: boolean) => {
       $("#export-download").hide();
       $("#export-loading").css("display", "inline-block");
-      $("#export-target-loading").css("display", "inline-block");
+      $("#def-exp-icon").hide();
+      $("#def-exp-loading").css("display", "inline-block");
       $("#qr-code").hide();
       $("#export-error").hide();
       const form = new FormData();
@@ -745,7 +745,8 @@ $(async () => {
           form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
       } catch (e) {
           $("#export-loading").css("display", "none");
-          $("#export-target-loading").css("display", "none");
+          $("#def-exp-loading").css("display", "none");
+          $("#def-exp-icon").show();
           $("#export-error").html(e).show();
           return;
       }
@@ -780,23 +781,27 @@ $(async () => {
                       return;
                   }
                   $("#export-loading").css("display", "none");
-                  $("#export-target-loading").css("display", "none");
+                  $("#def-exp-loading").css("display", "none");
+                  $("#def-exp-icon").show();
                   $("#export-error").html(result).show();
               }).fail((jqXHR, textStatus) => {
                   $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
               }).always(() => 
                 {
                   $("#export-loading").css("display", "none");
-                  $("#export-target-loading").css("display", "none");
+                  $("#def-exp-loading").css("display", "none");
+                  $("#def-exp-icon").show();
                 });
               return;
           }
           $("#export-loading").css("display", "none");
-          $("#export-target-loading").css("display", "none");
+          $("#def-exp-loading").css("display", "none");
+          $("#def-exp-icon").show();
           $("#export-error").html(shaKey).show();
       }).fail((jqXHR, textStatus) => {
           $("#export-loading").css("display", "none");
-          $("#export-target-loading").css("display", "none");
+          $("#def-exp-loading").css("display", "none");
+          $("#def-exp-icon").show();
           $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
       });
     }
@@ -1327,7 +1332,7 @@ $(async () => {
         // node.setOutputParamHandler(dspOutputHandler);
     });
     // Default export button
-    $(".btn-target").prop("disabled", false).on("click", async () => {
+    $(".btn-def-exp").prop("disabled", false).on("click", async () => {
         exportProgram(true);
     });
     /**

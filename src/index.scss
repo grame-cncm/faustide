@@ -71,14 +71,14 @@ body {
                         border-color: $color;
                     }
                 }
-                & > #btn-target {
+                & > #btn-def-exp {
                     $color: #fe5a1d;
                     border-color: $color;
                     &:hover {
                         background-color: darken($color, 30%);
                         border-color: $color;
                     }
-                    & #export-target-loading {
+                    & #def-exp-loading {
                         display: none;
                     }
                 }
@@ -222,7 +222,7 @@ body {
                             border-color: $color;
                         }
                     }
-                    & .btn-target {
+                    & .btn-def-exp {
                         $color: #fe5a1d;
                         &:hover {
                             background-color: darken($color, 50%);
