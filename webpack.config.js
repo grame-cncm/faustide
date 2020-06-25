@@ -66,7 +66,7 @@ const config = {
   plugins: [
     new CleanWebpackPlugin(),
     new CopyWebpackPlugin([
-      { from: './src/static', to: './' },
+      { from: './src/static', to: './', globOptions: { ignore: ['**/.DS_Store'] } },
       { from: './src/monaco-faust/primitives.lib', to: './' },
       { from: './node_modules/faust2webaudio/dist/libfaust-wasm.*', to: './', flatten: true },
       { from: './node_modules/faust-ui/dist/faust-ui.*', to: './', flatten: true },
