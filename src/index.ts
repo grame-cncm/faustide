@@ -34,7 +34,7 @@ import { FileManager } from "./FileManager";
 import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
-import VERSION from "./version";
+import * as VERSION from "./version";
 
 declare global {
     interface Window {
@@ -655,13 +655,11 @@ $(async () => {
         }
         if (urlParams.has("mode")) {
             if (urlParams.get("mode") === "amstram") {
-                compileOptions.exportPlatform = "esp32";
-                compileOptions.exportArch = "gramophoneFlash";
+                const exportPlatform = "esp32";
+                const exportArch = "gramophoneFlash";
                 $("#btn-def-exp-content").html("Gramo");
-                saveEditorParams();
-                $("#export-platform").val(compileOptions.exportPlatform);
-                $("#export-arch").val(compileOptions.exportArch);
-                // getTargets(server);
+                $("#export-platform").val(exportPlatform).change();
+                $("#export-arch").val(exportArch).change();
             }
         }
         let code;
@@ -806,47 +804,49 @@ $(async () => {
             $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
         });
     };
-    const getTargets = (server: string) => {
+    const getTargets = async (server: string) => {
         $("#export-platform").add("#export-arch").empty();
         $("#export-platform").off("change");
         $("#export-download").off("click");
         $("#a-export-download").off("click");
         $("#export-submit").prop("disabled", true).off("click");
-        fetch(`${server}/targets`)
-            .then(response => response.json())
-            .then((targets: FaustExportTargets) => {
-                const plats = Object.keys(targets);
-                if (plats.length) {
-                    plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                    $("#export-platform").val(compileOptions.exportPlatform);
-                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                    $("#export-arch").val(compileOptions.exportArch);
-                }
-                $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
-                $("#export-name").on("keydown", (e) => {
-                    if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
-                });
-                $<HTMLSelectElement>("#export-platform").on("change", (e) => {
-                    compileOptions.exportPlatform = e.currentTarget.value;
-                    saveEditorParams();
-                    $("#export-arch").empty();
-                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                });
-                $<HTMLSelectElement>("#export-arch").on("change", (e) => {
-                    compileOptions.exportArch = e.currentTarget.value;
-                    saveEditorParams();
-                    // eslint-disable-next-line no-console
-                    console.log(compileOptions);
-                });
-                $("#export-download").on("click", () => $("#a-export-download")[0].click());
-                $("#a-export-download").on("click", e => e.stopPropagation());
-                $("#export-submit").prop("disabled", false).on("click", () => {
-                    exportProgram(false);
-                });
-            })
-            .catch(() => undefined);
+        const response = await fetch(`${server}/targets`);
+        const targets: FaustExportTargets = await response.json();
+        const plats = Object.keys(targets);
+        if (plats.length) {
+            plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+            $("#export-platform").val(compileOptions.exportPlatform);
+            targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+            $("#export-arch").val(compileOptions.exportArch);
+        }
+        $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
+        $("#export-name").on("keydown", (e) => {
+            if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
+        });
+        $<HTMLSelectElement>("#export-platform").on("change", (e) => {
+            compileOptions.exportPlatform = e.currentTarget.value;
+            saveEditorParams();
+            $("#export-arch").empty();
+            targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+        });
+        $<HTMLSelectElement>("#export-arch").on("change", (e) => {
+            compileOptions.exportArch = e.currentTarget.value;
+            saveEditorParams();
+            // eslint-disable-next-line no-console
+            console.log(compileOptions);
+        });
+        $("#export-download").on("click", () => $("#a-export-download")[0].click());
+        $("#a-export-download").on("click", e => e.stopPropagation());
+        $("#export-submit").prop("disabled", false).on("click", () => {
+            exportProgram(false);
+        });
     };
-    $<HTMLInputElement>("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value)).change();
+    $<HTMLInputElement>("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value));
+    try {
+        await getTargets(server);
+    } catch (e) {
+        console.error(e as Error); // eslint-disable-line no-console
+    }
     // Share
     /**
      * Make share URL with options
