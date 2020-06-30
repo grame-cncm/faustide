@@ -97,8 +97,10 @@ or
 python -m SimpleHTTPServer 8000   # python 2
 ```
 
-Then, once the site is validated add (git add) and commit the entire contents of the `docs` directory then push to git.
- 
+**WARNING: the following step is mandatory for the deployed site to properly work !**
+
+Once the site is validated add (using git add) and commit the entire contents of the `docs` directory then push to git. 
+
 
 ### Useful links
 
