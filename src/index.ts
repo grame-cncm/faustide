@@ -655,13 +655,11 @@ $(async () => {
         }
         if (urlParams.has("mode")) {
             if (urlParams.get("mode") === "amstram") {
-                compileOptions.exportPlatform = "esp32";
-                compileOptions.exportArch = "gramophoneFlash";
+                const exportPlatform = "esp32";
+                const exportArch = "gramophoneFlash";
                 $("#btn-def-exp-content").html("Gramo");
-                saveEditorParams();
-                $("#export-platform").val(compileOptions.exportPlatform);
-                $("#export-arch").val(compileOptions.exportArch);
-                // getTargets(server);
+                $("#export-platform").val(exportPlatform).change();
+                $("#export-arch").val(exportArch).change();
             }
         }
         let code;
