@@ -83,7 +83,7 @@ const config = {
       'window.jQuery': 'jquery'
     }),
     new WorkboxWebpackPlugin.GenerateSW({
-      cacheId: VERSION,
+      cacheId: VERSION + new Date().getTime(),
       cleanupOutdatedCaches: true,
       clientsClaim: true,
       skipWaiting: true,
