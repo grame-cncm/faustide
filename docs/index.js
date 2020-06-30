@@ -31732,7 +31732,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, dependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.30\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.10.3\",\"@babel/plugin-proposal-class-properties\":\"^7.10.1\",\"@babel/plugin-transform-runtime\":\"^7.10.3\",\"@babel/preset-env\":\"^7.10.3\",\"@babel/preset-typescript\":\"^7.10.1\",\"@babel/runtime\":\"^7.10.3\",\"@fortawesome/fontawesome-free\":\"^5.13.1\",\"@types/bootstrap\":\"^4.5.0\",\"@types/jquery\":\"^3.5.0\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.3.4\",\"@types/wavesurfer.js\":\"^3.3.0\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.1.0\",\"bootstrap\":\"^4.5.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.1\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.4\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.0\",\"eslint-plugin-import\":\"^2.21.2\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.5.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.0\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.2.1\",\"stylelint\":\"^13.6.1\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.5\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.43.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.3\"},\"dependencies\":{}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.31\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.10.4\",\"@babel/plugin-proposal-class-properties\":\"^7.10.4\",\"@babel/plugin-transform-runtime\":\"^7.10.4\",\"@babel/preset-env\":\"^7.10.4\",\"@babel/preset-typescript\":\"^7.10.4\",\"@babel/runtime\":\"^7.10.4\",\"@fortawesome/fontawesome-free\":\"^5.13.1\",\"@types/bootstrap\":\"^4.5.0\",\"@types/jquery\":\"^3.5.0\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.3.4\",\"@types/wavesurfer.js\":\"^3.3.1\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.1.0\",\"bootstrap\":\"^4.5.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.1\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.4\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.0\",\"eslint-plugin-import\":\"^2.22.0\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.5.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.0\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.2.1\",\"stylelint\":\"^13.6.1\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.5\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.43.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.3\"},\"dependencies\":{}}");
 
 /***/ }),
 
@@ -35250,37 +35250,37 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
-$( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee11() {
+$( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee12() {
   var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, server, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
 
-  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee11$(_context11) {
+  return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee12$(_context12) {
     while (1) {
-      switch (_context11.prev = _context11.next) {
+      switch (_context12.prev = _context12.next) {
         case 0:
-          _context11.next = 2;
+          _context12.next = 2;
           return __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.t.bind(null, /*! faust2webaudio */ "./node_modules/faust2webaudio/dist/index.min.js", 7));
 
         case 2:
-          _yield$import = _context11.sent;
+          _yield$import = _context12.sent;
           Faust = _yield$import.Faust;
           faust = new Faust({
             wasmLocation: "./libfaust-wasm.wasm",
             dataLocation: "./libfaust-wasm.data"
           });
-          _context11.next = 7;
+          _context12.next = 7;
           return faust.ready;
 
         case 7:
-          _context11.next = 9;
+          _context12.next = 9;
           return fetch("./primitives.lib");
 
         case 9:
-          faustPrimitiveLibFile = _context11.sent;
-          _context11.next = 12;
+          faustPrimitiveLibFile = _context12.sent;
+          _context12.next = 12;
           return faustPrimitiveLibFile.text();
 
         case 12:
-          faustPrimitiveLib = _context11.sent;
+          faustPrimitiveLib = _context12.sent;
           faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
           window.faust = faust;
           /**
@@ -35317,7 +35317,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
           loadEditorParams = () => {
             var clientVersion = localStorage.getItem("faust_editor_version");
-            if (clientVersion !== _version__WEBPACK_IMPORTED_MODULE_22___default.a) return {};
+            if (clientVersion !== _version__WEBPACK_IMPORTED_MODULE_22__) return {};
             var str = localStorage.getItem("faust_editor_params");
             if (!str) return {};
 
@@ -35398,11 +35398,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            */
 
 
-          _context11.next = 27;
+          _context12.next = 27;
           return initEditor(faust);
 
         case 27:
-          _yield$initEditor = _context11.sent;
+          _yield$initEditor = _context12.sent;
           editor = _yield$initEditor.editor;
           monaco = _yield$initEditor.monaco;
           editor.layout(); // Force editor to fill div
@@ -35821,7 +35821,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             faust,
             recorder: new _Recorder__WEBPACK_IMPORTED_MODULE_20__["Recorder"]()
           };
-          localStorage.setItem("faust_editor_version", _version__WEBPACK_IMPORTED_MODULE_22___default.a);
+          localStorage.setItem("faust_editor_version", _version__WEBPACK_IMPORTED_MODULE_22__);
           uiEnv.plotScope = new _StaticScope__WEBPACK_IMPORTED_MODULE_16__["StaticScope"]({
             container: $("#plot-ui")[0]
           });
@@ -36067,7 +36067,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
           loadURLParams = /*#__PURE__*/function () {
             var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee2(url) {
-              var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
+              var urlParams, voices, bufferSize, exportPlatform, exportArch, code, codeURL, _name, response, b64Code, _name2, compileResult;
 
               return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee2$(_context2) {
                 while (1) {
@@ -36094,12 +36094,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                       if (urlParams.has("mode")) {
                         if (urlParams.get("mode") === "amstram") {
-                          compileOptions.exportPlatform = "esp32";
-                          compileOptions.exportArch = "gramophoneFlash";
+                          exportPlatform = "esp32";
+                          exportArch = "gramophoneFlash";
                           $("#btn-def-exp-content").html("Gramo");
-                          saveEditorParams();
-                          $("#export-platform").val(compileOptions.exportPlatform);
-                          $("#export-arch").val(compileOptions.exportArch); // getTargets(server);
+                          $("#export-platform").val(exportPlatform).change();
+                          $("#export-arch").val(exportArch).change();
                         }
                       }
 
@@ -36333,54 +36332,94 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             });
           };
 
-          getTargets = server => {
-            $("#export-platform").add("#export-arch").empty();
-            $("#export-platform").off("change");
-            $("#export-download").off("click");
-            $("#a-export-download").off("click");
-            $("#export-submit").prop("disabled", true).off("click");
-            fetch("".concat(server, "/targets")).then(response => response.json()).then(targets => {
-              var plats = Object.keys(targets);
+          getTargets = /*#__PURE__*/function () {
+            var _ref5 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee4(server) {
+              var response, targets, plats;
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee4$(_context4) {
+                while (1) {
+                  switch (_context4.prev = _context4.next) {
+                    case 0:
+                      $("#export-platform").add("#export-arch").empty();
+                      $("#export-platform").off("change");
+                      $("#export-download").off("click");
+                      $("#a-export-download").off("click");
+                      $("#export-submit").prop("disabled", true).off("click");
+                      _context4.next = 7;
+                      return fetch("".concat(server, "/targets"));
 
-              if (plats.length) {
-                plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                $("#export-platform").val(compileOptions.exportPlatform);
-                targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                $("#export-arch").val(compileOptions.exportArch);
-              }
+                    case 7:
+                      response = _context4.sent;
+                      _context4.next = 10;
+                      return response.json();
 
-              $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
-              $("#export-name").on("keydown", e => {
-                if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
-              });
-              $("#export-platform").on("change", e => {
-                compileOptions.exportPlatform = e.currentTarget.value;
-                saveEditorParams();
-                $("#export-arch").empty();
-                targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-              });
-              $("#export-arch").on("change", e => {
-                compileOptions.exportArch = e.currentTarget.value;
-                saveEditorParams(); // eslint-disable-next-line no-console
+                    case 10:
+                      targets = _context4.sent;
+                      plats = Object.keys(targets);
 
-                console.log(compileOptions);
-              });
-              $("#export-download").on("click", () => $("#a-export-download")[0].click());
-              $("#a-export-download").on("click", e => e.stopPropagation());
-              $("#export-submit").prop("disabled", false).on("click", () => {
-                exportProgram(false);
-              });
-            }).catch(() => undefined);
-          };
+                      if (plats.length) {
+                        plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+                        $("#export-platform").val(compileOptions.exportPlatform);
+                        targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                        $("#export-arch").val(compileOptions.exportArch);
+                      }
 
-          $("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value)).change(); // Share
+                      $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
+                      $("#export-name").on("keydown", e => {
+                        if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
+                      });
+                      $("#export-platform").on("change", e => {
+                        compileOptions.exportPlatform = e.currentTarget.value;
+                        saveEditorParams();
+                        $("#export-arch").empty();
+                        targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                      });
+                      $("#export-arch").on("change", e => {
+                        compileOptions.exportArch = e.currentTarget.value;
+                        saveEditorParams(); // eslint-disable-next-line no-console
+
+                        console.log(compileOptions);
+                      });
+                      $("#export-download").on("click", () => $("#a-export-download")[0].click());
+                      $("#a-export-download").on("click", e => e.stopPropagation());
+                      $("#export-submit").prop("disabled", false).on("click", () => {
+                        exportProgram(false);
+                      });
+
+                    case 20:
+                    case "end":
+                      return _context4.stop();
+                  }
+                }
+              }, _callee4);
+            }));
+
+            return function getTargets(_x3) {
+              return _ref5.apply(this, arguments);
+            };
+          }();
+
+          $("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value));
+          _context12.prev = 82;
+          _context12.next = 85;
+          return getTargets(server);
+
+        case 85:
+          _context12.next = 90;
+          break;
+
+        case 87:
+          _context12.prev = 87;
+          _context12.t0 = _context12["catch"](82);
+          console.error(_context12.t0); // eslint-disable-line no-console
+
+        case 90:
+          // Share
 
           /**
            * Make share URL with options
            *
            * @returns
            */
-
           makeURL = () => {
             var base = window.location.origin + window.location.pathname;
             var urlParams = new URLSearchParams();
@@ -36491,21 +36530,21 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            */
 
           $("#select-audio-input").on("change", /*#__PURE__*/function () {
-            var _ref5 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee4(e) {
+            var _ref6 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee5(e) {
               var id, _gain, _input, gain, input;
 
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee4$(_context4) {
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee5$(_context5) {
                 while (1) {
-                  switch (_context4.prev = _context4.next) {
+                  switch (_context5.prev = _context5.next) {
                     case 0:
                       id = e.currentTarget.value;
 
                       if (!(audioEnv.currentInput === id)) {
-                        _context4.next = 3;
+                        _context5.next = 3;
                         break;
                       }
 
-                      return _context4.abrupt("return");
+                      return _context5.abrupt("return");
 
                     case 3:
                       if (audioEnv.audioCtx && audioEnv.currentInput) {
@@ -36562,7 +36601,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       } // init audio environment
 
 
-                      _context4.next = 8;
+                      _context5.next = 8;
                       return initAudioCtx(audioEnv, id);
 
                     case 8:
@@ -36574,14 +36613,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                     case 13:
                     case "end":
-                      return _context4.stop();
+                      return _context5.stop();
                   }
                 }
-              }, _callee4);
+              }, _callee5);
             }));
 
-            return function (_x3) {
-              return _ref5.apply(this, arguments);
+            return function (_x4) {
+              return _ref6.apply(this, arguments);
             };
           }());
           /**
@@ -36590,22 +36629,22 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            */
 
           $("#select-audio-output").on("change", /*#__PURE__*/function () {
-            var _ref6 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee5(e) {
+            var _ref7 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee6(e) {
               var id, audio;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee5$(_context5) {
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee6$(_context6) {
                 while (1) {
-                  switch (_context5.prev = _context5.next) {
+                  switch (_context6.prev = _context6.next) {
                     case 0:
                       if (supportMediaStreamDestination) {
-                        _context5.next = 2;
+                        _context6.next = 2;
                         break;
                       }
 
-                      return _context5.abrupt("return");
+                      return _context6.abrupt("return");
 
                     case 2:
                       id = e.currentTarget.value;
-                      _context5.next = 5;
+                      _context6.next = 5;
                       return initAudioCtx(audioEnv);
 
                     case 5:
@@ -36615,14 +36654,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                     case 8:
                     case "end":
-                      return _context5.stop();
+                      return _context6.stop();
                   }
                 }
-              }, _callee5);
+              }, _callee6);
             }));
 
-            return function (_x4) {
-              return _ref6.apply(this, arguments);
+            return function (_x5) {
+              return _ref7.apply(this, arguments);
             };
           }()).change(); // Waveform
 
@@ -36697,32 +36736,32 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           }); // Append connected audio devices
 
           handleMediaDeviceChange = /*#__PURE__*/function () {
-            var _ref7 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee6() {
+            var _ref8 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee7() {
               var devices, $selectInput, $selectOutput;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee6$(_context6) {
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee7$(_context7) {
                 while (1) {
-                  switch (_context6.prev = _context6.next) {
+                  switch (_context7.prev = _context7.next) {
                     case 0:
-                      _context6.prev = 0;
-                      _context6.next = 3;
+                      _context7.prev = 0;
+                      _context7.next = 3;
                       return navigator.mediaDevices.getUserMedia({
                         audio: true
                       });
 
                     case 3:
-                      _context6.next = 7;
+                      _context7.next = 7;
                       break;
 
                     case 5:
-                      _context6.prev = 5;
-                      _context6.t0 = _context6["catch"](0);
+                      _context7.prev = 5;
+                      _context7.t0 = _context7["catch"](0);
 
                     case 7:
-                      _context6.next = 9;
+                      _context7.next = 9;
                       return navigator.mediaDevices.enumerateDevices();
 
                     case 9:
-                      devices = _context6.sent;
+                      devices = _context7.sent;
                       $selectInput = $("#select-audio-input");
                       $selectOutput = $("#select-audio-output");
                       $selectInput.children("option").each((i, e) => {
@@ -36757,42 +36796,42 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                     case 15:
                     case "end":
-                      return _context6.stop();
+                      return _context7.stop();
                   }
                 }
-              }, _callee6, null, [[0, 5]]);
+              }, _callee7, null, [[0, 5]]);
             }));
 
             return function handleMediaDeviceChange() {
-              return _ref7.apply(this, arguments);
+              return _ref8.apply(this, arguments);
             };
           }();
 
           if (!navigator.mediaDevices) {
-            _context11.next = 120;
+            _context12.next = 128;
             break;
           }
 
-          _context11.prev = 105;
-          _context11.next = 108;
+          _context12.prev = 113;
+          _context12.next = 116;
           return navigator.mediaDevices.getUserMedia({
             audio: true
           });
 
-        case 108:
-          _context11.next = 112;
+        case 116:
+          _context12.next = 120;
           break;
 
-        case 110:
-          _context11.prev = 110;
-          _context11.t0 = _context11["catch"](105);
+        case 118:
+          _context12.prev = 118;
+          _context12.t1 = _context12["catch"](113);
 
-        case 112:
-          _context11.next = 114;
+        case 120:
+          _context12.next = 122;
           return navigator.mediaDevices.enumerateDevices();
 
-        case 114:
-          devices = _context11.sent;
+        case 122:
+          devices = _context12.sent;
           $("#input-ui-default").hide();
           $selectInput = $("#select-audio-input").prop("disabled", false);
 
@@ -36820,7 +36859,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           });
 
-        case 120:
+        case 128:
           // DSP info
           refreshDspUI();
 
@@ -36846,33 +36885,33 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               recorder.enabled = false;
             }
           });
-          $("#recorder-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee7() {
+          $("#recorder-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee8() {
             var recorder, b, url;
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee7$(_context7) {
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee8$(_context8) {
               while (1) {
-                switch (_context7.prev = _context7.next) {
+                switch (_context8.prev = _context8.next) {
                   case 0:
                     recorder = faustEnv.recorder;
 
                     if (!(recorder.totalSec === 0)) {
-                      _context7.next = 3;
+                      _context8.next = 3;
                       break;
                     }
 
-                    return _context7.abrupt("return");
+                    return _context8.abrupt("return");
 
                   case 3:
-                    _context7.t0 = Blob;
-                    _context7.next = 6;
+                    _context8.t0 = Blob;
+                    _context8.next = 6;
                     return recorder.encode();
 
                   case 6:
-                    _context7.t1 = _context7.sent;
-                    _context7.t2 = [_context7.t1];
-                    _context7.t3 = {
+                    _context8.t1 = _context8.sent;
+                    _context8.t2 = [_context8.t1];
+                    _context8.t3 = {
                       type: "audio/wav"
                     };
-                    b = new _context7.t0(_context7.t2, _context7.t3);
+                    b = new _context8.t0(_context8.t2, _context8.t3);
                     url = URL.createObjectURL(b);
                     $("#a-recorder-save").attr({
                       href: url,
@@ -36881,20 +36920,20 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                   case 12:
                   case "end":
-                    return _context7.stop();
+                    return _context8.stop();
                 }
               }
-            }, _callee7);
+            }, _callee8);
           })));
           $("#a-recorder-save").on("click", e => e.stopPropagation()); // Output switch to connect / disconnect dsp from destination
 
-          $(".btn-dac").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee8() {
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee8$(_context8) {
+          $(".btn-dac").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee9() {
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee9$(_context9) {
               while (1) {
-                switch (_context8.prev = _context8.next) {
+                switch (_context9.prev = _context9.next) {
                   case 0:
                     if (!audioEnv.outputEnabled) {
-                      _context8.next = 7;
+                      _context9.next = 7;
                       break;
                     }
 
@@ -36908,7 +36947,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                     $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
                     $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
-                    _context8.next = 17;
+                    _context9.next = 17;
                     break;
 
                   case 7:
@@ -36916,16 +36955,16 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                     audioEnv.outputEnabled = true;
 
                     if (audioEnv.audioCtx) {
-                      _context8.next = 14;
+                      _context9.next = 14;
                       break;
                     }
 
-                    _context8.next = 11;
+                    _context9.next = 11;
                     return initAudioCtx(audioEnv);
 
                   case 11:
                     initAnalysersUI(uiEnv, audioEnv);
-                    _context8.next = 15;
+                    _context9.next = 15;
                     break;
 
                   case 14:
@@ -36940,10 +36979,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                   case 17:
                   case "end":
-                    return _context8.stop();
+                    return _context9.stop();
                 }
               }
-            }, _callee8);
+            }, _callee9);
           })));
           /**
            * Center
@@ -37054,24 +37093,24 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             uiEnv.fileManager.setValue(code, false);
           }); // Run Dsp Button
 
-          $(".btn-run").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee9() {
+          $(".btn-run").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee10() {
             var compileResult;
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee9$(_context9) {
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee10$(_context10) {
               while (1) {
-                switch (_context9.prev = _context9.next) {
+                switch (_context10.prev = _context10.next) {
                   case 0:
-                    _context9.next = 2;
+                    _context10.next = 2;
                     return runDsp(uiEnv.fileManager.mainCode);
 
                   case 2:
-                    compileResult = _context9.sent;
+                    compileResult = _context10.sent;
 
                     if (compileResult.success) {
-                      _context9.next = 5;
+                      _context10.next = 5;
                       break;
                     }
 
-                    return _context9.abrupt("return");
+                    return _context10.abrupt("return");
 
                   case 5:
                     if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show"); // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
@@ -37079,25 +37118,25 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                   case 6:
                   case "end":
-                    return _context9.stop();
+                    return _context10.stop();
                 }
               }
-            }, _callee9);
+            }, _callee10);
           }))); // Default export button
 
-          $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee10() {
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee10$(_context10) {
+          $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee11() {
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee11$(_context11) {
               while (1) {
-                switch (_context10.prev = _context10.next) {
+                switch (_context11.prev = _context11.next) {
                   case 0:
                     exportProgram(true);
 
                   case 1:
                   case "end":
-                    return _context10.stop();
+                    return _context11.stop();
                 }
               }
-            }, _callee10);
+            }, _callee11);
           })));
           /**
            * Bind message event for changing dsp params on receiving msg from ui window
@@ -37402,19 +37441,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           }).resize(); // autorunning
 
-          _context11.next = 150;
+          _context12.next = 158;
           return initAudioCtx(audioEnv);
 
-        case 150:
+        case 158:
           // Analysers
           initAnalysersUI(uiEnv, audioEnv);
           $("#output-analyser-ui").hide();
           uiEnv.outputScope.disabled = true;
           $("#select-audio-input").change();
-          _context11.next = 156;
+          _context12.next = 164;
           return loadURLParams(window.location.search);
 
-        case 156:
+        case 164:
           $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
           $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
           if (supportAudioWorklet) $("#check-worklet").prop({
@@ -37430,12 +37469,12 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
           window.faustEnv = faustEnv;
 
-        case 167:
+        case 175:
         case "end":
-          return _context11.stop();
+          return _context12.stop();
       }
     }
-  }, _callee11, null, [[105, 110]]);
+  }, _callee12, null, [[82, 87], [113, 118]]);
 })));
 /**
  * Init audio environment, audioNodes
@@ -37446,11 +37485,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
  */
 
 var initAudioCtx = /*#__PURE__*/function () {
-  var _ref12 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee12(audioEnv, deviceId) {
+  var _ref13 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee13(audioEnv, deviceId) {
     var audioCtx, unlockAudioContext, stream;
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee12$(_context12) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee13$(_context13) {
       while (1) {
-        switch (_context12.prev = _context12.next) {
+        switch (_context13.prev = _context13.next) {
           case 0:
             if (!audioEnv.audioCtx) {
               audioCtx = new (window.webkitAudioContext || window.AudioContext)({
@@ -37484,21 +37523,21 @@ var initAudioCtx = /*#__PURE__*/function () {
             if (!audioEnv.inputs) audioEnv.inputs = {};
 
             if (!(deviceId && !audioEnv.inputs[deviceId])) {
-              _context12.next = 12;
+              _context13.next = 12;
               break;
             }
 
             if (!(deviceId === "-1")) {
-              _context12.next = 8;
+              _context13.next = 8;
               break;
             }
 
             if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
-            _context12.next = 12;
+            _context13.next = 12;
             break;
 
           case 8:
-            _context12.next = 10;
+            _context13.next = 10;
             return navigator.mediaDevices.getUserMedia({
               audio: {
                 deviceId,
@@ -37509,7 +37548,7 @@ var initAudioCtx = /*#__PURE__*/function () {
             });
 
           case 10:
-            stream = _context12.sent;
+            stream = _context13.sent;
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
 
           case 12:
@@ -37540,18 +37579,18 @@ var initAudioCtx = /*#__PURE__*/function () {
               audioEnv.destination.channelInterpretation = "discrete";
             }
 
-            return _context12.abrupt("return", audioEnv);
+            return _context13.abrupt("return", audioEnv);
 
           case 24:
           case "end":
-            return _context12.stop();
+            return _context13.stop();
         }
       }
-    }, _callee12);
+    }, _callee13);
   }));
 
-  return function initAudioCtx(_x5, _x6) {
-    return _ref12.apply(this, arguments);
+  return function initAudioCtx(_x6, _x7) {
+    return _ref13.apply(this, arguments);
   };
 }();
 /**
@@ -37616,26 +37655,26 @@ var refreshDspUI = node => {
 
 
 var initEditor = /*#__PURE__*/function () {
-  var _ref13 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee13(faust) {
+  var _ref14 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee14(faust) {
     var code, polycode, monaco, _yield$faustLangRegis, faustLang, providers, saveCode, editor, faustDocURL, showDoc;
 
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee13$(_context13) {
+    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee14$(_context14) {
       while (1) {
-        switch (_context13.prev = _context13.next) {
+        switch (_context14.prev = _context14.next) {
           case 0:
             code = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;"; // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
             polycode = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {\n    freq = hslider(\"freq\", 440, 40, 8000, 1);\n    gain = hslider(\"gain\", 0.5, 0, 1, 0.01);\n    gate = button(\"gate\");\n};\neffect = dm.freeverb_demo;";
-            _context13.next = 4;
+            _context14.next = 4;
             return __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.t.bind(null, /*! monaco-editor/esm/vs/editor/editor.api */ "./include-loader!./node_modules/monaco-editor/esm/vs/editor/editor.api.js", 7));
 
           case 4:
-            monaco = _context13.sent;
-            _context13.next = 7;
+            monaco = _context14.sent;
+            _context14.next = 7;
             return Object(_monaco_faust_register__WEBPACK_IMPORTED_MODULE_21__["faustLangRegister"])(monaco, faust);
 
           case 7:
-            _yield$faustLangRegis = _context13.sent;
+            _yield$faustLangRegis = _context14.sent;
             faustLang = _yield$faustLangRegis.faustLang;
             providers = _yield$faustLangRegis.providers;
             saveCode = false;
@@ -37678,21 +37717,21 @@ var initEditor = /*#__PURE__*/function () {
 
             $("#btn-docs").off("click").on("click", showDoc);
             $(window).on("resize", () => editor.layout());
-            return _context13.abrupt("return", {
+            return _context14.abrupt("return", {
               editor,
               monaco
             });
 
           case 19:
           case "end":
-            return _context13.stop();
+            return _context14.stop();
         }
       }
-    }, _callee13);
+    }, _callee14);
   }));
 
-  return function initEditor(_x7) {
-    return _ref13.apply(this, arguments);
+  return function initEditor(_x8) {
+    return _ref14.apply(this, arguments);
   };
 }();
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js"), __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))
@@ -37943,9 +37982,7 @@ var getRms = t => {
 var _require = __webpack_require__(/*! ../package.json */ "./package.json"),
     version = _require.version;
 
-var timestamp = new Date().getTime();
-var VERSION = "".concat(version, ".").concat(timestamp);
-module.exports = VERSION;
+module.exports = version;
 
 /***/ })
 
