@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "Faust Editor",
   "main": "src/index.ts",
   "scripts": {
@@ -65,7 +65,7 @@
     "style-loader": "^1.2.1",
     "stylelint": "^13.6.1",
     "stylelint-config-recommended": "^3.0.0",
-    "typescript": "^3.9.5",
+    "typescript": "^3.9.6",
     "wav-encoder": "^1.3.0",
     "wavesurfer.js": "^3.3.3",
     "webmidi": "^2.5.1",
