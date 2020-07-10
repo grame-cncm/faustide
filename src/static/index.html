@@ -76,7 +76,8 @@
 					<span>Export</span>
 				</button>
 			</div>
-			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right"
+			<div id="ide-params">
+			<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
 				title="Poly mode will work with polyphonic-ready code">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Poly Voices</span>
@@ -93,7 +94,7 @@
 					<option value="128">128</option>
 				</select>
 			</form>
-			<form class="input-group input-group-sm" data-toggle="tooltip" data-placement="right"
+			<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
 				title="Will be fixed at 128 frames in AudioWorklet mode">
 				<div class="input-group-prepend">
 					<span class="input-group-text">Buffer Size</span>
@@ -108,44 +109,45 @@
 					<option value="8192">8192</option>
 				</select>
 			</form>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
 				title="(recommended) Chrome supports AudioWorklet">
 				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
 				<label class="form-check-label" for="check-worklet">
 					Use AudioWorklet
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save DSP Code">
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save DSP Code">
 				<input id="check-save-code" class="form-check-input" type="checkbox" value="" checked />
 				<label class="form-check-label" for="check-save-code">
 					Save DSP Code
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
 				title="Save locally DSP parameters">
 				<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-params">
 					Save Params State
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
 				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-save-dsp">
 					Save DSP Cache
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right"
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
 				title="Try to compile in real-time">
 				<input id="check-realtime-compile" class="form-check-input" type="checkbox" value="" checked />
 				<label class="form-check-label" for="check-realtime-compile">
 					Real-time Compile
 				</label>
 			</div>
-			<div class="form form-check" data-toggle="tooltip" data-placement="right" title="Pop up a DSP UI Window">
+			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Pop up a DSP UI Window">
 				<input id="check-popup" class="form-check-input" type="checkbox" value="" />
 				<label class="form-check-label" for="check-popup">
 					Popup UI
 				</label>
+			</div>
 			</div>
 			<div id="form-plot" class="form form-row">
 				<label>Plot</label>
@@ -246,7 +248,7 @@
 							data-placement="bottom" title="Audio Output Switch">
 							<i class="fas fa-volume-up fa-sm"></i>
 						</button>
-						<button type="button" class="btn-show-right btn btn-outline-secondary btn-sm"
+						<button id="show-right-panel" type="button" class="btn-show-right btn btn-outline-secondary btn-sm"
 							data-toggle="tooltip" data-placement="bottom" title="Show right panel">
 							<i class="fas fa-ellipsis-h fa-sm"></i>
 						</button>

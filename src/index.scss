@@ -140,7 +140,11 @@ body {
                     }
                 }
             }
-            & > form, & > .form {
+            & > #ide-params {
+              width: auto;
+              margin: 10px 5px;
+            }
+            & > form,#ide-params, & > .form {
                 width: auto;
                 margin: 10px 5px;
                 & .input-group-prepend > span {

@@ -660,6 +660,16 @@ $(async () => {
                 $("#btn-def-exp-content").html("Gramo");
                 $("#export-platform").val(exportPlatform).change();
                 $("#export-arch").val(exportArch).change();
+                $("#ide-params").css("display","none");
+                $("#form-plot").css("display","none");
+                $("#show-right-panel").click().change();
+            }
+            if (urlParams.get("mode") === "amstram-pro") {
+                const exportPlatform = "esp32";
+                const exportArch = "gramophoneFlash";
+                $("#btn-def-exp-content").html("Gramo");
+                $("#export-platform").val(exportPlatform).change();
+                $("#export-arch").val(exportArch).change();
             }
         }
         let code;
