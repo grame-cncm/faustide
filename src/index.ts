@@ -1608,6 +1608,7 @@ $(async () => {
     }).resize();
     // autorunning
     await initAudioCtx(audioEnv);
+    faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
     // Analysers
     initAnalysersUI(uiEnv, audioEnv);
     $("#output-analyser-ui").hide();
