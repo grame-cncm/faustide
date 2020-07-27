@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.321594392807128"
+    prefix: "1.0.331595876618986"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -110,53 +110,53 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   }, {
-    "url": "assets/260be4f29c0b2ce47480afb23f38f237.ttf",
-    "revision": "260be4f29c0b2ce47480afb23f38f237"
+    "url": "assets/03ba7cb710104df27f1c9c46d64bee4e.svg",
+    "revision": "03ba7cb710104df27f1c9c46d64bee4e"
   }, {
-    "url": "assets/412a43d6840addd683665ec12c30f810.woff2",
-    "revision": "412a43d6840addd683665ec12c30f810"
+    "url": "assets/05b53beb21e3ef13d28244545977152d.woff",
+    "revision": "05b53beb21e3ef13d28244545977152d"
   }, {
-    "url": "assets/486853107489520b3265b19b191626f8.svg",
-    "revision": "486853107489520b3265b19b191626f8"
+    "url": "assets/085b1dd8427dbeff10bd55410915a3f6.ttf",
+    "revision": "085b1dd8427dbeff10bd55410915a3f6"
   }, {
-    "url": "assets/4a5d4d855d11fae79cc864bdacb2f479.eot",
-    "revision": "4a5d4d855d11fae79cc864bdacb2f479"
+    "url": "assets/0fabb6606be4c45acfeedd115d0caca4.eot",
+    "revision": "0fabb6606be4c45acfeedd115d0caca4"
   }, {
-    "url": "assets/4c1da237bdae0773309df93b2cd48e09.ttf",
-    "revision": "4c1da237bdae0773309df93b2cd48e09"
+    "url": "assets/1a78af4105d4d56e6c34f76dc70bf1bc.ttf",
+    "revision": "1a78af4105d4d56e6c34f76dc70bf1bc"
   }, {
-    "url": "assets/5734d789b25228cbafc64a58ae971aca.woff",
-    "revision": "5734d789b25228cbafc64a58ae971aca"
+    "url": "assets/3a3398a6ef60fc64eacf45665958342e.woff2",
+    "revision": "3a3398a6ef60fc64eacf45665958342e"
   }, {
-    "url": "assets/5c674c9216c06ede2f618aa58ae71116.woff2",
-    "revision": "5c674c9216c06ede2f618aa58ae71116"
+    "url": "assets/781e85bb50c8e8301c30de56b31b1f04.ttf",
+    "revision": "781e85bb50c8e8301c30de56b31b1f04"
   }, {
-    "url": "assets/66578cdbb6dc01f527a53971051b3e85.svg",
-    "revision": "66578cdbb6dc01f527a53971051b3e85"
-  }, {
-    "url": "assets/6b20949b3a679c30d09f64acd5d3317d.eot",
-    "revision": "6b20949b3a679c30d09f64acd5d3317d"
-  }, {
-    "url": "assets/778b1f251bea7412048da95b87bf816f.svg",
-    "revision": "778b1f251bea7412048da95b87bf816f"
-  }, {
-    "url": "assets/91a23e8bf2b4b84c39311cb5eb23aaa0.woff2",
-    "revision": "91a23e8bf2b4b84c39311cb5eb23aaa0"
-  }, {
-    "url": "assets/9a1672a8a8d91fbf82c71f451d495253.eot",
-    "revision": "9a1672a8a8d91fbf82c71f451d495253"
+    "url": "assets/89bd2e38475e441a5cd70f663f921d61.eot",
+    "revision": "89bd2e38475e441a5cd70f663f921d61"
   }, {
     "url": "assets/a609dc0f334a7d4e64205247c4e8b97c.ttf",
     "revision": "a609dc0f334a7d4e64205247c4e8b97c"
   }, {
-    "url": "assets/c65d154888aa166982dac3e72e7380ec.ttf",
-    "revision": "c65d154888aa166982dac3e72e7380ec"
+    "url": "assets/ad3a7c0d77e09602f4ab73db3660ffd8.eot",
+    "revision": "ad3a7c0d77e09602f4ab73db3660ffd8"
   }, {
-    "url": "assets/d44ad00c44e46fd29f6126fa7d888cde.woff",
-    "revision": "d44ad00c44e46fd29f6126fa7d888cde"
+    "url": "assets/c500da19d776384ba69573ae6fe274e7.woff2",
+    "revision": "c500da19d776384ba69573ae6fe274e7"
   }, {
-    "url": "assets/f3a7d3b5880544a91e9a7e6f8f35d4d2.woff",
-    "revision": "f3a7d3b5880544a91e9a7e6f8f35d4d2"
+    "url": "assets/cac68c831145804808381a7032fdc7c2.woff2",
+    "revision": "cac68c831145804808381a7032fdc7c2"
+  }, {
+    "url": "assets/ccfdb9dc442be0c629d331e94497428b.svg",
+    "revision": "ccfdb9dc442be0c629d331e94497428b"
+  }, {
+    "url": "assets/dc0bd022735ed218df547742a1b2f172.woff",
+    "revision": "dc0bd022735ed218df547742a1b2f172"
+  }, {
+    "url": "assets/e75dfd904d366a2560c63c23cfc98ef8.svg",
+    "revision": "e75dfd904d366a2560c63c23cfc98ef8"
+  }, {
+    "url": "assets/ee09ad7553b8ad3d81150d609d5341a0.woff",
+    "revision": "ee09ad7553b8ad3d81150d609d5341a0"
   }, {
     "url": "editor.worker.js",
     "revision": "297989b7c93044ced25f888fa4e979e1"
@@ -810,19 +810,19 @@ define("./service-worker.js",['./workbox-5a7cf051'], function (workbox) { 'use s
     "revision": "b22ed1b5b20db59704b843dd46076aa5"
   }, {
     "url": "index.html",
-    "revision": "6584a60081df479c1fba8759f74b5431"
+    "revision": "d45b34c1081e3d0189773cdb246da230"
   }, {
     "url": "index.js",
-    "revision": "70e0e29470297d2d77ec7becab59ce4e"
+    "revision": "4bf9046b1866eb71b6e51408186c80ad"
   }, {
     "url": "js/59f5246d165b91115b41.js",
     "revision": "3032c802b8fa7e27d242d603c7314b4a"
   }, {
-    "url": "js/9802d65cb0bfcdcd2e82.js",
-    "revision": "2f08b7b79712d61fc5e476bddeedb086"
-  }, {
     "url": "js/c9bc977960e6a6f7c7bf.js",
     "revision": "d0359ca3006f7c74d5ed1681cb1fd93c"
+  }, {
+    "url": "js/d8f9bee0ebba4209c481.js",
+    "revision": "eb7fd4a021c16f849387d1806d687383"
   }, {
     "url": "libfaust-wasm.data",
     "revision": "93d4a7c87f8501bcfc88e82e14a26b18"
