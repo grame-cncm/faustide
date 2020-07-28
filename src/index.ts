@@ -660,8 +660,8 @@ $(async () => {
                 $("#btn-def-exp-content").html("Gramo");
                 $("#export-platform").val(exportPlatform).change();
                 $("#export-arch").val(exportArch).change();
-                $("#ide-params").css("display","none");
-                $("#form-plot").css("display","none");
+                $("#ide-params").css("display", "none");
+                $("#form-plot").css("display", "none");
                 $("#show-right-panel").click().change();
             }
             if (urlParams.get("mode") === "amstram-pro") {
