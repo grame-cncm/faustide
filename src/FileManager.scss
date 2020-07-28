@@ -64,6 +64,9 @@
                 height: 100%;
                 align-items: center;
                 cursor: pointer;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
                 &[contenteditable=true] {
                     background-color: #1e1e1e;
                     cursor: auto;
