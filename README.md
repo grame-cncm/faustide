@@ -104,5 +104,5 @@ Once the site is validated add (using git add) and commit the entire contents of
 
 ### Useful links
 
-- [https://faustide.grame.fr](https://fausttide.grame.fr): the official link on the Faust IDE website. 
+- [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website. 
 - [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
