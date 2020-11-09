@@ -734,7 +734,7 @@ var getFile = /*#__PURE__*/function () {
             }));
 
           case 2:
-            libPath = "https://faust.grame.fr/tools/editor/libraries/";
+            libPath = "https://faustlibraries.grame.fr/libs/";
             _context.next = 5;
             return fetch(libPath + fileName);
 
@@ -884,7 +884,7 @@ var getProviders = /*#__PURE__*/function () {
                     }, {
                       value: doc.doc.replace(/#+/g, "######")
                     }, {
-                      value: prefix.length ? "[Detail...](https://faust.grame.fr/doc/libraries/#".concat(prefix.join(".") + ".").concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faust.grame.fr/doc/manual/index.html#faust-syntax)"
+                      value: prefix.length ? "[Detail...](https://faustlibraries.grame.fr/libs/#".concat(prefix.join(".") + ".").concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)"
                     }]
                   };
                 }
@@ -974,4 +974,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=c9bc977960e6a6f7c7bf.js.map
+//# sourceMappingURL=102013ecaeeaec04f990.js.map

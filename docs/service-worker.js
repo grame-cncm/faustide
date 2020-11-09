@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.351600508480502"
+    prefix: "1.0.361604932202030"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -110,53 +110,53 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   }, {
-    "url": "assets/03ba7cb710104df27f1c9c46d64bee4e.svg",
-    "revision": "03ba7cb710104df27f1c9c46d64bee4e"
+    "url": "assets/205f07b3883c484f27f40d21a92950d4.ttf",
+    "revision": "205f07b3883c484f27f40d21a92950d4"
   }, {
-    "url": "assets/05b53beb21e3ef13d28244545977152d.woff",
-    "revision": "05b53beb21e3ef13d28244545977152d"
+    "url": "assets/2f12242375edd68e9013ecfb59c672e9.svg",
+    "revision": "2f12242375edd68e9013ecfb59c672e9"
   }, {
-    "url": "assets/085b1dd8427dbeff10bd55410915a3f6.ttf",
-    "revision": "085b1dd8427dbeff10bd55410915a3f6"
+    "url": "assets/3602b7e8b2cb1462b0bef9738757ef8a.svg",
+    "revision": "3602b7e8b2cb1462b0bef9738757ef8a"
   }, {
-    "url": "assets/0fabb6606be4c45acfeedd115d0caca4.eot",
-    "revision": "0fabb6606be4c45acfeedd115d0caca4"
+    "url": "assets/3c6879c4f342203d099bdd66dce6d396.woff",
+    "revision": "3c6879c4f342203d099bdd66dce6d396"
   }, {
-    "url": "assets/1a78af4105d4d56e6c34f76dc70bf1bc.ttf",
-    "revision": "1a78af4105d4d56e6c34f76dc70bf1bc"
+    "url": "assets/4451e1d86df7491dd874f2c41eee1053.woff",
+    "revision": "4451e1d86df7491dd874f2c41eee1053"
   }, {
-    "url": "assets/3a3398a6ef60fc64eacf45665958342e.woff2",
-    "revision": "3a3398a6ef60fc64eacf45665958342e"
+    "url": "assets/49f00693b0e5d45097832ef5ea1bc541.ttf",
+    "revision": "49f00693b0e5d45097832ef5ea1bc541"
   }, {
-    "url": "assets/781e85bb50c8e8301c30de56b31b1f04.ttf",
-    "revision": "781e85bb50c8e8301c30de56b31b1f04"
+    "url": "assets/4a74738e7728e93c4394b8604081da62.woff2",
+    "revision": "4a74738e7728e93c4394b8604081da62"
   }, {
-    "url": "assets/89bd2e38475e441a5cd70f663f921d61.eot",
-    "revision": "89bd2e38475e441a5cd70f663f921d61"
+    "url": "assets/664de3932dd6291b4b8a8c0ddbcb4c61.svg",
+    "revision": "664de3932dd6291b4b8a8c0ddbcb4c61"
+  }, {
+    "url": "assets/8300bd7f30e0a313c1d772b49d96cb8e.ttf",
+    "revision": "8300bd7f30e0a313c1d772b49d96cb8e"
+  }, {
+    "url": "assets/8ac3167427b1d5d2967646bd8f7a0587.eot",
+    "revision": "8ac3167427b1d5d2967646bd8f7a0587"
+  }, {
+    "url": "assets/8e1ed89b6ccb8ce41faf5cb672677105.woff2",
+    "revision": "8e1ed89b6ccb8ce41faf5cb672677105"
   }, {
     "url": "assets/a609dc0f334a7d4e64205247c4e8b97c.ttf",
     "revision": "a609dc0f334a7d4e64205247c4e8b97c"
   }, {
-    "url": "assets/ad3a7c0d77e09602f4ab73db3660ffd8.eot",
-    "revision": "ad3a7c0d77e09602f4ab73db3660ffd8"
+    "url": "assets/ad527cc5ec23d6da66e8a1d6772ea6d3.woff",
+    "revision": "ad527cc5ec23d6da66e8a1d6772ea6d3"
   }, {
-    "url": "assets/c500da19d776384ba69573ae6fe274e7.woff2",
-    "revision": "c500da19d776384ba69573ae6fe274e7"
+    "url": "assets/b01516c1808be557667befec76cd6318.eot",
+    "revision": "b01516c1808be557667befec76cd6318"
   }, {
-    "url": "assets/cac68c831145804808381a7032fdc7c2.woff2",
-    "revision": "cac68c831145804808381a7032fdc7c2"
+    "url": "assets/e2ca6541bff3a3e9f4799ee327b28c58.eot",
+    "revision": "e2ca6541bff3a3e9f4799ee327b28c58"
   }, {
-    "url": "assets/ccfdb9dc442be0c629d331e94497428b.svg",
-    "revision": "ccfdb9dc442be0c629d331e94497428b"
-  }, {
-    "url": "assets/dc0bd022735ed218df547742a1b2f172.woff",
-    "revision": "dc0bd022735ed218df547742a1b2f172"
-  }, {
-    "url": "assets/e75dfd904d366a2560c63c23cfc98ef8.svg",
-    "revision": "e75dfd904d366a2560c63c23cfc98ef8"
-  }, {
-    "url": "assets/ee09ad7553b8ad3d81150d609d5341a0.woff",
-    "revision": "ee09ad7553b8ad3d81150d609d5341a0"
+    "url": "assets/f075c50f89795e4cdb4d45b51f1a6800.woff2",
+    "revision": "f075c50f89795e4cdb4d45b51f1a6800"
   }, {
     "url": "editor.worker.js",
     "revision": "297989b7c93044ced25f888fa4e979e1"
@@ -813,13 +813,13 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "d45b34c1081e3d0189773cdb246da230"
   }, {
     "url": "index.js",
-    "revision": "3f871ddccf7de4d7e5a93bf920637f7c"
+    "revision": "9fbeee100583274c9837feae03d633a1"
   }, {
     "url": "js/0730b98e9dc953c16426.js",
     "revision": "a2bf7c10329ec52b39ba685e2617fb95"
   }, {
-    "url": "js/c9bc977960e6a6f7c7bf.js",
-    "revision": "d0359ca3006f7c74d5ed1681cb1fd93c"
+    "url": "js/102013ecaeeaec04f990.js",
+    "revision": "64b038690b34a26f00b409a67f93aad5"
   }, {
     "url": "js/d8f9bee0ebba4209c481.js",
     "revision": "eb7fd4a021c16f849387d1806d687383"

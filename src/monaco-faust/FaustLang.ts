@@ -59,7 +59,7 @@ const faustFunctions = [
 ];
 const getFile = async (fileName: string, faust: Faust) => {
     if (faust) return faust.fs.readFile("libraries/" + fileName, { encoding: "utf8" }) as string;
-    const libPath = "https://faust.grame.fr/tools/editor/libraries/";
+    const libPath = "https://faustlibraries.grame.fr/libs/";
     const res = await fetch(libPath + fileName);
     return res.text();
 };
@@ -122,7 +122,7 @@ export const getProviders = async (faust: Faust): Promise<FaustLanguageProviders
                     contents: [
                         { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                         { value: doc.doc.replace(/#+/g, "######") },
-                        { value: prefix.length ? `[Detail...](https://faust.grame.fr/doc/libraries/#${prefix.join(".") + "."}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faust.grame.fr/doc/manual/index.html#faust-syntax)" }
+                        { value: prefix.length ? `[Detail...](https://faustlibraries.grame.fr/libs/#${prefix.join(".") + "."}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)" }
                     ]
                 };
             }
