@@ -97,6 +97,8 @@ interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 
+var server = "https://faustservicecloud.grame.fr";
+
 $(async () => {
     /**
      * Async Load Faust Core
@@ -655,21 +657,21 @@ $(async () => {
         }
         if (urlParams.has("mode")) {
             if (urlParams.get("mode") === "amstram") {
-                const exportPlatform = "esp32";
-                const exportArch = "gramophoneFlash";
+                server = "https://amstramservice.grame.fr/";
+                compileOptions.exportPlatform = "esp32";
+                compileOptions.exportArch = "gramophoneFlash";
+                $("#export-server").val(server).change();
                 $("#btn-def-exp-content").html("Gramo");
-                $("#export-platform").val(exportPlatform).change();
-                $("#export-arch").val(exportArch).change();
                 $("#ide-params").css("display", "none");
                 $("#form-plot").css("display", "none");
                 $("#show-right-panel").click().change();
             }
             if (urlParams.get("mode") === "amstram-pro") {
-                const exportPlatform = "esp32";
-                const exportArch = "gramophoneFlash";
+                server = "https://amstramservice.grame.fr/";
+                compileOptions.exportPlatform = "esp32";
+                compileOptions.exportArch = "gramophoneFlash";
+                $("#export-server").val(server).change();
                 $("#btn-def-exp-content").html("Gramo");
-                $("#export-platform").val(exportPlatform).change();
-                $("#export-arch").val(exportArch).change();
             }
         }
         let code;
@@ -737,7 +739,6 @@ $(async () => {
      * Export
      * Append options to export model
      */
-    const server = "https://faustservicecloud.grame.fr";
     // If true, the download argument will force the download of the generated target
     const exportProgram = (download: boolean) => {
         $("#export-download").hide();
@@ -827,7 +828,7 @@ $(async () => {
             plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
             $("#export-platform").val(compileOptions.exportPlatform);
             targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-            $("#export-arch").val(compileOptions.exportArch);
+            $("#export-arch").val(compileOptions.exportArch).change();
         }
         $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
         $("#export-name").on("keydown", (e) => {

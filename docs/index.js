@@ -31584,7 +31584,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, dependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.36\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.12.3\",\"@babel/plugin-proposal-class-properties\":\"^7.12.1\",\"@babel/plugin-transform-runtime\":\"^7.12.1\",\"@babel/preset-env\":\"^7.12.1\",\"@babel/preset-typescript\":\"^7.12.1\",\"@babel/runtime\":\"^7.12.5\",\"@fortawesome/fontawesome-free\":\"^5.15.1\",\"@types/bootstrap\":\"^4.5.1\",\"@types/jquery\":\"^3.5.4\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.3.5\",\"@types/wavesurfer.js\":\"^3.3.1\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.1.0\",\"bootstrap\":\"^4.5.3\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.5\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.5.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.7.2\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.7\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.44.2\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"},\"dependencies\":{}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.36\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.12.3\",\"@babel/plugin-proposal-class-properties\":\"^7.12.1\",\"@babel/plugin-transform-runtime\":\"^7.12.1\",\"@babel/preset-env\":\"^7.12.1\",\"@babel/preset-typescript\":\"^7.12.1\",\"@babel/runtime\":\"^7.12.5\",\"@fortawesome/fontawesome-free\":\"^5.15.1\",\"@types/bootstrap\":\"^4.5.1\",\"@types/jquery\":\"^3.5.4\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.3.5\",\"@types/wavesurfer.js\":\"^3.3.1\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.1\",\"bootstrap\":\"^4.5.3\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.5\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.5.1\",\"jszip\":\"^3.5.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.8.0\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.7\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.1\",\"webpack\":\"^4.44.2\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"},\"dependencies\":{}}");
 
 /***/ }),
 
@@ -35102,8 +35102,9 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
+var server = "https://faustservicecloud.grame.fr";
 $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee12() {
-  var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, server, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
+  var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
 
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee12$(_context12) {
     while (1) {
@@ -35919,7 +35920,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
           loadURLParams = /*#__PURE__*/function () {
             var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee2(url) {
-              var urlParams, voices, bufferSize, exportPlatform, exportArch, _exportPlatform, _exportArch, code, codeURL, _name, response, b64Code, _name2, compileResult;
+              var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
 
               return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee2$(_context2) {
                 while (1) {
@@ -35946,22 +35947,22 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
 
                       if (urlParams.has("mode")) {
                         if (urlParams.get("mode") === "amstram") {
-                          exportPlatform = "esp32";
-                          exportArch = "gramophoneFlash";
+                          server = "https://amstramservice.grame.fr/";
+                          compileOptions.exportPlatform = "esp32";
+                          compileOptions.exportArch = "gramophoneFlash";
+                          $("#export-server").val(server).change();
                           $("#btn-def-exp-content").html("Gramo");
-                          $("#export-platform").val(exportPlatform).change();
-                          $("#export-arch").val(exportArch).change();
                           $("#ide-params").css("display", "none");
                           $("#form-plot").css("display", "none");
                           $("#show-right-panel").click().change();
                         }
 
                         if (urlParams.get("mode") === "amstram-pro") {
-                          _exportPlatform = "esp32";
-                          _exportArch = "gramophoneFlash";
+                          server = "https://amstramservice.grame.fr/";
+                          compileOptions.exportPlatform = "esp32";
+                          compileOptions.exportArch = "gramophoneFlash";
+                          $("#export-server").val(server).change();
                           $("#btn-def-exp-content").html("Gramo");
-                          $("#export-platform").val(_exportPlatform).change();
-                          $("#export-arch").val(_exportArch).change();
                         }
                       }
 
@@ -36108,8 +36109,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * Export
            * Append options to export model
            */
-
-          server = "https://faustservicecloud.grame.fr"; // If true, the download argument will force the download of the generated target
+          // If true, the download argument will force the download of the generated target
 
           exportProgram = download => {
             $("#export-download").hide();
@@ -36223,7 +36223,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
                         $("#export-platform").val(compileOptions.exportPlatform);
                         targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                        $("#export-arch").val(compileOptions.exportArch);
+                        $("#export-arch").val(compileOptions.exportArch).change();
                       }
 
                       $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
@@ -36262,20 +36262,20 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           }();
 
           $("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value));
-          _context12.prev = 82;
-          _context12.next = 85;
+          _context12.prev = 81;
+          _context12.next = 84;
           return getTargets(server);
 
-        case 85:
-          _context12.next = 90;
+        case 84:
+          _context12.next = 89;
           break;
 
-        case 87:
-          _context12.prev = 87;
-          _context12.t0 = _context12["catch"](82);
+        case 86:
+          _context12.prev = 86;
+          _context12.t0 = _context12["catch"](81);
           console.error(_context12.t0); // eslint-disable-line no-console
 
-        case 90:
+        case 89:
           // Share
 
           /**
@@ -36671,29 +36671,29 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           }();
 
           if (!navigator.mediaDevices) {
-            _context12.next = 128;
+            _context12.next = 127;
             break;
           }
 
-          _context12.prev = 113;
-          _context12.next = 116;
+          _context12.prev = 112;
+          _context12.next = 115;
           return navigator.mediaDevices.getUserMedia({
             audio: true
           });
 
-        case 116:
-          _context12.next = 120;
+        case 115:
+          _context12.next = 119;
           break;
 
-        case 118:
-          _context12.prev = 118;
-          _context12.t1 = _context12["catch"](113);
+        case 117:
+          _context12.prev = 117;
+          _context12.t1 = _context12["catch"](112);
 
-        case 120:
-          _context12.next = 122;
+        case 119:
+          _context12.next = 121;
           return navigator.mediaDevices.enumerateDevices();
 
-        case 122:
+        case 121:
           devices = _context12.sent;
           $("#input-ui-default").hide();
           $selectInput = $("#select-audio-input").prop("disabled", false);
@@ -36722,7 +36722,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           });
 
-        case 128:
+        case 127:
           // DSP info
           refreshDspUI();
 
@@ -37304,20 +37304,20 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           }).resize(); // autorunning
 
-          _context12.next = 158;
+          _context12.next = 157;
           return initAudioCtx(audioEnv);
 
-        case 158:
+        case 157:
           faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate; // Analysers
 
           initAnalysersUI(uiEnv, audioEnv);
           $("#output-analyser-ui").hide();
           uiEnv.outputScope.disabled = true;
           $("#select-audio-input").change();
-          _context12.next = 165;
+          _context12.next = 164;
           return loadURLParams(window.location.search);
 
-        case 165:
+        case 164:
           $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
           $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
           if (supportAudioWorklet) $("#check-worklet").prop({
@@ -37333,12 +37333,12 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
           window.faustEnv = faustEnv;
 
-        case 176:
+        case 175:
         case "end":
           return _context12.stop();
       }
     }
-  }, _callee12, null, [[82, 87], [113, 118]]);
+  }, _callee12, null, [[81, 86], [112, 117]]);
 })));
 /**
  * Init audio environment, audioNodes
