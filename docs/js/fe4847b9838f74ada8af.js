@@ -802,7 +802,7 @@ var matchDocKey = (doc, model, position) => {
 };
 var getProviders = /*#__PURE__*/function () {
   var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_2___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee4(faust) {
-    var libDocs, primDocs, faustLib, hoverProvider, tokensProvider, completionItemProvider;
+    var libDocs, primDocs, faustLib, docSections, hoverProvider, tokensProvider, completionItemProvider;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
@@ -869,6 +869,36 @@ var getProviders = /*#__PURE__*/function () {
           case 14:
             // eslint-disable-line no-empty, no-console
             faustLib = Object.keys(libDocs);
+            docSections = {
+              "an": "analyzers",
+              "ba": "basics",
+              "co": "compressors",
+              "de": "delays",
+              "dm": "demos",
+              "dx": "dx7",
+              "en": "envelopes",
+              "fi": "filters",
+              "ho": "hoa",
+              "it": "interpolators",
+              "ma": "maths",
+              "mi": "mi",
+              "ef": "misceffects",
+              "os": "oscillators",
+              "no": "noises",
+              "pf": "phaflangers",
+              "pm": "physmodels",
+              "qu": "quantizer",
+              "rm": "reducemaps",
+              "re": "reverbs",
+              "ro": "routes",
+              "si": "signals",
+              "so": "soundfiles",
+              "sp": "spats",
+              "sy": "synths",
+              "ve": "vaeffects",
+              "wd": "wavedigitalfilters",
+              "wa": "webaudio"
+            };
             hoverProvider = {
               provideHover: (model, position) => {
                 var matched = matchDocKey(_objectSpread(_objectSpread({}, primDocs), libDocs), model, position);
@@ -884,7 +914,7 @@ var getProviders = /*#__PURE__*/function () {
                     }, {
                       value: doc.doc.replace(/#+/g, "######")
                     }, {
-                      value: prefix.length ? "[Detail...](https://faustlibraries.grame.fr/libs/#".concat(prefix.join(".") + ".").concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)"
+                      value: prefix.length ? "[Detail...](https://faustlibraries.grame.fr/libs/".concat(docSections[prefix.slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)"
                     }]
                   };
                 }
@@ -958,7 +988,7 @@ var getProviders = /*#__PURE__*/function () {
               docs: libDocs
             });
 
-          case 19:
+          case 20:
           case "end":
             return _context4.stop();
         }
@@ -974,4 +1004,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=102013ecaeeaec04f990.js.map
+//# sourceMappingURL=fe4847b9838f74ada8af.js.map

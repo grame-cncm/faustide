@@ -110,6 +110,36 @@ export const getProviders = async (faust: Faust): Promise<FaustLanguageProviders
         primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => getFile(fileName, faust));
     } catch (e) { console.error(e); } // eslint-disable-line no-empty, no-console
     const faustLib = Object.keys(libDocs);
+    const docSections = {
+        "an": "analyzers",
+        "ba": "basics",
+        "co": "compressors",
+        "de": "delays",
+        "dm": "demos",
+        "dx": "dx7",
+        "en": "envelopes",
+        "fi": "filters",
+        "ho": "hoa",
+        "it": "interpolators",
+        "ma": "maths",
+        "mi": "mi",
+        "ef": "misceffects",
+        "os": "oscillators",
+        "no": "noises",
+        "pf": "phaflangers",
+        "pm": "physmodels",
+        "qu": "quantizer",
+        "rm": "reducemaps",
+        "re": "reverbs",
+        "ro": "routes",
+        "si": "signals",
+        "so": "soundfiles",
+        "sp": "spats",
+        "sy": "synths",
+        "ve": "vaeffects",
+        "wd": "wavedigitalfilters",
+        "wa": "webaudio"
+    };
     const hoverProvider: languages.HoverProvider = {
         provideHover: (model, position) => {
             const matched = matchDocKey({ ...primDocs, ...libDocs }, model, position);
@@ -122,7 +152,7 @@ export const getProviders = async (faust: Faust): Promise<FaustLanguageProviders
                     contents: [
                         { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                         { value: doc.doc.replace(/#+/g, "######") },
-                        { value: prefix.length ? `[Detail...](https://faustlibraries.grame.fr/libs/#${prefix.join(".") + "."}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)" }
+                        { value: prefix.length ? `[Detail...](https://faustlibraries.grame.fr/libs/${docSections[prefix.slice(0, 2)]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)" }
                     ]
                 };
             }
