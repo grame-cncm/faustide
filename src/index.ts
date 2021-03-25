@@ -36,6 +36,9 @@ import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
 
+import { docSections, faustDocURL } from "./documentation"; 
+
+
 declare global {
     interface Window {
         AudioContext: typeof AudioContext;
@@ -93,6 +96,8 @@ type FaustExportTargets = { [platform: string]: string[] };
 interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
     buffer: AudioBuffer;
 }
+
+
 
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
@@ -1778,14 +1783,14 @@ effect = dm.freeverb_demo;`;
             showDoc();
         }
     });
-    const faustDocURL = "https://faust.grame.fr/doc/libraries/";
+    
     const showDoc = () => {
         const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
         if (matched) {
-            const prefix = matched.nameArray.slice();
+            const prefix: string[] = matched.nameArray.slice();
             prefix.pop();
             const doc = matched.doc;
-            $("#a-docs").attr("href", `${faustDocURL}#${prefix.length ? prefix.join(".") + "." : ""}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
+            $("#a-docs").attr("href", `${faustDocURL}/${docSections[prefix.slice(0, 2)]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
             return;
         }
         $("#a-docs").attr("href", faustDocURL)[0].click();
