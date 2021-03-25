@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.431611332598759"
+    prefix: "1.0.431616688736212"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -110,59 +110,59 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   }, {
-    "url": "assets/00bb62bc33034479d5e82a0fd1c5efe3.eot",
-    "revision": "00bb62bc33034479d5e82a0fd1c5efe3"
+    "url": "assets/099a9556e1a63ece24f8a99859c94c7d.woff",
+    "revision": "099a9556e1a63ece24f8a99859c94c7d"
   }, {
-    "url": "assets/0232fe8b09de812c88e6cc27f57a3a88.eot",
-    "revision": "0232fe8b09de812c88e6cc27f57a3a88"
+    "url": "assets/0bb428459c8ecfa61b22a03def1706e6.svg",
+    "revision": "0bb428459c8ecfa61b22a03def1706e6"
   }, {
-    "url": "assets/0c9f225e8f69c622f681cf1ed973cc3d.woff2",
-    "revision": "0c9f225e8f69c622f681cf1ed973cc3d"
+    "url": "assets/1042e8ca1ce821518a2d3e7055410839.eot",
+    "revision": "1042e8ca1ce821518a2d3e7055410839"
   }, {
-    "url": "assets/0ce1e868452204695c8ac1c70f693c2d.woff",
-    "revision": "0ce1e868452204695c8ac1c70f693c2d"
+    "url": "assets/1f77739ca9ff2188b539c36f30ffa2be.ttf",
+    "revision": "1f77739ca9ff2188b539c36f30ffa2be"
   }, {
-    "url": "assets/2306f642b31b774ba1d8b6b784539e19.svg",
-    "revision": "2306f642b31b774ba1d8b6b784539e19"
+    "url": "assets/30cc681d4487d2f561035ba24a68c629.eot",
+    "revision": "30cc681d4487d2f561035ba24a68c629"
   }, {
-    "url": "assets/260d033f79f75d670fd09d8cf7c8bf8d.ttf",
-    "revision": "260d033f79f75d670fd09d8cf7c8bf8d"
+    "url": "assets/376c1f97f6553dea1ca9b3f9081889bd.svg",
+    "revision": "376c1f97f6553dea1ca9b3f9081889bd"
   }, {
-    "url": "assets/398be22b2308585b84da8e858e2d7b60.ttf",
-    "revision": "398be22b2308585b84da8e858e2d7b60"
+    "url": "assets/3b89dd103490708d19a95adcae52210e.ttf",
+    "revision": "3b89dd103490708d19a95adcae52210e"
   }, {
-    "url": "assets/3cace4a04d941b5981ba32c6ce9afae1.woff",
-    "revision": "3cace4a04d941b5981ba32c6ce9afae1"
+    "url": "assets/605ed7926cf39a2ad5ec2d1f9d391d3d.ttf",
+    "revision": "605ed7926cf39a2ad5ec2d1f9d391d3d"
   }, {
-    "url": "assets/4bfbf7eb4b19d9ff9293eb177b6d0070.woff",
-    "revision": "4bfbf7eb4b19d9ff9293eb177b6d0070"
+    "url": "assets/7124eb50fc8227c78269f2d995637ff5.woff",
+    "revision": "7124eb50fc8227c78269f2d995637ff5"
   }, {
-    "url": "assets/5d10d00980077f67990f73b1961bc46e.svg",
-    "revision": "5d10d00980077f67990f73b1961bc46e"
+    "url": "assets/7630483dd4b0c48639d2ac54a894b450.eot",
+    "revision": "7630483dd4b0c48639d2ac54a894b450"
   }, {
-    "url": "assets/847712aaabbeba674afdda86d31cab17.woff2",
-    "revision": "847712aaabbeba674afdda86d31cab17"
-  }, {
-    "url": "assets/9ae050d1876ac1763eb6afe4264e6d5a.woff2",
-    "revision": "9ae050d1876ac1763eb6afe4264e6d5a"
+    "url": "assets/9fe5a17c8ab036d20e6c5ba3fd2ac511.woff",
+    "revision": "9fe5a17c8ab036d20e6c5ba3fd2ac511"
   }, {
     "url": "assets/a609dc0f334a7d4e64205247c4e8b97c.ttf",
     "revision": "a609dc0f334a7d4e64205247c4e8b97c"
   }, {
-    "url": "assets/d0fdc7c20b0b0b1aaf27327547735fa3.svg",
-    "revision": "d0fdc7c20b0b0b1aaf27327547735fa3"
+    "url": "assets/ba7ed552362f64d30f6d844974d89114.svg",
+    "revision": "ba7ed552362f64d30f6d844974d89114"
   }, {
-    "url": "assets/d28c96cabe5302f1b2c90275cd3f4e69.eot",
-    "revision": "d28c96cabe5302f1b2c90275cd3f4e69"
+    "url": "assets/e8a427e15cc502bef99cfd722b37ea98.woff2",
+    "revision": "e8a427e15cc502bef99cfd722b37ea98"
   }, {
-    "url": "assets/dfe5aa4344a2d8a29aec8d83fb3fb14e.ttf",
-    "revision": "dfe5aa4344a2d8a29aec8d83fb3fb14e"
+    "url": "assets/f0f8230116992e521526097a28f54066.woff2",
+    "revision": "f0f8230116992e521526097a28f54066"
+  }, {
+    "url": "assets/f7307680c7fe85959f3ecf122493ea7d.woff2",
+    "revision": "f7307680c7fe85959f3ecf122493ea7d"
   }, {
     "url": "editor.worker.js",
     "revision": "297989b7c93044ced25f888fa4e979e1"
   }, {
     "url": "examples.json",
-    "revision": "b7a73f2842b20a1a2daf20ca460d7488"
+    "revision": "6e2996f32cfe32386ad8034756b21d56"
   }, {
     "url": "examples/SAM/16_channel_volume/16_channel_volume.dsp",
     "revision": "b23d1ecc4e0ecb0d904b1a905f79c990"
@@ -644,21 +644,6 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "examples/physicalModeling/faust-stk/voiceForm.dsp",
     "revision": "e57f4b98947f560a641efaffe1fcb2c1"
   }, {
-    "url": "examples/physicalModeling/fds/1dDampedWaveEquation.dsp",
-    "revision": "d5b56efb7fc72e650e975f90b1f5dcc1"
-  }, {
-    "url": "examples/physicalModeling/fds/2dKirchhoffThinPlate.dsp",
-    "revision": "119044a4ab9ed9be44b410e1667370cf"
-  }, {
-    "url": "examples/physicalModeling/fds/BowedString.dsp",
-    "revision": "0a354f95ea9bad523d664a8583ac02cf"
-  }, {
-    "url": "examples/physicalModeling/fds/PianoHammeredString.dsp",
-    "revision": "07be031bdd72f48d1819186762532dab"
-  }, {
-    "url": "examples/physicalModeling/fds/StiffString.dsp",
-    "revision": "0454dfb88d386c7264ee67029b1fc395"
-  }, {
     "url": "examples/physicalModeling/flute.dsp",
     "revision": "bec08ca4c3210aabfc32565f0ccb6491"
   }, {
@@ -828,7 +813,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "d45b34c1081e3d0189773cdb246da230"
   }, {
     "url": "index.js",
-    "revision": "bc4141f96819fa70f96a0691dbfc5358"
+    "revision": "c6e3f536f037ce56e38f9f6121b25d04"
   }, {
     "url": "js/0730b98e9dc953c16426.js",
     "revision": "a2bf7c10329ec52b39ba685e2617fb95"
@@ -836,8 +821,8 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "js/65b5b85284edc162184a.js",
     "revision": "7c7fa6dd8637ab8ab43f189f3e01f1b1"
   }, {
-    "url": "js/fe4847b9838f74ada8af.js",
-    "revision": "12132871d9477805ec8ad6cc69026f48"
+    "url": "js/c0a20a86ed0281810ec8.js",
+    "revision": "94886454709649262e1aed017e8b9b14"
   }, {
     "url": "libfaust-wasm.data",
     "revision": "c2c69cabe8df0cb7ecf0ff0f90484431"
