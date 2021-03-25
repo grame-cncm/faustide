@@ -1,6 +1,6 @@
 
 
-EXSRC := $(shell find dist/examples -name "*.dsp")
+EXSRC := $(shell find dist/examples -name "*.dsp") $(shell find dist/examples -name "*.lib")
 DIST  := dist
 FAUSTUI  := node_modules/faust-ui/dist
 LIBFAUST := node_modules/faust2webaudio/dist

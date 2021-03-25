@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.441616689834165"
+    prefix: "1.0.451616692105889"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -162,7 +162,124 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "297989b7c93044ced25f888fa4e979e1"
   }, {
     "url": "examples.json",
-    "revision": "6e2996f32cfe32386ad8034756b21d56"
+    "revision": "f8da7d5b6ee0992554245b14c759692b"
+  }, {
+    "url": "examples/LIBRARIES/aanl.lib",
+    "revision": "56db3a9bf284b85ec2a604e21a060471"
+  }, {
+    "url": "examples/LIBRARIES/all.lib",
+    "revision": "66c3831e0c42ea3438c4a17ed42cf81b"
+  }, {
+    "url": "examples/LIBRARIES/analyzers.lib",
+    "revision": "5c2d95592c02b743096301f62ac32e9c"
+  }, {
+    "url": "examples/LIBRARIES/basics.lib",
+    "revision": "55b88d162bcd3fc15534f69464618930"
+  }, {
+    "url": "examples/LIBRARIES/compressors.lib",
+    "revision": "05d7388791a693ff28cf0d824f90512d"
+  }, {
+    "url": "examples/LIBRARIES/delays.lib",
+    "revision": "6f2da80c28a349c5946d564e7c2d083d"
+  }, {
+    "url": "examples/LIBRARIES/demos.lib",
+    "revision": "931405beb3205854f57ac5d509b75f2d"
+  }, {
+    "url": "examples/LIBRARIES/dx7.lib",
+    "revision": "0f97e305d1c15025e7596e3395629c50"
+  }, {
+    "url": "examples/LIBRARIES/envelopes.lib",
+    "revision": "190d6cfdd330144a61fb6c2b22f05a48"
+  }, {
+    "url": "examples/LIBRARIES/fds.lib",
+    "revision": "5d4430a394e9d860a8465cb527796a98"
+  }, {
+    "url": "examples/LIBRARIES/filters.lib",
+    "revision": "82573339e1aefbbeafa2d8889d21a01a"
+  }, {
+    "url": "examples/LIBRARIES/hoa.lib",
+    "revision": "3e5cc74023a40ff1cf2c15e0e67ca536"
+  }, {
+    "url": "examples/LIBRARIES/instruments.lib",
+    "revision": "e234e29db3098b5ef5dad4bf733cbf0c"
+  }, {
+    "url": "examples/LIBRARIES/interpolators.lib",
+    "revision": "fdd62f359921d10ee1bb7f47946b5af7"
+  }, {
+    "url": "examples/LIBRARIES/maths.lib",
+    "revision": "156bd741ca5b035d93d0c9d1e670989e"
+  }, {
+    "url": "examples/LIBRARIES/maxmsp.lib",
+    "revision": "1e84e292cc55a426fdfd13cf7045dbf6"
+  }, {
+    "url": "examples/LIBRARIES/mi.lib",
+    "revision": "70b38e1089bc745765c960f83aa23554"
+  }, {
+    "url": "examples/LIBRARIES/misceffects.lib",
+    "revision": "faf9405c528b2aba02c9bda071113e1f"
+  }, {
+    "url": "examples/LIBRARIES/noises.lib",
+    "revision": "9a82189027d4e1cb7abf96dfdc1c39e6"
+  }, {
+    "url": "examples/LIBRARIES/oscillators.lib",
+    "revision": "9530dd6469eb851c7de7cf3430b77ca0"
+  }, {
+    "url": "examples/LIBRARIES/phaflangers.lib",
+    "revision": "a4113988b3a73cfb0de7020db3bea160"
+  }, {
+    "url": "examples/LIBRARIES/physmodels.lib",
+    "revision": "61d3f4ec7b1c041c7a1d2becbd806c88"
+  }, {
+    "url": "examples/LIBRARIES/platform.lib",
+    "revision": "a10deb2b7e95251b84e0e26caf1288ed"
+  }, {
+    "url": "examples/LIBRARIES/quantizers.lib",
+    "revision": "2245fc3c6aa6de3df94193c828d49fe2"
+  }, {
+    "url": "examples/LIBRARIES/reducemaps.lib",
+    "revision": "b38a8408c0cedaf85a2aec476a604184"
+  }, {
+    "url": "examples/LIBRARIES/reverbs.lib",
+    "revision": "f95c9d1e9fdaef849ec467d5c141085d"
+  }, {
+    "url": "examples/LIBRARIES/routes.lib",
+    "revision": "a77fda0b8c5f8d242d3556c2007c512d"
+  }, {
+    "url": "examples/LIBRARIES/sf.lib",
+    "revision": "0591d285b0940ae0dec7406b1e827240"
+  }, {
+    "url": "examples/LIBRARIES/signals.lib",
+    "revision": "7894db60138ef807f3ff104b5bcaca17"
+  }, {
+    "url": "examples/LIBRARIES/soundfiles.lib",
+    "revision": "03e06c4b37fe30a3b3293f504c593f7e"
+  }, {
+    "url": "examples/LIBRARIES/spats.lib",
+    "revision": "46577c8189bd2a6dc79443a974c673f5"
+  }, {
+    "url": "examples/LIBRARIES/stdfaust.lib",
+    "revision": "207cb1b00e7834e9e426770d5251a32a"
+  }, {
+    "url": "examples/LIBRARIES/synths.lib",
+    "revision": "f84a4cbad5a258cafaeda94826468de2"
+  }, {
+    "url": "examples/LIBRARIES/tonestacks.lib",
+    "revision": "7c680b0c167053c0ed0c3d444ca8c6d5"
+  }, {
+    "url": "examples/LIBRARIES/tubes.lib",
+    "revision": "a12e2a2ea1c59abfea704c80fb8ab8cd"
+  }, {
+    "url": "examples/LIBRARIES/vaeffects.lib",
+    "revision": "34c1b7c1832bab177e39fd3602d33b1c"
+  }, {
+    "url": "examples/LIBRARIES/version.lib",
+    "revision": "6a56023847f842bdefdc3a59da3df095"
+  }, {
+    "url": "examples/LIBRARIES/wdmodels.lib",
+    "revision": "d60300d837a37509428a7fadf33c0dcd"
+  }, {
+    "url": "examples/LIBRARIES/webaudio.lib",
+    "revision": "f822f1872a92675d03e3cf9e86004f14"
   }, {
     "url": "examples/SAM/16_channel_volume/16_channel_volume.dsp",
     "revision": "b23d1ecc4e0ecb0d904b1a905f79c990"
@@ -813,7 +930,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "d45b34c1081e3d0189773cdb246da230"
   }, {
     "url": "index.js",
-    "revision": "7714d7177a16f0e530997a91f37c4f4e"
+    "revision": "d8fd9beceffc5837c1899dccc82bdced"
   }, {
     "url": "js/0730b98e9dc953c16426.js",
     "revision": "a2bf7c10329ec52b39ba685e2617fb95"
