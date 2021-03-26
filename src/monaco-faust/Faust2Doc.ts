@@ -150,8 +150,14 @@ export class Faust2Doc {
         const lines = strIn.split("\n");
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
+            if (!line) continue; // empty line
             if (!Faust2MD.isComment(line)) {
-                if (inComment) inComment = false; // we are closing a md-comment
+                if (inComment) { // we are closing a md-comment
+                    inComment = false;
+                    if (curName) this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = { name: curName, path: [...path], doc: strBuffer });
+                    curName = "";
+                    strBuffer = "";
+                }
                 const libs = this.matchLibrary(line);
                 const imps = this.matchImport(line);
                 for (let j = 0; j < libs.length; j++) {
