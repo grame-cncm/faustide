@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.451616692105889"
+    prefix: "1.0.461616753193261"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -162,7 +162,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "297989b7c93044ced25f888fa4e979e1"
   }, {
     "url": "examples.json",
-    "revision": "f8da7d5b6ee0992554245b14c759692b"
+    "revision": "57552b82addac2243ef0b15c4c60dd62"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "56db3a9bf284b85ec2a604e21a060471"
@@ -761,6 +761,21 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "examples/physicalModeling/faust-stk/voiceForm.dsp",
     "revision": "e57f4b98947f560a641efaffe1fcb2c1"
   }, {
+    "url": "examples/physicalModeling/fds/1dDampedWaveEquation.dsp",
+    "revision": "d5b56efb7fc72e650e975f90b1f5dcc1"
+  }, {
+    "url": "examples/physicalModeling/fds/2dKirchhoffThinPlate.dsp",
+    "revision": "119044a4ab9ed9be44b410e1667370cf"
+  }, {
+    "url": "examples/physicalModeling/fds/BowedString.dsp",
+    "revision": "0a354f95ea9bad523d664a8583ac02cf"
+  }, {
+    "url": "examples/physicalModeling/fds/PianoHammeredString.dsp",
+    "revision": "07be031bdd72f48d1819186762532dab"
+  }, {
+    "url": "examples/physicalModeling/fds/StiffString.dsp",
+    "revision": "0454dfb88d386c7264ee67029b1fc395"
+  }, {
     "url": "examples/physicalModeling/flute.dsp",
     "revision": "bec08ca4c3210aabfc32565f0ccb6491"
   }, {
@@ -930,22 +945,22 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "d45b34c1081e3d0189773cdb246da230"
   }, {
     "url": "index.js",
-    "revision": "d8fd9beceffc5837c1899dccc82bdced"
+    "revision": "e8cb266d9398dd11b2033c305b1c072c"
   }, {
     "url": "js/0730b98e9dc953c16426.js",
     "revision": "a2bf7c10329ec52b39ba685e2617fb95"
   }, {
-    "url": "js/65b5b85284edc162184a.js",
-    "revision": "7c7fa6dd8637ab8ab43f189f3e01f1b1"
+    "url": "js/c34389ba09baeb2b990e.js",
+    "revision": "d02a3fca27f8d777e701f38a20012c43"
   }, {
-    "url": "js/c0a20a86ed0281810ec8.js",
-    "revision": "94886454709649262e1aed017e8b9b14"
+    "url": "js/f8bd7cac0ce9192fae0e.js",
+    "revision": "4181279795fdf76e661e602e5ae78ffb"
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "c2c69cabe8df0cb7ecf0ff0f90484431"
+    "revision": "3306f85be4d83b65ad585695eaa6a75d"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "ada98ab25617bee35cf6c4aecb116f4a"
+    "revision": "01bc6fac681a141270ea15049256a81b"
   }, {
     "url": "manifest.json",
     "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"

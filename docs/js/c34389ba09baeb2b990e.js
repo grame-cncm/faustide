@@ -209,62 +209,80 @@ class Faust2Doc {
 
             case 14:
               if (!(i < lines.length)) {
-                _context.next = 49;
+                _context.next = 51;
                 break;
               }
 
               line = lines[i];
 
-              if (_Faust2MD__WEBPACK_IMPORTED_MODULE_2__["Faust2MD"].isComment(line)) {
-                _context.next = 37;
+              if (line) {
+                _context.next = 18;
                 break;
               }
 
-              if (inComment) inComment = false; // we are closing a md-comment
+              return _context.abrupt("continue", 48);
+
+            case 18:
+              if (_Faust2MD__WEBPACK_IMPORTED_MODULE_2__["Faust2MD"].isComment(line)) {
+                _context.next = 39;
+                break;
+              }
+
+              if (inComment) {
+                // we are closing a md-comment
+                inComment = false;
+                if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
+                  name: curName,
+                  path: [...path],
+                  doc: strBuffer
+                });
+                curName = "";
+                strBuffer = "";
+              }
 
               libs = _this.matchLibrary(line);
               imps = _this.matchImport(line);
               j = 0;
 
-            case 21:
+            case 23:
               if (!(j < libs.length)) {
-                _context.next = 28;
+                _context.next = 30;
                 break;
               }
 
               lib = libs[j];
-              _context.next = 25;
+              _context.next = 27;
               return _this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
 
-            case 25:
+            case 27:
               j++;
-              _context.next = 21;
+              _context.next = 23;
               break;
 
-            case 28:
+            case 30:
               _j = 0;
 
-            case 29:
+            case 31:
               if (!(_j < imps.length)) {
-                _context.next = 36;
+                _context.next = 38;
                 break;
               }
 
               imp = imps[_j];
-              _context.next = 33;
+              _context.next = 35;
               return _this.parse(imp, getFile, depth - 1, path, doc);
 
-            case 33:
+            case 35:
               _j++;
-              _context.next = 29;
+              _context.next = 31;
               break;
 
-            case 36:
-              return _context.abrupt("continue", 46);
+            case 38:
+              return _context.abrupt("continue", 48);
 
-            case 37:
+            case 39:
               if (!inComment) {
-                _context.next = 43;
+                _context.next = 45;
                 break;
               }
 
@@ -291,9 +309,9 @@ class Faust2Doc {
                 strBuffer = "";
               }
 
-              return _context.abrupt("continue", 46);
+              return _context.abrupt("continue", 48);
 
-            case 43:
+            case 45:
               // check begin of md-comment
               _c$s$t = {
                 c: _Faust2MD__WEBPACK_IMPORTED_MODULE_2__["Faust2MD"].matchBeginComment(line),
@@ -308,15 +326,15 @@ class Faust2Doc {
                 strBuffer = "";
               }
 
-            case 46:
+            case 48:
               i++;
               _context.next = 14;
               break;
 
-            case 49:
+            case 51:
               return _context.abrupt("return", doc);
 
-            case 50:
+            case 52:
             case "end":
               return _context.stop();
           }
@@ -976,4 +994,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=c0a20a86ed0281810ec8.js.map
+//# sourceMappingURL=c34389ba09baeb2b990e.js.map
