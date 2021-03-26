@@ -829,6 +829,7 @@ $(async () => {
         const response = await fetch(`${server}/targets`);
         const targets: FaustExportTargets = await response.json();
         const plats = Object.keys(targets);
+        plats.sort(); // sort platform names in alphabetic order
         if (plats.length) {
             plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
             $("#export-platform").val(compileOptions.exportPlatform);

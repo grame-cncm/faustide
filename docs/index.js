@@ -43,7 +43,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "js/" + {"0":"0730b98e9dc953c16426","1":"c34389ba09baeb2b990e","2":"f8bd7cac0ce9192fae0e"}[chunkId] + ".js"
+/******/ 		return __webpack_require__.p + "js/" + {"0":"0730b98e9dc953c16426","1":"c34389ba09baeb2b990e","2":"65b5b85284edc162184a"}[chunkId] + ".js"
 /******/ 	}
 /******/
 /******/ 	// The require function
@@ -647,7 +647,9 @@ function fromByteArray (uint8) {
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+    parts.push(encodeChunk(
+      uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)
+    ))
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
@@ -3814,7 +3816,6 @@ if (true) {
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -15022,7 +15023,7 @@ module.exports = {
 
 var base64 = __webpack_require__(/*! base64-js */ "./node_modules/base64-js/index.js")
 var ieee754 = __webpack_require__(/*! ieee754 */ "./node_modules/ieee754/index.js")
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/node-libs-browser/node_modules/isarray/index.js")
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -16801,22 +16802,6 @@ function isnan (val) {
 }
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
-/***/ "./node_modules/node-libs-browser/node_modules/isarray/index.js":
-/*!**********************************************************************!*\
-  !*** ./node_modules/node-libs-browser/node_modules/isarray/index.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
 
 /***/ }),
 
@@ -21391,7 +21376,7 @@ var Version = __webpack_require__(/*! ./version */ "./node_modules/qrcode/lib/co
 var FormatInfo = __webpack_require__(/*! ./format-info */ "./node_modules/qrcode/lib/core/format-info.js")
 var Mode = __webpack_require__(/*! ./mode */ "./node_modules/qrcode/lib/core/mode.js")
 var Segments = __webpack_require__(/*! ./segments */ "./node_modules/qrcode/lib/core/segments.js")
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/qrcode/node_modules/isarray/index.js")
 
 /**
  * QRCode for JavaScript
@@ -22438,7 +22423,7 @@ var ECCode = __webpack_require__(/*! ./error-correction-code */ "./node_modules/
 var ECLevel = __webpack_require__(/*! ./error-correction-level */ "./node_modules/qrcode/lib/core/error-correction-level.js")
 var Mode = __webpack_require__(/*! ./mode */ "./node_modules/qrcode/lib/core/mode.js")
 var VersionCheck = __webpack_require__(/*! ./version-check */ "./node_modules/qrcode/lib/core/version-check.js")
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/qrcode/node_modules/isarray/index.js")
 
 // Generator polynomial used to encode version information
 var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0)
@@ -22892,7 +22877,7 @@ exports.qrToImageData = function qrToImageData (imgData, qr, opts) {
 
 
 
-var isArray = __webpack_require__(/*! isarray */ "./node_modules/isarray/index.js")
+var isArray = __webpack_require__(/*! isarray */ "./node_modules/qrcode/node_modules/isarray/index.js")
 
 function typedArraySupport () {
   // Can typed array instances be augmented?
@@ -23403,6 +23388,22 @@ module.exports.alloc = function (size) {
 module.exports.from = function (data) {
   return new Buffer(data)
 }
+
+
+/***/ }),
+
+/***/ "./node_modules/qrcode/node_modules/isarray/index.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/qrcode/node_modules/isarray/index.js ***!
+  \***********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
 
 
 /***/ }),
@@ -31697,7 +31698,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.46\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.12.0\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.47\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/Fr0stbyteR/fausteditorweb.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/Fr0stbyteR/fausteditorweb/issues\"},\"homepage\":\"https://github.com/Fr0stbyteR/fausteditorweb#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^3.6.0\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.12.0\",\"stylelint-config-recommended\":\"^3.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -36380,6 +36381,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                     case 10:
                       targets = _context4.sent;
                       plats = Object.keys(targets);
+                      plats.sort(); // sort platform names in alphabetic order
 
                       if (plats.length) {
                         plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
@@ -36410,7 +36412,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         exportProgram(false);
                       });
 
-                    case 20:
+                    case 21:
                     case "end":
                       return _context4.stop();
                   }
