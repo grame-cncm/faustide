@@ -30,7 +30,7 @@ Firstly ensure that you have [Git](https://git-scm.com/downloads) and [Node.js](
 Clone a copy of the repo then change to the directory:
 
 ```bash
-git clone https://github.com:grame-cncm/faustide.git
+git clone https://github.com/grame-cncm/faustide.git
 cd faustide
 ```
 Beware: on Windows, before cloning the repository, and for the libfaust-wasm.data file line ending to be correctly handled, you'll have to do: 
