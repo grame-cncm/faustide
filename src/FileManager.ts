@@ -71,10 +71,17 @@ export class FileManager {
     mainFileChangeHandler?: (index: number, mainCode: string) => any = () => undefined;
 
     constructor(options: TOptions) {
-        Object.assign(this, options);
+        this.container = options.container;
+        this.fs = options.fs;
+        this.path = options.path;
+        this.$mainFile = options.$mainFile;
         this.getChildren();
         this.getFiles();
         this.bind();
+        this.selectHandler = options.selectHandler;
+        this.saveHandler = options.saveHandler;
+        this.deleteHandler = options.deleteHandler;
+        this.mainFileChangeHandler = options.mainFileChangeHandler;
         this.select(this._fileList[options.$mainFile]);
     }
     getChildren() {
