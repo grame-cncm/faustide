@@ -106,3 +106,8 @@ Once the site is validated add (using `git add docs`) and commit the entire cont
 
 - [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website. 
 - [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
+
+
+### Known problems and solutions
+
+- evaluating a heavy DSP program may hang the IDE, which will stay in this state even if you open it again, if the **Real-time Compile** checkbox was set. You can deactivate the checkbox by opening the IDE with the `https://faustide.grame.fr/?realtime_compile=0` URL.
