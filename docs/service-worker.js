@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.511619795281184"
+    prefix: "1.0.511620679203924"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
