@@ -3,6 +3,7 @@
 export const faustDocURL = "https://faustlibraries.grame.fr/libs";
 
 export const docSections = {
+    "aa": "antialiased",
     "an": "analyzers",
     "ba": "basics",
     "co": "compressors",
@@ -10,6 +11,7 @@ export const docSections = {
     "dm": "demos",
     "dx": "dx7",
     "en": "envelopes",
+    "fd": "fds",
     "fi": "filters",
     "ho": "hoa",
     "it": "interpolators",
@@ -20,7 +22,7 @@ export const docSections = {
     "no": "noises",
     "pf": "phaflangers",
     "pm": "physmodels",
-    "qu": "quantizer",
+    "qu": "quantizers",
     "rm": "reducemaps",
     "re": "reverbs",
     "ro": "routes",
@@ -29,6 +31,7 @@ export const docSections = {
     "sp": "spats",
     "sy": "synths",
     "ve": "vaeffects",
-    "wd": "wavedigitalfilters",
-    "wa": "webaudio"
+    "vl": "version",
+    "wa": "webaudio",
+    "wd": "wdmodels"
 };
