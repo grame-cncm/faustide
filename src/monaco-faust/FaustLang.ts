@@ -52,6 +52,7 @@ const faustKeywords = [
 const faustFunctions = [
     "mem", "prefix", "rdtable", "rwtable",
     "select2", "select3", "ffunction", "fconstant", "fvariable",
+    "route", "waveform", "soundfile",
     "button", "checkbox", "vslider", "hslider", "nentry",
     "vgroup", "hgroup", "tgroup", "vbargraph", "hbargraph", "attach",
     "acos", "asin", "atan", "atan2", "cos", "sin", "tan", "exp",

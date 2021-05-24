@@ -311,6 +311,23 @@ closed source license or any other license if you decide so.
 //====================================== Primitives ======================================
 //========================================================================================
 
+//-------`route`----------
+// The route primitive facilitates the routing of signals in Faust. It has the following syntax:
+// 
+// ```
+// route(A,B,a,b,c,d,...)
+// route(A,B,(a,b),(c,d),...)
+// ```
+// where:
+// 
+// * `A` is the number of input signals
+// * `B` is the number of output signals
+// * `a,b / (a,b)` is an input/output pair
+// 
+// Inputs are numbered from 1 to `A` and outputs are numbered from 1 to `B`. There can be any number of input/output pairs after the declaration of `A` and `B`.
+// 
+//-----------------------------
+
 //-------`waveform`----------
 // The waveform primitive was designed to facilitate the use of 
 // `rdtable` (read table). It allows us to specify a fixed periodic 
@@ -341,7 +358,7 @@ closed source license or any other license if you decide so.
 //
 //-----------------------------
 
-//-------`waveform`----------
+//-------`soundfile`----------
 // The `soundfile("label[url:{'path1';'path2';'path3'}]", n)` primitive allows for the access a list of 
 // externally defined sound resources, described as the list of their filename, or complete paths. The `soundfile("label[url:path]", n)` simplified syntax allows to use a single file. A `soundfile` has: 
 //
