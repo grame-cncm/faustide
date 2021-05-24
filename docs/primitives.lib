@@ -375,22 +375,16 @@ closed source license or any other license if you decide so.
 // frames and null outputs (with samples of value 0) will be used. Note also that soundfiles are entirely 
 // loaded in memory by the architecture file, so that the read index signal can access any sample.
 //
-// Architecture files are responsible to load the actual soundfile. The 
-// `SoundUI` C++ class located in the `faust/gui/SoundUI.h` file in the 
-// [Faust repository](https://github.com/grame-cncm/faust) implements the 
-// `void addSoundfile(label, path, sf_zone)` method, which loads the actual 
-// soundfiles using the `libsndfile` library, or possibly specific audio file loading code 
-// (in the case of the JUCE framework for instance), and set up the `sf_zone` sound 
-// memory pointers. If *label* is used without any *url* metadata, it will be 
-// considered as the soundfile pathname. 
-//
-// Note that a special architecture file can well decide to access and use 
-// sound resources created by another means (that is, not directly loaded from a 
-// sound file). For instance a mapping between labels and sound resources defined 
-// in memory could be used, with some additional code in charge of actually 
-// setting up all sound memory pointers when 
-// `void addSoundfile(label, path, sf_zone)` is called by the `buidUserInterface` 
-// mechanism.
+// A minimal example to play a stereo soundfile until it's end can be written with:
+// 
+// ```
+// process = 0,_~+(1):soundfile("son[url:{'foo.wav'}]",2):!,!,_,_;
+// ```
+// 
+// The 0 first parameter selects the first sound in the soundfile list (which only contains one file in this example), 
+// then uses an incrementing read index signal to play the soundfile, cuts the unneeded *sound length in frames* and *sample rate* ouputs, 
+// and keeps the two actual sound outputs. Having the *sound length in frames* first output allows to implement sound looping, 
+// or any kind of more sophisticated read index signal. Having the *sound sample rate* second output allows to possibly adapt or change the reading speed. 
 //
 //-----------------------------
 

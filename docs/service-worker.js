@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.521621856240770"
+    prefix: "1.0.521621857581971"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -966,7 +966,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"
   }, {
     "url": "primitives.lib",
-    "revision": "d00c473568e374cf7673831628502301"
+    "revision": "6a13ae246aad4364d4be41de71c122a7"
   }], {});
   workbox.cleanupOutdatedCaches();
 
