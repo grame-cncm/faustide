@@ -43,7 +43,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"83ee072bc43e69f68884","2":"d6bcbfbb40f06a6aa2b8"}[chunkId] + ".js"
+/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"f555d40358fe2c79a2a7","2":"d6bcbfbb40f06a6aa2b8"}[chunkId] + ".js"
 /******/ 	}
 /******/
 /******/ 	// The require function
@@ -37872,7 +37872,7 @@ var faustLangRegister = /*#__PURE__*/function () {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return __webpack_require__.e(/*! import() */ 1).then(__webpack_require__.t.bind(null, /*! ./FaustLang */ "./src/monaco-faust/FaustLang.ts", 7));
+            return Promise.all(/*! import() */[__webpack_require__.e(0), __webpack_require__.e(1)]).then(__webpack_require__.bind(null, /*! ./FaustLang */ "./src/monaco-faust/FaustLang.ts"));
 
           case 2:
             faustLang = _context.sent;

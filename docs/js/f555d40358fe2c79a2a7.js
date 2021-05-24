@@ -735,7 +735,7 @@ var theme = {
   colors: null
 };
 var faustKeywords = ["import", "component", "declare", "library", "environment", "int", "float", "letrec", "with", "class", "process", "effect", "inputs", "outputs"];
-var faustFunctions = ["mem", "prefix", "rdtable", "rwtable", "select2", "select3", "ffunction", "fconstant", "fvariable", "button", "checkbox", "vslider", "hslider", "nentry", "vgroup", "hgroup", "tgroup", "vbargraph", "hbargraph", "attach", "acos", "asin", "atan", "atan2", "cos", "sin", "tan", "exp", "log", "log10", "pow", "sqrt", "abs", "min", "max", "fmod", "remainder", "floor", "ceil", "rint", "seq", "par", "sum", "prod"];
+var faustFunctions = ["mem", "prefix", "rdtable", "rwtable", "select2", "select3", "ffunction", "fconstant", "fvariable", "route", "waveform", "soundfile", "button", "checkbox", "vslider", "hslider", "nentry", "vgroup", "hgroup", "tgroup", "vbargraph", "hbargraph", "attach", "acos", "asin", "atan", "atan2", "cos", "sin", "tan", "exp", "log", "log10", "pow", "sqrt", "abs", "min", "max", "fmod", "remainder", "floor", "ceil", "rint", "seq", "par", "sum", "prod"];
 
 var getFile = /*#__PURE__*/function () {
   var _ref = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(fileName, faust) {
@@ -994,4 +994,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=0378fbca294f5b71670e.js.map
+//# sourceMappingURL=f555d40358fe2c79a2a7.js.map
