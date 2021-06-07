@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.551623092418674"
+    prefix: "1.0.561623107367804"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -162,7 +162,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "297989b7c93044ced25f888fa4e979e1"
   }, {
     "url": "examples.json",
-    "revision": "57552b82addac2243ef0b15c4c60dd62"
+    "revision": "9eac1f051de6c09e6d7b27b1c634634d"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "56db3a9bf284b85ec2a604e21a060471"
@@ -833,11 +833,20 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "examples/psychoacoustic/harmonicExciter.dsp",
     "revision": "eebb583e71557b35bdab830722f3dedc"
   }, {
+    "url": "examples/reverb/dattorro.dsp",
+    "revision": "74bf9ec3b48bec59f186631dfa7d4f4c"
+  }, {
     "url": "examples/reverb/fdnRev.dsp",
     "revision": "2f6d09723ecb770a3cf5ec15cfca7206"
   }, {
     "url": "examples/reverb/freeverb.dsp",
     "revision": "28c1a2f015bb6d04245de4e61f337904"
+  }, {
+    "url": "examples/reverb/greyhole.dsp",
+    "revision": "6e7b2560602fe7a329acb008f35ddcde"
+  }, {
+    "url": "examples/reverb/jprev.dsp",
+    "revision": "746df8139c2bbae68aefeae0ebfa06d1"
   }, {
     "url": "examples/reverb/reverbDesigner.dsp",
     "revision": "673a0195e3326efe239a6a08cddcaad4"
@@ -945,7 +954,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "73b4d7df1683aea10b4823c9bc2f85ee"
   }, {
     "url": "index.js",
-    "revision": "6b526788f382de1a13a7efdd0f5b8726"
+    "revision": "dffcd2e7819cd7db8d97332beb4be811"
   }, {
     "url": "js/1350ba3b51bfeeedf6e9.js",
     "revision": "b313e6bf3b0eefee999813babeba63d8"
