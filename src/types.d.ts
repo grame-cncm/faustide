@@ -11,7 +11,7 @@ type FaustEditorCompileOptions = {
     plotMode: "offline" | "continuous" | "onevent" | "manual";
     plot: number;
     plotSR: number;
-    plotFFT: 256 | 1024 | 4096;
+    plotFFT: 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 | 65536;
     plotFFTOverlap: 1 | 2 | 4 | 8;
     drawSpectrogram: boolean;
     args: { [key: string]: any };

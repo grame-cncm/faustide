@@ -35,9 +35,7 @@ import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
-
-import { docSections, faustDocURL } from "./documentation"; 
-
+import { docSections, faustDocURL } from "./documentation";
 
 declare global {
     interface Window {
@@ -97,12 +95,10 @@ interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
     buffer: AudioBuffer;
 }
 
-
-
 const supportAudioWorklet = !!window.AudioWorklet;
 let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 
-var server = "https://faustservicecloud.grame.fr";
+let server = "https://faustservicecloud.grame.fr";
 
 $(async () => {
     /**
@@ -619,7 +615,7 @@ $(async () => {
     })[0].checked = compileOptions.drawSpectrogram;
     // Plot
     $<HTMLInputElement>("#select-plot-fftsize").on("change", (e) => {
-        compileOptions.plotFFT = +e.currentTarget.value as 256 | 1024 | 4096;
+        compileOptions.plotFFT = +e.currentTarget.value as 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 | 65536;
         uiEnv.analyser.fftSize = compileOptions.plotFFT;
         $("#input-plot-samps").change();
         saveEditorParams();
@@ -1784,14 +1780,14 @@ effect = dm.freeverb_demo;`;
             showDoc();
         }
     });
-    
+
     const showDoc = () => {
         const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
         if (matched) {
             const prefix: string[] = matched.nameArray.slice();
             prefix.pop();
             const doc = matched.doc;
-            $("#a-docs").attr("href", `${faustDocURL}/${docSections[prefix.slice(0, 2)]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
+            $("#a-docs").attr("href", `${faustDocURL}/${docSections[prefix.toString().slice(0, 2) as keyof typeof docSections]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
             return;
         }
         $("#a-docs").attr("href", faustDocURL)[0].click();
