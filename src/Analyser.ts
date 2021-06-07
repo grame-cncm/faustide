@@ -69,7 +69,7 @@ export class Analyser {
      * @memberof Analyser
      */
     private _fft: FFTR;
-    private _fftSize: 256 | 1024 | 4096;
+    private _fftSize: 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 | 65536;
     private _fftOverlap: 1 | 2 | 4 | 8;
     /**
      * This function property can be overwritten, will be called after each buffer received.
