@@ -31771,7 +31771,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.54\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.55\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -35188,37 +35188,37 @@ __webpack_require__.r(__webpack_exports__);
 // Definitions related to the libraries documentation system
 var faustDocURL = "https://faustlibraries.grame.fr/libs";
 var docSections = {
-  "aa": "antialiased",
-  "an": "analyzers",
-  "ba": "basics",
-  "co": "compressors",
-  "de": "delays",
-  "dm": "demos",
-  "dx": "dx7",
-  "en": "envelopes",
-  "fd": "fds",
-  "fi": "filters",
-  "ho": "hoa",
-  "it": "interpolators",
-  "ma": "maths",
-  "mi": "mi",
-  "ef": "misceffects",
-  "os": "oscillators",
-  "no": "noises",
-  "pf": "phaflangers",
-  "pm": "physmodels",
-  "qu": "quantizers",
-  "rm": "reducemaps",
-  "re": "reverbs",
-  "ro": "routes",
-  "si": "signals",
-  "so": "soundfiles",
-  "sp": "spats",
-  "sy": "synths",
-  "ve": "vaeffects",
-  "vl": "version",
-  "wa": "webaudio",
-  "wd": "wdmodels"
+  aa: "antialiased",
+  an: "analyzers",
+  ba: "basics",
+  co: "compressors",
+  de: "delays",
+  dm: "demos",
+  dx: "dx7",
+  en: "envelopes",
+  fd: "fds",
+  fi: "filters",
+  ho: "hoa",
+  it: "interpolators",
+  ma: "maths",
+  mi: "mi",
+  ef: "misceffects",
+  os: "oscillators",
+  no: "noises",
+  pf: "phaflangers",
+  pm: "physmodels",
+  qu: "quantizers",
+  rm: "reducemaps",
+  re: "reverbs",
+  ro: "routes",
+  si: "signals",
+  so: "soundfiles",
+  sp: "spats",
+  sy: "synths",
+  ve: "vaeffects",
+  vl: "version",
+  wa: "webaudio",
+  wd: "wdmodels"
 };
 
 /***/ }),
@@ -37818,7 +37818,7 @@ var initEditor = /*#__PURE__*/function () {
                 var prefix = matched.nameArray.slice();
                 prefix.pop();
                 var doc = matched.doc;
-                $("#a-docs").attr("href", "".concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["docSections"][prefix.slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase()))[0].click();
+                $("#a-docs").attr("href", "".concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["docSections"][prefix.toString().slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase()))[0].click();
                 return;
               }
 
