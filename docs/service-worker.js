@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.571623391183901"
+    prefix: "1.0.571623907390229"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -939,7 +939,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "306d3323c9d939985f17a8c8aa3dfc5b"
   }, {
     "url": "faust-ui.js",
-    "revision": "4396de386c954c674f69b0611d389ed4"
+    "revision": "3c717cfff3ae2d8aa381fede3a5d155c"
   }, {
     "url": "favicon.png",
     "revision": "8c793ef1d04148eb48e9595e54950310"
