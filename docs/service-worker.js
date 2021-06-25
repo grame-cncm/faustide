@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.581624255262145"
+    prefix: "1.0.591624631866003"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -162,7 +162,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "297989b7c93044ced25f888fa4e979e1"
   }, {
     "url": "examples.json",
-    "revision": "9eac1f051de6c09e6d7b27b1c634634d"
+    "revision": "7f527540355e65867fe8495474d83dff"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "56db3a9bf284b85ec2a604e21a060471"
@@ -762,19 +762,25 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "e57f4b98947f560a641efaffe1fcb2c1"
   }, {
     "url": "examples/physicalModeling/fds/1dDampedWaveEquation.dsp",
-    "revision": "d5b56efb7fc72e650e975f90b1f5dcc1"
+    "revision": "67980a7e58795bea946baf7b307e54fa"
   }, {
     "url": "examples/physicalModeling/fds/2dKirchhoffThinPlate.dsp",
-    "revision": "119044a4ab9ed9be44b410e1667370cf"
+    "revision": "4a44d8aec7542606c3d18d7ecb4dd34b"
   }, {
     "url": "examples/physicalModeling/fds/BowedString.dsp",
-    "revision": "0a354f95ea9bad523d664a8583ac02cf"
+    "revision": "72a7933a41d2d1690f4a0a31be71accd"
+  }, {
+    "url": "examples/physicalModeling/fds/ControllableNonPhysicalString.dsp",
+    "revision": "1cf71502b9675a35a55da3966df1ab83"
+  }, {
+    "url": "examples/physicalModeling/fds/HammeredString.dsp",
+    "revision": "62c338f1ae766a6038dd730273355979"
   }, {
     "url": "examples/physicalModeling/fds/PianoHammeredString.dsp",
     "revision": "07be031bdd72f48d1819186762532dab"
   }, {
     "url": "examples/physicalModeling/fds/StiffString.dsp",
-    "revision": "0454dfb88d386c7264ee67029b1fc395"
+    "revision": "1f242ed86042a7a0bde2561b6cac92c7"
   }, {
     "url": "examples/physicalModeling/flute.dsp",
     "revision": "bec08ca4c3210aabfc32565f0ccb6491"
@@ -954,7 +960,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "73b4d7df1683aea10b4823c9bc2f85ee"
   }, {
     "url": "index.js",
-    "revision": "50cfcd03a53b370c3e0bc766a415cd74"
+    "revision": "722ae1e4aa1ae408050d82e703208456"
   }, {
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
