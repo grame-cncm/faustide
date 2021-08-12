@@ -112,3 +112,4 @@ Once the site is validated add (using `git add docs`) and commit the entire cont
 ### Known problems and solutions
 
 - evaluating a heavy DSP program may hang the IDE, which will stay in this state even if you open it again, if the **Real-time Compile** checkbox was set. You can deactivate the checkbox by opening the IDE with the `https://faustide.grame.fr/?realtime_compile=0` URL.
+- a bug in the Safari/Webkit implementation (see https://bugs.webkit.org/show_bug.cgi?id=220038) makes the AudioWorklet mode fails. You'll have to use the old ScriptProcessor mode for now.
