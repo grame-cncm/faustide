@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.601625998822631"
+    prefix: "1.0.611628754876389"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -110,53 +110,53 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
   }, {
-    "url": "assets/099a9556e1a63ece24f8a99859c94c7d.woff",
-    "revision": "099a9556e1a63ece24f8a99859c94c7d"
+    "url": "assets/0c6bfc668a72935760178f91327aed3a.eot",
+    "revision": "0c6bfc668a72935760178f91327aed3a"
   }, {
-    "url": "assets/0bb428459c8ecfa61b22a03def1706e6.svg",
-    "revision": "0bb428459c8ecfa61b22a03def1706e6"
+    "url": "assets/1a575a4138e5f366474f0e7c5bd614a5.woff",
+    "revision": "1a575a4138e5f366474f0e7c5bd614a5"
   }, {
-    "url": "assets/1042e8ca1ce821518a2d3e7055410839.eot",
-    "revision": "1042e8ca1ce821518a2d3e7055410839"
+    "url": "assets/1d5619cd804367cefe6da2d79289218a.svg",
+    "revision": "1d5619cd804367cefe6da2d79289218a"
   }, {
-    "url": "assets/1f77739ca9ff2188b539c36f30ffa2be.ttf",
-    "revision": "1f77739ca9ff2188b539c36f30ffa2be"
+    "url": "assets/37bc7099f6f1ba80236164f22e905837.svg",
+    "revision": "37bc7099f6f1ba80236164f22e905837"
   }, {
-    "url": "assets/30cc681d4487d2f561035ba24a68c629.eot",
-    "revision": "30cc681d4487d2f561035ba24a68c629"
+    "url": "assets/513aa607d398efaccc559916c3431403.ttf",
+    "revision": "513aa607d398efaccc559916c3431403"
   }, {
-    "url": "assets/376c1f97f6553dea1ca9b3f9081889bd.svg",
-    "revision": "376c1f97f6553dea1ca9b3f9081889bd"
+    "url": "assets/592643a83b8541edc52063d84c468700.eot",
+    "revision": "592643a83b8541edc52063d84c468700"
   }, {
-    "url": "assets/3b89dd103490708d19a95adcae52210e.ttf",
-    "revision": "3b89dd103490708d19a95adcae52210e"
-  }, {
-    "url": "assets/605ed7926cf39a2ad5ec2d1f9d391d3d.ttf",
-    "revision": "605ed7926cf39a2ad5ec2d1f9d391d3d"
-  }, {
-    "url": "assets/7124eb50fc8227c78269f2d995637ff5.woff",
-    "revision": "7124eb50fc8227c78269f2d995637ff5"
-  }, {
-    "url": "assets/7630483dd4b0c48639d2ac54a894b450.eot",
-    "revision": "7630483dd4b0c48639d2ac54a894b450"
-  }, {
-    "url": "assets/9fe5a17c8ab036d20e6c5ba3fd2ac511.woff",
-    "revision": "9fe5a17c8ab036d20e6c5ba3fd2ac511"
+    "url": "assets/766913e6c0088ab8c9f73e18b4127bc4.ttf",
+    "revision": "766913e6c0088ab8c9f73e18b4127bc4"
   }, {
     "url": "assets/a609dc0f334a7d4e64205247c4e8b97c.ttf",
     "revision": "a609dc0f334a7d4e64205247c4e8b97c"
   }, {
-    "url": "assets/ba7ed552362f64d30f6d844974d89114.svg",
-    "revision": "ba7ed552362f64d30f6d844974d89114"
+    "url": "assets/b0e2db3b634d1bc3928e127458d993d8.eot",
+    "revision": "b0e2db3b634d1bc3928e127458d993d8"
   }, {
-    "url": "assets/e8a427e15cc502bef99cfd722b37ea98.woff2",
-    "revision": "e8a427e15cc502bef99cfd722b37ea98"
+    "url": "assets/b91d376b8d7646d671cd820950d5f7f1.woff2",
+    "revision": "b91d376b8d7646d671cd820950d5f7f1"
   }, {
-    "url": "assets/f0f8230116992e521526097a28f54066.woff2",
-    "revision": "f0f8230116992e521526097a28f54066"
+    "url": "assets/b9625119ce4300f0ef890a8f3234c773.ttf",
+    "revision": "b9625119ce4300f0ef890a8f3234c773"
   }, {
-    "url": "assets/f7307680c7fe85959f3ecf122493ea7d.woff2",
-    "revision": "f7307680c7fe85959f3ecf122493ea7d"
+    "url": "assets/c5d109be8edd3de0f60eb472bd9ef691.svg",
+    "revision": "c5d109be8edd3de0f60eb472bd9ef691"
+  }, {
+    "url": "assets/d1d7e3b4c219fde0f7376c6facfd7149.woff",
+    "revision": "d1d7e3b4c219fde0f7376c6facfd7149"
+  }, {
+    "url": "assets/d745348d289b149026921f197929a893.woff",
+    "revision": "d745348d289b149026921f197929a893"
+  }, {
+    "url": "assets/d824df7eb2e268626a2dd9a6a741ac4e.woff2",
+    "revision": "d824df7eb2e268626a2dd9a6a741ac4e"
+  }, {
+    "url": "assets/ed311c7a0ade9a75bb3ebf5a7670f31d.woff2",
+    "revision": "ed311c7a0ade9a75bb3ebf5a7670f31d"
   }, {
     "url": "editor.worker.js",
     "revision": "297989b7c93044ced25f888fa4e979e1"
@@ -960,22 +960,22 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "73b4d7df1683aea10b4823c9bc2f85ee"
   }, {
     "url": "index.js",
-    "revision": "fa4cee3a364890cf361a60c742f4c736"
+    "revision": "f13bb3df1de23e101889c3b7d6d3aa87"
   }, {
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
   }, {
-    "url": "js/88ea7401d42007bc009a.js",
-    "revision": "164caa279a419f6aa0107bda949b22e1"
+    "url": "js/c73da84652b925770803.js",
+    "revision": "4db5f46b99fe099df6c80e455f1e46f4"
   }, {
     "url": "js/f555d40358fe2c79a2a7.js",
     "revision": "935adb6fe820564ce39807b987b6fe73"
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "a219c93a13520e76127e3ff8d53c8b09"
+    "revision": "836e793b78757b60af64d91c5ee82c9a"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "7ddc30bcc9a183f590c818822946d841"
+    "revision": "3c35020c41314aa9bf9742f7550de5f7"
   }, {
     "url": "manifest.json",
     "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"
