@@ -804,8 +804,9 @@ class AbstractItem extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_1__.Abstr
         value = state.value,
         enums = state.enums,
         scale = state.scale;
-    var normalized = type === "enum" ? value / (enums.length - 1) : (value - min) / (max - min);
-    return scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(normalized) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(normalized) : normalized;
+    if (type === "enum") return value / (enums.length - 1);
+    var v = scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(value, min, max) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(value, min, max) : value;
+    return (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normalize)(v, min, max);
   }
   /**
    * Mousemove pixels for each step
@@ -1810,7 +1811,9 @@ class Knob extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem {
       scale
     }) * range;
     var distance = prevDistance + e.fromY - e.y;
-    var steps = Math.round((scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(distance / range) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(distance / range) : distance / range) * range / stepRange);
+    var denormalized = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.denormalize)(distance / range, min, max);
+    var v = scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(denormalized, min, max) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(denormalized, min, max) : denormalized;
+    var steps = Math.round((0,_utils__WEBPACK_IMPORTED_MODULE_2__.normalize)(v, min, max) * range / stepRange);
     steps = Math.min(stepsCount, Math.max(0, steps));
     if (type === "enum") return steps;
     if (type === "int") return Math.round(steps * step + min);
@@ -2886,13 +2889,16 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem {
     var _this$state2 = this.state,
         type = _this$state2.type,
         min = _this$state2.min,
+        max = _this$state2.max,
         scale = _this$state2.scale;
     var step = type === "enum" ? 1 : this.state.step || 1;
     var stepRange = this.stepRange;
     var stepsCount = this.stepsCount;
     var distance = this.className === "vslider" ? this.interactionRect[3] - (e.y - this.interactionRect[1]) : e.x - this.interactionRect[0];
     var range = this.className === "vslider" ? this.interactionRect[3] : this.interactionRect[2];
-    var steps = Math.round((scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(distance / range) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(distance / range) : distance / range) * range / stepRange);
+    var denormalized = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.denormalize)(distance / range, min, max);
+    var v = scale === "exp" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normExp)(denormalized, min, max) : scale === "log" ? (0,_utils__WEBPACK_IMPORTED_MODULE_2__.normLog)(denormalized, min, max) : denormalized;
+    var steps = Math.round((0,_utils__WEBPACK_IMPORTED_MODULE_2__.normalize)(v, min, max) * range / stepRange);
     steps = Math.min(stepsCount, Math.max(0, steps));
     if (type === "enum") return steps;
     if (type === "int") return Math.round(steps * step + min);
@@ -2915,8 +2921,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "toRad": () => (/* binding */ toRad),
 /* harmony export */   "atodb": () => (/* binding */ atodb),
 /* harmony export */   "dbtoa": () => (/* binding */ dbtoa),
+/* harmony export */   "denormalize": () => (/* binding */ denormalize),
+/* harmony export */   "normalize": () => (/* binding */ normalize),
 /* harmony export */   "normLog": () => (/* binding */ normLog),
+/* harmony export */   "iNormLog": () => (/* binding */ iNormLog),
 /* harmony export */   "normExp": () => (/* binding */ normExp),
+/* harmony export */   "iNormExp": () => (/* binding */ iNormExp),
 /* harmony export */   "roundedRect": () => (/* binding */ roundedRect),
 /* harmony export */   "fillRoundedRect": () => (/* binding */ fillRoundedRect)
 /* harmony export */ });
@@ -2924,8 +2934,26 @@ var toMIDI = f => ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "
 var toRad = degrees => degrees * Math.PI / 180;
 var atodb = a => 20 * Math.log10(a);
 var dbtoa = db => Math.pow(10, db / 20);
-var normLog = x => Math.log10(x * 99 + 1) / 2 || 0;
-var normExp = x => (Math.pow(10, 2 * x) - 1) / 99;
+var denormalize = (x, min, max) => min + (max - min) * x;
+var normalize = (x, min, max) => (x - min) / (max - min) || 0;
+var normLog = (x, min, max) => {
+  var normalized = normalize(x, min, max);
+  var logMin = Math.log(Math.max(Number.EPSILON, min));
+  var logMax = Math.log(Math.max(Number.EPSILON, max));
+  var vLog = denormalize(normalized, logMin, logMax);
+  var v = Math.exp(vLog);
+  return Math.max(min, Math.min(max, v));
+};
+var iNormLog = (vIn, min, max) => {
+  var v = Math.max(min, Math.min(max, vIn));
+  var vLog = Math.log(Math.max(Number.EPSILON, v));
+  var logMin = Math.log(Math.max(Number.EPSILON, min));
+  var logMax = Math.log(Math.max(Number.EPSILON, max));
+  var normalized = normalize(vLog, logMin, logMax);
+  return denormalize(normalized, min, max);
+};
+var normExp = iNormLog;
+var iNormExp = normLog;
 var roundedRect = (ctx, x, y, width, height, radius) => {
   var radii = [0, 0, 0, 0];
   if (typeof radius === "number") radii.fill(radius);else radius.forEach((v, i) => radii[i] = v);
