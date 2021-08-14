@@ -1374,13 +1374,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "HBargraph": () => (/* binding */ HBargraph)
 /* harmony export */ });
-/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HBargraph.scss */ "./src/components/HBargraph.scss");
-/* harmony import */ var _VBargraph__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VBargraph */ "./src/components/VBargraph.ts");
+/* harmony import */ var _AbstractItem__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbstractItem */ "./src/components/AbstractItem.ts");
+/* harmony import */ var _HBargraph_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HBargraph.scss */ "./src/components/HBargraph.scss");
+/* harmony import */ var _VBargraph__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./VBargraph */ "./src/components/VBargraph.ts");
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 
 
-class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__.VBargraph {
+
+class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_2__.VBargraph {
   constructor() {
     super(...arguments);
 
@@ -1409,8 +1411,11 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__.VBargraph {
           hotcolor = _this$state$style2.hotcolor,
           overloadcolor = _this$state$style2.overloadcolor;
       var _this$state = this.state,
-          min = _this$state.min,
+          type = _this$state.type,
           max = _this$state.max,
+          min = _this$state.min,
+          enums = _this$state.enums,
+          scale = _this$state.scale,
           value = _this$state.value;
       var ctx = this.ctx;
       var canvas = this.canvas;
@@ -1462,25 +1467,53 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_1__.VBargraph {
       ctx.fillStyle = gradient;
 
       if (paintValue > min) {
-        var distance = (Math.min(0, paintValue) - min) / (max - min);
+        var distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          type,
+          max,
+          min,
+          enums,
+          scale,
+          value: Math.min(0, paintValue)
+        });
         ctx.fillRect(left, top, distance * drawWidth, drawHeight);
       }
 
       if (paintValue > 0) {
-        var _distance = Math.min(max, paintValue) / (max - min);
+        var _distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          type,
+          max,
+          min,
+          enums,
+          scale,
+          value: Math.min(max, paintValue)
+        });
 
         ctx.fillRect(left + overloadStop * drawWidth + 1, top, _distance * drawWidth - 1, drawHeight);
       }
 
       if (maxValue > paintValue) {
         if (maxValue <= 0) {
-          var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
+          var _distance2 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+            type,
+            max,
+            min,
+            enums,
+            scale,
+            value: Math.min(0, maxValue)
+          });
 
           ctx.fillRect(left + _distance2 * drawWidth - 1, top, 1, drawHeight);
         }
 
         if (maxValue > 0) {
-          var _distance3 = Math.min(max, maxValue) / (max - min);
+          var _distance3 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+            type,
+            max,
+            min,
+            enums,
+            scale,
+            value: Math.min(max, maxValue)
+          });
 
           ctx.fillRect(left + Math.min(drawWidth - 1, (overloadStop + _distance3) * drawWidth), top, 1, drawHeight);
         }
@@ -2490,8 +2523,11 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem 
           hotcolor = _this$state$style2.hotcolor,
           overloadcolor = _this$state$style2.overloadcolor;
       var _this$state = this.state,
-          min = _this$state.min,
+          type = _this$state.type,
           max = _this$state.max,
+          min = _this$state.min,
+          enums = _this$state.enums,
+          scale = _this$state.scale,
           value = _this$state.value;
       var ctx = this.ctx;
       var canvas = this.canvas;
@@ -2545,25 +2581,53 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem 
       ctx.fillStyle = gradient;
 
       if (paintValue > min) {
-        var distance = (Math.min(0, paintValue) - min) / (max - min);
+        var distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          type,
+          max,
+          min,
+          enums,
+          scale,
+          value: Math.min(0, paintValue)
+        });
         ctx.fillRect(left, top + (1 - distance) * drawHeight, drawWidth, drawHeight * distance);
       }
 
       if (paintValue > 0) {
-        var _distance = Math.min(max, paintValue) / (max - min);
+        var _distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          type,
+          max,
+          min,
+          enums,
+          scale,
+          value: Math.min(max, paintValue)
+        });
 
         ctx.fillRect(left, top + (1 - overloadStop - _distance) * drawHeight, drawWidth, drawHeight * _distance - 1);
       }
 
       if (maxValue > paintValue) {
         if (maxValue <= 0) {
-          var _distance2 = (Math.min(0, maxValue) - min) / (max - min);
+          var _distance2 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+            type,
+            max,
+            min,
+            enums,
+            scale,
+            value: Math.min(0, maxValue)
+          });
 
           ctx.fillRect(left, top + (1 - _distance2) * drawHeight, drawWidth, 1);
         }
 
         if (maxValue > 0) {
-          var _distance3 = Math.min(max, maxValue) / (max - min);
+          var _distance3 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+            type,
+            max,
+            min,
+            enums,
+            scale,
+            value: Math.min(max, maxValue)
+          });
 
           ctx.fillRect(left, Math.max(top, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
         }
