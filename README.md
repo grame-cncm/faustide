@@ -64,7 +64,7 @@ If you need to update the editor's version using `git pull`, as the repository h
 
 ## Launching the local editor
 
-A local HTTP server has to be started with `python2 -m SimpleHTTPServer` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
+A local HTTP server has to be started with `python -m http.server 8000` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
 
 ## Versioning 
 
