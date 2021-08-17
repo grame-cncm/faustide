@@ -1441,6 +1441,7 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_2__.VBargraph {
         this.maxTimer = window.setTimeout(() => {
           this.maxValue = this.paintValue;
           this.maxTimer = undefined;
+          this.schedule(this.paint);
         }, 1000);
       }
 
@@ -1448,6 +1449,7 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_2__.VBargraph {
         this.maxTimer = window.setTimeout(() => {
           this.maxValue = this.paintValue;
           this.maxTimer = undefined;
+          this.schedule(this.paint);
         }, 1000);
       }
 
@@ -1479,14 +1481,14 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_2__.VBargraph {
       }
 
       if (paintValue > 0) {
-        var _distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+        var _distance = Math.max(0, _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
           type,
           max,
           min,
           enums,
           scale,
           value: Math.min(max, paintValue)
-        });
+        }) - overloadStop);
 
         ctx.fillRect(left + overloadStop * drawWidth + 1, top, _distance * drawWidth - 1, drawHeight);
       }
@@ -1506,14 +1508,14 @@ class HBargraph extends _VBargraph__WEBPACK_IMPORTED_MODULE_2__.VBargraph {
         }
 
         if (maxValue > 0) {
-          var _distance3 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          var _distance3 = Math.max(0, _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
             type,
             max,
             min,
             enums,
             scale,
             value: Math.min(max, maxValue)
-          });
+          }) - overloadStop);
 
           ctx.fillRect(left + Math.min(drawWidth - 1, (overloadStop + _distance3) * drawWidth), top, 1, drawHeight);
         }
@@ -2593,14 +2595,14 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem 
       }
 
       if (paintValue > 0) {
-        var _distance = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+        var _distance = Math.max(0, _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
           type,
           max,
           min,
           enums,
           scale,
           value: Math.min(max, paintValue)
-        });
+        }) - overloadStop);
 
         ctx.fillRect(left, top + (1 - overloadStop - _distance) * drawHeight, drawWidth, drawHeight * _distance - 1);
       }
@@ -2620,14 +2622,14 @@ class VBargraph extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem 
         }
 
         if (maxValue > 0) {
-          var _distance3 = _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
+          var _distance3 = Math.max(0, _AbstractItem__WEBPACK_IMPORTED_MODULE_0__.AbstractItem.getDistance({
             type,
             max,
             min,
             enums,
             scale,
             value: Math.min(max, maxValue)
-          });
+          }) - overloadStop);
 
           ctx.fillRect(left, Math.max(top, top + (1 - overloadStop - _distance3) * drawHeight - 1), drawWidth, 1);
         }
