@@ -1692,6 +1692,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
             audioEnv.destination = audioEnv.audioCtx.destination;
         }
         */
+        audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
         audioEnv.destination.channelInterpretation = "discrete";
     }
     return audioEnv;
