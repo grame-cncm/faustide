@@ -683,7 +683,7 @@ $(async () => {
             try {
                 const response = await fetch(codeURL);
                 code = await response.text();
-            } catch (e) {} // eslint-disable-line no-empty
+            } catch (e) { } // eslint-disable-line no-empty
         }
         if (urlParams.has("code_string")) {
             code = urlParams.get("code_string");
@@ -854,7 +854,10 @@ $(async () => {
             exportProgram(false);
         });
     };
-    $<HTMLInputElement>("#export-server").val(server).on("change", e => getTargets(e.currentTarget.value));
+    $<HTMLInputElement>("#export-server").val(server).on("change", e => {
+        server = e.currentTarget.value;
+        getTargets(e.currentTarget.value);
+    });
     try {
         await getTargets(server);
     } catch (e) {
@@ -1104,7 +1107,7 @@ $(async () => {
     const handleMediaDeviceChange = async () => {
         try {
             await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {} // eslint-disable-line no-empty
+        } catch (e) { } // eslint-disable-line no-empty
         const devices = await navigator.mediaDevices.enumerateDevices();
         const $selectInput = $("#select-audio-input");
         const $selectOutput = $("#select-audio-output");
@@ -1137,7 +1140,7 @@ $(async () => {
     if (navigator.mediaDevices) {
         try {
             await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {} // eslint-disable-line no-empty
+        } catch (e) { } // eslint-disable-line no-empty
         const devices = await navigator.mediaDevices.enumerateDevices();
         $("#input-ui-default").hide();
         const $selectInput = $("#select-audio-input").prop("disabled", false);
@@ -1765,7 +1768,7 @@ effect = dm.freeverb_demo;`;
     let saveCode = false;
     try {
         saveCode = JSON.parse(localStorage.getItem("faust_editor_params")).saveCode;
-    } catch {} // eslint-disable-line no-empty
+    } catch { } // eslint-disable-line no-empty
     const editor = monaco.editor.create($("#editor")[0], {
         value: saveCode ? (localStorage.getItem("faust_editor_code") || code) : code,
         language: "faust",
