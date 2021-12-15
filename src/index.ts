@@ -751,9 +751,9 @@ $(async () => {
         const form = new FormData();
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         try {
-            // 03/12/2020: The code is not expanded anymore, since with esp32 the remote compilation service uses the "platform.lib" library
-            // const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-            const expandedCode = uiEnv.fileManager.mainCode;
+            // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
+            const expandedCode = (compileOptions.exportPlatform === "esp32") ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            console.log(expandedCode);
             form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
         } catch (e) {
             $("#export-loading").css("display", "none");
