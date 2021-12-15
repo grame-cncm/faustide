@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.691637673762662"
+    prefix: "1.0.701639574655696"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -960,22 +960,22 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "73b4d7df1683aea10b4823c9bc2f85ee"
   }, {
     "url": "index.js",
-    "revision": "0aa8124cd90443e659b61060d6431333"
+    "revision": "4b986f42c93859aec02a00793a652d26"
+  }, {
+    "url": "js/1435a35966dfe8a94539.js",
+    "revision": "81c63cbca57004b1c82ce87d28b1a26f"
   }, {
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
   }, {
-    "url": "js/3ec9425c301d7fe621f5.js",
-    "revision": "9b784f6fa3aca30593bdcc950e5d6545"
-  }, {
-    "url": "js/f555d40358fe2c79a2a7.js",
-    "revision": "935adb6fe820564ce39807b987b6fe73"
+    "url": "js/bc62d02279296a1ba6fb.js",
+    "revision": "00a952360d514130f1c3f3dd6897decf"
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "f4d43895a845375e9c826393070f0b0d"
+    "revision": "de19fa60508ea9133b92e4eed9df67f4"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "93b220ea844117df1cdc30562e1674e9"
+    "revision": "adc22e9de3ae62636ed22afccb52380f"
   }, {
     "url": "manifest.json",
     "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"

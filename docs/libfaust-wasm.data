@@ -473,7 +473,7 @@ ma = library("maths.lib");
 it = library("interpolators.lib");
 
 declare name "Faust Compressor Effect Library";
-declare version "0.1";
+declare version "0.2";
 
 //=============================Functions Reference========================================
 //========================================================================================
@@ -503,10 +503,10 @@ declare version "0.1";
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
 // function as a hard limiter.
-// For that you'd need a ratio of infinity:1, and you cannot express that in Faust
+// For that you'd need a ratio of infinity:1, and you cannot express that in Faust.
 //
 // Sometimes even bigger ratios are useful:
-// For example a group recording where one instrument is recorded with both a close microphone and a room microphone,
+// for example a group recording where one instrument is recorded with both a close microphone and a room microphone,
 // and the instrument is loud enough in the room mic when playing loud, but you want to boost it when it is playing soft.
 //
 // #### References
@@ -525,13 +525,14 @@ declare version "0.1";
 // note: si.lag_ud has a bug where if you compile with standard precision,
 // down is 0 and prePost is 1, you go into infinite GR and stay there
 peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
-  abs:ba.bypass1(prePost,si.lag_ud(att,rel)) : ba.linear2db : gain_computer(strength,thresh,knee):ba.bypass1((prePost*-1)+1,si.lag_ud(rel,att)) : ba.db2linear
+  abs : ba.bypass1(prePost,si.lag_ud(att,rel)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1)+1,si.lag_ud(rel,att)) : ba.db2linear
 with {
   gain_computer(strength,thresh,knee,level) =
     select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2))),
             0,
-            ((level-thresh+(knee/2)):pow(2)/(2*knee)),
-            (level-thresh)) : max(0)*-strength;
+            ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,min(knee,(thresh*-2))))),
+            (level-thresh))
+    : max(0)*-strength;
 };
 
 
@@ -585,13 +586,13 @@ with {
 peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,1) =
   peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost);
 
-// The actual N-channel version:
+// The actual N-channels version:
 // Calculate the maximum gain reduction of N channels,
 // and then crossfade between that and each channel's own gain reduction,
 // to link/unlink channels
 peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
   par(i, N, peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost))
-  <:(si.bus(N),(ba.parallelMin(N)<:si.bus(N))):ro.interleave(N,2):par(i,N,(it.interpolate_linear(link)));
+  <: (si.bus(N),(ba.parallelMin(N) <: si.bus(N))) : ro.interleave(N,2) : par(i,N,(it.interpolate_linear(link)));
 
 
 //--------------------`(co.)FFcompressor_N_chan`-------------------
@@ -643,10 +644,7 @@ peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 
 // feed forward compressor
 FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
-  (si.bus(N) <:
-    (peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N),si.bus(N))
-  )
-  :(ro.interleave(N,2):par(i,N,meter*_));
+  si.bus(N) <: (peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N),si.bus(N)) : ro.interleave(N,2) : par(i,N,meter*_);
 
 //--------------------`(co.)FBcompressor_N_chan`-------------------
 // feed back N channel dynamic range compressor.
@@ -672,8 +670,8 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
-// meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;
-// or it can be omitted by defining 'meter = _'.
+// `meter = _ <: (_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
+// or it can be omitted by defining `meter = _;`.
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -697,14 +695,11 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // License: GPLv3
 
 FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
-  (
-    (peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N),si.bus(N))
-    :(ro.interleave(N,2):par(i,N,meter*_))
-  )~si.bus(N);
+  (peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N),si.bus(N) : (ro.interleave(N,2) : par(i,N,meter*_))) ~ si.bus(N);
 
 //--------------------`(co.)FBFFcompressor_N_chan`-------------------
 // feed forward / feed back N channel dynamic range compressor.
-// the feedback part has a much higher strength, so they end up sounding similar
+// The feedback part has a much higher strength, so they end up sounding similar.
 // `FBFFcompressor_N_chan` is a standard Faust function.
 //
 // #### Usage
@@ -728,7 +723,7 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `FBFF`: fade between feed forward (0) and feed back (1) compression.
 // * `meter`: a gain reduction meter. It can be implemented like so:
-// meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;
+// `meter = _<:(_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -752,14 +747,12 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // License: GPLv3
 
 FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
-  si.bus(N) <: si.bus(N*2):
+  si.bus(N) <: si.bus(N*2) :
   (
-    ((
-      (par(i, 2, peak_compression_gain_N_chan(strength*(1+((i==0)*2)),thresh,att,rel,knee,prePost,link,N)):ro.interleave(N,2):par(i, N, it.interpolate_linear(FBFF)))
-     ,si.bus(N))
-      :(ro.interleave(N,2):par(i,N,meter*_))
-    )~si.bus(N)
-  );
+    ((par(i,2,peak_compression_gain_N_chan(strength*(1+((i ==0)*2)),thresh,att,rel,knee,prePost,link,N)) : ro.interleave(N,2) : par(i,N,it.interpolate_linear(FBFF))),si.bus(N))
+    : (ro.interleave(N,2) : par(i,N,meter*_))
+  )
+  ~ si.bus(N);
 
 
 //--------------------`(co.)RMS_compression_gain_mono`-------------------
@@ -806,15 +799,17 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // License: GPLv3
 
 RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
-  RMS(rel): ba.bypass1(prePost,si.lag_ud(att,0)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost*-1)+1,si.lag_ud(0,att)) : ba.db2linear
-with {
-  gain_computer(strength,thresh,knee,level) =
-    select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2))),
-            0,
-            ((level-thresh+(knee/2)):pow(2)/(2*knee)),
-            (level-thresh)) : max(0)*-strength;
-  	RMS(time) = ba.slidingRMS(s) with { s = ba.sec2samp(time):int:max(1); };
-};
+  RMS(rel) : ba.bypass1(prePost,si.lag_ud(att,0)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1)+1,si.lag_ud(0,att)) : ba.db2linear with {
+    gain_computer(strength,thresh,knee,level) =
+      select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2))),
+              0,
+              ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,min(knee,(thresh*-2))))),
+              (level-thresh))
+    : max(0)*-strength;
+    RMS(time) = ba.slidingRMS(s) with {
+      s = ba.sec2samp(time):int:max(1);
+    };
+  };
 
 //--------------------`(co.)RMS_compression_gain_N_chan`-------------------
 // RMS N channel dynamic range compressor gain computer.
@@ -865,8 +860,8 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,1) =
   RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost);
 
 RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
-  par(i, N, RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost))
-  <:(si.bus(N),(ba.parallelMin(N)<:si.bus(N))):ro.interleave(N,2):par(i,N,(it.interpolate_linear(link)));
+  par(i,N,RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost))
+  <: (si.bus(N),(ba.parallelMin(N) <: si.bus(N))) : ro.interleave(N,2) : par(i,N,(it.interpolate_linear(link)));
 
 
 //--------------------`(co.)RMS_FBFFcompressor_N_chan`-------------------
@@ -895,7 +890,7 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `FBFF`: fade between feed forward (0) and feed back (1) compression.
 // * `meter`: a gain reduction meter. It can be implemented like so:
-// meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;
+// `meter = _<:(_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -906,11 +901,11 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // for example a group recording where one instrument is recorded with both a close microphone and a room microphone,
 // and the instrument is loud enough in the room mic when playing loud, but you want to boost it when it is playing soft.
 //
-// to save CPU we cheat a bit, in a similar way as in the original libs:
+// To save CPU we cheat a bit, in a similar way as in the original libs:
 // instead of crosfading between two sets of gain calculators as above,
 // we take the abs of the audio from both the FF and FB, and crossfade between those,
 // and feed that into one set of gain calculators
-// again the strength is much higher when in FB mode, but implemented differently
+// again the strength is much higher when in FB mode, but implemented differently.
 //
 // #### References
 //
@@ -927,22 +922,18 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
   si.bus(N) <: si.bus(N*2):
   (
-    (
-      (
-        (ro.interleave(N,2):par(i, N*2, abs) :par(i, N, it.interpolate_linear(FBFF)) : RMS_compression_gain_N_chan(strength*(1+(((FBFF*-1)+1)*1)),thresh,att,rel,knee,prePost,link,N))
-       ,si.bus(N)
-      )
-    :(ro.interleave(N,2):par(i,N,meter*_))
-    )~si.bus(N)
-  );
+    ((ro.interleave(N,2) : par(i,N*2,abs) :par(i,N,it.interpolate_linear(FBFF)) : RMS_compression_gain_N_chan(strength*(1+((FBFF*-1)+1)),thresh,att,rel,knee,prePost,link,N)),si.bus(N))
+    : (ro.interleave(N,2) : par(i,N,meter*_))
+  )
+  ~ si.bus(N);
 
 
 //--------------------`(co.)RMS_FBcompressor_peak_limiter_N_chan`-------------------
 // N channel RMS feed back compressor into peak limiter feeding back into the FB compressor.
 // By combining them this way, they complement each other optimally:
-// The RMS compressor doesn't have to deal with the peaks,
+// the RMS compressor doesn't have to deal with the peaks,
 // and the peak limiter get's spared from the steady state signal.
-// the feedback part has a much higher strength, so they end up sounding similar
+// The feedback part has a much higher strength, so they end up sounding similar.
 // `RMS_FBcompressor_peak_limiter_N_chan` is a standard Faust function.
 //
 // #### Usage
@@ -966,9 +957,9 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // the limiter uses a knee half this size
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: compressor gain reduction meter. It can be implemented like so:
-// meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;
+// `meter = _<:(_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `meterLim`: brickwall limiter gain reduction meter. It can be implemented like so:
-// meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;
+// `meter = _<:(_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -992,23 +983,14 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // License: GPLv3
 
 RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link,meter,meterLim,N) =
-  (
-    (
-      (
-        (RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,0,link,N))
-        ,si.bus(N)
-      ):(ro.interleave(N,2):par(i,N,meter*_))
-    ):FFcompressor_N_chan(1,threshLim,0,att:min(rel),knee*0.5,0,link,meterLim,N)
-  )~si.bus(N);
+  (((RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,0,link,N)),si.bus(N)) : ro.interleave(N,2) : par(i,N,meter*_) : FFcompressor_N_chan(1,threshLim,0,att:min(rel),knee*0.5,0,link,meterLim,N))
+  ~ si.bus(N);
 
 
 //=============================Original versions section=============================
 // The functions in this section are largely superseded by the limiters above, but we
 // retain them for backward compatibility and for situations in which a more permissive,
 // MIT-style license is required.
-//========================================================================================
-
-//=============================Functions Reference========================================
 //========================================================================================
 
 //--------------------`(co.)compressor_lad_mono`-------------------
@@ -1044,7 +1026,7 @@ declare compressor_lad_mono copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
 declare compressor_lad_mono license "MIT-style STK-4.3 license";
 compressor_lad_mono(lad,ratio,thresh,att,rel,x)
-	= x@max(0,floor(0.5+ma.SR*lad)) * compression_gain_mono(ratio,thresh,att,rel,x);
+  = x@max(0,floor(0.5+ma.SR*lad)) * compression_gain_mono(ratio,thresh,att,rel,x);
 
 //--------------------`(co.)compressor_mono`-------------------
 // Mono dynamic range compressors.
@@ -1157,17 +1139,22 @@ with {
 // desirable (for softer limiting).  This example is intended
 // to get you started using compressors as limiters, so all
 // parameters are hardwired here to nominal values.
-//  Ratio: 4 (moderate compression)
-//        See compressor_mono() comments for a guide to other choices.
+//
+// Ratio: 4 (moderate compression)
+//        See `compressor_mono` comments for a guide to other choices.
 //        Mike Shipley likes this (lowest) setting on the 1176.
-//        (Grammy award-winning mixer for Queen, Tom Petty, etc.)
+//        (Grammy award-winning mixer for Queen, Tom Petty, etc.).
+//
 // Thresh: -6 dB, meaning 4:1 compression begins at amplitude 1/2.
-//    Att: 800 MICROseconds (Note: scaled by ratio in the 1176)
+//
+// Att: 800 MICROseconds (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 20-800 microseconds.
 //         Faster attack gives "more bite" (e.g. on vocals),
 //         and makes hard-clipping less likely on fast overloads.
-//    Rel: 0.5 s (Note: scaled by ratio in the 1176)
+//
+// Rel: 0.5 s (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 50-1100 ms.
+//
 // The 1176 also has a "bright, clear eq effect" (use filters.lib if desired).
 // `limiter_1176_R4_mono` is a standard Faust function.
 //
@@ -1195,13 +1182,17 @@ limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 // desirable ("soft limiting").  This example is intended
 // to get you started using compressor_* as a limiter, so all
 // parameters are hardwired to nominal values here.
+// 
 // Ratios: 4 (moderate compression), 8 (severe compression),
-//          12 (mild limiting), or 20 to 1 (hard limiting)
-//   Att: 20-800 MICROseconds (Note: scaled by ratio in the 1176)
-//   Rel: 50-1100 ms (Note: scaled by ratio in the 1176)
-//   Mike Shipley likes 4:1 (Grammy-winning mixer for Queen, Tom Petty, etc.)
-//     Faster attack gives "more bite" (e.g. on vocals)
-//     He hears a bright, clear eq effect as well (not implemented here)
+//          12 (mild limiting), or 20 to 1 (hard limiting).
+//
+// Att: 20-800 MICROseconds (Note: scaled by ratio in the 1176).
+//
+// Rel: 50-1100 ms (Note: scaled by ratio in the 1176).
+//
+// Mike Shipley likes 4:1 (Grammy-winning mixer for Queen, Tom Petty, etc.)
+// Faster attack gives "more bite" (e.g. on vocals).
+// He hears a bright, clear eq effect as well (not implemented here).
 //
 // #### Usage
 //
@@ -1219,16 +1210,20 @@ declare limiter_1176_R4_stereo copyright
 declare limiter_1176_R4_stereo license "MIT-style STK-4.3 license";
 limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 
+
+//=============================Lookahead Limiters========================================
+//========================================================================================
+
 //-----------------------`(co.)limiter_lad_N`---------------------------------
-// N-channel lookahead limiter inspired by IOhannes Zmölnig's post, which is 
+// N-channels lookahead limiter inspired by IOhannes Zmölnig's post, which is 
 // in turn based on the thesis by Peter Falkner "Entwicklung eines digitalen
 // Stereo-Limiters mit Hilfe des Signalprozessors DSP56001".
 // This version of the limiter uses a peak-holder with smoothed
 // attack and release based on tau time constant filters.
 //
-// It is also possible to use a time constant that is 2*PI*tau by dividing 
-// the attack and release times by 2*PI. This time constant allows for 
-// the amplitude profile to reach 1 - e^(-2pi) of the final 
+// It is also possible to use a time constant that is 2PI*tau by dividing 
+// the attack and release times by 2PI. This time constant allows for 
+// the amplitude profile to reach 1 - e^(-2PI) of the final 
 // peak after the attack time. The input path can be delayed by the same 
 // amount as the attack time to synchronise input and amplitude profile, 
 // realising a system that is particularly effective as a colourless
@@ -1254,31 +1249,30 @@ limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 // #### Usage
 //
 // ```
-// si.bus(N) : limiter_lad_N(N, LD, ceiling, attack, hold, release) : 
-//    si.bus(N)
+// si.bus(N) : limiter_lad_N(N, LD, ceiling, attack, hold, release) : si.bus(N)
 // ```
 //
 // Where:
 //
-// * `N` is the number of channels, known at compile-time.
-// * `LD` is the lookahead delay in seconds, known at compile-time.
-// * `ceiling` is the linear amplitude output limit.
-// * `attack` is the attack time in seconds.
-// * `hold` is the hold time in seconds.
-// * `release` is the release time in seconds.
+// * `N` is the number of channels, known at compile-time
+// * `LD` is the lookahead delay in seconds, known at compile-time
+// * `ceiling` is the linear amplitude output limit
+// * `attack` is the attack time in seconds
+// * `hold` is the hold time in seconds
+// * `release` is the release time in seconds
 //
-// Example for a stereo limiter: limiter_lad_N(2, .01, 1, .01, .1, 1);
+// Example for a stereo limiter: `limiter_lad_N(2, .01, 1, .01, .1, 1);`
 //
 // #### Reference:
 //
-// <http://iem.at/~zmoelnig/publications/limiter/>.
+// <http://iem.at/~zmoelnig/publications/limiter>
 //------------------------------------------------------------------------------
 declare limiter_lad_N author "Dario Sanfilippo";
 declare limiter_lad_N copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
 declare limiter_lad_N license "GPLv3 license";
 limiter_lad_N(N, LD, ceiling, attack, hold, release) = 
-      si.bus(N) <: par(i, N, @ (LD * ma.SR)), 
+      si.bus(N) <: par(i, N, @(LD * ma.SR)), 
                    (scaling <: si.bus(N)) : ro.interleave(N, 2) : par(i, N, *)
       with {
            scaling = ceiling / max(amp_profile, ma.EPSILON) : min(1);
@@ -1303,15 +1297,15 @@ limiter_lad_N(N, LD, ceiling, attack, hold, release) =
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time.
-// * `ceiling` is the linear amplitude output limit.
-// * `attack` is the attack time in seconds.
-// * `hold` is the hold time in seconds.
-// * `release` is the release time in seconds.
+// * `LD` is the lookahead delay in seconds, known at compile-time
+// * `ceiling` is the linear amplitude output limit
+// * `attack` is the attack time in seconds
+// * `hold` is the hold time in seconds
+// * `release` is the release time in seconds
 //
 // #### Reference:
 //
-// <http://iem.at/~zmoelnig/publications/limiter/>.
+// <http://iem.at/~zmoelnig/publications/limiter>
 //------------------------------------------------------------------------------
 declare limiter_lad_mono author "Dario Sanfilippo";
 declare limiter_lad_mono copyright "Copyright (C) 2020 Dario Sanfilippo
@@ -1331,15 +1325,15 @@ limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time.
-// * `ceiling` is the linear amplitude output limit.
-// * `attack` is the attack time in seconds.
-// * `hold` is the hold time in seconds.
-// * `release` is the release time in seconds.
+// * `LD` is the lookahead delay in seconds, known at compile-time
+// * `ceiling` is the linear amplitude output limit
+// * `attack` is the attack time in seconds
+// * `hold` is the hold time in seconds
+// * `release` is the release time in seconds
 //
 // #### Reference:
 //
-// <http://iem.at/~zmoelnig/publications/limiter/>.
+// <http://iem.at/~zmoelnig/publications/limiter>
 //------------------------------------------------------------------------------
 declare limiter_lad_stereo author "Dario Sanfilippo";
 declare limiter_lad_stereo copyright "Copyright (C) 2020 Dario Sanfilippo
@@ -1354,21 +1348,20 @@ limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 // #### Usage
 //
 // ```
-// si.bus(4) : limiter_lad_quad(LD, ceiling, attack, hold, release) : 
-//    si.bus(4)
+// si.bus(4) : limiter_lad_quad(LD, ceiling, attack, hold, release) : si.bus(4)
 // ```
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time.
-// * `ceiling` is the linear amplitude output limit.
-// * `attack` is the attack time in seconds.
-// * `hold` is the hold time in seconds.
-// * `release` is the release time in seconds.
+// * `LD` is the lookahead delay in seconds, known at compile-time
+// * `ceiling` is the linear amplitude output limit
+// * `attack` is the attack time in seconds
+// * `hold` is the hold time in seconds
+// * `release` is the release time in seconds
 //
 // #### Reference:
 //
-// <http://iem.at/~zmoelnig/publications/limiter/>.
+// <http://iem.at/~zmoelnig/publications/limiter>
 //------------------------------------------------------------------------------
 declare limiter_lad_quad author "Dario Sanfilippo";
 declare limiter_lad_quad copyright "Copyright (C) 2020 Dario Sanfilippo
@@ -1379,7 +1372,7 @@ limiter_lad_quad(LD) = limiter_lad_N(4, LD);
 //-------------`(co.)limiter_lad_bw`-----------------------------------------
 //
 // Specialised case of limiter_lad_N and ready-to-use unit-amplitude mono 
-// limiting function. This implementation, in particular, uses 2pi*tau
+// limiting function. This implementation, in particular, uses 2PI*tau
 // time constant filters for attack and release smoothing with
 // synchronised input and gain signals. 
 //
@@ -1396,13 +1389,13 @@ limiter_lad_quad(LD) = limiter_lad_N(4, LD);
 //
 // #### Reference:
 //
-// <http://iem.at/~zmoelnig/publications/limiter/>.
+// <http://iem.at/~zmoelnig/publications/limiter>
 //------------------------------------------------------------------------------
 declare limiter_lad_bw author "Dario Sanfilippo";
 declare limiter_lad_bw copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
 declare limiter_lad_bw license "GPLv3 license";
-limiter_lad_bw = limiter_lad_mono(.01, 1, .01 / twopi, .1, 1 / twopi)
+limiter_lad_bw = limiter_lad_mono(.01, 1, .01/twopi, .1, 1/twopi)
 with {
     twopi = 2 * ma.PI;
 };
@@ -1466,7 +1459,7 @@ it = library("interpolators.lib");
 si = library("signals.lib");
 
 declare name "Faust Basic Element Library";
-declare version "0.3";
+declare version "0.4";
 
 //=============================Conversion Tools===========================================
 //========================================================================================
@@ -1729,6 +1722,26 @@ FAUST library file, GRAME section 2
 //==============================Counters and Time/Tempo Tools=============================
 //========================================================================================
 
+
+//----------------------------`(ba.)counter`------------------------------
+// Starts counting 0, 1, 2, 3..., and raise the current integer value 
+// at each upfront of the trigger. 
+//
+// #### Usage
+//
+// ```
+// counter(trig) : _
+// ```
+//
+// Where:
+//
+// * `trig`: the trigger signal, each upfront will move the counter to the next integer
+//-----------------------------------------------------------------------------
+declare counter author "Stephane Letz";
+
+counter(trig) = upfront(trig) : + ~ _ with { upfront(x) = x > x'; };
+
+
 //----------------------------`(ba.)countdown`------------------------------
 // Starts counting down from n included to 0. While trig is 1 the output is n.
 // The countdown starts with the transition of trig from 1 to 0. At the end
@@ -1781,7 +1794,8 @@ countup(n, trig) = \(c).(if(trig>0, 0, min(n, c+1))) ~_;
 // sweep(period,run) : _
 // ```
 //-----------------------------------------------------------------
-// Author: Jonatan Liljedahl, markdown by JOS & RM
+declare sweep author "Jonatan Liljedahl";
+
 sweep = %(int(*:max(1)))~+(1);
 
 
@@ -1921,7 +1935,8 @@ pulsen(n,p) = period(p)<n;
 //
 // * `n`: the number of cycles/output signals
 //---------------------------------------------------------
-// Author: Mike Olsen
+declare cycle author "Mike Olsen";
+
 cycle(n) = _ <: par(i,n,resetCtr(n,(i+1)));
 
 
@@ -1956,7 +1971,8 @@ beat(t) = pulse(tempo(t));
 //
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //------------------------------------------------------------------------------
-//TODO: author "Vince"
+declare pulse_countup author "Vince";
+
 pulse_countup(trig) = + ~ _ * trig;
 
 
@@ -1974,7 +1990,8 @@ pulse_countup(trig) = + ~ _ * trig;
 //
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //------------------------------------------------------------------------------
-//TODO: author "Vince"
+declare pulse_countdown author "Vince";
+
 pulse_countdown(trig) = - ~ _ * trig;
 
 
@@ -1994,30 +2011,12 @@ pulse_countdown(trig) = - ~ _ * trig;
 // * `n`: the highest number of the countup (included) before reset to 0
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //------------------------------------------------------------------------------
-//TODO: author "Vince"
+declare pulse_countup_loop author "Vince";
+
 pulse_countup_loop(n, trig) = + ~ cond(n)*trig
 with {
-  	cond(n) = _ <: _ * (_ <= n);
+  	cond(n, x) = x * (x <= n);
 };
-
-
-//-----------------------`(ba.)resetCtr`------------------------
-// Function that lets through the mth impulse out of
-// each consecutive group of `n` impulses.
-//
-// #### Usage
-//
-// ```
-// _ : resetCtr(n,m) : _
-// ```
-//
-// Where:
-//
-// * `n`: the total number of impulses being split
-// * `m`: index of impulse to allow to be output
-//---------------------------------------------------------
-// Author: Mike Olsen
-resetCtr(n,m) = _ <: (_,pulse_countup_loop(n-1,1)) : (_,(_==m)) : *;
 
 
 //----------------------------`(ba.)pulse_countdown_loop`----------------------------
@@ -2036,11 +2035,32 @@ resetCtr(n,m) = _ <: (_,pulse_countup_loop(n-1,1)) : (_,(_==m)) : *;
 // * `n`: the highest number of the countup (included) before reset to 0
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //------------------------------------------------------------------------------
-//TODO: author "Vince:
+declare pulse_countdown_loop author "Vince";
+
 pulse_countdown_loop(n, trig) = - ~ cond(n)*trig
 with {
-  	cond(n) = _ <: _ * (_ >= n);
+  	cond(n, x) = x * (x >= n);
 };
+
+
+//-----------------------`(ba.)resetCtr`------------------------
+// Function that lets through the mth impulse out of
+// each consecutive group of `n` impulses.
+//
+// #### Usage
+//
+// ```
+// _ : resetCtr(n,m) : _
+// ```
+//
+// Where:
+//
+// * `n`: the total number of impulses being split
+// * `m`: index of impulse to allow to be output
+//---------------------------------------------------------
+declare resetCtr author " Mike Olsen";
+
+resetCtr(n,m) = _ <: (_,pulse_countup_loop(n-1,1)) : (_,(_==m)) : *;
 
 
 //===============================Array Processing/Pattern Matching========================
@@ -2341,7 +2361,7 @@ with {
 // #### Usage
 //
 // ```
-// _ : selectoutn(N, i) : _,_,...N
+// _ : selectoutn(N, i) : si.bus(N)
 // ```
 //
 // Where:
@@ -2356,8 +2376,9 @@ with {
 // sel = hslider("volume", 0, 0, 2, 1) : int;
 // ```
 //--------------------------------------------------------------------------
-// TODO: author "Vince"
-selectoutn(n, s) = _ <: par(i, n, *(s==i));
+declare selectoutn author "Vince";
+
+selectoutn(N, s) = _ <: par(i, N, *(s==i));
 
 
 //=====================================Other==============================================
@@ -2369,14 +2390,14 @@ selectoutn(n, s) = _ <: par(i, n, *(s==i));
 // #### Usage
 //
 // ```
-// _ : latch(clocksig) : _
+// _ : latch(trig) : _
 // ```
 //
 // Where:
 //
-// * `clocksig`: hold trigger (0 for hold, 1 for bypass)
+// * `trig`: hold trigger (0 for hold, 1 for bypass)
 //------------------------------------------------------------
-latch(c,x) = x * s : + ~ *(1-s) with { s = ((c'<=0)&(c>0)); };
+latch(trig, x) = x * s : + ~ *(1-s) with { s = trig > trig'; };
 
 
 //--------------------------`(ba.)sAndH`-------------------------------
@@ -2386,15 +2407,16 @@ latch(c,x) = x * s : + ~ *(1-s) with { s = ((c'<=0)&(c>0)); };
 // #### Usage
 //
 // ```
-// _ : sAndH(t) : _
+// _ : sAndH(trig) : _
 // ```
 //
 // Where:
 //
-// * `t`: hold trigger (0 for hold, 1 for bypass)
+// * `trig`: hold trigger (0 for hold, 1 for bypass)
 //----------------------------------------------------------------
-// Author: RM
-sAndH(t) = select2(t,_,_)~_;
+declare sAndH author "Romain Michon";
+
+sAndH(trig) = select2(trig,_,_) ~ _;
 
 
 //--------------------------`(ba.)downSample`-------------------------------
@@ -2412,7 +2434,8 @@ sAndH(t) = select2(t,_,_)~_;
 //
 // * `freq`: new rate in Hz
 //----------------------------------------------------------------
-// Author: RM
+declare downSample author "Romain Michon";
+
 downSample(freq) = sAndH(hold)
 with {
   	hold = time%int(ma.SR/freq) == 0;
@@ -2434,8 +2457,9 @@ with {
 //	0 - Pass through. A single sample 0 trigger will work as a reset.
 //  1 - Track and hold max value.
 //----------------------------------------------------------------
-// TODO: author Jonatan Liljedahl, revised by RM
-peakhold = (*,_:max) ~ _;
+declare peakhold author "Jonatan Liljedahl, revised by Romain Michon";
+
+peakhold = (*,_ : max) ~ _;
 
 
 //------------------`(ba.)peakholder`---------------------------
@@ -2451,7 +2475,8 @@ peakhold = (*,_:max) ~ _;
 //
 // * `n`: number of samples
 //----------------------------------------------------------------
-// TODO: author Jonatan Liljedahl
+declare peakholder author "Jonatan Liljedahl";
+
 peakholder(n) = peakhold2 ~ reset : (!,_) with {
     reset = sweep(n) > 0;
     // first out is gate that is 1 while holding last peak
@@ -2475,17 +2500,23 @@ impulsify = _ <: _,mem : - <: >(0)*_;
 
 
 //-----------------------`(ba.)automat`------------------------------
-// Record and replay to the values the input signal in a loop.
+// Record and replay in a loop the successives values of the input signal.
 //
 // #### Usage
 //
 // ```
-// hslider(...) : automat(bps, size, init) : _
+// hslider(...) : automat(t, size, init) : _
 // ```
+//
+// Where:
+//
+// * `t`: tempo in BPM
+// * `size`: number of items in the loop
+// * `init`: init value in the loop
 //-----------------------------------------------------------------------
-automat(bps, size, init, input) = rwtable(size+1, init, windex, input, rindex)
+automat(t, size, init, input) = rwtable(size+1, init, windex, input, rindex)
 with {
-	clock 	= beat(bps);
+	clock 	= beat(t);
 	rindex 	= int(clock) : (+ : %(size)) ~ _;		// each clock read the next entry of the table
 	windex 	= if(timeToRenew, rindex, size);		// we ignore input unless it is time to renew
 	timeToRenew 	= int(clock) & (inputHasMoved | (input <= init));
@@ -2557,7 +2588,8 @@ bpf = environment
 // * `index`: the index (float) to interpolate between the different values.
 // The range of `index` depends on the size of the list.
 //------------------------------------------------------------
-// Author: RM
+declare listInterp author "Romain Michon";
+
 listInterp(v) =
   	bpf.start(0,take(1,v)) :
   	seq(i,count(v)-2,bpf.point(i+1,take(i+2,v))) :
@@ -2580,8 +2612,9 @@ listInterp(v) =
 // * `bpc`: bypass switch (0/1)
 // * `e`: a mono effect
 //------------------------------------------------------------
-// Author: JOS
+declare bypass1 author "Julius Smith";
 // License: STK-4.3
+
 bypass1(bpc,e) = _ <: select2(bpc,(inswitch:e),_)
 with {
     inswitch = select2(bpc,_,0);
@@ -2604,8 +2637,9 @@ with {
 // * `bpc`: bypass switch (0/1)
 // * `e`: a stereo effect
 //------------------------------------------------------------
-// Author: JOS
+declare bypass2 author "Julius Smith";
 // License: STK-4.3
+
 bypass2(bpc,e) = _,_ <: ((inswitch:e),_,_) : select2stereo(bpc)
 with {
     inswitch = _,_ : (select2(bpc,_,0), select2(bpc,_,0)) : _,_;
@@ -2629,8 +2663,9 @@ with {
 // * `bpc`: bypass switch (0/1)
 // * `e`: a mono-to-stereo effect
 //------------------------------------------------------------
-// Author: JOS
+declare bypass1to2 author "Julius Smith";
 // License: STK-4.3
+
 bypass1to2(bpc,e) = _ <: ((inswitch:e),_,_) : select2stereo(bpc)
 with {
     inswitch = select2(bpc,_,0);
@@ -2689,7 +2724,8 @@ with {
 // ```
 //
 //------------------------------------------------------------------------------
-// TODO: author "Vince"
+declare toggle author "Vince";
+
 toggle = trig : loop
 with {
     trig(x) = (x-x') == 1;
@@ -2713,7 +2749,8 @@ with {
 // ```
 //
 //------------------------------------------------------------------------------
-// TODO: author "Vince"
+declare on_and_off author "Vince";
+
 on_and_off(a, b) = (a : trig) : loop(b)
 with {
     trig(x) = (x-x') == 1;
@@ -6381,8 +6418,8 @@ saw2f4 = saw2 : cf4 with {
 //=========Bandlimited Pulse, Square, and Impulse Trains============
 // Bandlimited Pulse, Square and Impulse Trains.
 //
-// `pulsetrainN`, `pulsetrain`, `squareN`, `square`, `imptrain`, `imptrainN`,
-// `triangle`, `triangleN`
+// `pulsetrainN`, `pulsetrain`, `squareN`, `square`, `imptrainN`, `imptrain`,
+// `triangleN`, `triangle`
 //
 // All are zero-mean and meant to oscillate in the audio frequency range.
 // Use simpler sample-rounded lf_* versions above for LFOs.
@@ -6392,10 +6429,13 @@ saw2f4 = saw2 : cf4 with {
 // ```
 // pulsetrainN(N,freq,duty) : _
 // pulsetrain(freq, duty) : _ // = pulsetrainN(2)
-// squareN(N, freq) : _
+//
+// squareN(N,freq) : _
 // square : _ // = squareN(2)
+//
 // imptrainN(N,freq) : _
 // imptrain : _ // = imptrainN(2)
+//
 // triangleN(N,freq) : _
 // triangle : _ // = triangleN(2)
 // ```
@@ -6406,8 +6446,35 @@ saw2f4 = saw2 : cf4 with {
 // * `freq`: frequency in Hz
 //====================================================================
 
+
+//------------------`(os.)impulse`--------------------------------
+// One-time impulse generated when the Faust process is started.
+// `impulse` is a standard Faust function.
+//
+// #### Usage
+//
+// ```
+// impulse : _
+// ```
+//--------------------------------------------------------
+impulse = 1-1';
+
+
 //------------------`(os.)pulsetrainN`--------------------------------
-// TODO: MarkDown doc in comments
+// Bandlimited pulse train oscillator. 
+//
+// #### Usage
+//
+// ```
+// pulsetrainN(N,freq,duty) : _
+// ```
+//
+// Where:
+//
+// * `N`: order, as a constant numerical expression
+// * `freq`: frequency in Hz
+// * `duty`: duty cycle between 0 and 1
+
 //--------------------------------------------------------
 pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
  // non-interpolated-delay version: diffdel(x,del) = x - x@int(del+0.5);
@@ -6425,6 +6492,7 @@ pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
  del = max(0,min(delmax,ddel));
 };
 
+
 //------------------`(os.)pulsetrain`--------------------------------
 // Bandlimited pulse train oscillator. Based on `pulsetrainN(2)`.
 // `pulsetrain` is a standard Faust function.
@@ -6432,7 +6500,7 @@ pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
 // #### Usage
 //
 // ```
-// pulsetrain(freq, duty) : _
+// pulsetrain(freq,duty) : _
 // ```
 //
 // Where:
@@ -6442,10 +6510,23 @@ pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
 //--------------------------------------------------------
 pulsetrain = pulsetrainN(2);
 
+
 //------------------`(os.)squareN`--------------------------------
-// TODO: MarkDown doc in comments
+// Bandlimited square wave oscillator. 
+//
+// #### Usage
+//
+// ```
+// squareN(N,freq) : _
+// ```
+//
+// Where:
+//
+// * `N`: order, as a constant numerical expression
+// * `freq`: frequency in Hz
 //--------------------------------------------------------
 squareN(N,freq) = pulsetrainN(N,freq,0.5);
+
 
 //------------------`(os.)square`--------------------------------
 // Bandlimited square wave oscillator. Based on `squareN(2)`.
@@ -6463,20 +6544,20 @@ squareN(N,freq) = pulsetrainN(N,freq,0.5);
 //--------------------------------------------------------
 square = squareN(2);
 
-//------------------`(os.)impulse`--------------------------------
-// One-time impulse generated when the Faust process is started.
-// `impulse` is a standard Faust function.
+
+//------------------`(os.)imptrainN`--------------------------------
+// Bandlimited impulse train generator. 
 //
 // #### Usage
 //
 // ```
-// impulse : _
+// imptrainN(N,freq) : _
 // ```
-//--------------------------------------------------------
-impulse = 1-1';
-
-//------------------`(os.)imptrainN`--------------------------------
-// TODO: MarkDown doc in comments
+//
+// Where:
+//
+// * `N`: order, as a constant numerical expression
+// * `freq`: frequency in Hz
 //--------------------------------------------------------
 imptrainN(N,freq) = impulse + 0.5*ma.diffn(sawN(N,freq));
 
@@ -6497,13 +6578,26 @@ imptrainN(N,freq) = impulse + 0.5*ma.diffn(sawN(N,freq));
 //--------------------------------------------------------
 imptrain = imptrainN(2); // default based on saw2
 
+
 //------------------`(os.)triangleN`--------------------------------
-// TODO: MarkDown doc in comments
+// Bandlimited triangle wave oscillator. 
+//
+// #### Usage
+//
+// ```
+// triangleN(N,freq) : _
+// ```
+//
+// Where:
+//
+// * `N`: order, as a constant numerical expression
+// * `freq`: frequency in Hz
 //--------------------------------------------------------
 triangleN(N,freq) = squareN(N,freq) : fi.pole(p) : *(gain) with {
   gain = 4.0*freq/ma.SR; // for aproximate unit peak amplitude
   p = 0.999;
 };
+
 
 //------------------`(os.)triangle`--------------------------------
 // Bandlimited triangle wave oscillator. Based on `triangleN(2)`.
@@ -6521,13 +6615,14 @@ triangleN(N,freq) = squareN(N,freq) : fi.pole(p) : *(gain) with {
 //--------------------------------------------------------
 triangle = triangleN(2); // default based on saw2
 
+
 //===============================Filter-Based Oscillators=================================
-// Filter-Based Oscillators
+// Filter-Based Oscillators.
 //
 // #### Usage
 //
 // ```
-// osc[b|r|rs|rc|s|w](f), where f = frequency in Hz.
+// osc[b|rq|rs|rc|s](freq), where freq = frequency in Hz.
 // ```
 //
 // #### References
@@ -6721,14 +6816,14 @@ oscwc(fr) = impulse : fi.wgr(fr,1) : _,!; // cosine (cheapest at 1 mpy/sample)
 //------------------------------------------------------------
 oscws(fr) = impulse : fi.wgr(fr,1) : !,_; // sine (needs a 2nd scaling mpy)
 
-//-----------------`(os.)oscwq`--------------------
+//-----------------`(os.)oscq`--------------------
 // Sinusoidal oscillator based on the waveguide resonator `wgr`.
 // Unit-amplitude cosine and sine (quadrature) oscillator.
 //
 // #### Usage
 //
 // ```
-// oscwq(freq) : _
+// oscq(freq) : _,_
 // ```
 //
 // Where:
@@ -7851,7 +7946,7 @@ Michon and Julius O. Smith III, and are released under the
 
 //---------------------`(ef.)cubicnl`-----------------------
 // Cubic nonlinearity distortion.
-// `cubicnl` is a standard Faust library.
+// `cubicnl` is a standard Faust function.
 //
 // #### Usage:
 //
@@ -8306,8 +8401,7 @@ closed source license or any other license if you decide so.
 
 //----------`(ef.)echo`----------
 // A simple echo effect.
-//
-// `echo` is a standard Faust function
+// `echo` is a standard Faust function.
 //
 // #### Usage
 //
@@ -8386,8 +8480,8 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //
 //------------------------------------------------------------
 version =   2, // MAJOR version when we make incompatible API changes,
-            7, // MINOR version when we add functionality in a backwards compatible manner,
-            2; // PATCH version when we make backwards compatible bug fixes.
+            8, // MINOR version when we add functionality in a backwards compatible manner,
+            0; // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################
@@ -11580,19 +11674,19 @@ declare version "0.2";
 //========================================================================================
 
 //--------------------------------`(ro.)cross`-----------------------------------
-// Cross n signals: `(x1,x2,..,xn) -> (xn,..,x2,x1)`.
+// Cross N signals: `(x1,x2,..,xn) -> (xn,..,x2,x1)`.
 // `cross` is a standard Faust function.
 //
 // #### Usage
 //
 // ```
-// cross(n)
+// cross(N)
 // _,_,_ : cross(3) : _,_,_
 // ```
 //
 // Where:
 //
-// * `n`: number of signals (int, must be known at compile time)
+// * `N`: number of signals (int, as a constant numerical expression)
 //
 // #### Note
 //
@@ -11603,93 +11697,94 @@ declare version "0.2";
 // ```
 //-----------------------------------------------------------------------------
 // cross n cables : (x1,x2,..,xn) -> (xn,..,x2,x1)
-cross(n) = route(n, n, par(i, n, (i+1, n-i)));
+cross(N) = route(N, N, par(i, N, (i+1, N-i)));
 cross2 = _,cross(2),_; // for compatibility with some old misceffects.lib functions
 
 
 //--------------`(ro.)crossnn`--------------
-// Cross two `bus(n)`s.
+// Cross two `bus(N)`s.
 //
 // #### Usage
 //
 // ```
-// (si.bus(2*n)) : crossnn(n) : (si.bus(2*n))
+// (si.bus(2*N)) : crossnn(N) : (si.bus(2*N))
 // ```
 //
 // Where:
 //
-// * `n`: the number of signals in the `bus`
+// * `N`: the number of signals in the `bus` (int, as a constant numerical expression)
 //--------------------------------------
-crossnn(n) = crossNM(n,n);
+crossnn(N) = crossNM(N,N);
 
 
 //--------------`(ro.)crossn1`--------------
-// Cross bus(n) and bus(1).
+// Cross `bus(N)` and `bus(1)`.
 //
 // #### Usage
 //
 // ```
-// (si.bus(n),_) : crossn1(n) : (_,si.bus(n))
+// (si.bus(N),_) : crossn1(N) : (_,si.bus(N))
 // ```
 //
 // Where:
 //
-// * `n`: the number of signals in the first `bus`
+// * `N`: the number of signals in the first `bus` (int, as a constant numerical expression)
 //--------------------------------------
-crossn1(n) = crossNM(n,1);
+crossn1(N) = crossNM(N,1);
 
 
 //--------------`(ro.)cross1n`--------------
-// Cross bus(1) and bus(n).
+// Cross `bus(1)` and `bus(N)`.
 //
 // #### Usage
 //
 // ```
-// (_,si.bus(n)) : crossn1(n) : (si.bus(n),_)
+// (_,si.bus(N)) : crossn1(N) : (si.bus(N),_)
 // ```
 //
 // Where:
 //
-// * `n`: the number of signals in the second `bus`
+// * `N`: the number of signals in the second `bus` (int, as a constant numerical expression)
 //--------------------------------------
-cross1n(n) = crossNM(1,n);
+cross1n(N) = crossNM(1,N);
 
 
 //--------------`(ro.)crossNM`--------------
-// Cross bus(n) and bus(m).
+// Cross `bus(N)` and `bus(M)`.
 //
 // #### Usage
 //
 // ```
-// (si.bus(n),si.bus(m)) : crossNM(n,m) : (si.bus(m),si.bus(n))
+// (si.bus(N),si.bus(M)) : crossNM(N,M) : (si.bus(M),si.bus(N))
 // ```
 //
 // Where:
 //
-// * `n`: the number of signals in the first `bus`
-// * `m`: the number of signals in the second `bus`
+// * `N`: the number of signals in the first `bus` (int, as a constant numerical expression)
+// * `M`: the number of signals in the second `bus` (int, as a constant numerical expression)
 //--------------------------------------
-crossNM(n,m) = route(n+m, n+m, par(i, n+m, i+1, ((i+m)%(n+m))+1));
+crossNM(N,M) = route(N+M, N+M, par(i, N+M, i+1, ((i+M)%(N+M))+1));
 
 
 //--------------------------`(ro.)interleave`------------------------------
-// Interleave row*col cables from column order to row order.
+// Interleave R x C cables from column order to row order.
 // input : x(0), x(1), x(2) ..., x(row*col-1)
 // output: x(0+0*row), x(0+1*row), x(0+2*row), ..., x(1+0*row), x(1+1*row), x(1+2*row), ...
 //
 // #### Usage
 //
 // ```
-// _,_,_,_,_,_ : interleave(row,column) : _,_,_,_,_,_
+// si.bus(R*C) : interleave(R,C) : si.bus(R*C)
 // ```
 //
 // Where:
 //
-// * `row`: the number of row (int, known at compile time)
-// * `column`: the number of column (int, known at compile time)
+// * `R`: the number of row (int, as a constant numerical expression)
+// * `C`: the number of column (int, as a constant numerical expression)
 //-----------------------------------------------------------------------------
 interleave(1,2) = _,_;
-interleave(row,col) = route(row*col, row*col, par(i, row*col, (i+1, (i%row)*col + int(i/row) + 1)));
+interleave(R,C) = route(R*C, R*C, par(i, R*C, (i+1, (i%R)*C + int(i/R) + 1)));
+
 
 //-------------------------------`(ro.)butterfly`--------------------------------
 // Addition (first half) then substraction (second half) of interleaved signals.
@@ -11697,41 +11792,38 @@ interleave(row,col) = route(row*col, row*col, par(i, row*col, (i+1, (i%row)*col 
 // #### Usage
 //
 // ```
-// _,_,_,_ : butterfly(n) : _,_,_,_
+// si.bus(N) : butterfly(N) : si.bus(N)
 // ```
 //
 // Where:
 //
-// * `n`: size of the butterfly (n is int, even and known at compile time)
+// * `N`: size of the butterfly (N is int, even and as a constant numerical expression)
 //-----------------------------------------------------------------------------
 butterfly(2) = si.bus(2) <: +,-;
-butterfly(n) = si.bus(n) <: interleave(n/2,2), interleave(n/2,2) : par(i, n/2, +), par(i, n/2, -);
+butterfly(N) = si.bus(N) <: interleave(N/2,2), interleave(N/2,2) : par(i, N/2, +), par(i, N/2, -);
 
 
 //------------------------------`(ro.)hadamard`----------------------------------
-// Hadamard matrix function of size `n = 2^k`.
+// Hadamard matrix function of size `N = 2^k`.
 //
 // #### Usage
 //
 // ```
-// _,_,_,_ : hadamard(n) : _,_,_,_
+// si.bus(N) : hadamard(N) : si.bus(N)
 // ```
 //
 // Where:
 //
-// * `n`: `2^k`, size of the matrix (int, must be known at compile time)
+// * `N`: `2^k`, size of the matrix (int, as a constant numerical expression)
 //
-// #### Note:
-//
-// Implementation contributed by Remy Muller.
 //-----------------------------------------------------------------------------
-// TODO: author: Remy Muller, revised by RM
+declare hadamard author "Remy Muller, revised by RM";
 hadamard(2) = butterfly(2);
-hadamard(n) = butterfly(n) : (hadamard(n/2) , hadamard(n/2));
+hadamard(N) = butterfly(N) : (hadamard(N/2), hadamard(N/2));
 
 
 //---------------`(ro.)recursivize`-------------
-// Create a recursion from two arbitrary processors p and q.
+// Create a recursion from two arbitrary processors `p` and `q`.
 //
 // #### Usage
 //
@@ -11746,6 +11838,54 @@ hadamard(n) = butterfly(n) : (hadamard(n/2) , hadamard(n/2));
 // * `q`: the feedback arbitrary processor
 //----------------------------------------
 recursivize(p,q) = (_,_,_,_ :> sp.stereoize(p)) ~ sp.stereoize(q);
+
+
+//--------------------`(ro.)bubbleSort`-----------------------------------------
+//
+// Sort a set of N parallel signals in ascending order on-the-fly through
+// the Bubble Sort algorithm.
+//
+// Mechanism: having a set of N parallel signals indexed from 0 to N - 1,
+// compare the first pair of signals and swap them if sig[0] > sig[1];
+// repeate the pair comparison for the signals sig[1] and sig[2], then again
+// and again until reaching the signals sig[N - 2] and sig[N - 1]; by the end,
+// the largest element in the set will be placed last; repeate the process for
+// the remaining N - 1 signals until there is a single pair left.
+//
+// Note that this implementation will always perform the worst-case
+// computation, O(n^2).
+//
+// Even though the Bubble Sort algorithm is one of the least efficient ones,
+// it is a useful example of how automatic sorting can be implemented at the
+// signal level.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : bubbleSort(N) : si.bus(N)
+//
+// ```
+//
+// Where:
+//
+// * `N`: the number of signals to be sorted (must be an int >= 0, as a constant numerical expression)
+//
+// #### Reference
+// <https://en.wikipedia.org/wiki/Bubble_sort>
+//------------------------------------------------------------------------------
+declare bubbleSort author "Dario Sanfilippo";
+declare bubbleSort copyright "Copyright (C) 2021 Dario Sanfilippo
+    <sanfilippo.dario@gmail.com>";
+declare bubbleSort license "MIT License";
+bubbleSort(0) = 0 : !;
+bubbleSort(1) = _;
+bubbleSort(N) = seq(i, N - 1, pairSortN(N - i) , bus(i))
+    with {
+        bus(0) = 0 : !;
+        bus(N) = si.bus(N);
+        pairSort = bus(2) <: select2(>) , select2(<);
+        pairSortN(N) = seq(i, N - 1, bus(i), pairSort, bus(N - i - 2));
+    };
 //#################################### soundfiles.lib ########################################
 // A library to handle soundfiles in Faust. Its official prefix is `so`.
 //
@@ -12454,7 +12594,7 @@ declare version "0.3";
 //==============================Auxiliary Functions=======================================
 //========================================================================================
 
-//-------`(aa.)clip`----------
+//-------`(aa.)clip`-----------
 // Clipping function.
 //-----------------------------
 clip(l, h, x) = max(l, min(h, x));
@@ -12466,13 +12606,13 @@ clip(l, h, x) = max(l, min(h, x));
 Rsqrt(x) = sqrt(max(0.0, x));
 
 
-//-------`(aa.)Rlog`----------
+//-------`(aa.)Rlog`-----------
 // Real-valued log().
 //-----------------------------
 Rlog(x) = log(max(ma.EPSILON, x));
 
 
-//-------`(aa.)Rtan`----------
+//-------`(aa.)Rtan`-----------
 // Real-valued tan().
 //-----------------------------
 Rtan(x) = tan(clip(-ma.MAX, ma.MAX, x));
@@ -12492,7 +12632,7 @@ Rasin(x) = asin(clip(-1.0, 1.0, x));
 
 //-------`(aa.)Racosh`----------
 // Real-valued acosh()
-//-----------------------------
+//------------------------------
 Racosh(x) = ma.acosh(clip(1.0, ma.MAX, x));
 
 
@@ -12502,7 +12642,7 @@ Racosh(x) = ma.acosh(clip(1.0, ma.MAX, x));
 Rcosh(x) = min(ma.MAX, ma.cosh(x));
 
 
-//-------`(aa.)Rsinh`----------
+//-------`(aa.)Rsinh`-----------
 // Real-valued sinh().
 //------------------------------
 Rsinh(x) = clip(-ma.MAX, ma.MAX, ma.sinh(x));
@@ -12585,7 +12725,7 @@ ADAA2(EPS, f, F1, F2, x) = T1 + T2
 // ```
 // _ : aa.hardclip : _
 // ```
-
+//---------------------------------------------
 declare hardclip author "Dario Sanfilippo";
 declare hardclip copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12610,7 +12750,7 @@ hardclip(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.hardclip2 : _
 // ```
-
+//---------------------------------------------
 declare hardclip2 author "Dario Sanfilippo";
 declare hardclip2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12640,7 +12780,7 @@ hardclip2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.cubic1 : _
 // ```
-
+//-------------------------------------------
 declare cubic1 author "Dario Sanfilippo";
 declare cubic1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12669,7 +12809,7 @@ cubic1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.parabolic : _
 // ```
-
+//--------------------------------------------
 declare parabolic author "Dario Sanfilippo";
 declare parabolic copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12697,7 +12837,7 @@ parabolic(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.parabolic : _
 // ```
-
+//---------------------------------------------
 declare parabolic2 author "Dario Sanfilippo";
 declare parabolic2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12729,6 +12869,7 @@ parabolic2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.hyperbolic : _
 // ```
+//---------------------------------------------
 declare hyperbolic author "Dario Sanfilippo";
 declare hyperbolic copyright "Copyright (C) 2021 Dario Sanfilippo
      <sanfilippo.dario@gmail.com>";
@@ -12751,6 +12892,7 @@ hyperbolic(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.hyperbolic2 : _
 // ```
+//----------------------------------------------
 declare hyperbolic2 author "Dario Sanfilippo";
 declare hyperbolic2 copyright "Copyright (C) 2021 Dario Sanfilippo
      <sanfilippo.dario@gmail.com>";
@@ -12775,6 +12917,7 @@ hyperbolic2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.sinatan : _
 // ```
+//----------------------------------------------
 declare sinarctan author "Dario Sanfilippo";
 declare sinarctan copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12800,6 +12943,7 @@ sinarctan(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.sinarctan2 : _
 // ```
+//----------------------------------------------
 declare sinarctan2 author "Dario Sanfilippo";
 declare sinarctan2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12826,6 +12970,7 @@ sinarctan2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.tanh1 : _
 // ```
+//----------------------------------------------
 declare tanh1 author "Dario Sanfilippo";
 declare tanh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12848,6 +12993,7 @@ tanh1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.arctan : _
 // ```
+//-------------------------------------------
 declare arctan author "Dario Sanfilippo";
 declare arctan copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12870,6 +13016,7 @@ arctan(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.arctan2 : _
 // ```
+//-------------------------------------------
 declare arctan2 author "Dario Sanfilippo";
 declare arctan2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12893,6 +13040,7 @@ arctan2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.asinh1 : _
 // ```
+//-------------------------------------------
 declare asinh1 author "Dario Sanfilippo";
 declare asinh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12905,7 +13053,6 @@ asinh1(x) = ADAA1(EPS, f, F1, x)
                with {
                    const = 1.0; // for F1(0) = 0 to minimise precision loss
                };
-
       };
 
 
@@ -12919,6 +13066,7 @@ asinh1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.asinh2 : _
 // ```
+//-------------------------------------------
 declare asinh2 author "Dario Sanfilippo";
 declare asinh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12933,7 +13081,6 @@ asinh2(x) = ADAA2(EPS, f, F1, F2, x)
                };
            F2(x_F2) = .25 * (2.0 * x_F2 ^ 2.0 * f(x_F2) + f(x_F2) - 
                sqrt(x_F2 ^ 2.0 + 1.0) * x_F2);
-
       };
 
 
@@ -12952,6 +13099,7 @@ asinh2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.cosine1 : _
 // ```
+//-------------------------------------------
 declare cosine1 author "Dario Sanfilippo";
 declare cosine1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12974,6 +13122,7 @@ cosine1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.cosine2 : _
 // ```
+//-------------------------------------------
 declare cosine2 author "Dario Sanfilippo";
 declare cosine2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -12987,7 +13136,6 @@ cosine2(x) = ADAA2(EPS, f, F1, F2, x)
       };
 
 
-
 //-------`(aa.)arccos`---------------------
 //
 // First-order ADAA acos().
@@ -12999,6 +13147,7 @@ cosine2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.arccos : _
 // ```
+//------------------------------------------
 declare arccos author "Dario Sanfilippo";
 declare arccos copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13028,6 +13177,7 @@ arccos(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.arccos2 : _
 // ```
+//--------------------------------------------
 declare arccos2 author "Dario Sanfilippo";
 declare arccos2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13055,6 +13205,7 @@ arccos2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.acosh1 : _
 // ```
+//------------------------------------------
 declare acosh1 author "Dario Sanfilippo";
 declare acosh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13080,6 +13231,7 @@ acosh1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.acosh2 : _
 // ```
+//-------------------------------------------
 declare acosh2 author "Dario Sanfilippo";
 declare acosh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13105,6 +13257,7 @@ acosh2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.sine : _
 // ```
+//----------------------------------------
 declare sine author "Dario Sanfilippo";
 declare sine copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13127,6 +13280,7 @@ sine(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.sine2 : _
 // ```
+//----------------------------------------
 declare sine2 author "Dario Sanfilippo";
 declare sine2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13151,6 +13305,7 @@ sine2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.arcsin : _
 // ```
+//------------------------------------------
 declare arcsin author "Dario Sanfilippo";
 declare arcsin copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13180,6 +13335,7 @@ arcsin(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.arcsin2 : _
 // ```
+//------------------------------------------
 declare arcsin2 author "Dario Sanfilippo";
 declare arcsin2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13207,6 +13363,7 @@ arcsin2(x) = ADAA2(EPS, f, F1, F2, x)
 // ```
 // _ : aa.tangent : _
 // ```
+//------------------------------------------
 declare tangent author "Dario Sanfilippo";
 declare tangent copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13229,6 +13386,7 @@ tangent(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.atanh1 : _
 // ```
+//------------------------------------------
 declare atanh1 author "Dario Sanfilippo";
 declare atanh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13251,6 +13409,7 @@ atanh1(x) = ADAA1(EPS, f, F1, x)
 // ```
 // _ : aa.atanh2 : _
 // ```
+//------------------------------------------
 declare atanh2 author "Dario Sanfilippo";
 declare atanh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -13472,7 +13631,7 @@ ma = library("maths.lib");
 si = library("signals.lib");
 
 declare name "Faust Wave Digital Model Library";
-declare version "0.2.0";
+declare version "0.2.1";
 
 
 //=============================Algebraic One Port Adaptors=================================
@@ -13834,7 +13993,7 @@ case {
 
 
 //----------------------`(wd.)resCurrent`--------------------------
-// Unadapted Resistive Current Source.
+// Adapted Resistive Current Source.
 //
 // An adaptor implementing a resistive current source within Wave Digital Filter connection trees.
 //
@@ -13868,7 +14027,7 @@ declare resCurrent copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosen
 declare resCurrent license "MIT-style STK-4.3 license";
 resCurrent =
 case {
-    (0, R, jin) => !, 2*R^(rho)*jin;
+    (0, R, jin) => !, R^(rho)*jin;
     (1, R, jin) => _; 
     (2, R, jin) => R0
     with {
@@ -23739,6 +23898,15 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 ************************************************************************/
 
 // end further further contributions section
+//#################################### maxmsp.lib ########################################
+// MaxMSP compatibility Library.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/maxmsp.lib>
+//########################################################################################
+
+
+
 /************************************************************************
 ************************************************************************
 FAUST library file
@@ -26125,7 +26293,7 @@ with {
 // #### Usage:
 //
 // ```
-// _ : allpassklt(n,sv) : _
+// _ : allpassnklt(n,sv) : _
 // ```
 //
 // Where:
@@ -26456,7 +26624,7 @@ allpassnn(n,tv) = _ <: *(s), (*(c) : (+
         : allpassnn(n-1,tv))~(*(-s))) : _, mem*c : +
 with { c = cos(ba.take(n,tv));  s = sin(ba.take(n,tv)); };
 
-//---------------`(fi.)allpasskl`-----------------
+//---------------`(fi.)allpassnkl`-----------------
 // Kelly-Lochbaum form - four multiplies and two adds per
 // section, but all signals have an immediate physical
 // interpretation as traveling pressure waves, etc.
@@ -29416,7 +29584,7 @@ lfnoiseN(N,freq) = lfnoise0(freq) : fi.lowpass(N,freq); // Nth-order Butterworth
 lfnoise(freq) = lfnoise0(freq) : seq(i,5,fi.lowpass(1,freq)); // non-overshooting lowpass
 
 
-//-------------------------`(no.)sparse_noise_vm`-------------------
+//-------------------------`(no.)sparse_noise`-------------------
 // sparse noise generator.
 //
 // #### Usage
@@ -29972,17 +30140,16 @@ lfnoise(freq) = lfnoise0(freq) : seq(i,5,fl.lowpass(1,freq)); // non-overshootin
 //#################################### interpolators.lib ########################################
 // A library to handle interpolation. Its official prefix is `it`.
 //
-// This library provides several basic interpolation functions as well as interpolators 
+// This library provides several basic interpolation functions, as well as interpolators 
 // taking a `gen` circuit of N outputs producing values to be interpolated, triggered
 // by a `idv` read index signal. Two points and four points interpolations are implemented.
 //
-// The `idv` parameter is to be used as a read index. In float (= singleprecision) mode, 
+// The `idv` parameter is to be used as a read index. In `-single` (= singleprecision) mode, 
 // a technique based on 2 signals with the pure integer index and a fractional part in the [0,1] 
-// range is used to avoid accumulating errors. In -double (= doubleprecision)/-quad (= quadprecision) modes, 
-// a standard implementation with a single fractional index signal is used. 
-// Three functions `int_part`, `frac_part` and `mak_idv` are available to manipule the read index signal.
+// range is used to avoid accumulating errors. In `-double` (= doubleprecision) or `-quad` (= quadprecision) modes, 
+// a standard implementation with a single fractional index signal is used. Three functions `int_part`, `frac_part` and `mak_idv` are available to manipulate the read index signal.
 //
-// Use-case with `waveform`. Here the signal given to `interpolator_XXX` uses the `idv` model.
+// Here is a use-case with `waveform`. Here the signal given to `interpolator_XXX` uses the `idv` model.
 // 
 // ```
 // waveform_interpolator(wf, step, interp) = interp(gen, idv)
@@ -30324,7 +30491,7 @@ interpolator_null(gen, idv) = interpolator_two_points(gen, idv, \(dv,v0,v1).(v0)
 //=========================Four points interpolators======================================
 //========================================================================================
 
-//-------`(it.)interpolator_two_points`----------
+//-------`(it.)interpolator_four_points`----------
 // Generic interpolator on interpolator_four_points points (previous, current and two next indexes), assuming an increasing index.
 //
 // #### Usage
@@ -30421,9 +30588,9 @@ with {
 //
 // Where:
 //
-// * `N`: order of the interpolation filter, known at compile-time;
-// * `xCoordsList`: a list of N + 1 elements determining the x-axis coordinates of N + 1 values, known at compile-time;
-// * `x`: a fractional position on the x-axis to obtain the interpolated y-value.
+// * `N`: order of the interpolation filter, known at compile-time
+// * `xCoordsList`: a list of N + 1 elements determining the x-axis coordinates of N + 1 values, known at compile-time
+// * `x`: a fractional position on the x-axis to obtain the interpolated y-value
 //
 // #### Reference
 //
@@ -30438,8 +30605,8 @@ declare lagrangeCoeffs license "MIT license";
 lagrangeCoeffs(N, xCoords, x) = par(n, N + 1, prod(k, N + 1, f(n, k)))
     with {
         xVals(i) = ba.take(i + 1, xCoords);
-        f(n, k) =   ((x - xVals(k)) * (n != k) + (n == k)) / 
-                    ((xVals(n) - xVals(k)) + (n == k));
+        f(n, k) = ((x - xVals(k)) * (n != k) + (n == k)) / 
+                  ((xVals(n) - xVals(k)) + (n == k));
     };
 // The following definition for uniformely-spaced points interpolation is kept for back-compatibility
 lagrange_h(N, x) = lagrangeCoeffs(N, xCoord, x)
@@ -30459,9 +30626,9 @@ lagrange_h(N, x) = lagrangeCoeffs(N, xCoord, x)
 //
 // Where:
 //
-// * `N`: order of the interpolator, known at compile-time;
-// * `xCoordsList`: a list of N + 1 elements determining the x-axis spacing of the points, known at compile-time;
-// * `x`: an x-axis position to interpolate between the y-values.
+// * `N`: order of the interpolator, known at compile-time
+// * `xCoordsList`: a list of N + 1 elements determining the x-axis spacing of the points, known at compile-time
+// * `x`: an x-axis position to interpolate between the y-values
 // * `yCoords`: N + 1 elements determining the values of the interpolation points
 //
 // Example: find the centre position of a four-point set using an order-3
@@ -30471,8 +30638,8 @@ lagrange_h(N, x) = lagrangeCoeffs(N, xCoord, x)
 // N = 3;
 // xCoordsList = (0, 1, 2, 3);
 // x = N / 2.0;
-// yCoords = 2 , 5 , -1 , 3;
-// process = x , yCoords : lagrangeInterpolation(N, xCoordsList);
+// yCoords = 2, 5, -1, 3;
+// process = x, yCoords : lagrangeInterpolation(N, xCoordsList);
 // ```
 //
 // which outputs ~1.938.
@@ -30483,8 +30650,8 @@ lagrange_h(N, x) = lagrangeCoeffs(N, xCoord, x)
 // N = 3;
 // xCoordsList = (-9, -4, -1, 7);
 // x = os.phasor(16, 1) - 9;
-// yCoords = 5 , 2 , -2 , 9;
-// process = x , yCoords : lagrangeInterpolation(N, xCoordsList);
+// yCoords = 5, 2, -2, 9;
+// process = x, yCoords : lagrangeInterpolation(N, xCoordsList);
 // ```
 //
 // #### Reference
@@ -30577,8 +30744,8 @@ frdtable(N, S, init, idx) =
 // S = 16;
 // rIdx = os.phasor(S, 300);
 // wIdx = ba.period(S);
-// process =   rwtable(S, os.sinwaveform(S), wIdx, os.sinwaveform(S), int(rIdx)) ,
-//             frwtable(N, S, os.sinwaveform(S), wIdx, os.sinwaveform(S), rIdx);
+// process = rwtable(S, os.sinwaveform(S), wIdx, os.sinwaveform(S), int(rIdx)) ,
+//           frwtable(N, S, os.sinwaveform(S), wIdx, os.sinwaveform(S), rIdx);
 // ```
 //------------------------------------------------------------
 
@@ -37365,6 +37532,7 @@ np2 = -(1) <: >>(1)|_ <: >>(2)|_ <: >>(4)|_ <: >>(8)|_ <: >>(16)|_ : +(1);
 //------------------------------------------------------------------------------
 frac(n) = n - floor(n);
 decimal = frac;
+
 // NOTE: decimal does the same thing as frac but using floor instead. JOS uses frac a lot
 // in filters.lib so we decided to keep that one... decimal is declared though for
 // backward compatibility.
@@ -37377,15 +37545,15 @@ decimal = frac;
 // #### Usage
 //
 // ```
-// modulo(x,N) : _
+// modulo(x,y) : _
 // ```
 //
 // Where:
 //
 // * `x`: the numerator
-// * `N`: the denominator
+// * `y`: the denominator
 //------------------------------------------------------------------------------
-modulo(x,N) = (x % N + N) % N;
+modulo(x,y) = (x % y + y) % y;
 
 
 //---------------`(ma.)isnan`----------------
@@ -37425,17 +37593,17 @@ nextafter = ffunction(float nextafter(float, float),<math.h>,"");
 
 
 //---------------------------`(ma.)chebychev`-------------------------------
-// Chebychev transformation of order n.
+// Chebychev transformation of order N.
 //
 // #### Usage
 //
 // ```
-// _ : chebychev(n) : _
+// _ : chebychev(N) : _
 // ```
 //
 // Where:
 //
-// * `n`: the order of the polynomial
+// * `N`: the order of the polynomial, a constant numerical expression
 //
 // #### Semantics
 //
@@ -37511,7 +37679,7 @@ signum(x) = (x>0)-(x<0);
 // #### Usage
 //
 // ```
-// 2^nextpow2(n)
+// 2^nextpow2(n) : _
 // ```
 // Useful for allocating delay lines, e.g., 
 // ```
