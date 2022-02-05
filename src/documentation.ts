@@ -3,7 +3,7 @@
 export const faustDocURL = "https://faustlibraries.grame.fr/libs";
 
 export const docSections = {
-    aa: "antialiased",
+    aa: "aanl",
     an: "analyzers",
     ba: "basics",
     co: "compressors",
