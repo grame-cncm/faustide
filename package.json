@@ -57,7 +57,7 @@
     "kissfft-js": "^0.1.8",
     "monaco-editor": "^0.20.0",
     "monaco-editor-webpack-plugin": "^1.9.1",
-    "node-sass": "^7.0.0",
+    "node-sass": "^4.14.1",
     "popper.js": "^1.16.1",
     "qrcode": "^1.4.4",
     "sass-loader": "^8.0.2",
