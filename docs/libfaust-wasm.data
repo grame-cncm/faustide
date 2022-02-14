@@ -525,12 +525,12 @@ declare version "0.2";
 // note: si.lag_ud has a bug where if you compile with standard precision,
 // down is 0 and prePost is 1, you go into infinite GR and stay there
 peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
-  abs : ba.bypass1(prePost,si.lag_ud(att,rel)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1)+1,si.lag_ud(rel,att)) : ba.db2linear
+  abs : ba.bypass1(prePost,si.lag_ud(att,rel)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1),si.lag_ud(rel,att)) : ba.db2linear
 with {
   gain_computer(strength,thresh,knee,level) =
     select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2))),
             0,
-            ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,min(knee,(thresh*-2))))),
+            ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,knee))),
             (level-thresh))
     : max(0)*-strength;
 };
@@ -799,11 +799,11 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // License: GPLv3
 
 RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
-  RMS(rel) : ba.bypass1(prePost,si.lag_ud(att,0)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1)+1,si.lag_ud(0,att)) : ba.db2linear with {
+  RMS(rel) : ba.bypass1(prePost,si.lag_ud(att,0)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1),si.lag_ud(0,att)) : ba.db2linear with {
     gain_computer(strength,thresh,knee,level) =
       select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2))),
               0,
-              ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,min(knee,(thresh*-2))))),
+              ((level-thresh+(knee/2)) : pow(2)/(2*max(ma.EPSILON,knee))),
               (level-thresh))
     : max(0)*-strength;
     RMS(time) = ba.slidingRMS(s) with {
@@ -4751,7 +4751,7 @@ zcr(period, x) = ma.zc(x) : fi.lptau(period);
 //
 // ```
 // _ : mth_octave_analyzer3(M,ftop,N) : par(i,N,_) // 3d-order Butterworth
-// _ : mth_octave_analyzer5(M,ftop,N) : par(i,N,_) // 5th-roder Butterworth
+// _ : mth_octave_analyzer5(M,ftop,N) : par(i,N,_) // 5th-order Butterworth
 // mth_octave_analyzer_default = mth_octave_analyzer6e;
 // ```
 //
@@ -5377,24 +5377,6 @@ declare license "LGPL with exception";
 //=============================Functions Reference========================================
 //========================================================================================
 
-//------------------------`(en.)smoothEnvelope`------------------------
-// An envelope with an exponential attack and release.
-// `smoothEnvelope` is a standard Faust function.
-//
-// #### Usage
-//
-// ```
-// smoothEnvelope(ar,t) : _
-// ```
-//
-// * `ar`: attack and release duration (s)
-// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
-// when `t=0`)
-//----------------------------------------------------------------
-// Author: RM
-smoothEnvelope(ar,t) = t : si.smooth(ba.tau2pole(ar));
-
-
 //-----------------------`(en.)ar`--------------------------
 // AR (Attack, Release) envelope generator (useful to create percussion envelopes).
 // `ar` is a standard Faust function.
@@ -5445,56 +5427,6 @@ with {
 };
 
 
-//------------------------`(en.)arfe`----------------------
-// ARFE (Attack and Release-to-Final-value Exponentially) envelope generator.
-// Approximately equal to smoothEnvelope(Attack/6.91) when Attack == Release.
-//
-// #### Usage
-//
-// ```
-// arfe(a,r,f,t) : _
-// ```
-//
-// Where:
-//
-// * `a`, `r`: attack (sec), release (sec)
-// * `f`: final value to approach upon release (such as 0)
-// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
-// when `t=0`)
-//-----------------------------------------------------
-// Author: JOS
-// License: STK-4.3
-arfe(attT60,relT60,fv,gate) = envelope with {
-  ugate = gate>0;
-  target = select2(ugate, fv, float(gate));
-  t60 = select2(ugate, relT60, attT60);
-  pole = ba.tau2pole(t60/6.91);
-  envelope = target : si.smooth(pole);
-};
-
-
-//------------------------`(en.)are`----------------------
-// ARE (Attack, Release) envelope generator with Exponential segments.
-// Approximately equal to smoothEnvelope(Attack/6.91) when Attack == Release.
-//
-// #### Usage
-//
-// ```
-// are(a,r,g) : _
-// ```
-//
-// Where:
-//
-// * `a`: attack (sec)
-// * `r`: release (sec)
-// * `g`: gate signal (attack is triggered when `g>0`, release is triggered
-//    when `g` returns to 0).
-//-----------------------------------------------------
-// Author: JOS
-// License: STK-4.3
-are(attT60,relT60,gate) = arfe(attT60,relT60,0,gate);
-
-
 //------------------------`(en.)asr`----------------------
 // ASR (Attack, Sustain, Release) envelope generator.
 // `asr` is a standard Faust function.
@@ -5509,7 +5441,7 @@ are(attT60,relT60,gate) = arfe(attT60,relT60,0,gate);
 //
 // * `at`: attack (sec)
 // * `sl`: sustain level (between 0..1)
-// * `r`: release (sec)
+// * `rt`: release (sec)
 // * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
 // when `t=0`)
 //-----------------------------------------------------
@@ -5550,7 +5482,7 @@ with {
 // #### Usage
 //
 // ```
-// adsr(at,dt,sl,rt,gate) : _
+// adsr(at,dt,sl,rt,t) : _
 // ```
 //
 // Where:
@@ -5559,8 +5491,8 @@ with {
 // * `dt`: decay time (sec)
 // * `sl`: sustain level (between 0..1)
 // * `rt`: release time (sec)
-// * `gate`: trigger signal (attack is triggered when `gate>0`, release is triggered
-// when `gate=0`)
+// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
+// when `t=0`)
 //-----------------------------------------------------
 declare adsr author "Yann Orlarey and Andrey Bundin";
 adsr(at,dt,sl,rt,gate) = ADS : *(1-R) : max(0)
@@ -5574,7 +5506,6 @@ with {
     // Deltas per samples
     adelta = 1/an;
     ddelta = (1-sl)/dn;
-
 
     // Attack time (starts when gate changes and raises until gate == 0)
     atime = +(gate) ~ *(gate' >= gate);
@@ -5598,40 +5529,79 @@ with {
 };
 
 
-//------------------------`(en.)adsre`----------------------
-// ADSRE (Attack, Decay, Sustain, Release) envelope generator with Exponential
-// segments.
+//------------------------`(en.)smoothEnvelope`------------------------
+// An envelope with an exponential attack and release.
+// `smoothEnvelope` is a standard Faust function.
 //
 // #### Usage
 //
 // ```
-// adsre(a,d,s,r,g) : _
+// smoothEnvelope(ar,t) : _
+// ```
+//
+// * `ar`: attack and release duration (s)
+// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
+// when `t=0`)
+//----------------------------------------------------------------
+// Author: RM
+smoothEnvelope(ar,t) = t : si.smooth(ba.tau2pole(ar));
+
+// Generic form to be specialized
+// Author: JOS, revised by Stephane Letz 
+asrfe(attT60,susLvl,relT60,finLvl,gate) = envelope 
+with {
+  ugate = gate>0;
+  target = select2(ugate, finLvl, susLvl*float(ugate));
+  t60 = select2(ugate, relT60, attT60);
+  pole = ba.tau2pole(t60/6.91);
+  envelope = target : si.smooth(pole);
+};
+
+
+//------------------------`(en.)arfe`----------------------
+// ARFE (Attack and Release-to-Final-value Exponentially) envelope generator.
+// Approximately equal to `smoothEnvelope(Attack/6.91)` when Attack == Release.
+//
+// #### Usage
+//
+// ```
+// arfe(at,rt,fl,t) : _
 // ```
 //
 // Where:
 //
-// * `a`: attack (sec)
-// * `d`: decay (sec)
-// * `s`: sustain (fraction of `t`: 0-1)
-// * `r`: release (sec)
-// * `g`: gate signal:
-//        attack is triggered when `g` goes from zero to positive,
-//        release is triggered when `g` returns to 0
+// * `at`: attack (sec)
+// * `rt`: release (sec)
+// * `fl`: final level to approach upon release (such as 0)
+// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
+// when `t=0`)
 //-----------------------------------------------------
-// Author: JOS
+// Author: JOS, revised by Stephane Letz 
 // License: STK-4.3
-adsre(attT60,decT60,susLvl,relT60,gate) = envelope with {
-  ugate = gate>0;
-  samps = ugate : +~(*(ugate)); // ramp time in samples
-  attSamps = int(attT60 * ma.SR);
-  // if attSamps==0, go straight into the decay phase
-  attPhase = (samps<attSamps) | (ugate:ba.impulsify);
-  target = select2(ugate, 0.0,
-           select2(attPhase, (susLvl)*float(ugate), ugate));
-  t60 = select2(ugate, relT60, select2(attPhase, decT60, attT60));
-  pole = ba.tau2pole(t60/6.91);
-  envelope = target : si.smooth(pole);
-};
+arfe(attT60,relT60,fv,gate) = asrfe(attT60,1.0,relT60,fv,gate);
+
+
+//------------------------`(en.)are`----------------------
+// ARE (Attack, Release) envelope generator with Exponential segments.
+// Approximately equal to `smoothEnvelope(Attack/6.91)` when Attack == Release.
+//
+// #### Usage
+//
+// ```
+// are(at,rt,t) : _
+// ```
+//
+// Where:
+//
+// * `at`: attack (sec)
+// * `rt`: release (sec)
+// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
+// when `t=0`)
+//-----------------------------------------------------
+// Author: JOS, revised by Stephane Letz 
+// License: STK-4.3
+are(attT60,relT60,gate) = asrfe(attT60,1.0,relT60,0.0,gate);
+
 
 //------------------------`(en.)asre`----------------------
 // ASRE (Attack, Sustain, Release) envelope generator with Exponential segments.
@@ -5639,23 +5609,53 @@ adsre(attT60,decT60,susLvl,relT60,gate) = envelope with {
 // #### Usage
 //
 // ```
-// asre(a,s,r,g) : _
+// asre(at,sl,rt,t) : _
 // ```
 //
 // Where:
 //
-// * `a`: attack (sec)
-// * `s`: sustain (fraction of `t`: 0-1)
-// * `r`: release (sec)
+// * `at`: attack (sec)
+// * `sl`: sustain level (between 0..1)
+// * `rt`: release (sec)
+// * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
+// when `t=0`)
+//-----------------------------------------------------
+// Author: JOS, revised by Stephane Letz 
+// License: STK-4.3
+asre(attT60,susLvl,relT60,gate) = asrfe(attT60,susLvl,relT60,0.0,gate);
+
+
+//------------------------`(en.)adsre`----------------------
+// ADSRE (Attack, Decay, Sustain, Release) envelope generator with Exponential
+// segments.
+//
+// #### Usage
+//
+// ```
+// adsre(at,dt,sl,rt,t) : _
+// ```
+//
+// Where:
+//
+// * `at`: attack (sec)
+// * `dt`: decay (sec)
+// * `sl`: sustain level (between 0..1)
+// * `rt`: release (sec)
 // * `t`: trigger signal (attack is triggered when `t>0`, release is triggered
 // when `t=0`)
 //-----------------------------------------------------
 // Author: JOS
 // License: STK-4.3
-asre(attT60,susLvl,relT60,gate) = envelope with {
+adsre(attT60,decT60,susLvl,relT60,gate) = envelope 
+with {
   ugate = gate>0;
-  target = select2(ugate, 0.0, (susLvl)*float(ugate));
-  t60 = select2(ugate, relT60, attT60);
+  samps = ugate : +~(*(ugate)); // ramp time in samples
+  attSamps = int(attT60 * ma.SR);
+  // if attSamps==0, go straight into the decay phase
+  attPhase = (samps<attSamps) | (ugate:ba.impulsify);
+  target = select2(ugate, 0.0,
+           select2(attPhase, susLvl*float(ugate), ugate));
+  t60 = select2(ugate, relT60, select2(attPhase, decT60, attT60));
   pole = ba.tau2pole(t60/6.91);
   envelope = target : si.smooth(pole);
 };
@@ -8324,7 +8324,7 @@ reverseEchoN(N,delMax) = _<: par(i,N,ef.reverseDelayRamped(delMax,i/N));
 // #### Demo
 //
 // ```
-// _ : dm.reverseEchoN(N) : _,_
+// _ : ef.reverseDelayRamped(32,0.6) : _,_
 // ```
 //
 //------------------------------------------------------------
@@ -8351,7 +8351,7 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
 // #### Demo
 //
 // ```
-// _ : dm.reverseEchoN(N) : _,_
+// _,_,_ : ef.uniformPanToStereo(3) : _,_
 // ```
 //
 //------------------------------------------------------------
@@ -8481,7 +8481,7 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //------------------------------------------------------------
 version =   2, // MAJOR version when we make incompatible API changes,
             8, // MINOR version when we add functionality in a backwards compatible manner,
-            0; // PATCH version when we make backwards compatible bug fixes.
+            1; // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################
@@ -25460,25 +25460,27 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 //
 // The Filters library is organized into 19 sections:
 //
-// * Basic Filters
-// * Comb Filters
-// * Direct-Form Digital Filter Sections
-// * Direct-Form Second-Order Biquad Sections
-// * Ladder/Lattice Digital Filters
-// * Useful Special Cases
-// * Ladder/Lattice Allpass Filters
-// * Digital Filter Sections Specified as Analog Filter Sections
-// * Simple Resonator Filters
-// * Butterworth Lowpass/Highpass Filters
-// * Special Filter-Bank Delay-Equalizing Allpass Filters
-// * Elliptic (Cauer) Lowpass Filters
-// * Elliptic Highpass Filters
-// * Butterworth Bandpass/Bandstop Filters
-// * Elliptic Bandpass Filters
-// * Parametric Equalizers (Shelf, Peaking)
-// * Mth-Octave Filter-Banks
-// * Arbitrary-Crossover Filter-Banks and Spectrum Analyzers
-// * SVF filters
+// * [Basic Filters](#basic-filters)
+// * [Comb Filters](#comb-filters)
+// * [Direct-Form Digital Filter Sections](#direct-form-digital-filter-sections)
+// * [Direct-Form Second-Order Biquad Sections](#direct-form-second-order-biquad-sections)
+// * [Ladder/Lattice Digital Filters](#ladderlattice-digital-filters)
+// * [Useful Special Cases](#useful-special-cases)
+// * [Ladder/Lattice Allpass Filters](#ladderlattice-allpass-filters)
+// * [Digital Filter Sections Specified as Analog Filter Sections](#digital-filter-sections-specified-as-analog-filter-sections)
+// * [Simple Resonator Filters](#simple-resonator-filters)
+// * [Butterworth Lowpass/Highpass Filters](#butterworth-lowpasshighpass-filters)
+// * [Special Filter-Bank Delay-Equalizing Allpass Filters](#special-filter-bank-delay-equalizing-allpass-filters)
+// * [Elliptic (Cauer) Lowpass Filters](#elliptic-cauer-lowpass-filters)
+// * [Elliptic Highpass Filters](#elliptic-highpass-filters)
+// * [Butterworth Bandpass/Bandstop Filters](#butterworth-bandpassbandstop-filters)
+// * [Elliptic Bandpass Filters](#elliptic-bandpass-filters)
+// * [Parametric Equalizers (Shelf, Peaking)](#parametric-equalizers-shelf-peaking)
+// * [Mth-Octave Filter-Banks](#mth-octave-filter-banks)
+// * [Arbitrary-Crossover Filter-Banks and Spectrum Analyzers](#arbitrary-crossover-filter-banks-and-spectrum-analyzers)
+// * [State Variable Filters (SVF)](#state-variable-filters)
+// * [Linkwitz-Riley 4th-order 2-way, 3-way, and 4-way crossovers](#linkwitz-riley-4th-order-2-way-3-way-and-4-way-crossovers)
+// * [Averaging Functions](#averaging-functions)
 //
 //########################################################################################
 
@@ -28074,9 +28076,10 @@ with {
 };
 
 
-//===============SVF Filters=========================================================
+//===============State Variable Filters=========================================================
 // #### References 
 // Solving the continuous SVF equations using trapezoidal integration
+//
 // <https://cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf>
 //========================================================================================
 
@@ -28154,6 +28157,168 @@ svf = environment {
 	hs(f,q,g)   = svf(8, f, q, g);
 };
 
+
+//===========Linkwitz-Riley 4th-order 2-way, 3-way, and 4-way crossovers=====
+//
+// The Linkwitz-Riley (LR) crossovers are designed to produce a fully-flat
+// magnitude response when their outputs are combined. The 4th-order
+// LR filters (LR4) have a 24dB/octave slope and they are rather popular audio
+// crossovers used in multi-band processing.
+//
+// The LR4 can be constructed by cascading two second-order Butterworth
+// filters. For the second-order Butterworth filters, we will use the SVF
+// filter implemented above by setting the Q-factor to 1.0 / sqrt(2.0).
+// These will be cascaded in pairs to build the LR4 highpass and lowpass.
+// For the phase correction, we will use the 2nd-order Butterworth allpass.
+//
+// #### Reference
+// Zavalishin, Vadim. "The art of VA filter design." Native Instruments, Berlin, Germany (2012). 
+//=============================================================================
+
+
+//----------`(fi.)lowpassLR4`---------------------------------------------------
+// 4th-order Linkwitz-Riley lowpass.
+//
+// #### Usage
+//
+// ```
+// _ : lowpassLR4(cf) : _
+// ```
+//
+// Where:
+//
+// * `cf` is the lowpass cutoff in Hz
+//------------------------------------------------------------------------------
+declare lowpassLR4 author "Dario Sanfilippo";
+declare lowpassLR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare lowpassLR4 license "MIT-style STK-4.3 license";
+lowpassLR4(cf, x) = x : seq(i, 2, svf.lp(cf, 1.0 / sqrt(2.0)));
+
+
+//----------`(fi.)highpassLR4`--------------------------------------------------
+// 4th-order Linkwitz-Riley highpass.
+//
+// #### Usage
+//
+// ```
+// _ : highpassLR4(cf) : _
+// ```
+//
+// Where:
+//
+// * `cf` is the highpass cutoff in Hz
+//------------------------------------------------------------------------------
+declare highpassLR4 author "Dario Sanfilippo";
+declare highpassLR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare highpassLR4 license "MIT-style STK-4.3 license";
+highpassLR4(cf, x) = x : seq(i, 2, svf.hp(cf, 1.0 / sqrt(2.0)));
+
+
+//----------`(fi.)crossover2LR4`------------------------------------------------
+// Two-way 4th-order Linkwitz-Riley crossover.
+//
+// #### Usage
+//
+// ```
+// _ : crossover2LR4(cf) : si.bus(2)
+// ```
+//
+// Where:
+//
+// * `cf` is the crossover split cutoff in Hz
+//------------------------------------------------------------------------------
+declare crossover2LR4 author "Dario Sanfilippo";
+declare crossover2LR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare crossover2LR4 license "MIT-style STK-4.3 license";
+crossover2LR4(cf, x) = lowpassLR4(cf, x) , highpassLR4(cf, x);
+
+
+//----------`(fi.)crossover3LR4`------------------------------------------------
+// Three-way 4th-order Linkwitz-Riley crossover.
+//
+// #### Usage
+//
+// ```
+// _ : crossover3LR4(cf1, cf2) : si.bus(3)
+// ```
+//
+// Where:
+//
+// * `cf1` is the crossover lower split cutoff in Hz
+// * `cf2` is the crossover upper split cutoff in Hz
+//------------------------------------------------------------------------------
+declare crossover3LR4 author "Dario Sanfilippo";
+declare crossover3LR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare crossover3LR4 license "MIT-style STK-4.3 license";
+crossover3LR4(cf1, cf2, x) =
+    crossover2LR4(cf1, x) : svf.ap(cf2, 1.0 / sqrt(2.0)) , crossover2LR4(cf2);
+
+
+//----------`(fi.)crossover4LR4`------------------------------------------------
+// Four-way 4th-order Linkwitz-Riley crossover.
+//
+// #### Usage
+//
+// ```
+// _ : crossover4LR4(cf1, cf2, cf3) : si.bus(4)
+// ```
+//
+// Where:
+//
+// * `cf1` is the crossover lower split cutoff in Hz
+// * `cf2` is the crossover mid split cutoff in Hz
+// * `cf3` is the crossover upper split cutoff in Hz
+//------------------------------------------------------------------------------
+declare crossover4LR4 author "Dario Sanfilippo";
+declare crossover4LR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare crossover4LR4 license "MIT-style STK-4.3 license";
+crossover4LR4(cf1, cf2, cf3, x) =
+    crossover2LR4(cf2, x) :
+        svf.ap(cf3, 1.0 / sqrt(2.0)) ,
+        svf.ap(cf1, 1.0 / sqrt(2.0)) :
+            crossover2LR4(cf1) ,
+            crossover2LR4(cf3);
+
+
+//----------`(fi.)crossover8LR4`------------------------------------------------
+// Eight-way 4th-order Linkwitz-Riley crossover.
+//
+// #### Usage
+//
+// ```
+// _ : crossover8LR4(cf1, cf2, cf3, cf4, cf5, cf6, cf7) : si.bus(8)
+// ```
+//
+// Where:
+//
+// * `cf1-cf7` are the crossover cutoff frequencies in Hz
+//------------------------------------------------------------------------------
+declare crossover8LR4 author "Dario Sanfilippo";
+declare crossover8LR4 copyright
+    "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
+declare crossover8LR4 license "MIT-style STK-4.3 license";
+crossover8LR4(cf1, cf2, cf3, cf4, cf5, cf6, cf7, x) =
+    crossover2LR4(cf4, x) :
+        (ap(cf6) : ap(cf5) : ap(cf7)) ,
+        (ap(cf2) : ap(cf1) : ap(cf3)) :
+            crossover2LR4(cf2) ,
+            crossover2LR4(cf6) :
+                ap(cf3) ,
+                ap(cf1) ,
+                ap(cf7) ,
+                ap(cf5) :
+                    crossover2LR4(cf1) ,
+                    crossover2LR4(cf3) ,
+                    crossover2LR4(cf5) ,
+                    crossover2LR4(cf7)
+    with {
+        ap(cf) = svf.ap(cf, 1.0 / sqrt(2.0));
+    };
 
 //============================Averaging Functions==============================
 //=============================================================================
@@ -28495,7 +28660,7 @@ with {
 // #### Usage
 //
 // ```
-// _,_,_,_,_,_ : dot(N) : _
+// si.bus(N), si.bus(N) : dot(N) : _
 // ```
 //
 // Where:
@@ -29255,7 +29420,7 @@ os = library("oscillators.lib");
 no = library("noises.lib"); // for compatible copy/paste out of this file
 
 declare name "Faust Noise Generator Library";
-declare version "0.2";
+declare version "0.3";
 
 //=============================Functions Reference========================================
 //========================================================================================
@@ -29302,8 +29467,7 @@ noise_env(seed) = environment {
 	
 	noise = random / RANDMAX
 	with {
-		mask = 4294967295; // 2^32-1
-		random = +(seed) ~ *(1103515245) & mask; // "linear congruential"
+		random = +(seed) ~ *(1103515245); // "linear congruential"
 	};	
 	
 	multirandom(N) = randomize(N) ~_
