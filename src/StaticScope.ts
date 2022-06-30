@@ -723,7 +723,7 @@ export class StaticScope {
             if (e.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = e as HTMLButtonElement;
             if (e.classList.contains("static-scope-ui-zoom")) this.btnZoom = e as HTMLButtonElement;
             if (e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = e as HTMLButtonElement;
-            // if (e.classList.contains("static-scope-ui-download")) this.btnDownload = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-download")) this.btnDownload = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
@@ -776,7 +776,7 @@ export class StaticScope {
             } catch (e) {} // eslint-disable-line no-empty
             this.btnZoomIn = btn;
         }
-        /*
+
         if (!this.btnDownload) {
             const btn = document.createElement("button");
             btn.className = "static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
@@ -790,7 +790,7 @@ export class StaticScope {
             } catch (e) {} // eslint-disable-line no-empty
             this.btnDownload = btn;
         }
-        */
+
         for (let i = 0; i < this.btnSwitch.children.length; i++) {
             const e = this.btnSwitch.children[i];
             if (e.classList.contains("fas")) this.iSwitch = e as HTMLElement;
@@ -845,7 +845,62 @@ export class StaticScope {
             this.draw();
         });
         this.btnDownload.addEventListener("click", () => {
-            // const blob = new Blob([this.data])
+            let data = "";
+            if (this.mode === EScopeMode.Data || this.mode === EScopeMode.Interleaved || this.mode === EScopeMode.Oscilloscope) {
+                if (this.data.t) {
+                    const { t, $ } = this.data;
+                    if (!t || !t.length || !t[0].length) return;
+                    const l = t[0].length;
+                    data += new Array(t.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
+                    for (let j = 0; j < l; j++) {
+                        for (let i = 0; i < t.length; i++) {
+                            const $j = wrap(j, $, l);
+                            const samp = t[i][$j];
+                            data += samp + (i === t.length - 1 ? "\n" : ",");
+                        }
+                    }
+                }
+            } else if (this.mode === EScopeMode.Spectroscope) {
+                const { $, f, fftSize, fftOverlap } = this.data;
+                if (!f || !f.length || !f[0].length) return;
+                const fftBins = fftSize / 2;
+                let $f = $ * fftOverlap / 2;
+                $f -= $f % fftBins;
+                const l = f[0].length;
+                data += new Array(f.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
+                for (let j = l - fftBins; j < l; j++) {
+                    for (let i = 0; i < f.length; i++) {
+                        const $j = wrap(j, $f, l);
+                        const samp = f[i][$j];
+                        data += samp + (i === f.length - 1 ? "\n" : ",");
+                    }
+                }
+            } else if (this.mode === EScopeMode.Spectrogram) {
+                const { $, f, fftSize, fftOverlap } = this.data;
+                if (!f || !f.length || !f[0].length) return;
+                const fftBins = fftSize / 2;
+                let $f = $ * fftOverlap / 2;
+                $f -= $f % fftBins;
+                const l = f[0].length;
+                data += new Array(l / fftBins).fill(null).map((v, i) => new Array(f.length).fill(null).map((v, j) => `frame${i + 1}_channel${j + 1}`).join(",")).join(",") + "\n";
+                for (let j = 0; j < fftBins; j++) {
+                    for (let h = 0; h < l / fftBins; h++) {
+                        for (let i = 0; i < f.length; i++) {
+                            const $j = wrap(h * fftBins + j, $f, l);
+                            const samp = f[i][$j];
+                            data += samp + (i === f.length - 1 && h === l / fftBins - 1 ? "\n" : ",");
+                        }
+                    }
+                }
+            }
+            if (!data) return;
+            const blob = new Blob([data]);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "data.csv";
+            a.target = "_blank";
+            a.click();
         });
         this.canvas.addEventListener("mousedown", this.handleMouseDown);
         this.canvas.addEventListener("touchstart", this.handleMouseDown);
