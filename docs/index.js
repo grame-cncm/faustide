@@ -5677,7 +5677,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, "div.static-scope {\n  background-color: #181818; }\n  div.static-scope > div {\n    position: absolute; }\n  div.static-scope > div.static-scope-data {\n    display: flex;\n    height: 100%;\n    width: 100%;\n    flex-direction: column;\n    font-size: 0.75em;\n    font-family: Consolas, monospace;\n    overflow-x: auto; }\n    div.static-scope > div.static-scope-data > .static-scope-channel {\n      display: grid;\n      position: relative;\n      width: 1px;\n      flex: 1 1 auto;\n      grid-template-columns: repeat(auto-fill, 80px);\n      grid-template-rows: repeat(auto-fill, 20px);\n      grid-auto-flow: column;\n      border-bottom: #505050 dashed 1px; }\n      div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell {\n        display: block;\n        width: 80px;\n        height: 20px;\n        background-color: inherit; }\n        div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span {\n          display: inline-block;\n          border: #606060 solid 1px;\n          text-align: right;\n          padding: 0px 1px; }\n          div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span:first-child {\n            width: 30px;\n            color: #ffffa0; }\n          div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span:last-child {\n            width: 50px; }\n        div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell.highlight > span {\n          border-color: #ff8800;\n          background-color: #552200; }\n  div.static-scope > canvas.static-scope-canvas {\n    position: absolute;\n    height: 100%;\n    width: 100%; }\n  div.static-scope > .static-scope-ui-controller {\n    display: flex;\n    opacity: 0.4;\n    transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out; }\n  div.static-scope:hover > .static-scope-ui-controller {\n    opacity: 1;\n    background-color: rgba(0, 0, 0, 0.5); }\n  div.static-scope > .static-scope-default {\n    position: relative;\n    top: 20%; }\n  div.static-scope .btn-overlay {\n    font-size: 12px;\n    border-color: transparent;\n    border-radius: 0px;\n    padding: 0rem 0.1rem;\n    z-index: 3; }\n    div.static-scope .btn-overlay.active {\n      color: unset !important;\n      background-color: unset !important;\n      border-color: transparent transparent #f8f9fa transparent !important;\n      border-bottom-color: #f8f9fa !important; }\n      div.static-scope .btn-overlay.active:hover {\n        color: #212529 !important;\n        background-color: #f8f9fa !important;\n        border-color: #f8f9fa !important; }\n    div.static-scope .btn-overlay:focus {\n      box-shadow: none !important; }\n    div.static-scope .btn-overlay.btn-overlay-icon {\n      width: 20px; }\n", "",{"version":3,"sources":["webpack://./src/StaticScope.scss"],"names":[],"mappings":"AACA;EACI,yBAAyB,EAAA;EAD7B;IAGQ,kBAAkB,EAAA;EAH1B;IAMQ,aAAa;IACb,YAAY;IACZ,WAAW;IACX,sBAAsB;IACtB,iBAAiB;IACjB,gCAAgC;IAChC,gBAAgB,EAAA;IAZxB;MAcY,aAAa;MACb,kBAAkB;MAClB,UAAU;MACV,cAAc;MACd,8CAA8C;MAC9C,2CAA2C;MAC3C,sBAAsB;MACtB,iCAAiC,EAAA;MArB7C;QAuBgB,cAAc;QACd,WAAW;QACX,YAAY;QACZ,yBAAyB,EAAA;QA1BzC;UA4BoB,qBAAqB;UACrB,yBAAyB;UACzB,iBAAiB;UACjB,gBAAgB,EAAA;UA/BpC;YAiCwB,WAAW;YACX,cAAc,EAAA;UAlCtC;YAqCwB,WAAW,EAAA;QArCnC;UAyCoB,qBAAqB;UACrB,yBACJ,EAAA;EA3ChB;IAgDQ,kBAAkB;IAClB,YAAY;IACZ,WAAW,EAAA;EAlDnB;IAqDQ,aAAa;IACb,YAAY;IACZ,yEAAyE,EAAA;EAvDjF;IA2DY,UAAU;IACV,oCAAoC,EAAA;EA5DhD;IAgEQ,kBAAkB;IAClB,QAAQ,EAAA;EAjEhB;IAoEQ,eAAe;IACf,yBAAyB;IACzB,kBAAkB;IAClB,oBAAoB;IACpB,UAAU,EAAA;IAxElB;MA0EY,uBAAuB;MACvB,kCAAkC;MAClC,oEAAoE;MACpE,uCAAuC,EAAA;MA7EnD;QA+EgB,yBAAyB;QACzB,oCAAoC;QACpC,gCAAgC,EAAA;IAjFhD;MAqFY,2BAA2B,EAAA;IArFvC;MAwFY,WAAW,EAAA","sourcesContent":["\ndiv.static-scope {\n    background-color: #181818;\n    & > div {\n        position: absolute;\n    }\n    & > div.static-scope-data {\n        display: flex;\n        height: 100%;\n        width: 100%;\n        flex-direction: column;\n        font-size: 0.75em;\n        font-family: Consolas, monospace;\n        overflow-x: auto;\n        & > .static-scope-channel {\n            display: grid;\n            position: relative;\n            width: 1px; // for Safari\n            flex: 1 1 auto;\n            grid-template-columns: repeat(auto-fill, 80px);\n            grid-template-rows: repeat(auto-fill, 20px);\n            grid-auto-flow: column;\n            border-bottom: #505050 dashed 1px;\n            & > .static-scope-cell {\n                display: block;\n                width: 80px;\n                height: 20px;\n                background-color: inherit;\n                & > span {\n                    display: inline-block;\n                    border: #606060 solid 1px;\n                    text-align: right;\n                    padding: 0px 1px;\n                    &:first-child {\n                        width: 30px;\n                        color: #ffffa0;\n                    }\n                    &:last-child {\n                        width: 50px;\n                    }\n                }\n                &.highlight > span {\n                    border-color: #ff8800;\n                    background-color: #552200\n                }\n            }\n        }\n    }\n    & > canvas.static-scope-canvas {\n        position: absolute;\n        height: 100%;\n        width: 100%;\n    }\n    & > .static-scope-ui-controller {\n        display: flex;\n        opacity: 0.4;\n        transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;\n    }\n    &:hover {\n        & > .static-scope-ui-controller {\n            opacity: 1;\n            background-color: rgba(0, 0, 0, 0.5);\n        }\n    }\n    & > .static-scope-default {\n        position: relative;\n        top: 20%;\n    }\n    & .btn-overlay {\n        font-size: 12px;\n        border-color: transparent;\n        border-radius: 0px;\n        padding: 0rem 0.1rem;\n        z-index: 3;\n        &.active {\n            color: unset !important;\n            background-color: unset !important;\n            border-color: transparent transparent #f8f9fa transparent !important;\n            border-bottom-color: #f8f9fa !important;\n            &:hover {\n                color: #212529 !important;\n                background-color: #f8f9fa !important;\n                border-color: #f8f9fa !important;\n            }\n        }\n        &:focus {\n            box-shadow: none !important;\n        }\n        &.btn-overlay-icon {\n            width: 20px;\n        }\n    }\n}\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, "div.static-scope {\n  background-color: #181818; }\n  div.static-scope > div {\n    position: absolute; }\n  div.static-scope > div.static-scope-data {\n    display: flex;\n    height: 100%;\n    width: 100%;\n    flex-direction: column;\n    font-size: 0.75em;\n    font-family: Consolas, monospace;\n    overflow-x: auto; }\n    div.static-scope > div.static-scope-data > .static-scope-channel {\n      display: grid;\n      position: relative;\n      width: 1px;\n      flex: 1 1 auto;\n      grid-template-columns: repeat(auto-fill, 110px);\n      grid-template-rows: repeat(auto-fill, 20px);\n      grid-auto-flow: column;\n      border-bottom: #505050 dashed 1px; }\n      div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell {\n        display: block;\n        width: 110px;\n        height: 20px;\n        background-color: inherit; }\n        div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span {\n          display: inline-block;\n          border: #606060 solid 1px;\n          text-align: right;\n          padding: 0px 1px; }\n          div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span:first-child {\n            width: 30px;\n            color: #ffffa0; }\n          div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell > span:last-child {\n            width: 80px; }\n        div.static-scope > div.static-scope-data > .static-scope-channel > .static-scope-cell.highlight > span {\n          border-color: #ff8800;\n          background-color: #552200; }\n  div.static-scope > canvas.static-scope-canvas {\n    position: absolute;\n    height: 100%;\n    width: 100%; }\n  div.static-scope > .static-scope-ui-controller {\n    display: flex;\n    opacity: 0.4;\n    transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out; }\n  div.static-scope:hover > .static-scope-ui-controller {\n    opacity: 1;\n    background-color: rgba(0, 0, 0, 0.5); }\n  div.static-scope > .static-scope-default {\n    position: relative;\n    top: 20%; }\n  div.static-scope .btn-overlay {\n    font-size: 12px;\n    border-color: transparent;\n    border-radius: 0px;\n    padding: 0rem 0.1rem;\n    z-index: 3; }\n    div.static-scope .btn-overlay.active {\n      color: unset !important;\n      background-color: unset !important;\n      border-color: transparent transparent #f8f9fa transparent !important;\n      border-bottom-color: #f8f9fa !important; }\n      div.static-scope .btn-overlay.active:hover {\n        color: #212529 !important;\n        background-color: #f8f9fa !important;\n        border-color: #f8f9fa !important; }\n    div.static-scope .btn-overlay:focus {\n      box-shadow: none !important; }\n    div.static-scope .btn-overlay.btn-overlay-icon {\n      width: 20px; }\n", "",{"version":3,"sources":["webpack://./src/StaticScope.scss"],"names":[],"mappings":"AACA;EACI,yBAAyB,EAAA;EAD7B;IAGQ,kBAAkB,EAAA;EAH1B;IAMQ,aAAa;IACb,YAAY;IACZ,WAAW;IACX,sBAAsB;IACtB,iBAAiB;IACjB,gCAAgC;IAChC,gBAAgB,EAAA;IAZxB;MAcY,aAAa;MACb,kBAAkB;MAClB,UAAU;MACV,cAAc;MACd,+CAA+C;MAC/C,2CAA2C;MAC3C,sBAAsB;MACtB,iCAAiC,EAAA;MArB7C;QAuBgB,cAAc;QACd,YAAY;QACZ,YAAY;QACZ,yBAAyB,EAAA;QA1BzC;UA4BoB,qBAAqB;UACrB,yBAAyB;UACzB,iBAAiB;UACjB,gBAAgB,EAAA;UA/BpC;YAiCwB,WAAW;YACX,cAAc,EAAA;UAlCtC;YAqCwB,WAAW,EAAA;QArCnC;UAyCoB,qBAAqB;UACrB,yBACJ,EAAA;EA3ChB;IAgDQ,kBAAkB;IAClB,YAAY;IACZ,WAAW,EAAA;EAlDnB;IAqDQ,aAAa;IACb,YAAY;IACZ,yEAAyE,EAAA;EAvDjF;IA2DY,UAAU;IACV,oCAAoC,EAAA;EA5DhD;IAgEQ,kBAAkB;IAClB,QAAQ,EAAA;EAjEhB;IAoEQ,eAAe;IACf,yBAAyB;IACzB,kBAAkB;IAClB,oBAAoB;IACpB,UAAU,EAAA;IAxElB;MA0EY,uBAAuB;MACvB,kCAAkC;MAClC,oEAAoE;MACpE,uCAAuC,EAAA;MA7EnD;QA+EgB,yBAAyB;QACzB,oCAAoC;QACpC,gCAAgC,EAAA;IAjFhD;MAqFY,2BAA2B,EAAA;IArFvC;MAwFY,WAAW,EAAA","sourcesContent":["\ndiv.static-scope {\n    background-color: #181818;\n    & > div {\n        position: absolute;\n    }\n    & > div.static-scope-data {\n        display: flex;\n        height: 100%;\n        width: 100%;\n        flex-direction: column;\n        font-size: 0.75em;\n        font-family: Consolas, monospace;\n        overflow-x: auto;\n        & > .static-scope-channel {\n            display: grid;\n            position: relative;\n            width: 1px; // for Safari\n            flex: 1 1 auto;\n            grid-template-columns: repeat(auto-fill, 110px);\n            grid-template-rows: repeat(auto-fill, 20px);\n            grid-auto-flow: column;\n            border-bottom: #505050 dashed 1px;\n            & > .static-scope-cell {\n                display: block;\n                width: 110px;\n                height: 20px;\n                background-color: inherit;\n                & > span {\n                    display: inline-block;\n                    border: #606060 solid 1px;\n                    text-align: right;\n                    padding: 0px 1px;\n                    &:first-child {\n                        width: 30px;\n                        color: #ffffa0;\n                    }\n                    &:last-child {\n                        width: 80px;\n                    }\n                }\n                &.highlight > span {\n                    border-color: #ff8800;\n                    background-color: #552200\n                }\n            }\n        }\n    }\n    & > canvas.static-scope-canvas {\n        position: absolute;\n        height: 100%;\n        width: 100%;\n    }\n    & > .static-scope-ui-controller {\n        display: flex;\n        opacity: 0.4;\n        transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;\n    }\n    &:hover {\n        & > .static-scope-ui-controller {\n            opacity: 1;\n            background-color: rgba(0, 0, 0, 0.5);\n        }\n    }\n    & > .static-scope-default {\n        position: relative;\n        top: 20%;\n    }\n    & .btn-overlay {\n        font-size: 12px;\n        border-color: transparent;\n        border-radius: 0px;\n        padding: 0rem 0.1rem;\n        z-index: 3;\n        &.active {\n            color: unset !important;\n            background-color: unset !important;\n            border-color: transparent transparent #f8f9fa transparent !important;\n            border-bottom-color: #f8f9fa !important;\n            &:hover {\n                color: #212529 !important;\n                background-color: #f8f9fa !important;\n                border-color: #f8f9fa !important;\n            }\n        }\n        &:focus {\n            box-shadow: none !important;\n        }\n        &.btn-overlay-icon {\n            width: 20px;\n        }\n    }\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -30893,7 +30893,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.78\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.79\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"dist\":\"npm run prebuild && webpack --mode production\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.13.10\",\"@babel/plugin-proposal-class-properties\":\"^7.13.0\",\"@babel/plugin-transform-runtime\":\"^7.13.10\",\"@babel/preset-env\":\"^7.13.12\",\"@babel/preset-typescript\":\"^7.13.0\",\"@babel/runtime\":\"^7.13.10\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/jszip\":\"^3.4.1\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.22.1\",\"faust-ui\":\"github:grame-cncm/faust-ui\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.6.0\",\"kissfft-js\":\"^0.1.8\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"node-sass\":\"^4.14.1\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.4.4\",\"sass-loader\":\"^8.0.2\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -33772,11 +33772,11 @@ class StaticScope {
     if (yLabel) ctx.fillText(yLabel, 40, Math.max(10, y), 40);
     ctx.textBaseline = "bottom";
     var right = [];
-    values.forEach(v => right.push(v.toFixed(3)));
+    values.forEach(v => right.push(v.toFixed(7)));
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-    ctx.fillRect(w - 50, 0, 60, right.length * 15 + 5);
+    ctx.fillRect(w - 70, 0, 80, right.length * 15 + 5);
     ctx.fillStyle = "#DDDD99";
-    right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 50));
+    right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 70));
     ctx.restore();
   }
 
@@ -33804,7 +33804,7 @@ class StaticScope {
         var spanIndex = document.createElement("span");
         spanIndex.innerText = j.toString();
         var spanSamp = document.createElement("span");
-        spanSamp.innerText = ch[$j].toFixed(3);
+        spanSamp.innerText = ch[$j].toFixed(7);
         divCell.appendChild(spanIndex);
         divCell.appendChild(spanSamp);
         divCh.appendChild(divCell);
@@ -33862,6 +33862,7 @@ class StaticScope {
     this.btnZoomOut = void 0;
     this.btnZoom = void 0;
     this.btnZoomIn = void 0;
+    this.btnDownload = void 0;
     this.iSwitch = void 0;
     this.spanSwitch = void 0;
     this.divData = void 0;
@@ -34050,6 +34051,7 @@ class StaticScope {
       if (_e.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = _e;
       if (_e.classList.contains("static-scope-ui-zoom")) this.btnZoom = _e;
       if (_e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = _e;
+      if (_e.classList.contains("static-scope-ui-download")) this.btnDownload = _e;
     }
 
     if (!this.btnSwitch) {
@@ -34146,6 +34148,31 @@ class StaticScope {
       this.btnZoomIn = _btn3;
     }
 
+    if (!this.btnDownload) {
+      var _btn4 = document.createElement("button");
+
+      _btn4.className = "static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+
+      _btn4.setAttribute("data-toggle", "tooltip");
+
+      _btn4.setAttribute("data-placement", "top");
+
+      _btn4.setAttribute("title", "Download Data");
+
+      _btn4.innerHTML = '<i class="fas fa-download"></i>';
+      ctrl.appendChild(_btn4);
+
+      try {
+        $(_btn4).tooltip({
+          trigger: "hover",
+          boundary: "viewport"
+        });
+      } catch (e) {} // eslint-disable-line no-empty
+
+
+      this.btnDownload = _btn4;
+    }
+
     for (var _i8 = 0; _i8 < this.btnSwitch.children.length; _i8++) {
       var _e2 = this.btnSwitch.children[_i8];
       if (_e2.classList.contains("fas")) this.iSwitch = _e2;
@@ -34202,6 +34229,84 @@ class StaticScope {
     this.btnZoomIn.addEventListener("click", () => {
       this.zoom *= 1.5;
       this.draw();
+    });
+    this.btnDownload.addEventListener("click", () => {
+      var data = "";
+
+      if (this.mode === EScopeMode.Data || this.mode === EScopeMode.Interleaved || this.mode === EScopeMode.Oscilloscope) {
+        if (this.data.t) {
+          var _this$data = this.data,
+              t = _this$data.t,
+              _$ = _this$data.$;
+          if (!t || !t.length || !t[0].length) return;
+          var l = t[0].length;
+          data += new Array(t.length).fill(null).map((v, i) => "channel".concat(i + 1)).join(",") + "\n";
+
+          for (var j = 0; j < l; j++) {
+            for (var i = 0; i < t.length; i++) {
+              var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["wrap"])(j, _$, l);
+              var samp = t[i][$j];
+              data += samp + (i === t.length - 1 ? "\n" : ",");
+            }
+          }
+        }
+      } else if (this.mode === EScopeMode.Spectroscope) {
+        var _this$data2 = this.data,
+            _$2 = _this$data2.$,
+            f = _this$data2.f,
+            fftSize = _this$data2.fftSize,
+            fftOverlap = _this$data2.fftOverlap;
+        if (!f || !f.length || !f[0].length) return;
+        var fftBins = fftSize / 2;
+        var $f = _$2 * fftOverlap / 2;
+        $f -= $f % fftBins;
+        var _l = f[0].length;
+        data += new Array(f.length).fill(null).map((v, i) => "channel".concat(i + 1)).join(",") + "\n";
+
+        for (var _j5 = _l - fftBins; _j5 < _l; _j5++) {
+          for (var _i10 = 0; _i10 < f.length; _i10++) {
+            var _$j4 = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["wrap"])(_j5, $f, _l);
+
+            var _samp4 = f[_i10][_$j4];
+            data += _samp4 + (_i10 === f.length - 1 ? "\n" : ",");
+          }
+        }
+      } else if (this.mode === EScopeMode.Spectrogram) {
+        var _this$data3 = this.data,
+            _$3 = _this$data3.$,
+            _f = _this$data3.f,
+            _fftSize = _this$data3.fftSize,
+            _fftOverlap = _this$data3.fftOverlap;
+        if (!_f || !_f.length || !_f[0].length) return;
+
+        var _fftBins = _fftSize / 2;
+
+        var _$f = _$3 * _fftOverlap / 2;
+
+        _$f -= _$f % _fftBins;
+        var _l2 = _f[0].length;
+        data += new Array(_l2 / _fftBins).fill(null).map((v, i) => new Array(_f.length).fill(null).map((v, j) => "frame".concat(i + 1, "_channel").concat(j + 1)).join(",")).join(",") + "\n";
+
+        for (var _j6 = 0; _j6 < _fftBins; _j6++) {
+          for (var h = 0; h < _l2 / _fftBins; h++) {
+            for (var _i11 = 0; _i11 < _f.length; _i11++) {
+              var _$j5 = Object(_utils__WEBPACK_IMPORTED_MODULE_0__["wrap"])(h * _fftBins + _j6, _$f, _l2);
+
+              var _samp5 = _f[_i11][_$j5];
+              data += _samp5 + (_i11 === _f.length - 1 && h === _l2 / _fftBins - 1 ? "\n" : ",");
+            }
+          }
+        }
+      }
+
+      if (!data) return;
+      var blob = new Blob([data]);
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "data.csv";
+      a.target = "_blank";
+      a.click();
     });
     this.canvas.addEventListener("mousedown", this.handleMouseDown);
     this.canvas.addEventListener("touchstart", this.handleMouseDown);
@@ -35014,7 +35119,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             saveCode: true,
             saveParams: false,
             saveDsp: false,
-            realtimeCompile: true,
             popup: false,
             voices: 0,
             plotMode: "offline",
@@ -35028,6 +35132,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             exportPlatform: "owl",
             exportArch: "owl"
           }, loadEditorParams()), {}, {
+            realtimeCompile: false,
             args: {
               "-I": ["libraries/", "project/"]
             }
