@@ -42,6 +42,7 @@ export class StaticScope {
     btnZoomOut: HTMLButtonElement;
     btnZoom: HTMLButtonElement;
     btnZoomIn: HTMLButtonElement;
+    btnDownload: HTMLButtonElement;
     iSwitch: HTMLElement;
     spanSwitch: HTMLSpanElement;
     divData: HTMLDivElement;
@@ -609,11 +610,11 @@ export class StaticScope {
         if (yLabel) ctx.fillText(yLabel, 40, Math.max(10, y), 40);
         ctx.textBaseline = "bottom";
         const right: string[] = [];
-        values.forEach(v => right.push(v.toFixed(3)));
+        values.forEach(v => right.push(v.toFixed(7)));
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(w - 50, 0, 60, right.length * 15 + 5);
+        ctx.fillRect(w - 70, 0, 80, right.length * 15 + 5);
         ctx.fillStyle = "#DDDD99";
-        right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 50));
+        right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 70));
         ctx.restore();
     }
     static fillDivData(container: HTMLDivElement, d: TDrawOptions) {
@@ -636,7 +637,7 @@ export class StaticScope {
                 const spanIndex = document.createElement("span");
                 spanIndex.innerText = j.toString();
                 const spanSamp = document.createElement("span");
-                spanSamp.innerText = ch[$j].toFixed(3);
+                spanSamp.innerText = ch[$j].toFixed(7);
                 divCell.appendChild(spanIndex);
                 divCell.appendChild(spanSamp);
                 divCh.appendChild(divCell);
@@ -722,6 +723,7 @@ export class StaticScope {
             if (e.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = e as HTMLButtonElement;
             if (e.classList.contains("static-scope-ui-zoom")) this.btnZoom = e as HTMLButtonElement;
             if (e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = e as HTMLButtonElement;
+            // if (e.classList.contains("static-scope-ui-download")) this.btnDownload = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
@@ -774,6 +776,21 @@ export class StaticScope {
             } catch (e) {} // eslint-disable-line no-empty
             this.btnZoomIn = btn;
         }
+        /*
+        if (!this.btnDownload) {
+            const btn = document.createElement("button");
+            btn.className = "static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
+            btn.setAttribute("data-toggle", "tooltip");
+            btn.setAttribute("data-placement", "top");
+            btn.setAttribute("title", "Download Data");
+            btn.innerHTML = '<i class="fas fa-download"></i>';
+            ctrl.appendChild(btn);
+            try {
+                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
+            } catch (e) {} // eslint-disable-line no-empty
+            this.btnDownload = btn;
+        }
+        */
         for (let i = 0; i < this.btnSwitch.children.length; i++) {
             const e = this.btnSwitch.children[i];
             if (e.classList.contains("fas")) this.iSwitch = e as HTMLElement;
@@ -826,6 +843,9 @@ export class StaticScope {
         this.btnZoomIn.addEventListener("click", () => {
             this.zoom *= 1.5;
             this.draw();
+        });
+        this.btnDownload.addEventListener("click", () => {
+            // const blob = new Blob([this.data])
         });
         this.canvas.addEventListener("mousedown", this.handleMouseDown);
         this.canvas.addEventListener("touchstart", this.handleMouseDown);

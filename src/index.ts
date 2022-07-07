@@ -429,7 +429,7 @@ $(async () => {
     const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, realtimeCompile: true, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", exportPlatform: "owl", exportArch: "owl", ...loadEditorParams(), args: { "-I": ["libraries/", "project/"] } };
+    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", exportPlatform: "owl", exportArch: "owl", ...loadEditorParams(), realtimeCompile: false, args: { "-I": ["libraries/", "project/"] } };
     const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
     localStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });

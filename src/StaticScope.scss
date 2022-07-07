@@ -17,13 +17,13 @@ div.static-scope {
             position: relative;
             width: 1px; // for Safari
             flex: 1 1 auto;
-            grid-template-columns: repeat(auto-fill, 80px);
+            grid-template-columns: repeat(auto-fill, 100px);
             grid-template-rows: repeat(auto-fill, 20px);
             grid-auto-flow: column;
             border-bottom: #505050 dashed 1px;
             & > .static-scope-cell {
                 display: block;
-                width: 80px;
+                width: 100px;
                 height: 20px;
                 background-color: inherit;
                 & > span {
@@ -36,7 +36,7 @@ div.static-scope {
                         color: #ffffa0;
                     }
                     &:last-child {
-                        width: 50px;
+                        width: 70px;
                     }
                 }
                 &.highlight > span {
