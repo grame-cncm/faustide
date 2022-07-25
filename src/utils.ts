@@ -134,3 +134,18 @@ export const getRms = (t: Float32Array) => {
     }
     return (squareSum / t.length) ** 0.5;
 };
+
+export const safeStorage = (() => {
+    const tryLocalStorage = (method, ...rest) => {
+        try {
+            const val = localStorage[method](...rest)
+            return JSON.parse(val)
+        } catch { }
+    }
+
+    return {
+        setItem: (key, val) => { tryLocalStorage('setItem', key, val) },
+        removeItem: (key, val) => { tryLocalStorage('removeItem', key) },
+        getItem: (key) => tryLocalStorage('getItem', key),
+    }
+})()

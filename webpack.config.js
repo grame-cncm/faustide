@@ -45,7 +45,7 @@ const config = {
       },
       {
         test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-        use: [ 
+        use: [
           {
             loader: 'file-loader',
             options: {
@@ -92,7 +92,7 @@ const config = {
   ]
 };
 module.exports = config;
-/* 
+/*
 module.exports = (env, argv) => {
   if (argv.mode === 'development') {
     config.devtool = 'source-map';
