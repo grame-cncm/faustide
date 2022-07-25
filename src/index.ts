@@ -36,6 +36,7 @@ import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
 import { docSections, faustDocURL } from "./documentation";
+import { safeStorage } from "./utils";
 
 declare global {
     interface Window {
@@ -96,7 +97,9 @@ interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
 }
 
 const supportAudioWorklet = !!window.AudioWorklet;
-let supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
+let supportMediaStreamDestination = !!(window.AudioContext ||
+                                       window.webkitAudioContext).prototype.createMediaStreamDestination &&
+                                       !!HTMLAudioElement.prototype.setSinkId;
 
 let server = "https://faustservicecloud.grame.fr";
 
@@ -116,13 +119,13 @@ $(async () => {
      * To save dsp table to localStorage
      */
     const saveEditorDspTable = () => {
-        localStorage.setItem("faust_editor_dsp_table", faust.stringifyDspTable());
+        safeStorage.setItem("faust_editor_dsp_table", faust.stringifyDspTable());
     };
     /**
      * To load dsp table from localStorage
      */
     const loadEditorDspTable = () => {
-        const str = localStorage.getItem("faust_editor_dsp_table");
+        const str = safeStorage.getItem("faust_editor_dsp_table");
         if (str) faust.parseDspTable(str);
     };
     /**
@@ -130,7 +133,7 @@ $(async () => {
      */
     const saveEditorParams = () => {
         const str = JSON.stringify(compileOptions);
-        localStorage.setItem("faust_editor_params", str);
+        safeStorage.setItem("faust_editor_params", str);
     };
     /**
      * To load editor params from localStorage
@@ -138,9 +141,9 @@ $(async () => {
      * @returns {(FaustEditorCompileOptions | {})}
      */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
-        const clientVersion = localStorage.getItem("faust_editor_version");
+        const clientVersion = safeStorage.getItem("faust_editor_version");
         if (clientVersion !== VERSION) return {};
-        const str = localStorage.getItem("faust_editor_params");
+        const str = safeStorage.getItem("faust_editor_params");
         if (!str) return {};
         try {
             return JSON.parse(str) as FaustEditorCompileOptions;
@@ -154,7 +157,7 @@ $(async () => {
      * @returns {{ [path: string]: number }}
      */
     const loadDspParams = (): { [path: string]: number } => {
-        const str = localStorage.getItem("faust_editor_dsp_params");
+        const str = safeStorage.getItem("faust_editor_dsp_params");
         if (!str) return {};
         try {
             return JSON.parse(str) as { [path: string]: number };
@@ -167,7 +170,7 @@ $(async () => {
      */
     const saveDspParams = () => {
         const str = JSON.stringify(dspParams);
-        localStorage.setItem("faust_editor_dsp_params", str);
+        safeStorage.setItem("faust_editor_dsp_params", str);
     };
     const dspParams = loadDspParams();
     /**
@@ -178,7 +181,7 @@ $(async () => {
         faust.fs.mkdir("project");
         let project: { [name: string]: string };
         try {
-            project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
+            project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
         } catch (e) {
             project = {};
         }
@@ -420,18 +423,65 @@ $(async () => {
             const guiBuilder = $<HTMLIFrameElement>("#iframe-gui-builder")[0];
             guiBuilder.src = "";
             guiBuilder.src = `${compileOptions.guiBuilderUrl}?name=${uiEnv.fileManager.mainFileName}`;
-            guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({ type: "build", ui: node.getUI(), name: `${uiEnv.fileManager.mainFileName}`, code: uiEnv.fileManager.mainCode }, "*");
+            guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
+                type: "build",
+                ui: node.getUI(),
+                name: `${uiEnv.fileManager.mainFileName}`,
+                code: uiEnv.fileManager.mainCode
+            }, "*");
         }
         isCompilingDsp = false;
         return { success: true };
     };
     let rtCompileTimer: NodeJS.Timeout;
-    const audioEnv: FaustEditorAudioEnv = { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false };
+    const audioEnv: FaustEditorAudioEnv = {
+        dspConnectedToInput: false,
+        dspConnectedToOutput: false,
+        inputEnabled: false,
+        outputEnabled: false
+    };
     const midiEnv: FaustEditorMIDIEnv = { input: null };
-    const uiEnv: FaustEditorUIEnv = { analysersInited: false, inputScope: null, outputScope: null, plotScope: undefined, analyser: new Analyser(16, "continuous"), fileManager: undefined };
-    const compileOptions: FaustEditorCompileOptions = { useWorklet: false, bufferSize: 1024, saveCode: true, saveParams: false, saveDsp: false, popup: false, voices: 0, plotMode: "offline", plot: 256, plotSR: 48000, plotFFT: 256, plotFFTOverlap: 2, drawSpectrogram: false, enableGuiBuilder: false, guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/", exportPlatform: "owl", exportArch: "owl", ...loadEditorParams(), realtimeCompile: false, args: { "-I": ["libraries/", "project/"] } };
-    const faustEnv: FaustEditorEnv = { audioEnv, midiEnv, uiEnv, compileOptions, jQuery, editor, faust, recorder: new Recorder() };
-    localStorage.setItem("faust_editor_version", VERSION);
+    const uiEnv: FaustEditorUIEnv = {
+        analysersInited: false,
+        inputScope: null,
+        outputScope: null,
+        plotScope: undefined,
+        analyser: new Analyser(16, "continuous"),
+        fileManager: undefined
+    };
+    const compileOptions: FaustEditorCompileOptions = {
+        useWorklet: false,
+        bufferSize: 1024,
+        saveCode: true,
+        saveParams: false,
+        saveDsp: false,
+        popup: false,
+        voices: 0,
+        plotMode: "offline",
+        plot: 256,
+        plotSR: 48000,
+        plotFFT: 256,
+        plotFFTOverlap: 2,
+        drawSpectrogram: false,
+        enableGuiBuilder: false,
+        guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
+        exportPlatform: "owl",
+        exportArch: "owl",
+        ...loadEditorParams(),
+        realtimeCompile: false,
+        args: { "-I": ["libraries/", "project/"] }
+    };
+    const faustEnv: FaustEditorEnv = {
+        audioEnv,
+        midiEnv,
+        uiEnv,
+        compileOptions,
+        jQuery,
+        editor,
+        faust,
+        recorder: new Recorder()
+    };
+    safeStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
@@ -445,13 +495,13 @@ $(async () => {
         saveHandler: (fileName: string, content: string, mainCode: string) => {
             let project: { [name: string]: string };
             try {
-                project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
+                project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
             } catch (e) {
                 project = {};
             }
             project[fileName] = content;
             try {
-                localStorage.setItem("faust_editor_project", JSON.stringify(project));
+                safeStorage.setItem("faust_editor_project", JSON.stringify(project));
             } catch (e) {
                 showError(e);
             }
@@ -461,12 +511,12 @@ $(async () => {
         deleteHandler: (fileName) => {
             let project: { [name: string]: string };
             try {
-                project = JSON.parse(localStorage.getItem("faust_editor_project")) || {};
+                project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
             } catch (e) {
                 return;
             }
             delete project[fileName];
-            localStorage.setItem("faust_editor_project", JSON.stringify(project));
+            safeStorage.setItem("faust_editor_project", JSON.stringify(project));
         },
         mainFileChangeHandler: (index, mainCode) => {
             compileOptions.mainFileIndex = index;
@@ -555,6 +605,7 @@ $(async () => {
             else updateDiagram(code);
         }
     });
+
     // Save Params
     $<HTMLInputElement>("#check-popup").on("change", (e) => {
         compileOptions.popup = e.currentTarget.checked;
@@ -752,7 +803,9 @@ $(async () => {
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         try {
             // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
-            const expandedCode = (compileOptions.exportPlatform === "esp32") ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            const expandedCode = (compileOptions.exportPlatform === "esp32") ?
+                uiEnv.fileManager.mainCode :
+                faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
             console.log(expandedCode);
             form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
         } catch (e) {
@@ -1767,10 +1820,10 @@ effect = dm.freeverb_demo;`;
     const { faustLang, providers } = await faustLangRegister(monaco, faust);
     let saveCode = false;
     try {
-        saveCode = JSON.parse(localStorage.getItem("faust_editor_params")).saveCode;
+        saveCode = JSON.parse(safeStorage.getItem("faust_editor_params")).saveCode;
     } catch { } // eslint-disable-line no-empty
     const editor = monaco.editor.create($("#editor")[0], {
-        value: saveCode ? (localStorage.getItem("faust_editor_code") || code) : code,
+        value: saveCode ? (safeStorage.getItem("faust_editor_code") || code) : code,
         language: "faust",
         theme: "vs-dark",
         dragAndDrop: true,

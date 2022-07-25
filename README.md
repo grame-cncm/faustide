@@ -32,7 +32,7 @@ Firstly ensure that you have [Git](https://git-scm.com/downloads) and [Node.js](
 Clone a copy of the repo then change to the directory:
 
 ```bash
-git clone https://github.com/grame-cncm/faustide.git
+git clone https://github.com/grame-cncm/faustide.git --depth 1
 cd faustide
 ```
 Beware: on Windows, before cloning the repository, and for the libfaust-wasm.data file line ending to be correctly handled, you'll have to do:
@@ -64,7 +64,7 @@ If you need to update the editor's version using `git pull`, as the repository h
 
 ## Launching the local editor
 
-A local HTTP server has to be started with `python -m http.server 8000` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
+A local HTTP server has to be started with `npm run serve` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
 
 ## Versioning
 
@@ -91,11 +91,7 @@ If you run the copy manually, BE CAREFUL not to delete the files `CNAME` and `.n
 For 3), you can launch a local web server from the `docs` directory:
 
 ```bash
-python -m http.server 8000        # python 3
-```
-or
-```bash
-python -m SimpleHTTPServer 8000   # python 2
+npm run serve-docs
 ```
 
 **WARNING: the following step is mandatory for the deployed site to properly work !**
