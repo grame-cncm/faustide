@@ -136,16 +136,18 @@ export const getRms = (t: Float32Array) => {
 };
 
 export const safeStorage = (() => {
-    const tryLocalStorage = (method, ...rest) => {
+    const tryLocalStorage = (method: string, ...rest: any[]) => {
         try {
-            const val = localStorage[method](...rest)
-            return JSON.parse(val)
-        } catch { }
-    }
+            const val = localStorage[method](...rest);
+            return JSON.parse(val);
+        } catch {
+            return "";
+        }
+    };
 
     return {
-        setItem: (key, val) => { tryLocalStorage('setItem', key, val) },
-        removeItem: (key, val) => { tryLocalStorage('removeItem', key) },
-        getItem: (key) => tryLocalStorage('getItem', key),
-    }
-})()
+        setItem: (key: string, val: string) => tryLocalStorage("setItem", key, val),
+        removeItem: (key: string) => tryLocalStorage("removeItem", key),
+        getItem: (key: string) => tryLocalStorage("getItem", key)
+    };
+})();

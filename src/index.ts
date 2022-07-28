@@ -97,9 +97,9 @@ interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
 }
 
 const supportAudioWorklet = !!window.AudioWorklet;
-let supportMediaStreamDestination = !!(window.AudioContext ||
-                                       window.webkitAudioContext).prototype.createMediaStreamDestination &&
-                                       !!HTMLAudioElement.prototype.setSinkId;
+let supportMediaStreamDestination = !!(window.AudioContext
+    || window.webkitAudioContext).prototype.createMediaStreamDestination
+    && !!HTMLAudioElement.prototype.setSinkId;
 
 let server = "https://faustservicecloud.grame.fr";
 
@@ -403,7 +403,7 @@ $(async () => {
              */
             if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
             else {
-                uiEnv.uiPopup = window.open("faust-ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+                uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
                 uiEnv.uiPopup.onload = callback;
             }
         };
@@ -803,9 +803,10 @@ $(async () => {
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         try {
             // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
-            const expandedCode = (compileOptions.exportPlatform === "esp32") ?
-                uiEnv.fileManager.mainCode :
-                faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            const expandedCode = (compileOptions.exportPlatform === "esp32")
+                ? uiEnv.fileManager.mainCode
+                : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            // eslint-disable-next-line no-console
             console.log(expandedCode);
             form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
         } catch (e) {
@@ -907,7 +908,7 @@ $(async () => {
             exportProgram(false);
         });
     };
-    $<HTMLInputElement>("#export-server").val(server).on("change", e => {
+    $<HTMLInputElement>("#export-server").val(server).on("change", (e) => {
         server = e.currentTarget.value;
         getTargets(e.currentTarget.value);
     });
@@ -1492,7 +1493,7 @@ $(async () => {
          */
         if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();
         else {
-            uiEnv.uiPopup = window.open("faust-ui.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+            uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
             uiEnv.uiPopup.onload = callback;
         }
     });
