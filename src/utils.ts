@@ -138,8 +138,7 @@ export const getRms = (t: Float32Array) => {
 export const safeStorage = (() => {
     const tryLocalStorage = (method: string, ...rest: any[]) => {
         try {
-            const val = localStorage[method](...rest);
-            return JSON.parse(val);
+            return localStorage[method](...rest);
         } catch {
             return "";
         }
