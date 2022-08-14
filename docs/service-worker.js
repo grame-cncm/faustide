@@ -96,7 +96,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
   */
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.791657217493943"
+    prefix: "1.0.801660465641048"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -941,11 +941,14 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "examples/spat/spat.dsp",
     "revision": "8753c9b409ae2331139d94356c952112"
   }, {
-    "url": "faust-ui.html",
-    "revision": "edb317ed4bb774a25b590ddee52e260e"
+    "url": "faust-ui/index.d.ts",
+    "revision": "30bf9aeb24b57cf973c2efe9baaab312"
   }, {
-    "url": "faust-ui.js",
-    "revision": "199d33d473844a81611e90511cc672c3"
+    "url": "faust-ui/index.html",
+    "revision": "ed0bb4ef2ded005f6f0cf7351ea21406"
+  }, {
+    "url": "faust-ui/index.js",
+    "revision": "ab2ddfd41213cf174731f94eb45bd3de"
   }, {
     "url": "favicon.png",
     "revision": "8c793ef1d04148eb48e9595e54950310"
@@ -957,10 +960,10 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "b22ed1b5b20db59704b843dd46076aa5"
   }, {
     "url": "index.html",
-    "revision": "73b4d7df1683aea10b4823c9bc2f85ee"
+    "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "c4ea6393a1b29c82721763d4c12a6d29"
+    "revision": "a4c31a831b56b866be4c880fe58e07f7"
   }, {
     "url": "js/1296cd460800e09aa429.js",
     "revision": "6f2ccc6f555de33957dade4a2ccccc06"
@@ -968,8 +971,8 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
   }, {
-    "url": "js/bc62d02279296a1ba6fb.js",
-    "revision": "00a952360d514130f1c3f3dd6897decf"
+    "url": "js/64a85437241412580b08.js",
+    "revision": "eac1eea79d32cd0c12f79bd6d26b72b3"
   }, {
     "url": "libfaust-wasm.data",
     "revision": "685698af8b94d1c2f07fa4a22b544684"
@@ -978,7 +981,7 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "fa6abe265782093fd20a486a17fcfe92"
   }, {
     "url": "manifest.json",
-    "revision": "1cf4759734f174f0ebe72a3e7cbd83a4"
+    "revision": "f3d06b397bb5cb600d762d38b076fc44"
   }, {
     "url": "primitives.lib",
     "revision": "6a13ae246aad4364d4be41de71c122a7"
