@@ -16,7 +16,7 @@ build: $(DEPS)
 help:
 	@echo "============================================================"
 	@echo "                        Faust IDE"
-	@echo "This Makefile is intended to generate the faust IDE web site"
+	@echo "This Makefile is intended to generate the Faust IDE web site"
 	@echo "============================================================"
 	@echo "Available targets are:"
 	@echo "  build   : build the development version of the ide"
