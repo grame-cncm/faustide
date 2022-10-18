@@ -20,7 +20,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
 /* eslint-disable no-await-in-loop */
 
 /*
@@ -63,7 +62,6 @@ class Faust2Doc {
   static matchLibrary(line) {
     var libs = [];
     var exps = line.match(new RegExp(this.REGEX_DEF_LIB, "g"));
-
     if (exps) {
       exps.forEach(exp => {
         var matched = exp.match(this.REGEX_DEF_LIB);
@@ -73,7 +71,6 @@ class Faust2Doc {
         });
       });
     }
-
     return libs;
   }
   /**
@@ -84,19 +81,15 @@ class Faust2Doc {
    * @returns {string[]}
    * @memberof Faust2Doc
    */
-
-
   static matchImport(line) {
     var imps = [];
     var exps = line.match(new RegExp(this.REGEX_DEF_IMP, "g"));
-
     if (exps) {
       exps.forEach(exp => {
         var matched = exp.match(this.REGEX_DEF_IMP);
         if (matched) imps.push(matched[1]);
       });
     }
-
     return imps;
   }
   /**
@@ -108,8 +101,6 @@ class Faust2Doc {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static matchFuncName(str) {
     var matched = str.match(this.REGEX_FUNC_NAME);
     return matched ? matched[1] : null;
@@ -122,8 +113,6 @@ class Faust2Doc {
    * @returns {string[]}
    * @memberof Faust2Doc
    */
-
-
   static getAllConditions(str) {
     return this.getCondition([str]);
   }
@@ -136,8 +125,6 @@ class Faust2Doc {
    * @returns {string[]}
    * @memberof Faust2Doc
    */
-
-
   static getCondition(condsIn) {
     var conds = [];
     condsIn.forEach(cond => {
@@ -149,7 +136,6 @@ class Faust2Doc {
       var subConds = result.splice(1).filter(el => typeof el === "string").map(str => str.replace(/^\|/, ""));
       var before = cond.substring(0, index);
       var after = cond.substring(index + found.length);
-
       if (subConds.length === 1) {
         conds.push(before + after);
         conds.push(before + subConds + after);
@@ -171,14 +157,10 @@ class Faust2Doc {
    * @returns {Promise<TFaustDocs>}
    * @memberof Faust2MD
    */
-
-
   static parse(fileName, getFile, depthIn, pathIn, docIn) {
     var _this = this;
-
     return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee() {
       var depth, strIn, doc, path, inComment, idt, curName, strBuffer, lines, i, line, libs, imps, j, lib, _j, imp, _endC$endS$endT, endC, endS, endT, _c$s$t, c, s, t;
-
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
@@ -187,50 +169,37 @@ class Faust2Doc {
                 _context.next = 2;
                 break;
               }
-
               return _context.abrupt("return", docIn);
-
             case 2:
               depth = depthIn || 2;
               _context.next = 5;
               return getFile(fileName);
-
             case 5:
               strIn = _context.sent;
               doc = docIn || {};
               path = pathIn || [];
               inComment = false; // false: in code; true: in md-comment
-
               idt = 0; // indentation retained to outdent comment lines
-
               curName = ""; // current function name
-
               strBuffer = ""; // current function doc
-
               lines = strIn.split("\n");
               i = 0;
-
             case 14:
               if (!(i < lines.length)) {
                 _context.next = 51;
                 break;
               }
-
               line = lines[i];
-
               if (line) {
                 _context.next = 18;
                 break;
               }
-
               return _context.abrupt("continue", 48);
-
             case 18:
               if (_Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].isComment(line)) {
                 _context.next = 39;
                 break;
               }
-
               if (inComment) {
                 // we are closing a md-comment
                 inComment = false;
@@ -242,57 +211,45 @@ class Faust2Doc {
                 curName = "";
                 strBuffer = "";
               }
-
               libs = _this.matchLibrary(line);
               imps = _this.matchImport(line);
               j = 0;
-
             case 23:
               if (!(j < libs.length)) {
                 _context.next = 30;
                 break;
               }
-
               lib = libs[j];
               _context.next = 27;
               return _this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
-
             case 27:
               j++;
               _context.next = 23;
               break;
-
             case 30:
               _j = 0;
-
             case 31:
               if (!(_j < imps.length)) {
                 _context.next = 38;
                 break;
               }
-
               imp = imps[_j];
               _context.next = 35;
               return _this.parse(imp, getFile, depth - 1, path, doc);
-
             case 35:
               _j++;
               _context.next = 31;
               break;
-
             case 38:
               return _context.abrupt("continue", 48);
-
             case 39:
               if (!inComment) {
                 _context.next = 45;
                 break;
               }
-
               // we are in a md-comment (not first line)
               if (idt === 0) idt = _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].indentation(line); // we have to measure the indentation
               // check end of md-comment
-
               _endC$endS$endT = {
                 endC: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndComment(line),
                 endS: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndSection(line),
@@ -300,7 +257,6 @@ class Faust2Doc {
               }, endC = _endC$endS$endT.endC, endS = _endC$endS$endT.endS, endT = _endC$endS$endT.endT;
               if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
               else strBuffer += _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].outdent(line, idt) + "\n";
-
               if (endC) {
                 // pop buffer
                 if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
@@ -311,9 +267,7 @@ class Faust2Doc {
                 curName = "";
                 strBuffer = "";
               }
-
               return _context.abrupt("continue", 48);
-
             case 45:
               // check begin of md-comment
               _c$s$t = {
@@ -322,21 +276,17 @@ class Faust2Doc {
                 t: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginTitle(line)
               }, c = _c$s$t.c, s = _c$s$t.s, t = _c$s$t.t;
               if (c) curName = _this.matchFuncName(c);
-
               if (c || s || t) {
                 inComment = true;
                 idt = 0;
                 strBuffer = "";
               }
-
             case 48:
               i++;
               _context.next = 14;
               break;
-
             case 51:
               return _context.abrupt("return", doc);
-
             case 52:
             case "end":
               return _context.stop();
@@ -345,15 +295,10 @@ class Faust2Doc {
       }, _callee);
     }))();
   }
-
 }
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Faust2Doc, "REGEX_DEF_LIB", /\b(\w+)\s*=\s*library\("(.+)"\);/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Faust2Doc, "REGEX_DEF_IMP", /\bimport\("(.+)"\);/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Faust2Doc, "REGEX_FUNC_NAME", /`.*?([\w[\]|]+)`/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(Faust2Doc, "REGEX_FUNC_NAME_COND", /\[(.+?)(\|.+?)*?]/);
 
 /***/ }),
@@ -371,11 +316,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
 
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-
 /*
 
 Ultra simple automatic documentation system for Faust.
@@ -438,8 +380,6 @@ class Faust2MD {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static outdent(line, idt) {
     return line.length <= idt ? "\n" : line.substr(idt);
   }
@@ -453,8 +393,6 @@ class Faust2MD {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static matchBeginTitle(line) {
     var matched = line.match(this.REGEX_BEG_TITLE);
     return matched ? matched[1] : null;
@@ -469,8 +407,6 @@ class Faust2MD {
    * @returns {boolean}
    * @memberof Faust2MD
    */
-
-
   static matchEndTitle(line) {
     var matched = line.match(this.REGEX_END_TITLE);
     return !!matched;
@@ -485,8 +421,6 @@ class Faust2MD {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static matchBeginSection(line) {
     var matched = line.match(this.REGEX_BEG_SECTION);
     return matched ? matched[1] : null;
@@ -501,8 +435,6 @@ class Faust2MD {
    * @returns {boolean}
    * @memberof Faust2MD
    */
-
-
   static matchEndSection(line) {
     var matched = line.match(this.REGEX_END_SECTION);
     return !!matched;
@@ -517,8 +449,6 @@ class Faust2MD {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static matchBeginComment(line) {
     var matched = line.match(this.REGEX_BEG_COMMENT);
     return matched ? matched[1] : null;
@@ -533,8 +463,6 @@ class Faust2MD {
    * @returns {boolean}
    * @memberof Faust2MD
    */
-
-
   static matchEndComment(line) {
     var matched = line.match(this.REGEX_END_COMMENT);
     return !!matched;
@@ -548,8 +476,6 @@ class Faust2MD {
    * @returns {number}
    * @memberof Faust2MD
    */
-
-
   static indentation(line) {
     var matched = line.match(this.REGEX_INDENT);
     return matched ? matched[1].length : 0;
@@ -562,8 +488,6 @@ class Faust2MD {
    * @returns {boolean}
    * @memberof Faust2MD
    */
-
-
   static isComment(line) {
     var matched = line.match(this.REGEX_COMMENT);
     return !!matched;
@@ -578,20 +502,15 @@ class Faust2MD {
    * @returns {string}
    * @memberof Faust2MD
    */
-
-
   static parse(strIn, fileName, optionsIn) {
     var options = _objectSpread({
       tabsize: 4,
       code: false,
       front: false
     }, optionsIn);
-
     var strOut = "";
     var inComment = false; // false: in code; true: in md-comment
-
     var idt = 0; // indentation retained to outdent comment lines
-
     if (options.front && fileName) strOut += this.frontMatter(fileName);
     strIn.split("\n").forEach(line => {
       if (!this.isComment(line)) {
@@ -600,41 +519,36 @@ class Faust2MD {
           strOut += "\n";
           inComment = false;
         }
-
         if (options.code) strOut += "\t".concat(line, "\n");
         return;
       }
-
       if (inComment) {
         // we are in a md-comment
         if (idt === 0) idt = this.indentation(line); // we have to measure the indentation
         // check end of md-comment
-
         var _endC$endS$endT = {
-          endC: this.matchEndComment(line),
-          endS: this.matchEndSection(line),
-          endT: this.matchEndTitle(line)
-        },
-            endC = _endC$endS$endT.endC,
-            endS = _endC$endS$endT.endS,
-            endT = _endC$endS$endT.endT;
+            endC: this.matchEndComment(line),
+            endS: this.matchEndSection(line),
+            endT: this.matchEndTitle(line)
+          },
+          endC = _endC$endS$endT.endC,
+          endS = _endC$endS$endT.endS,
+          endT = _endC$endS$endT.endT;
         if (endC) strOut += "\n---\n\n";
         if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
         else strOut += this.outdent(line, idt) + "\n";
         return;
-      } // check begin of md-comment
-
-
+      }
+      // check begin of md-comment
       var _c$s$t = {
-        c: this.matchBeginComment(line),
-        s: this.matchBeginSection(line),
-        t: this.matchBeginTitle(line)
-      },
-          c = _c$s$t.c,
-          s = _c$s$t.s,
-          t = _c$s$t.t;
+          c: this.matchBeginComment(line),
+          s: this.matchBeginSection(line),
+          t: this.matchBeginTitle(line)
+        },
+        c = _c$s$t.c,
+        s = _c$s$t.s,
+        t = _c$s$t.t;
       if (c) strOut += "\n### ".concat(c, "\n");else if (s) strOut += "\n## ".concat(s, "\n");else if (t) strOut += "\n# ".concat(t, "\n");
-
       if (c || s || t) {
         inComment = true;
         idt = 0;
@@ -642,23 +556,14 @@ class Faust2MD {
     });
     return strOut;
   }
-
 }
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_BEG_TITLE", /^\s*\/\/#{3,}\s*([^#]*[^#\s])\s*#{3,}$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_END_TITLE", /^\s*((\/\/#{3,})|(\s*))$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_BEG_SECTION", /^\s*\/\/={3,}\s*([^=]*[^=\s])\s*={3,}$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_END_SECTION", /^\s*((\/\/={3,})|(\s*))$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_BEG_COMMENT", /^\s*\/\/-{3,}\s*([^-]*[^=\s])\s*-{3,}$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_END_COMMENT", /^\s*((\/\/-{3,})|(\s*))$/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_INDENT", /(^\s*\/\/\s*)[^\s]/);
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Faust2MD, "REGEX_COMMENT", /^\s*\/\//);
 
 /***/ }),
@@ -689,11 +594,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _documentation__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../documentation */ "./src/documentation.ts");
 
 
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-
 
 
 
@@ -751,7 +653,6 @@ var theme = {
 };
 var faustKeywords = ["import", "component", "declare", "library", "environment", "int", "float", "letrec", "with", "class", "process", "effect", "inputs", "outputs"];
 var faustFunctions = ["mem", "prefix", "rdtable", "rwtable", "select2", "select3", "ffunction", "fconstant", "fvariable", "route", "waveform", "soundfile", "button", "checkbox", "vslider", "hslider", "nentry", "vgroup", "hgroup", "tgroup", "vbargraph", "hbargraph", "attach", "acos", "asin", "atan", "atan2", "cos", "sin", "tan", "exp", "log", "log10", "pow", "sqrt", "abs", "min", "max", "fmod", "remainder", "floor", "ceil", "rint", "seq", "par", "sum", "prod"];
-
 var getFile = /*#__PURE__*/function () {
   var _ref = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(fileName, faust) {
     var libPath, res;
@@ -763,20 +664,16 @@ var getFile = /*#__PURE__*/function () {
               _context.next = 2;
               break;
             }
-
             return _context.abrupt("return", faust.fs.readFile("libraries/" + fileName, {
               encoding: "utf8"
             }));
-
           case 2:
             libPath = "https://faustlibraries.grame.fr/libs/";
             _context.next = 5;
             return fetch(libPath + fileName);
-
           case 5:
             res = _context.sent;
             return _context.abrupt("return", res.text());
-
           case 7:
           case "end":
             return _context.stop();
@@ -784,12 +681,10 @@ var getFile = /*#__PURE__*/function () {
       }
     }, _callee);
   }));
-
   return function getFile(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 }();
-
 /**
  * Match an available doc key from monaco editor
  *
@@ -806,21 +701,16 @@ var matchDocKey = (doc, model, position) => {
   var column$ = wordAtPosition.startColumn - 1;
   var name = wordAtPosition.word;
   var prefixes = [];
-
   while (column$ - 2 >= 0 && line[column$ - 1] === ".") {
     column$ -= 2;
     var prefixWord = model.getWordAtPosition(new monaco_editor_esm_vs_editor_editor_api__WEBPACK_IMPORTED_MODULE_3__["Position"](line$, column$));
     prefixes.splice(0, 0, prefixWord.word);
     column$ = prefixWord.startColumn - 1;
   }
-
   var nameArray = [...prefixes, name];
-
   while (nameArray.length) {
     var _name = nameArray.join(".");
-
     var e = doc[_name];
-
     if (e) {
       return {
         nameArray,
@@ -829,10 +719,8 @@ var matchDocKey = (doc, model, position) => {
         doc: e
       };
     }
-
     column$ += nameArray.splice(0, 1)[0].length + 1;
   }
-
   return null;
 };
 var getProviders = /*#__PURE__*/function () {
@@ -853,7 +741,6 @@ var getProviders = /*#__PURE__*/function () {
                     switch (_context2.prev = _context2.next) {
                       case 0:
                         return _context2.abrupt("return", getFile(fileName, faust));
-
                       case 1:
                       case "end":
                         return _context2.stop();
@@ -861,12 +748,10 @@ var getProviders = /*#__PURE__*/function () {
                   }
                 }, _callee2);
               }));
-
               return function (_x4) {
                 return _ref3.apply(this, arguments);
               };
             }());
-
           case 5:
             libDocs = _context4.sent;
             _context4.next = 8;
@@ -877,7 +762,6 @@ var getProviders = /*#__PURE__*/function () {
                     switch (_context3.prev = _context3.next) {
                       case 0:
                         return _context3.abrupt("return", getFile(fileName, faust));
-
                       case 1:
                       case "end":
                         return _context3.stop();
@@ -885,29 +769,24 @@ var getProviders = /*#__PURE__*/function () {
                   }
                 }, _callee3);
               }));
-
               return function (_x5) {
                 return _ref4.apply(this, arguments);
               };
             }());
-
           case 8:
             primDocs = _context4.sent;
             _context4.next = 14;
             break;
-
           case 11:
             _context4.prev = 11;
             _context4.t0 = _context4["catch"](2);
             console.error(_context4.t0);
-
           case 14:
             // eslint-disable-line no-empty, no-console
             faustLib = Object.keys(libDocs);
             hoverProvider = {
               provideHover: (model, position) => {
                 var matched = matchDocKey(_objectSpread(_objectSpread({}, primDocs), libDocs), model, position);
-
                 if (matched) {
                   var prefix = matched.nameArray.slice();
                   var name = prefix.pop();
@@ -923,7 +802,6 @@ var getProviders = /*#__PURE__*/function () {
                     }]
                   };
                 }
-
                 return null;
               }
             };
@@ -941,7 +819,8 @@ var getProviders = /*#__PURE__*/function () {
               escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
               // The main tokenizer for our languages
               tokenizer: {
-                root: [// identifiers and keywords
+                root: [
+                // identifiers and keywords
                 [/!|_/, "keyword"], [/[a-z_$]([\w.$]*[\w$])?/, {
                   cases: {
                     "@faustFunctions": "faustFunctions",
@@ -949,18 +828,23 @@ var getProviders = /*#__PURE__*/function () {
                     "@faustLib": "faustLib",
                     "@default": "identifier"
                   }
-                }], [/[A-Z][\w$]*/, "type.identifier"], // whitespace
+                }], [/[A-Z][\w$]*/, "type.identifier"],
+                // whitespace
                 {
                   include: "@whitespace"
-                }, // delimiters and operators
+                },
+                // delimiters and operators
                 [/[{}()[\]]/, "@brackets"], [/~|,|<:|:>|:/, "faustCompOperators"], [/[<>](?!@symbols)/, "@brackets"], [/=|\+|-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
                   cases: {
                     "@operators": "operators",
                     "@default": ""
                   }
-                }], // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"], [/0[xX][0-9a-fA-F]+/, "number.hex"], [/\d+/, "number"], // delimiter: after number because of .\d floats
-                [/[;.]/, "delimiter"], // strings
+                }],
+                // numbers
+                [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"], [/0[xX][0-9a-fA-F]+/, "number.hex"], [/\d+/, "number"],
+                // delimiter: after number because of .\d floats
+                [/[;.]/, "delimiter"],
+                // strings
                 [/"/, {
                   token: "string",
                   next: "@string"
@@ -992,7 +876,6 @@ var getProviders = /*#__PURE__*/function () {
               completionItemProvider,
               docs: libDocs
             });
-
           case 19:
           case "end":
             return _context4.stop();
@@ -1000,7 +883,6 @@ var getProviders = /*#__PURE__*/function () {
       }
     }, _callee4, null, [[2, 11]]);
   }));
-
   return function getProviders(_x3) {
     return _ref2.apply(this, arguments);
   };
@@ -1009,4 +891,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=64a85437241412580b08.js.map
+//# sourceMappingURL=a3d5222ac92d0a6b368d.js.map

@@ -81,31 +81,19 @@ if (!self.define) {
     });
   };
 }
-define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use strict';
-
-  /**
-  * Welcome to your Workbox-powered service worker!
-  *
-  * You'll need to register this file in your web app.
-  * See https://goo.gl/nhQhGp
-  *
-  * The rest of the code is auto-generated. Please don't update this file
-  * directly; instead, make changes to your Workbox build configuration
-  * and re-run your build process.
-  * See https://goo.gl/2aRDsh
-  */
+define("./service-worker.js",['./workbox-f87e2ed3'], function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.841663483077853"
+    prefix: "1.0.851666107047961"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
+
   /**
    * The precacheAndRoute() method efficiently caches and responds to
    * requests for URLs in the manifest.
    * See https://goo.gl/S9QRab
    */
-
   workbox.precacheAndRoute([{
     "url": "02-XYLO1.mp3",
     "revision": "362ebc964769a515510a0a67f59232e7"
@@ -963,22 +951,22 @@ define("./service-worker.js",['./workbox-11808712'], function (workbox) { 'use s
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "90216ab14262762f3bbefb9069339cdc"
+    "revision": "4d29eedb65448229439cfb79badd351a"
   }, {
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
   }, {
-    "url": "js/64a85437241412580b08.js",
-    "revision": "eac1eea79d32cd0c12f79bd6d26b72b3"
+    "url": "js/a3d5222ac92d0a6b368d.js",
+    "revision": "d60c2e12f2faf66a95d29e4906f950cd"
   }, {
-    "url": "js/e44a3a69528a4f67202e.js",
-    "revision": "bb41002810c62e0d0d3a3d90b978298d"
+    "url": "js/ebad3a554843fbd9a8c8.js",
+    "revision": "2df05f199ee3240fef0a21f9f22a79b8"
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "9ec9c59e2968b35bce91f8fe94555b05"
+    "revision": "4ea841f10248b01ed77cad066f96e145"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "59fc7d3ea3e256f76441c79ddc796f9d"
+    "revision": "6553a56bc0c29a96168c8cfe8c08e096"
   }, {
     "url": "manifest.json",
     "revision": "f3d06b397bb5cb600d762d38b076fc44"

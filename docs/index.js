@@ -43,7 +43,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"64a85437241412580b08","2":"e44a3a69528a4f67202e"}[chunkId] + ".js"
+/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"a3d5222ac92d0a6b368d","2":"ebad3a554843fbd9a8c8"}[chunkId] + ".js"
 /******/ 	}
 /******/
 /******/ 	// The require function
@@ -216,34 +216,28 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     reject(error);
     return;
   }
-
   if (info.done) {
     resolve(value);
   } else {
     Promise.resolve(value).then(_next, _throw);
   }
 }
-
 function _asyncToGenerator(fn) {
   return function () {
     var self = this,
-        args = arguments;
+      args = arguments;
     return new Promise(function (resolve, reject) {
       var gen = fn.apply(self, args);
-
       function _next(value) {
         asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
       }
-
       function _throw(err) {
         asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
       }
-
       _next(undefined);
     });
   };
 }
-
 module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
@@ -266,10 +260,8 @@ function _defineProperty(obj, key, value) {
   } else {
     obj[key] = value;
   }
-
   return obj;
 }
-
 module.exports = _defineProperty, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
@@ -282,22 +274,18 @@ module.exports = _defineProperty, module.exports.__esModule = true, module.expor
 /***/ (function(module, exports, __webpack_require__) {
 
 var _typeof = __webpack_require__(/*! ./typeof.js */ "./node_modules/@babel/runtime/helpers/typeof.js")["default"];
-
 function _regeneratorRuntime() {
-  "use strict";
-  /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
-
+  "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
   module.exports = _regeneratorRuntime = function _regeneratorRuntime() {
     return exports;
   }, module.exports.__esModule = true, module.exports["default"] = module.exports;
   var exports = {},
-      Op = Object.prototype,
-      hasOwn = Op.hasOwnProperty,
-      $Symbol = "function" == typeof Symbol ? Symbol : {},
-      iteratorSymbol = $Symbol.iterator || "@@iterator",
-      asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator",
-      toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-
+    Op = Object.prototype,
+    hasOwn = Op.hasOwnProperty,
+    $Symbol = "function" == typeof Symbol ? Symbol : {},
+    iteratorSymbol = $Symbol.iterator || "@@iterator",
+    asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator",
+    toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
   function define(obj, key, value) {
     return Object.defineProperty(obj, key, {
       value: value,
@@ -306,7 +294,6 @@ function _regeneratorRuntime() {
       writable: !0
     }), obj[key];
   }
-
   try {
     define({}, "");
   } catch (err) {
@@ -314,40 +301,33 @@ function _regeneratorRuntime() {
       return obj[key] = value;
     };
   }
-
   function wrap(innerFn, outerFn, self, tryLocsList) {
     var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator,
-        generator = Object.create(protoGenerator.prototype),
-        context = new Context(tryLocsList || []);
+      generator = Object.create(protoGenerator.prototype),
+      context = new Context(tryLocsList || []);
     return generator._invoke = function (innerFn, self, context) {
       var state = "suspendedStart";
       return function (method, arg) {
         if ("executing" === state) throw new Error("Generator is already running");
-
         if ("completed" === state) {
           if ("throw" === method) throw arg;
           return doneResult();
         }
-
         for (context.method = method, context.arg = arg;;) {
           var delegate = context.delegate;
-
           if (delegate) {
             var delegateResult = maybeInvokeDelegate(delegate, context);
-
             if (delegateResult) {
               if (delegateResult === ContinueSentinel) continue;
               return delegateResult;
             }
           }
-
           if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) {
             if ("suspendedStart" === state) throw state = "completed", context.arg;
             context.dispatchException(context.arg);
           } else "return" === context.method && context.abrupt("return", context.arg);
           state = "executing";
           var record = tryCatch(innerFn, self, context);
-
           if ("normal" === record.type) {
             if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue;
             return {
@@ -355,13 +335,11 @@ function _regeneratorRuntime() {
               done: context.done
             };
           }
-
           "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg);
         }
       };
     }(innerFn, self, context), generator;
   }
-
   function tryCatch(fn, obj, arg) {
     try {
       return {
@@ -375,25 +353,19 @@ function _regeneratorRuntime() {
       };
     }
   }
-
   exports.wrap = wrap;
   var ContinueSentinel = {};
-
   function Generator() {}
-
   function GeneratorFunction() {}
-
   function GeneratorFunctionPrototype() {}
-
   var IteratorPrototype = {};
   define(IteratorPrototype, iteratorSymbol, function () {
     return this;
   });
   var getProto = Object.getPrototypeOf,
-      NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+    NativeIteratorPrototype = getProto && getProto(getProto(values([])));
   NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype);
   var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
-
   function defineIteratorMethods(prototype) {
     ["next", "throw", "return"].forEach(function (method) {
       define(prototype, method, function (arg) {
@@ -401,14 +373,12 @@ function _regeneratorRuntime() {
       });
     });
   }
-
   function AsyncIterator(generator, PromiseImpl) {
     function invoke(method, arg, resolve, reject) {
       var record = tryCatch(generator[method], generator, arg);
-
       if ("throw" !== record.type) {
         var result = record.arg,
-            value = result.value;
+          value = result.value;
         return value && "object" == _typeof(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) {
           invoke("next", value, resolve, reject);
         }, function (err) {
@@ -419,91 +389,73 @@ function _regeneratorRuntime() {
           return invoke("throw", error, resolve, reject);
         });
       }
-
       reject(record.arg);
     }
-
     var previousPromise;
-
     this._invoke = function (method, arg) {
       function callInvokeWithMethodAndArg() {
         return new PromiseImpl(function (resolve, reject) {
           invoke(method, arg, resolve, reject);
         });
       }
-
       return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
     };
   }
-
   function maybeInvokeDelegate(delegate, context) {
     var method = delegate.iterator[context.method];
-
     if (undefined === method) {
       if (context.delegate = null, "throw" === context.method) {
         if (delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method)) return ContinueSentinel;
         context.method = "throw", context.arg = new TypeError("The iterator does not provide a 'throw' method");
       }
-
       return ContinueSentinel;
     }
-
     var record = tryCatch(method, delegate.iterator, context.arg);
     if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel;
     var info = record.arg;
     return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel);
   }
-
   function pushTryEntry(locs) {
     var entry = {
       tryLoc: locs[0]
     };
     1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry);
   }
-
   function resetTryEntry(entry) {
     var record = entry.completion || {};
     record.type = "normal", delete record.arg, entry.completion = record;
   }
-
   function Context(tryLocsList) {
     this.tryEntries = [{
       tryLoc: "root"
     }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0);
   }
-
   function values(iterable) {
     if (iterable) {
       var iteratorMethod = iterable[iteratorSymbol];
       if (iteratorMethod) return iteratorMethod.call(iterable);
       if ("function" == typeof iterable.next) return iterable;
-
       if (!isNaN(iterable.length)) {
         var i = -1,
-            next = function next() {
-          for (; ++i < iterable.length;) {
-            if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
-          }
-
-          return next.value = undefined, next.done = !0, next;
-        };
-
+          next = function next() {
+            for (; ++i < iterable.length;) {
+              if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
+            }
+            return next.value = undefined, next.done = !0, next;
+          };
         return next.next = next;
       }
     }
-
     return {
       next: doneResult
     };
   }
-
   function doneResult() {
     return {
       value: undefined,
       done: !0
     };
   }
-
   return GeneratorFunction.prototype = GeneratorFunctionPrototype, define(Gp, "constructor", GeneratorFunctionPrototype), define(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) {
     var ctor = "function" == typeof genFun && genFun.constructor;
     return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name));
@@ -527,17 +479,14 @@ function _regeneratorRuntime() {
     return "[object Generator]";
   }), exports.keys = function (object) {
     var keys = [];
-
     for (var key in object) {
       keys.push(key);
     }
-
     return keys.reverse(), function next() {
       for (; keys.length;) {
         var key = keys.pop();
         if (key in object) return next.value = key, next.done = !1, next;
       }
-
       return next.done = !0, next;
     };
   }, exports.values = values, Context.prototype = {
@@ -556,20 +505,16 @@ function _regeneratorRuntime() {
     dispatchException: function dispatchException(exception) {
       if (this.done) throw exception;
       var context = this;
-
       function handle(loc, caught) {
         return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught;
       }
-
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i],
-            record = entry.completion;
+          record = entry.completion;
         if ("root" === entry.tryLoc) return handle("end");
-
         if (entry.tryLoc <= this.prev) {
           var hasCatch = hasOwn.call(entry, "catchLoc"),
-              hasFinally = hasOwn.call(entry, "finallyLoc");
-
+            hasFinally = hasOwn.call(entry, "finallyLoc");
           if (hasCatch && hasFinally) {
             if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
             if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
@@ -585,13 +530,11 @@ function _regeneratorRuntime() {
     abrupt: function abrupt(type, arg) {
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i];
-
         if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
           var finallyEntry = entry;
           break;
         }
       }
-
       finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null);
       var record = finallyEntry ? finallyEntry.completion : {};
       return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record);
@@ -609,19 +552,15 @@ function _regeneratorRuntime() {
     "catch": function _catch(tryLoc) {
       for (var i = this.tryEntries.length - 1; i >= 0; --i) {
         var entry = this.tryEntries[i];
-
         if (entry.tryLoc === tryLoc) {
           var record = entry.completion;
-
           if ("throw" === record.type) {
             var thrown = record.arg;
             resetTryEntry(entry);
           }
-
           return thrown;
         }
       }
-
       throw new Error("illegal catch attempt");
     },
     delegateYield: function delegateYield(iterable, resultName, nextLoc) {
@@ -633,7 +572,6 @@ function _regeneratorRuntime() {
     }
   }, exports;
 }
-
 module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
@@ -654,7 +592,6 @@ function _typeof(obj) {
     return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
 }
-
 module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
 
 /***/ }),
@@ -30933,7 +30870,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, private, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.84\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.85\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -30955,6 +30892,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 /**
  * This class provides a default handler for a buffer given by Faust2WebAudio.
  * The handler analyses the buffer with FFT, then saves both time-domain and frequency-domain data.
@@ -30963,7 +30901,6 @@ __webpack_require__.r(__webpack_exports__);
  * @export
  * @class Analyser
  */
-
 class Analyser {
   /**
    * Time Domain Data
@@ -31027,69 +30964,52 @@ class Analyser {
    *
    * @memberof Analyser
    */
+
   constructor(buffers, drawMode, drawHandler) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "t", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "f", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "e", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "buffers", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "$buffer", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "$", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_drawMode", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "capturing", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_fft", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_fftSize", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_fftOverlap", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "drawHandler", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "freqEstimated", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "plotHandler", (t, index, events, drawOffline) => {
       if (!t.length) return;
       if (this.drawMode === "offline" && !drawOffline) return;
-
       if (drawOffline) {
         this.$ = 0;
         this.e = [];
       }
-
       var channels = t.length;
       var bufferSize = t[0].length;
       this.initCache(bufferSize, channels);
       this.$ = index % this.buffers * bufferSize;
       this.$buffer = index;
       var $ = this.$,
-          fftSize = this.fftSize,
-          fftOverlap = this.fftOverlap,
-          fftHopSize = this.fftHopSize,
-          fftBins = this.fftBins,
-          fft = this.fft;
+        fftSize = this.fftSize,
+        fftOverlap = this.fftOverlap,
+        fftHopSize = this.fftHopSize,
+        fftBins = this.fftBins,
+        fft = this.fft;
       t.forEach((a, i) => {
         this.t[i].set(a, $);
         var fData;
-
         for (var $fftEnd = $ + bufferSize - ($ + bufferSize) % fftHopSize; $fftEnd > $; $fftEnd -= fftHopSize) {
           var $fft = $fftEnd - fftSize;
           var t4fft = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["sliceWrap"])(this.t[i], $fft, fftSize);
           fData = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["getFrequencyDomainData"])(t4fft, fft);
           Object(_utils__WEBPACK_IMPORTED_MODULE_2__["setWrap"])(this.f[i], fData, $fftEnd * fftOverlap / 2 - fftBins);
         }
-
         if (fData) this.freqEstimated = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["estimateFreq"])(fData, this.sampleRate);
       });
       this.e[index] = events || [];
       delete this.e[index - this.buffers - 1];
-
       if (this.drawMode === "onevent") {
         if (events && events.length && this.capturing === -1) this.capturing = this.buffers - 1;
         if (this.capturing >= 0) this.capturing--;
@@ -31098,9 +31018,7 @@ class Analyser {
         if (index === this.buffers - 1) this.draw();
       } else this.draw();
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "getSampleRate", () => 48000);
-
     this.buffers = buffers || 0;
     this.drawMode = drawMode || "manual";
     this.drawHandler = drawHandler;
@@ -31108,7 +31026,6 @@ class Analyser {
     this.capturing = -1;
     this.fftSize = 256;
   }
-
   initCache(bufferSize, channels) {
     var buffers = this.drawMode === "offline" ? 1 : this.buffers;
     if (this.t && this.t.length === channels && this.t[0].length === bufferSize * buffers) return;
@@ -31117,20 +31034,18 @@ class Analyser {
     this.$ = 0;
     this.e = [];
   }
-
   draw() {
     var t = this.t,
-        f = this.f,
-        e = this.e,
-        drawHandler = this.drawHandler,
-        drawMode = this.drawMode,
-        fftSize = this.fftSize,
-        fftOverlap = this.fftOverlap,
-        freqEstimated = this.freqEstimated,
-        sampleRate = this.sampleRate;
+      f = this.f,
+      e = this.e,
+      drawHandler = this.drawHandler,
+      drawMode = this.drawMode,
+      fftSize = this.fftSize,
+      fftOverlap = this.fftOverlap,
+      freqEstimated = this.freqEstimated,
+      sampleRate = this.sampleRate;
     if (!drawHandler) return;
     if (!t || !t.length) return;
-
     if (drawMode === "offline") {
       drawHandler({
         $: 0,
@@ -31147,7 +31062,6 @@ class Analyser {
       });
       return;
     }
-
     var bufferSize = this.t[0].length / this.buffers;
     var $ = (this.$ + bufferSize) % this.t[0].length;
     var $buffer = this.$buffer + 1 - this.buffers;
@@ -31183,53 +31097,42 @@ class Analyser {
    * @memberof Analyser
    */
 
-
   get sampleRate() {
     return this.getSampleRate();
   }
-
   get drawMode() {
     return this._drawMode;
   }
-
   set drawMode(modeIn) {
     this._drawMode = modeIn;
     this.draw();
   }
-
   get fft() {
     return this._fft;
   }
-
   get fftSize() {
     return this._fftSize;
   }
-
   set fftSize(fftSizeIn) {
     this._fftSize = fftSizeIn;
     if (this.fft) this.fft.dispose();
     this._fft = new kissfft_js__WEBPACK_IMPORTED_MODULE_1__["FFTR"](fftSizeIn);
   }
-
   get fftOverlap() {
     return this._fftOverlap;
   }
-
   set fftOverlap(fftOverlapIn) {
     if (this._fftOverlap === fftOverlapIn) return;
     this._fftOverlap = fftOverlapIn;
     if (!this.t || !this.t.length || !this.t[0].length) return;
     this.f = new Array(this.t.length).fill(null).map(() => new Float32Array(this.t[0].length * this.fftOverlap / 2).fill(-Infinity));
   }
-
   get fftHopSize() {
     return this.fftSize / this.fftOverlap;
   }
-
   get fftBins() {
     return this.fftSize / 2;
   }
-
 }
 
 /***/ }),
@@ -31279,7 +31182,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FileManager_scss__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_FileManager_scss__WEBPACK_IMPORTED_MODULE_1__);
 
 
-
 /**
  * FileManager UI, interactive with Emscripten Virtual File System
  *
@@ -31315,37 +31217,23 @@ class FileManager {
    * @type {TFileSystem}
    * @memberof FileManager
    */
+
   constructor(options) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "divLabel", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnExpand", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "spanLabel", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnNewFile", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "divFiles", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "divOverlay", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "container", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "path", "./");
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "$mainFile", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_fileList", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_fs", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "selectHandler", () => undefined);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "saveHandler", () => undefined);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "deleteHandler", () => undefined);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "mainFileChangeHandler", () => undefined);
-
     this.container = options.container;
     this.fs = options.fs;
     this.path = options.path;
@@ -31359,7 +31247,6 @@ class FileManager {
     this.mainFileChangeHandler = options.mainFileChangeHandler;
     this.select(this._fileList[options.$mainFile]);
   }
-
   getChildren() {
     for (var i = 0; i < this.container.children.length; i++) {
       var e = this.container.children[i];
@@ -31367,28 +31254,24 @@ class FileManager {
       if (e.classList.contains("filemanager-files")) this.divFiles = e;
       if (e.classList.contains("filemanager-overlay")) this.divOverlay = e;
     }
-
     if (!this.divLabel) {
       var divLabel = document.createElement("div");
       divLabel.classList.add("filemanager-label");
       this.container.appendChild(divLabel);
       this.divLabel = divLabel;
     }
-
     for (var _i = 0; _i < this.divLabel.children.length; _i++) {
       var _e = this.divLabel.children[_i];
       if (_e.classList.contains("filemanager-btn-expand")) this.btnExpand = _e;
       if (_e.classList.contains("filemanager-span-label")) this.btnNewFile = _e;
       if (_e.classList.contains("filemanager-btn-new-file")) this.btnNewFile = _e;
     }
-
     if (!this.btnExpand) {
       var btnExpand = document.createElement("button");
       btnExpand.classList.add("filemanager-btn-expand", "filemanager-btn-icon", "expanded");
       this.divLabel.appendChild(btnExpand);
       this.btnExpand = btnExpand;
     }
-
     if (!this.spanLabel) {
       var spanLabel = document.createElement("span");
       spanLabel.classList.add("filemanager-span-label");
@@ -31396,7 +31279,6 @@ class FileManager {
       this.divLabel.appendChild(spanLabel);
       this.spanLabel = spanLabel;
     }
-
     if (!this.btnNewFile) {
       var btnNewFile = document.createElement("button");
       btnNewFile.classList.add("filemanager-btn-new-file", "filemanager-btn-icon");
@@ -31404,14 +31286,12 @@ class FileManager {
       this.divLabel.appendChild(btnNewFile);
       this.btnNewFile = btnNewFile;
     }
-
     if (!this.divFiles) {
       var divFiles = document.createElement("div");
       divFiles.classList.add("filemanager-files");
       this.container.appendChild(divFiles);
       this.divFiles = divFiles;
     }
-
     if (!this.divOverlay) {
       var divOverlap = document.createElement("div");
       divOverlap.classList.add("filemanager-overlay");
@@ -31419,7 +31299,6 @@ class FileManager {
       this.divOverlay = divOverlap;
     }
   }
-
   bind() {
     this.divLabel.addEventListener("click", () => {
       this.expanded = !this.expanded; // File Manager UI can be folded.
@@ -31430,21 +31309,16 @@ class FileManager {
      *
      * @param {MouseEvent} e
      */
-
     var newFileHandler = e => {
       e.stopPropagation();
       e.preventDefault();
       var i = 1;
       var fileName = "untitled".concat(i, ".dsp");
-
       while (this._fileList.indexOf(fileName) !== -1) {
         fileName = "untitled".concat(++i, ".dsp");
       }
-
       this.fs.writeFile(this.path + fileName, "");
-
       this._fileList.push(fileName);
-
       var divFile = this.createFileDiv(fileName, true);
       this.divFiles.appendChild(divFile);
       var spanName = divFile.getElementsByClassName("filemanager-filename")[0];
@@ -31455,9 +31329,8 @@ class FileManager {
       sel.removeAllRanges();
       sel.addRange(range);
     };
-
-    this.btnNewFile.addEventListener("click", newFileHandler); // File drag and drop
-
+    this.btnNewFile.addEventListener("click", newFileHandler);
+    // File drag and drop
     var dragenterHandler = e => {
       if (e.dataTransfer && e.dataTransfer.items.length && e.dataTransfer.items[0].kind === "file") {
         e.preventDefault();
@@ -31465,13 +31338,11 @@ class FileManager {
         this.divOverlay.style.display = "block";
       }
     };
-
     var dragendHandler = e => {
       e.preventDefault();
       e.stopPropagation();
       this.divOverlay.style.display = "";
     };
-
     var dragoverHandler = e => {
       e.preventDefault();
       e.stopPropagation();
@@ -31482,28 +31353,21 @@ class FileManager {
      *
      * @param {DragEvent} e
      */
-
-
     var dropHandler = e => {
       this.divOverlay.style.display = "";
-
       if (e.dataTransfer && e.dataTransfer.files.length) {
         e.preventDefault();
         e.stopPropagation();
         var file = e.dataTransfer.files[0];
         var reader = new FileReader();
-
         reader.onload = () => {
           var fileName = this.newFile(file.name, reader.result.toString());
           this.select(fileName);
         };
-
         reader.onerror = () => undefined;
-
         reader.readAsText(file);
       }
     };
-
     this.container.addEventListener("dragenter", dragenterHandler);
     this.container.addEventListener("dragover", dragenterHandler);
     this.divOverlay.addEventListener("dragenter", dragoverHandler);
@@ -31520,8 +31384,6 @@ class FileManager {
    * @returns
    * @memberof FileManager
    */
-
-
   createFileDiv(name, editing) {
     var divFile = document.createElement("div");
     divFile.classList.add("filemanager-file");
@@ -31569,29 +31431,20 @@ class FileManager {
     btnMain.addEventListener("touchstart", () => this.setMain(this._fileList.indexOf(fileName)));
     btnDelete.addEventListener("click", e => {
       e.stopPropagation();
-
       var i = this._fileList.indexOf(fileName);
-
       this.fs.unlink(this.path + fileName);
-
       this._fileList.splice(i, 1);
-
       divFile.remove();
-
       if (this._fileList.length === 0) {
         var _fileName = this.newFile("untitled.dsp", "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;");
-
         this.select(_fileName);
       } else {
         this.select(this._fileList[0]);
       }
-
       if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);else this.setMain(this.$mainFile);
       if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
     });
-
     var handlePointerDown = () => this.select(fileName);
-
     divFile.addEventListener("mousedown", handlePointerDown);
     divFile.addEventListener("touchstart", handlePointerDown);
     return divFile;
@@ -31603,21 +31456,16 @@ class FileManager {
    * @returns
    * @memberof FileManager
    */
-
-
   setMain($) {
     if ($ >= this._fileList.length) return;
     this.$mainFile = $;
-
     for (var i = 0; i < this.divFiles.children.length; i++) {
       var e = this.divFiles.children[i];
       var btnMain = e.querySelector(".filemanager-btn-main");
-
       if (btnMain) {
         if (i === $) btnMain.classList.add("active");else btnMain.classList.remove("active");
       }
     }
-
     if (this.mainFileChangeHandler) this.mainFileChangeHandler($, this.mainCode);
   }
   /**
@@ -31625,54 +31473,41 @@ class FileManager {
    *
    * @memberof FileManager
    */
-
-
   getFiles() {
     this.divFiles.innerHTML = "";
     this._fileList = this.fs.readdir(this.path).filter(fileName => fileName !== "." && fileName !== ".." && this.fs.isFile(this.fs.stat(this.path + fileName).mode));
-
     this._fileList.forEach(fileName => {
       var divFile = this.createFileDiv(fileName, false);
       this.divFiles.appendChild(divFile);
     });
-
     if (this._fileList.length === 0) {
       var fileName = this.newFile("untitled.dsp", "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;");
       this.select(fileName);
     } else {
       this.select(this._fileList[0]);
     }
-
     if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);else this.setMain(this.$mainFile);
   }
-
   rename(oldName, newName) {
     if (oldName === newName) return false;
-
     var i = this._fileList.indexOf(oldName);
-
     var spanName;
     var divFile;
-
     for (var _i2 = 0; _i2 < this.divFiles.children.length; _i2++) {
       var file = this.divFiles.children[_i2];
-
       if (file.dataset.filename === oldName) {
         divFile = file;
         spanName = file.getElementsByClassName("filemanager-filename")[0];
         break;
       }
     }
-
     if (!divFile || !spanName) return false;
-
     try {
       this.fs.rename(this.path + oldName, this.path + newName);
     } catch (e) {
       spanName.focus();
       return false;
     }
-
     this._fileList[i] = newName;
     spanName.innerText = newName;
     spanName.contentEditable = "false";
@@ -31682,28 +31517,21 @@ class FileManager {
     this.deleteHandler(oldName, this.mainCode);
     return true;
   }
-
   renameSelected(newName) {
     this.rename(this.selected, newName);
   }
-
   newFile(fileNameIn, content) {
     var fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
     var extension = fileNameIn.split(".").slice(-1) || "lib";
-
     if (!fileName || this._fileList.indexOf(fileName) !== -1) {
       var i = 1;
       fileName = "untitled".concat(i, ".").concat(extension);
-
       while (this._fileList.indexOf(fileName) !== -1) {
         fileName = "untitled".concat(++i, ".").concat(extension);
       }
     }
-
     this.fs.writeFile(this.path + fileName, content || "");
-
     this._fileList.push(fileName);
-
     var divFile = this.createFileDiv(fileName, false);
     this.divFiles.appendChild(divFile);
     if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
@@ -31711,85 +31539,67 @@ class FileManager {
     if (fileName.endsWith(".dsp")) this.setMain(this._fileList.length - 1);
     return fileName;
   }
-
   select(fileName) {
     for (var i = 0; i < this.divFiles.children.length; i++) {
       var divFile = this.divFiles.children[i];
       if (divFile.dataset.filename === fileName) divFile.classList.add("selected");else divFile.classList.remove("selected");
     }
-
     if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, {
       encoding: "utf8"
     }), this.mainCode);
   }
-
   save(fileName, content) {
     if (this.getValue(fileName) === content) return;
     this.fs.writeFile(this.path + fileName, content);
     if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
   }
-
   saveAll() {
     if (!this.saveHandler) return;
-
     this._fileList.forEach(fileName => {
       var content = this.getValue(fileName);
       if (this.selectHandler && content) this.saveHandler(fileName, content, this.mainCode);
     });
   }
-
   setValue(value, useSelectHandler) {
     var fileName = this.selected;
-
     if (fileName) {
       if (this.selectHandler && useSelectHandler !== false) this.selectHandler(fileName, value, this.mainCode);
       this.save(fileName, value);
     }
   }
-
   getValue(fileNameIn) {
     var fileName = fileNameIn || this.selected;
     return this.fs.readFile(this.path + fileName, {
       encoding: "utf8"
     });
   }
-
   get selected() {
     for (var i = 0; i < this.divFiles.children.length; i++) {
       var divFile = this.divFiles.children[i];
       if (divFile.classList.contains("selected")) return divFile.dataset.filename;
     }
-
     return null;
   }
-
   get mainCode() {
     var fileName = this._fileList[this.$mainFile];
     return fileName ? this.getValue(fileName) || "" : "";
   }
-
   get mainFileName() {
     return this._fileList[this.$mainFile];
   }
-
   get mainFileNameWithoutSuffix() {
     return this._fileList[this.$mainFile].split(".").slice(0, -1).join(".");
   }
-
   get allCodes() {
     var codes = "";
-
     this._fileList.forEach(fileName => codes += (this.getValue(fileName) || "") + "\n");
-
     return codes;
   }
-
   get selectedCode() {
     var selected = this.selected;
     if (selected) return this.getValue(selected);
     return this.mainCode;
   }
-
   set expanded(expanded) {
     if (expanded) {
       if (!this.btnExpand.classList.contains("expanded")) {
@@ -31801,19 +31611,15 @@ class FileManager {
       this.divFiles.style.display = "none";
     }
   }
-
   get expanded() {
     return this.btnExpand.classList.contains("expanded");
   }
-
   get fs() {
     return this._fs;
   }
-
   set fs(fsIn) {
     this._fs = fsIn;
   }
-
 }
 
 /***/ }),
@@ -31830,7 +31636,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Key2Midi", function() { return Key2Midi; });
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
-
 
 /**
  * Keyboard Events to Midi Messages
@@ -31895,22 +31700,15 @@ class Key2Midi {
    */
   constructor(options) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "keyMap", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "offset", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "velocity", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "velMap", []);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handler", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "enabled", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleKeyDown", str => {
       if (!this.enabled) return;
       var converted = this.keyMap[str];
       if (typeof converted === "undefined") return;
-
       if (typeof converted === "number") {
         var note = converted + this.offset;
         if (this.velMap[note]) return;
@@ -31918,47 +31716,38 @@ class Key2Midi {
         this.handler([144, converted + this.offset, this.velocity]);
         return;
       }
-
       if (converted === "NEXT") {
         this.flush();
         this.offset = Math.min(120, this.offset + 12);
         return;
       }
-
       if (converted === "PREV") {
         this.flush();
         this.offset = Math.max(0, this.offset - 12);
         return;
       }
-
       if (converted === "VELUP") {
         this.velocity = Math.min(120, this.velocity + 20);
         return;
       }
-
       if (converted === "VELDOWN") {
         this.velocity = Math.max(20, this.velocity - 20);
       }
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleKeyUp", str => {
       if (!this.enabled) return;
       var converted = this.keyMap[str];
       if (typeof converted === "undefined") return;
-
       if (typeof converted === "number") {
         var note = converted + this.offset;
         this.velMap[note] = 0;
         this.handler([144, converted + this.offset, 0]);
       }
     });
-
     this.keyMap = options.keyMap || Key2Midi.KEY_MAP;
     this.offset = options.offset || 36;
     this.velocity = options.velocity || 60;
-
     this.handler = options.handler || (() => undefined);
-
     this.enabled = options.enabled ||  false && false;
   }
   /**
@@ -31969,7 +31758,6 @@ class Key2Midi {
    * @memberof Key2Midi
    */
 
-
   /**
    * Mute All
    *
@@ -31978,14 +31766,11 @@ class Key2Midi {
    */
   flush() {
     if (!this.enabled) return;
-
     for (var note = 0; note < 128; note++) {
       if (this.velMap[note]) this.handler([144, note, 0]);
     }
   }
-
 }
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Key2Midi, "KEY_MAP", {
   a: 0,
   w: 1,
@@ -32009,7 +31794,6 @@ _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Key
   c: "VELDOWN",
   v: "VELUP"
 });
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Key2Midi, "KEY_MAP_FR", {
   q: 0,
   z: 1,
@@ -32035,7 +31819,6 @@ _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Key
 });
 
 
-
 /***/ }),
 
 /***/ "./src/MeterNode.ts":
@@ -32052,11 +31835,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/defineProperty.js");
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__);
 
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
-
 /**
  * Returns a ScriptProcessor that measures the RMSs of each channel in a buffer.
  * The processor calls a `levelHandler` callback after calculating each buffer.
@@ -32072,33 +31852,26 @@ var createMeterNode = (audioCtx, gain, averaging, gainHandler) => {
   node.levelHandler = gainHandler;
   node.averaging = averaging || 0.95;
   node.gain = gain || 1;
-
   node.onaudioprocess = e => {
     var levels = [];
     var input = e.inputBuffer;
     var output = e.outputBuffer;
-
     for (var i = 0; i < input.numberOfChannels; i++) {
       var inputBuffer = input.getChannelData(i);
       var outputBuffer = output.getChannelData(i);
       var l = inputBuffer.length;
       var sum = 0;
-
       for (var j = 0; j < l; j++) {
         var samp = inputBuffer[j];
         outputBuffer[j] = samp;
         sum += samp * samp;
       }
-
       levels.push(Math.pow(sum / l, 0.5));
     }
-
     if (node.levelHandler) node.levelHandler(levels);
   };
-
   return node;
 };
-
 /**
  * A Live-like meter UI with a gain controller.
  * Range from -70dB to +10dB, linear in dB unit.
@@ -32111,33 +31884,19 @@ var createMeterNode = (audioCtx, gain, averaging, gainHandler) => {
 class GainUI {
   constructor(container, meterNode, gainNode, state) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "state", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "meterNode", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "gainNode", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "container", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "canvas", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "ctx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "channels", 2);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "interactionRect", [0, 0, 0, 0]);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "$raf", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "$frame", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "frameReduce", 3);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "paintLevels", [-Infinity]);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "maxLevels", [-Infinity]);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "maxTimer", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleTouchStart", e => {
       e.preventDefault();
       var rect = e.currentTarget.getBoundingClientRect();
@@ -32151,7 +31910,6 @@ class GainUI {
         y: fromY,
         originalEvent: e
       });
-
       var handleTouchMove = e => {
         e.preventDefault();
         var pageX = e.changedTouches[0].pageX;
@@ -32173,7 +31931,6 @@ class GainUI {
           originalEvent: e
         });
       };
-
       var handleTouchEnd = e => {
         e.preventDefault();
         var x = e.changedTouches[0].pageX - rect.left;
@@ -32186,7 +31943,6 @@ class GainUI {
         document.removeEventListener("touchmove", handleTouchMove);
         document.removeEventListener("touchend", handleTouchEnd);
       };
-
       document.addEventListener("touchmove", handleTouchMove, {
         passive: false
       });
@@ -32194,7 +31950,6 @@ class GainUI {
         passive: false
       });
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleMouseDown", e => {
       e.preventDefault();
       e.currentTarget.focus();
@@ -32207,7 +31962,6 @@ class GainUI {
         y: fromY,
         originalEvent: e
       });
-
       var handleMouseMove = e => {
         e.preventDefault();
         var x = e.pageX - rect.left;
@@ -32223,7 +31977,6 @@ class GainUI {
           originalEvent: e
         });
       };
-
       var handleMouseUp = e => {
         e.preventDefault();
         var x = e.pageX - rect.left;
@@ -32236,57 +31989,48 @@ class GainUI {
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
       };
-
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleDblClick", e => {
       e.preventDefault();
       this.value = 0;
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handlePointerUp", e => {});
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "levelHandler", levels => {
       var levelsIn = levels.map(e => 20 * Math.log10(e));
       if (this.state.levels.length === levelsIn.length && this.state.levels.every((v, i) => v === levelsIn[i])) return;
       this.state.levels = levelsIn;
       this.paint();
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "raf", () => {
       this.$frame++;
-
       if (this.$frame % this.frameReduce !== 0) {
         this.$raf = window.requestAnimationFrame(this.raf);
         return;
       }
-
       this.$raf = undefined;
       var _this$state = this.state,
-          barwidth = _this$state.barwidth,
-          barbgcolor = _this$state.barbgcolor,
-          coldcolor = _this$state.coldcolor,
-          warmcolor = _this$state.warmcolor,
-          hotcolor = _this$state.hotcolor,
-          overloadcolor = _this$state.overloadcolor,
-          tribordercolor = _this$state.tribordercolor,
-          tricolor = _this$state.tricolor,
-          textcolor = _this$state.textcolor;
+        barwidth = _this$state.barwidth,
+        barbgcolor = _this$state.barbgcolor,
+        coldcolor = _this$state.coldcolor,
+        warmcolor = _this$state.warmcolor,
+        hotcolor = _this$state.hotcolor,
+        overloadcolor = _this$state.overloadcolor,
+        tribordercolor = _this$state.tribordercolor,
+        tricolor = _this$state.tricolor,
+        textcolor = _this$state.textcolor;
       var _this$state2 = this.state,
-          min = _this$state2.min,
-          max = _this$state2.max,
-          value = _this$state2.value,
-          levels = _this$state2.levels;
+        min = _this$state2.min,
+        max = _this$state2.max,
+        value = _this$state2.value,
+        levels = _this$state2.levels;
       var channels = Math.min(this.channels, levels.length);
       var ctx = this.ctx;
       var canvas = this.canvas;
       var distance = this.distance;
-
       var _canvas$getBoundingCl = canvas.getBoundingClientRect(),
-          width = _canvas$getBoundingCl.width;
-
+        width = _canvas$getBoundingCl.width;
       canvas.width = width;
       var height = barwidth * (channels * 1.5 + 2);
       canvas.height = height;
@@ -32296,7 +32040,6 @@ class GainUI {
       this.interactionRect = [0, top, width, height];
       this.paintLevels = [...levels];
       var paintLevels = [...this.paintLevels];
-
       if (paintLevels.find((v, i) => v > this.maxLevels[i])) {
         this.maxLevels = [...paintLevels];
         if (this.maxTimer) window.clearTimeout(this.maxTimer);
@@ -32306,7 +32049,6 @@ class GainUI {
           this.raf();
         }, 1000);
       }
-
       if (paintLevels.find((v, i) => v < this.maxLevels[i]) && typeof this.maxTimer === "undefined") {
         this.maxTimer = window.setTimeout(() => {
           this.maxLevels = [...this.paintLevels];
@@ -32314,7 +32056,6 @@ class GainUI {
           this.raf();
         }, 1000);
       }
-
       var maxLevels = this.maxLevels;
       var coldStop = (-18 - min) / (max - min);
       var warmStop = (-6 - min) / (max - min);
@@ -32325,7 +32066,6 @@ class GainUI {
       if (warmStop <= 1 && warmStop >= 0) gradient.addColorStop(warmStop, warmcolor);
       if (hotStop <= 1 && hotStop >= 0) gradient.addColorStop(hotStop, hotcolor);
       if (overloadStop <= 1 && overloadStop >= 0) gradient.addColorStop(overloadStop, overloadcolor);else if (overloadStop < 0) gradient.addColorStop(0, coldcolor);
-
       for (var i = 0; i < channels; i++) {
         var level = paintLevels[i];
         var maxLevel = maxLevels[i];
@@ -32333,36 +32073,26 @@ class GainUI {
         if (level < 0) ctx.fillRect(left, top, drawWidth * overloadStop, barwidth);
         if (level < max) ctx.fillRect(left + drawWidth * overloadStop + 1, top, drawWidth * (1 - overloadStop) - 1, barwidth);
         ctx.fillStyle = gradient;
-
         if (level > min) {
           var _distance = (Math.min(0, level) - min) / (max - min);
-
           ctx.fillRect(left, top, _distance * drawWidth, barwidth);
         }
-
         if (level > 0) {
           var _distance2 = Math.min(max, level) / (max - min);
-
           ctx.fillRect(left + overloadStop * drawWidth + 1, top, _distance2 * drawWidth - 1, barwidth);
         }
-
         if (maxLevel > level) {
           if (maxLevel <= 0) {
             var _distance3 = (Math.min(0, maxLevel) - min) / (max - min);
-
             ctx.fillRect(left + _distance3 * drawWidth - 1, top, 1, barwidth);
           }
-
           if (maxLevel > 0) {
             var _distance4 = Math.min(max, maxLevel) / (max - min);
-
             ctx.fillRect(left + Math.min(drawWidth - 1, (overloadStop + _distance4) * drawWidth), top, 1, barwidth);
           }
         }
-
         top += 1.5 * barwidth;
       }
-
       ctx.lineWidth = 1;
       ctx.strokeStyle = tribordercolor;
       var triOrigin = [this.interactionRect[0] + this.interactionRect[2] * distance - 4, top - barwidth * 0.5];
@@ -32379,19 +32109,16 @@ class GainUI {
       ctx.textAlign = "left";
       ctx.fillText("".concat(value.toFixed(2), " dB"), 4, height - 2, width);
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handlePointerDown", e => {
       var value = this.state.value;
       if (e.x < this.interactionRect[0] || e.x > this.interactionRect[0] + this.interactionRect[2] || e.y < this.interactionRect[1] || e.y > this.interactionRect[1] + this.interactionRect[3]) return;
       var newValue = this.getValueFromPos(e);
       if (newValue !== value) this.value = this.getValueFromPos(e);
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handlePointerDrag", e => {
       var newValue = this.getValueFromPos(e);
       if (newValue !== this.state.value) this.value = newValue;
     });
-
     this.container = container;
     this.meterNode = meterNode;
     this.gainNode = gainNode;
@@ -32415,14 +32142,12 @@ class GainUI {
     this.bind();
     this.paint();
   }
-
   getChildren() {
     this.container.innerHTML = "";
     this.canvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d");
     this.container.appendChild(this.canvas);
   }
-
   bind() {
     this.canvas.addEventListener("mousedown", this.handleMouseDown);
     this.canvas.addEventListener("touchstart", this.handleTouchStart, {
@@ -32431,52 +32156,45 @@ class GainUI {
     this.canvas.addEventListener("dblclick", this.handleDblClick);
     this.meterNode.levelHandler = this.levelHandler;
   }
-
   // eslint-disable-line @typescript-eslint/no-unused-vars
   get value() {
     return this.state.value;
   }
-
   set value(valueIn) {
     this.state.value = valueIn;
     this.gainNode.gain.setValueAtTime(valueIn <= -70 ? 0 : Math.pow(10, valueIn / 20), 0);
     this.paint();
   }
-
   get distance() {
     var _this$state3 = this.state,
-        max = _this$state3.max,
-        min = _this$state3.min,
-        value = _this$state3.value;
+      max = _this$state3.max,
+      min = _this$state3.min,
+      value = _this$state3.value;
     return (value - min) / (max - min);
   }
-
   get trueSteps() {
     var _this$state4 = this.state,
-        max = _this$state4.max,
-        min = _this$state4.min,
-        step = _this$state4.step;
+      max = _this$state4.max,
+      min = _this$state4.min,
+      step = _this$state4.step;
     var full = this.interactionRect[2];
     var maxSteps = full;
     if (step) return Math.min(Math.floor((max - min) / step), maxSteps);
     return maxSteps;
   }
-
   get stepRange() {
     var full = this.interactionRect[2];
     var trueSteps = this.trueSteps;
     return full / trueSteps;
   }
-
   paint() {
     if (this.$raf) return;
     this.$raf = window.requestAnimationFrame(this.raf);
   }
-
   getValueFromPos(e) {
     var _this$state5 = this.state,
-        min = _this$state5.min,
-        max = _this$state5.max;
+      min = _this$state5.min,
+      max = _this$state5.max;
     var stepRange = this.stepRange;
     var trueSteps = this.trueSteps;
     var step = (max - min) / trueSteps;
@@ -32484,7 +32202,6 @@ class GainUI {
     steps = Math.min(trueSteps, Math.max(0, steps));
     return steps * step + min;
   }
-
 }
 
 /***/ }),
@@ -32514,32 +32231,24 @@ __webpack_require__.r(__webpack_exports__);
 class Recorder {
   constructor(sampleRate) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "$start", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "$last", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "data", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "sampleRate", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1___default()(this, "enabled", void 0);
-
     this.enabled = false;
     this.sampleRate = sampleRate || 44100;
   }
-
   reset($start) {
     this.$start = $start;
     this.$last = $start;
     this.data = [];
   }
-
   append(buffer, index) {
     if (!this.enabled) return this.totalSec;
     if (index === 0 || !this.data || this.data.length === 0 || index !== ++this.$last) this.reset(index);
     this.data.push(buffer);
     return this.totalSec;
   }
-
   get totalSec() {
     if (!this.data || !this.data.length || !this.data[0].length) return 0;
     var sampleRate = this.sampleRate;
@@ -32547,10 +32256,8 @@ class Recorder {
     var bufferSize = this.data[0][0].length;
     return bufferSize * buffers / sampleRate;
   }
-
   encode() {
     var _this = this;
-
     return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee() {
       var sampleRate, buffers, channels, bufferSize, l, channelData, j, channel, i, bufferData;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
@@ -32561,9 +32268,7 @@ class Recorder {
                 _context.next = 2;
                 break;
               }
-
               return _context.abrupt("return", null);
-
             case 2:
               sampleRate = _this.sampleRate;
               buffers = _this.data.length;
@@ -32571,23 +32276,18 @@ class Recorder {
               bufferSize = _this.data[0][0].length;
               l = buffers * bufferSize;
               channelData = [];
-
               for (j = 0; j < channels; j++) {
                 channel = new Float32Array(l);
-
                 for (i = 0; i < buffers; i++) {
                   bufferData = _this.data[i][j];
                   channel.set(bufferData, i * bufferSize);
                 }
-
                 channelData.push(channel);
               }
-
               return _context.abrupt("return", Object(wav_encoder__WEBPACK_IMPORTED_MODULE_3__["encode"])({
                 sampleRate,
                 channelData
               }));
-
             case 10:
             case "end":
               return _context.stop();
@@ -32596,7 +32296,6 @@ class Recorder {
       }, _callee);
     }))();
   }
-
 }
 
 /***/ }),
@@ -32649,13 +32348,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var TScopeType;
-
 (function (TScopeType) {
   TScopeType[TScopeType["Oscilloscope"] = 0] = "Oscilloscope";
   TScopeType[TScopeType["Spectroscope"] = 1] = "Spectroscope";
   TScopeType[TScopeType["Spectrogram"] = 2] = "Spectrogram";
 })(TScopeType || (TScopeType = {}));
-
 class Scope {
   static drawOscilloscope(ctx, w, h, d, freq, sr, zoom, zoomOffset) {
     this.drawBackground(ctx, w, h);
@@ -32663,52 +32360,42 @@ class Scope {
     var l = d.length;
     ctx.strokeStyle = "#FFFFFF";
     ctx.lineWidth = 2;
-    ctx.beginPath(); // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
-
+    ctx.beginPath();
+    // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
     var min = d[0];
     var max = d[0];
     var i = d.length;
-
     while (i--) {
       var s = d[i];
       if (s < min) min = s;else if (s > max) max = s;
     }
-
     var $zerox = 0;
     var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
-
     var period = sr / freq;
     var times = Math.floor(l / period) - 1;
-
     while (d[$zerox++] > thresh && $zerox < l) {
       ;
     }
-
     if ($zerox >= l - 1) {
       $zerox = 0;
     } else {
       while (d[$zerox++] < thresh && $zerox < l) {
         ;
       }
-
       if ($zerox >= l - 1) {
         $zerox = 0;
       }
     }
-
     var drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
     var $0 = Math.round($zerox + drawL * zoomOffset);
     var $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
-
     for (var _i = $0; _i < $1; _i++) {
       var x = w * (_i - $0) / ($1 - $0 - 1);
       var y = h - (d[_i] * 0.5 + 0.5) * h;
       if (_i === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
     }
-
     ctx.stroke();
   }
-
   static drawSpectroscope(ctx, w, h, d, zoom, zoomOffset) {
     this.drawBackground(ctx, w, h);
     this.drawGrid(ctx, w, h);
@@ -32717,19 +32404,16 @@ class Scope {
     var $1 = Math.round(l / zoom + l * zoomOffset);
     ctx.fillStyle = "#FFFFFF";
     ctx.beginPath();
-
     for (var i = $0; i < $1; i++) {
       var x = w * (i - $0) / ($1 - $0);
       var y = ((d[i] + 10) / 100 + 1) * h;
       if (i === $0) ctx.moveTo(x, h - y);else ctx.lineTo(x, h - y);
     }
-
     ctx.lineTo(w, h);
     ctx.lineTo(0, h);
     ctx.closePath();
     ctx.fill();
   }
-
   static drawOfflineSpectrogram(ctx, d, $) {
     var l = d.length;
     var h = ctx.canvas.height;
@@ -32738,17 +32422,14 @@ class Scope {
     ctx.fillStyle = "black";
     ctx.fillRect($, 0, 1, h);
     var $h = h / l;
-
     for (var i = 0; i < l; i++) {
       var samp = d[i];
       var $step = i % step;
       if ($step === 0) maxInStep = samp;
-
       if ($step !== step - 1) {
         if ($step !== 0 && samp > maxInStep) maxInStep = samp;
         continue;
       }
-
       var normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
       if (normalized === 0) continue;
       var hue = (normalized * 180 + 240) % 360;
@@ -32757,13 +32438,11 @@ class Scope {
       ctx.fillRect($, (1 - i / l) * h, 1, Math.max(1, $h));
     }
   }
-
   static drawSpectrogram(ctx, tempCtx, $, w, h, d, zoom) {
     this.drawBackground(ctx, w, h);
     this.drawGrid(ctx, w, h);
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-
     if ($ + 1 < tempCtx.canvas.width) {
       var d$ = Math.round($ / tempCtx.canvas.width * w * zoom);
       if (d$ < w) ctx.drawImage(tempCtx.canvas, $ + 1, 0, tempCtx.canvas.width - $ - 1, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
@@ -32771,34 +32450,28 @@ class Scope {
     } else {
       ctx.drawImage(tempCtx.canvas, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height, w - w * zoom, 0, w * zoom, h);
     }
-
     ctx.restore();
   }
-
   static drawBackground(ctx, w, h) {
     ctx.save();
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
-
   static drawGrid(ctx, w, h) {
     ctx.save();
     ctx.beginPath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = "#404040";
-
     for (var i = 0.25; i < 1; i += 0.25) {
       ctx.moveTo(w * i, 0);
       ctx.lineTo(w * i, h);
       ctx.moveTo(0, h * i);
       ctx.lineTo(w, h * i);
     }
-
     ctx.stroke();
     ctx.restore();
   }
-
   static drawStats(ctx, w, h, freq, samp, rms, zoom, zoomMin, zoomMax) {
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
@@ -32808,17 +32481,14 @@ class Scope {
     if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
     ctx.fillStyle = "#DDDD99";
     ctx.font = "bold 12px Consolas, monospace";
-
     if (typeof zoom === "number") {
       ctx.textAlign = "center";
       ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
     }
-
     if (typeof zoomMin === "number") {
       ctx.textAlign = "left";
       ctx.fillText(zoomMin.toFixed(0), 2, h - 2, 40);
     }
-
     ctx.textAlign = "right";
     if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
     ctx.fillText((samp >= 0 ? "@+" : "@") + samp.toFixed(3), w - 2, 15, 50);
@@ -32826,7 +32496,6 @@ class Scope {
     ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
     ctx.restore();
   }
-
   static getIconClassName(typeIn) {
     var prefix = "fas fa-sm ";
     if (typeIn === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
@@ -32834,63 +32503,35 @@ class Scope {
     if (typeIn === TScopeType.Spectrogram) return prefix + "fa-water";
     return prefix;
   }
-
   constructor(options) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "raf", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "ctx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "spectTempCtx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "spectCol$", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_disabled", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_paused", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "frame", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "audioCtx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "analyser", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "splitter", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_channel", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "channels", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "container", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "canvas", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnSwitch", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnSize", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnCh", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "iSwitch", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "type", TScopeType.Oscilloscope);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_zoom", 1);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_zoomOffset", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_size", 2048);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "t", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "ti", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "f", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "drawSpectrogram", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "draw", () => {
       this.frame++; // Reduce frame rate
-
       if (this.canvas.offsetParent !== null && this.frame % 3 === 0 && this.audioCtx && this.audioCtx.state === "running" && this.analyser) {
         var ctx = this.ctx;
         var sr = this.audioCtx.sampleRate;
@@ -32899,7 +32540,6 @@ class Scope {
         this.canvas.width = w;
         this.canvas.height = h;
         this.analyser.getFloatFrequencyData(this.f);
-
         if (this.analyser.getFloatTimeDomainData) {
           this.analyser.getFloatTimeDomainData(this.t);
         } else {
@@ -32907,12 +32547,10 @@ class Scope {
           this.analyser.getByteTimeDomainData(this.ti);
           this.ti.forEach((v, i) => this.t[i] = v / 128 - 1);
         }
-
         var freq = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["estimateFreq"])(this.f, sr);
         var samp = this.t[this.t.length - 1];
         var rms = Object(_utils__WEBPACK_IMPORTED_MODULE_2__["getRms"])(this.t);
         if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.f, this.spectCol$);
-
         if (this.type === TScopeType.Oscilloscope) {
           Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
           Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
@@ -32923,14 +32561,11 @@ class Scope {
           Scope.drawSpectrogram(ctx, this.spectTempCtx, this.spectCol$, w, h, this.f, this.zoom);
           Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
         }
-
         this.spectCol$ = (this.spectCol$ + 1) % this.spectTempCtx.canvas.width;
       }
-
       this.raf = requestAnimationFrame(this.draw);
       return this.raf;
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "drawPause", () => {
       var ctx = this.ctx;
       var w = this.canvas.width;
@@ -32941,7 +32576,6 @@ class Scope {
       ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
       ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
     });
-
     Object.assign(this, options);
     this.t = new Float32Array(this.analyser.fftSize);
     this.ti = new Uint8Array(this.analyser.fftSize);
@@ -32950,25 +32584,21 @@ class Scope {
     this.bind();
     if (!window.AudioWorklet) this.paused = true;else if (typeof options.paused === "undefined") this.paused = false;
   }
-
   getChildren() {
     this.spectTempCtx = document.createElement("canvas").getContext("2d");
     this.spectTempCtx.canvas.height = 1024;
     this.spectTempCtx.canvas.width = 1024;
     var ctrl;
-
     for (var i = 0; i < this.container.children.length; i++) {
       var e = this.container.children[i];
       if (e.classList.contains("scope-controller")) ctrl = e;
       if (e.classList.contains("scope-canvas")) this.canvas = e;
     }
-
     if (!ctrl) {
       ctrl = document.createElement("div");
       ctrl.classList.add("scope-controller");
       this.container.appendChild(ctrl);
     }
-
     if (!this.canvas) {
       var canvas = document.createElement("canvas");
       canvas.classList.add("scope-canvas");
@@ -32977,25 +32607,21 @@ class Scope {
       canvas.setAttribute("title", "Input analyser");
       this.container.appendChild(canvas);
       this.canvas = canvas;
-
       try {
         $(canvas).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
     }
 
     this.ctx = this.canvas.getContext("2d");
-
     for (var _i2 = 0; _i2 < ctrl.children.length; _i2++) {
       var _e = ctrl.children[_i2];
       if (_e.classList.contains("scope-btn-switch")) this.btnSwitch = _e;
       if (_e.classList.contains("scope-btn-size")) this.btnSize = _e;
       if (_e.classList.contains("scope-btn-ch")) this.btnCh = _e;
     }
-
     if (!this.btnSwitch) {
       var btn = document.createElement("button");
       btn.className = "scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
@@ -33004,78 +32630,59 @@ class Scope {
       btn.setAttribute("title", "Oscilloscope / Spectroscope / Spectrogram");
       ctrl.appendChild(btn);
       this.btnSwitch = btn;
-
       try {
         $(btn).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
     }
 
     if (!this.btnSize) {
       var _btn = document.createElement("button");
-
       _btn.className = "scope-btn-size btn btn-outline-light btn-sm btn-overlay";
-
       _btn.setAttribute("data-toggle", "tooltip");
-
       _btn.setAttribute("data-placement", "top");
-
       _btn.setAttribute("title", "Analyser Size");
-
       _btn.innerText = this.analyser.fftSize + "samps";
       ctrl.appendChild(_btn);
       this.btnSize = _btn;
-
       try {
         $(_btn).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
     }
 
     if (!this.btnCh) {
       var _btn2 = document.createElement("button");
-
       _btn2.className = "scope-btn-ch btn btn-outline-light btn-sm btn-overlay";
-
       _btn2.setAttribute("data-toggle", "tooltip");
-
       _btn2.setAttribute("data-placement", "top");
-
       _btn2.setAttribute("title", "Current Channel");
-
       _btn2.innerText = "ch " + (this._channel + 1).toString();
       ctrl.appendChild(_btn2);
       this.btnCh = _btn2;
-
       try {
         $(_btn2).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
     }
 
     for (var _i3 = 0; _i3 < this.btnSwitch.children.length; _i3++) {
       var _e2 = this.btnSwitch.children[_i3];
       if (_e2.classList.contains("fas")) this.iSwitch = _e2;
     }
-
     if (!this.iSwitch) {
       var _i4 = document.createElement("i");
-
       _i4.className = "fas fa-sm fa-wave-square";
       this.btnSwitch.appendChild(_i4);
       this.iSwitch = _i4;
     }
   }
-
   bind() {
     this.btnSwitch.addEventListener("click", () => {
       this.zoom = 1;
@@ -33099,20 +32706,16 @@ class Scope {
       var zoom = this.zoom;
       var rect = this.canvas.getBoundingClientRect();
       var center = (e.pageX - rect.left) / rect.width / zoom + this.zoomOffset;
-
       if (e.deltaY !== 0) {
         this.zoom *= multiplier;
         this.zoomOffset = center - center / this.zoom;
       }
-
       if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
     });
   }
-
   get size() {
     return this._size;
   }
-
   set size(sizeIn) {
     this.analyser.fftSize = sizeIn;
     this.t = new Float32Array(this.analyser.fftSize);
@@ -33121,16 +32724,13 @@ class Scope {
     this.btnSize.innerText = sizeIn.toString() + " samps";
     this._size = sizeIn;
   }
-
   get paused() {
     return this._paused;
   }
-
   set paused(pausedIn) {
     if (pausedIn === this.paused) return;
     this._paused = pausedIn;
     if (this.disabled) return;
-
     if (this.paused) {
       cancelAnimationFrame(this.raf);
       this.raf = requestAnimationFrame(this.drawPause);
@@ -33138,27 +32738,22 @@ class Scope {
       this.raf = requestAnimationFrame(this.draw);
     }
   }
-
   get disabled() {
     return this._disabled;
   }
-
   set disabled(disabledIn) {
     if (disabledIn === this.disabled) return;
     this._disabled = disabledIn;
     if (this.paused) return;
-
     if (this.disabled) {
       cancelAnimationFrame(this.raf);
     } else {
       this.raf = requestAnimationFrame(this.draw);
     }
   }
-
   get channel() {
     return this._channel;
   }
-
   set channel(channelIn) {
     if (channelIn >= this.channels) return;
     var oldCh = this._channel;
@@ -33166,35 +32761,27 @@ class Scope {
     this.btnCh.innerText = "ch " + (this._channel + 1).toString();
     if (this._channel === oldCh) return;
     this.splitter.connect(this.analyser, this._channel, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
-
     setTimeout(() => {
       try {
         this.splitter.disconnect(this.analyser, oldCh, 0);
       } catch (_unused) {} // eslint-disable-line no-empty
-
     }, 10);
     this._channel = channelIn;
   }
-
   get zoom() {
     return this._zoom;
   }
-
   set zoom(zoomIn) {
     this._zoom = Math.min(16, Math.max(1, zoomIn));
     this.zoomOffset = this._zoomOffset;
   }
-
   get zoomOffset() {
     return this._zoomOffset;
   }
-
   set zoomOffset(zoomOffsetIn) {
     this._zoomOffset = Math.max(0, Math.min(1 - 1 / this._zoom, zoomOffsetIn));
   }
-
 }
-
 _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(Scope, "sizes", [128, 512, 2048, 8192]);
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))
 
@@ -33248,7 +32835,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var EScopeMode;
-
 (function (EScopeMode) {
   EScopeMode[EScopeMode["Data"] = 0] = "Data";
   EScopeMode[EScopeMode["Interleaved"] = 1] = "Interleaved";
@@ -33256,62 +32842,50 @@ var EScopeMode;
   EScopeMode[EScopeMode["Spectroscope"] = 3] = "Spectroscope";
   EScopeMode[EScopeMode["Spectrogram"] = 4] = "Spectrogram";
 })(EScopeMode || (EScopeMode = {}));
-
 class StaticScope {
   static drawInterleaved(ctx, w, h, d, zoom, zoomOffset, vzoom, cursor) {
     this.drawBackground(ctx, w, h);
     if (!d) return;
     var $ = d.$,
-        t = d.t,
-        freqEstimated = d.freqEstimated,
-        sampleRate = d.sampleRate,
-        drawMode = d.drawMode;
+      t = d.t,
+      freqEstimated = d.freqEstimated,
+      sampleRate = d.sampleRate,
+      drawMode = d.drawMode;
     if (!t || !t.length || !t[0].length) return;
-    var l = t[0].length; // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
-
+    var l = t[0].length;
+    // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
     var min = t[0][0];
     var max = t[0][0];
     var i = t.length;
-
     while (i--) {
       var j = l;
-
       while (j--) {
         var s = t[i][j];
         if (s < min) min = s;else if (s > max) max = s;
       }
     }
-
     var yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
     var $0 = 0; // Draw start
-
     var $1 = l - 1; // Draw End
-
     var $zerox = 0;
-
     if (drawMode === "continuous") {
       // Stablize
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
-
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
-
       while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l) {
         ;
       }
-
       if ($zerox >= l - 1) {
         $zerox = 0;
       } else {
         while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l) {
           ;
         }
-
         if ($zerox >= l - 1) {
           $zerox = 0;
         }
       }
-
       var drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
       $0 = Math.round($zerox + drawL * zoomOffset);
       $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
@@ -33319,58 +32893,44 @@ class StaticScope {
       $0 = Math.round(l * zoomOffset);
       $1 = Math.round(l / zoom + l * zoomOffset);
     }
-
     var left = 50;
     var bottom = 20;
     var hCh = (h - bottom) / t.length; // Height per channel
-
     var eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, $zerox, yFactor, d, EScopeMode.Interleaved);
     var gridX = (w - left) / ($1 - $0 - 1);
     var step = Math.max(1, Math.round(1 / gridX)); // horizontal draw step for optimization
-
     ctx.lineWidth = 2;
-
     for (var _i = 0; _i < t.length; _i++) {
       ctx.beginPath();
       ctx.strokeStyle = "hsl(".concat(_i * 60, ", 100%, 85%)");
       var maxInStep = void 0;
       var minInstep = void 0;
-
       for (var _j = $0; _j < $1; _j++) {
         var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j, $, l); // True index
-
         var samp = t[_i][$j];
         var $step = (_j - $0) % step;
-
         if ($step === 0) {
           maxInStep = samp;
           minInstep = samp;
         }
-
         if ($step !== step - 1) {
           if ($step !== 0) {
             if (samp > maxInStep) maxInStep = samp;
             if (samp < minInstep) minInstep = samp;
           }
-
           continue;
         }
-
         var x = (_j - $0) * gridX + left;
         var y = hCh * (_i + 0.5 - maxInStep / yFactor * 0.5);
         if (_j === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
-
         if (minInstep !== maxInStep) {
           y = hCh * (_i + 0.5 - minInstep / yFactor * 0.5);
           ctx.lineTo(x, y);
         }
       }
-
       ctx.stroke();
     }
-
     eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
-
     if (cursor && cursor.x > left && cursor.y < h - bottom) {
       var statsToDraw = {
         values: []
@@ -33379,61 +32939,47 @@ class StaticScope {
       statsToDraw.values = [];
       statsToDraw.x = ($cursor - $0) * gridX + left;
       statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
-
       var _$j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($cursor, $, l);
-
       for (var _i2 = 0; _i2 < t.length; _i2++) {
         var _samp = t[_i2][_$j];
         if (typeof _samp === "number") statsToDraw.values.push(_samp);
       }
-
       this.drawStats(ctx, w, h, statsToDraw);
     }
   }
-
   static drawOscilloscope(ctx, w, h, d, zoom, zoomOffset, vzoom, cursor) {
     this.drawBackground(ctx, w, h);
     if (!d) return;
     var $ = d.$,
-        t = d.t,
-        freqEstimated = d.freqEstimated,
-        sampleRate = d.sampleRate,
-        drawMode = d.drawMode;
+      t = d.t,
+      freqEstimated = d.freqEstimated,
+      sampleRate = d.sampleRate,
+      drawMode = d.drawMode;
     if (!t || !t.length || !t[0].length) return;
-    var l = t[0].length; // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
-
+    var l = t[0].length;
+    // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
     var min = t[0][0];
     var max = t[0][0];
     var i = t.length;
-
     while (i--) {
       var j = l;
-
       while (j--) {
         var s = t[i][j];
         if (s < min) min = s;else if (s > max) max = s;
       }
     }
-
     var yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
     var $0 = 0; // Draw start
-
     var $1 = l - 1; // Draw End
-
     var $zerox = 0;
-
     if (drawMode === "continuous") {
       // Stablize
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
-
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
-
       while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l) {
         ;
       } // Find first raise
-
-
       if ($zerox >= l - 1) {
         // Found nothing, no stablization
         $zerox = 0;
@@ -33441,69 +32987,54 @@ class StaticScope {
         while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l) {
           ;
         } // Find first drop
-
-
         if ($zerox >= l - 1) {
           $zerox = 0;
         }
       }
-
       var drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox; // length to draw
-
       $0 = Math.round($zerox + drawL * zoomOffset);
       $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
     } else {
       $0 = Math.round(l * zoomOffset);
       $1 = Math.round(l / zoom + l * zoomOffset);
     }
-
     var left = 50;
     var bottom = 20;
     var eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, $zerox, yFactor, d, EScopeMode.Oscilloscope);
     var gridX = (w - left) / ($1 - $0 - 1);
     var step = Math.max(1, Math.round(1 / gridX));
     ctx.lineWidth = 2;
-
     for (var _i3 = 0; _i3 < t.length; _i3++) {
       ctx.beginPath();
       ctx.strokeStyle = t.length === 1 ? "white" : "hsl(".concat(_i3 * 60, ", 100%, 85%)");
       var maxInStep = void 0;
       var minInStep = void 0;
-
       for (var _j2 = $0; _j2 < $1; _j2++) {
         var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j2, $, l);
         var samp = t[_i3][$j];
         var $step = (_j2 - $0) % step;
-
         if ($step === 0) {
           maxInStep = samp;
           minInStep = samp;
         }
-
         if ($step !== step - 1) {
           if ($step !== 0) {
             if (samp > maxInStep) maxInStep = samp;
             if (samp < minInStep) minInStep = samp;
           }
-
           continue;
         }
-
         var x = (_j2 - $0) * gridX + left;
         var y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
         if (_j2 === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
-
         if (minInStep !== maxInStep) {
           y = (h - bottom) * (0.5 - minInStep / yFactor * 0.5);
           ctx.lineTo(x, y);
         }
       }
-
       ctx.stroke();
     }
-
     eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
-
     if (cursor && cursor.x > left && cursor.y < h - bottom) {
       var statsToDraw = {
         values: []
@@ -33512,25 +33043,21 @@ class StaticScope {
       statsToDraw.values = [];
       statsToDraw.x = ($cursor - $0) * gridX + left;
       statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
-
       var _$j2 = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($cursor, $, l);
-
       for (var _i4 = 0; _i4 < t.length; _i4++) {
         var _samp2 = t[_i4][_$j2];
         if (typeof _samp2 === "number") statsToDraw.values.push(_samp2);
       }
-
       this.drawStats(ctx, w, h, statsToDraw);
     }
   }
-
   static drawSpectroscope(ctx, w, h, d, zoom, zoomOffset, cursor) {
     this.drawBackground(ctx, w, h);
     if (!d) return;
     var $ = d.$,
-        f = d.f,
-        fftSize = d.fftSize,
-        fftOverlap = d.fftOverlap;
+      f = d.f,
+      fftSize = d.fftSize,
+      fftOverlap = d.fftOverlap;
     if (!f || !f.length || !f[0].length) return;
     var fftBins = fftSize / 2;
     var $f = $ * fftOverlap / 2;
@@ -33544,36 +33071,29 @@ class StaticScope {
     var eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 0, 1, d, EScopeMode.Spectroscope);
     var gridX = (w - left) / ($1 - $0 - 1);
     var step = Math.max(1, Math.round(1 / gridX));
-
     for (var i = 0; i < f.length; i++) {
       ctx.beginPath();
       ctx.fillStyle = f.length === 1 ? "white" : "hsl(".concat(i * 60, ", 100%, 85%)");
       var maxInStep = void 0;
-
       for (var j = $0; j < $1; j++) {
         var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(j, $f, l);
         var samp = f[i][$j];
         var $step = (j - $0) % step;
         if ($step === 0) maxInStep = samp;
-
         if ($step !== step - 1) {
           if ($step !== 0 && samp > maxInStep) maxInStep = samp;
           continue;
         }
-
         var x = (j - $0) * gridX + left;
         var y = hCh * (i + 1 - Math.min(1, Math.max(0, maxInStep / 100 + 1)));
         if (j === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
       }
-
       ctx.lineTo(w, hCh * (i + 1));
       ctx.lineTo(left, hCh * (i + 1));
       ctx.closePath();
       ctx.fill();
     }
-
     eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
-
     if (cursor && cursor.x > left && cursor.y < h - bottom) {
       var statsToDraw = {
         values: []
@@ -33582,25 +33102,21 @@ class StaticScope {
       statsToDraw.values = [];
       statsToDraw.x = ($cursor - $0) * gridX + left;
       statsToDraw.xLabel = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["indexToFreq"])($cursor, fftBins, d.sampleRate).toFixed(0);
-
       var _$j3 = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($cursor, $f, l);
-
       for (var _i5 = 0; _i5 < f.length; _i5++) {
         var _samp3 = f[_i5][_$j3];
         if (typeof _samp3 === "number") statsToDraw.values.push(_samp3);
       }
-
       this.drawStats(ctx, w, h, statsToDraw);
     }
   }
-
   static drawSpectrogram(ctx, tempCtx, w, h, d, zoom, zoomOffset, cursor) {
     this.drawBackground(ctx, w, h);
     if (!d) return;
     var $ = d.$,
-        f = d.f,
-        fftSize = d.fftSize,
-        fftOverlap = d.fftOverlap;
+      f = d.f,
+      fftSize = d.fftSize,
+      fftOverlap = d.fftOverlap;
     if (!f || !f.length || !f[0].length) return;
     var fftBins = fftSize / 2;
     var $f = $ * fftOverlap / 2;
@@ -33618,7 +33134,6 @@ class StaticScope {
     var bottom = 20;
     var $0src = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($0fft, $f / fftBins, l);
     var $1src = $0src + $1fft - $0fft;
-
     if ($1src > l) {
       var split$ = l - $0src;
       ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, left, 0, split$ / ($1src - $0src) * (w - left), h - bottom);
@@ -33626,10 +33141,8 @@ class StaticScope {
     } else {
       ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, left, 0, w - left, h - bottom);
     }
-
     ctx.restore();
     eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
-
     if (cursor && cursor.x > left && cursor.y < h - bottom) {
       var statsToDraw = {
         values: []
@@ -33651,20 +33164,19 @@ class StaticScope {
       this.drawStats(ctx, w, h, statsToDraw);
     }
   }
-
   static drawOfflineSpectrogram(ctx, d, last$) {
     if (!d) return last$;
     var $ = d.$,
-        f = d.f,
-        fftSize = d.fftSize,
-        fftOverlap = d.fftOverlap;
+      f = d.f,
+      fftSize = d.fftSize,
+      fftOverlap = d.fftOverlap;
     if (!f || !f.length || !f[0].length) return last$;
     var fftBins = fftSize / 2;
     var $f = $ * fftOverlap / 2;
     $f -= $f % fftBins;
     var _ctx$canvas = ctx.canvas,
-        canvasWidth = _ctx$canvas.width,
-        h = _ctx$canvas.height;
+      canvasWidth = _ctx$canvas.width,
+      h = _ctx$canvas.height;
     var l = f[0].length;
     var $0 = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(last$, 0, l);
     var $1 = $0 >= $f ? $f + l : $f;
@@ -33676,23 +33188,19 @@ class StaticScope {
     var $h = hCh / fftBins;
     if (canvasWidth !== w) ctx.canvas.width = w;
     var step = Math.max(1, Math.round(fftBins / hCh));
-
     for (var i = 0; i < f.length; i++) {
       for (var j = $0fft; j < $1fft; j++) {
         var maxInStep = void 0;
         ctx.fillStyle = "black";
         ctx.fillRect(j % w, i * hCh, 1, hCh);
-
         for (var k = 0; k < fftBins; k++) {
           var samp = f[i][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(k, j * fftBins, l)];
           var $step = k % step;
           if ($step === 0) maxInStep = samp;
-
           if ($step !== step - 1) {
             if ($step !== 0 && samp > maxInStep) maxInStep = samp;
             continue;
           }
-
           var normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
           if (normalized === 0) continue;
           var hue = (normalized * 180 + 240) % 360;
@@ -33702,27 +33210,24 @@ class StaticScope {
         }
       }
     }
-
     return Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($1, 0, l);
   }
-
   static drawBackground(ctx, w, h) {
     ctx.save();
     ctx.fillStyle = "#181818";
     ctx.fillRect(0, 0, w, h);
     ctx.restore();
   }
-
   static drawGrid(ctx, w, h, $0, $1, $zerox, yFactor, d, mode) {
     ctx.save();
     ctx.setLineDash([]);
     ctx.lineWidth = 1;
     var t = d.t,
-        e = d.e,
-        bufferSize = d.bufferSize,
-        fftSize = d.fftSize,
-        fftOverlap = d.fftOverlap,
-        sampleRate = d.sampleRate;
+      e = d.e,
+      bufferSize = d.bufferSize,
+      fftSize = d.fftSize,
+      fftOverlap = d.fftOverlap,
+      sampleRate = d.sampleRate;
     var inFreqDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
     var fftBins = fftSize / 2;
     var channels = mode === EScopeMode.Oscilloscope ? 1 : t.length;
@@ -33753,7 +33258,6 @@ class StaticScope {
     ctx.lineTo(w, h - bottom);
     ctx.stroke();
     ctx.strokeStyle = bufferStrokeStyle;
-
     for (var j = $0buffer; j < $1buffer; j += hStep) {
       var $fft = j / (fftBins / bufferSize) * fftOverlap / 2;
       var x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
@@ -33763,7 +33267,6 @@ class StaticScope {
       ctx.moveTo(x, 0);
       ctx.lineTo(x, h - bottom);
       ctx.stroke();
-
       if (mode === EScopeMode.Spectrogram) {
         if ($fft % 1 === 0) ctx.fillText($fft.toFixed(), Math.min(x, w - 20), h - 10);
       } else if (mode === EScopeMode.Spectroscope) {
@@ -33772,14 +33275,11 @@ class StaticScope {
         ctx.fillText((j * bufferSize).toFixed(), Math.min(x, w - 20), h - 10);
       }
     }
-
     if (e) {
       ctx.strokeStyle = eventStrokeStyle;
-
       for (var _j3 = Math.ceil($0buffer); _j3 < $1buffer; _j3++) {
         if (e[$buffer + _j3] && e[$buffer + _j3].length) {
           var _x = (_j3 * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0) / ($1 - $0 - 1) * (w - left) + left;
-
           if (_x < left) continue;
           eventsToDraw.push([_x, e[$buffer + _j3]]);
           ctx.beginPath();
@@ -33789,34 +33289,25 @@ class StaticScope {
         }
       }
     }
-
     ctx.strokeStyle = normalStrokeStyle;
     var hCh = (h - bottom) / channels;
     var vStep = 0.25;
-
     while (yFactor / vStep > 2) {
       vStep *= 2;
     } // Maximum horizontal grids in channel one side = 2
-
-
     ctx.beginPath();
     ctx.textAlign = "right";
-
     var drawHLine = (y, yLabel) => {
       ctx.moveTo(left, y);
       ctx.lineTo(w, y);
       ctx.fillText(yLabel, 45, Math.max(y, 10));
     };
-
     var _loop = function _loop(i) {
       var y = (i + 0.5) * hCh;
       var $ = 0.5;
-
       var getYLabel = () => mode === EScopeMode.Spectrogram ? Object(_utils__WEBPACK_IMPORTED_MODULE_1__["indexToFreq"])(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-100 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2);
-
       var yLabel = getYLabel();
       drawHLine(y, yLabel);
-
       for (var _j4 = vStep; _j4 < yFactor; _j4 += vStep) {
         $ = 0.5 - _j4 / yFactor / 2;
         y = (i + 0.5 + _j4 / yFactor / 2) * hCh;
@@ -33828,33 +33319,27 @@ class StaticScope {
         drawHLine(y, yLabel);
       }
     };
-
     for (var i = 0; i < channels; i++) {
       _loop(i);
     }
-
     ctx.stroke();
     ctx.beginPath();
     ctx.setLineDash([4, 2]);
     ctx.strokeStyle = "white";
-
     for (var _i6 = 1; _i6 < channels; _i6++) {
       ctx.moveTo(0, _i6 * hCh);
       ctx.lineTo(w, _i6 * hCh);
     }
-
     ctx.stroke();
     ctx.restore();
     return eventsToDraw;
   }
-
   static drawEvent(ctx, w, h, x, e) {
     ctx.save();
     ctx.font = "bold 12px Consolas, monospace";
     ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
     var eStrings = e.map(event => event.data.path ? "".concat(event.data.path, ": ").concat(event.data.value) : "".concat(event.type, ": ").concat(event.data.join(",")));
     var textWidth = Math.max(...eStrings.map(s => ctx.measureText(s).width)) + 5;
-
     if (w - x >= textWidth) {
       ctx.fillRect(x, 0, textWidth, e.length * 15 + 2);
       ctx.textAlign = "left";
@@ -33862,12 +33347,10 @@ class StaticScope {
       ctx.fillRect(x - textWidth, 0, textWidth, e.length * 15 + 2);
       ctx.textAlign = "right";
     }
-
     ctx.fillStyle = "#DDDD99";
     eStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
     ctx.restore();
   }
-
   static drawStats(ctx, w, h, statsToDraw) {
     var left = 50;
     var bottom = 20;
@@ -33876,21 +33359,18 @@ class StaticScope {
     ctx.strokeStyle = "#b0b0b0";
     ctx.beginPath();
     var x = statsToDraw.x,
-        y = statsToDraw.y,
-        xLabel = statsToDraw.xLabel,
-        yLabel = statsToDraw.yLabel,
-        values = statsToDraw.values;
-
+      y = statsToDraw.y,
+      xLabel = statsToDraw.xLabel,
+      yLabel = statsToDraw.yLabel,
+      values = statsToDraw.values;
     if (x) {
       ctx.moveTo(x, 0);
       ctx.lineTo(x, h - bottom);
     }
-
     if (y) {
       ctx.moveTo(left, y);
       ctx.lineTo(w, y);
     }
-
     ctx.stroke();
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
     if (xLabel) ctx.fillRect(Math.min(x - 20, w - 40), h - 18, 40, 16);
@@ -33911,22 +33391,19 @@ class StaticScope {
     right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 70));
     ctx.restore();
   }
-
   static fillDivData(container, d) {
     container.innerHTML = "";
     if (!d) return;
     var $ = d.$,
-        t = d.t,
-        e = d.e;
+      t = d.t,
+      e = d.e;
     if (!t || !t.length || !t[0].length) return;
     var l = t[0].length;
-
     for (var i = 0; i < t.length; i++) {
       var ch = t[i];
       var divCh = document.createElement("div");
       divCh.classList.add("static-scope-channel");
       divCh.style.backgroundColor = t.length === 1 ? "#181818" : "hsl(".concat(i * 60, ", 100%, 10%)");
-
       for (var j = 0; j < Math.min(ch.length, 2048); j++) {
         var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(j, $, l);
         var divCell = document.createElement("div");
@@ -33941,31 +33418,20 @@ class StaticScope {
         divCell.appendChild(spanSamp);
         divCh.appendChild(divCell);
       }
-
       if (ch.length > 2048) {
         var _divCell = document.createElement("div");
-
         _divCell.classList.add("static-scope-cell");
-
         var _spanIndex = document.createElement("span");
-
         _spanIndex.innerText = "...";
-
         var _spanSamp = document.createElement("span");
-
         _spanSamp.innerText = "...";
-
         _divCell.appendChild(_spanIndex);
-
         _divCell.appendChild(_spanSamp);
-
         divCh.appendChild(_divCell);
       }
-
       container.appendChild(divCh);
     }
   }
-
   static getIconClassName(typeIn) {
     var prefix = "fas fa-sm ";
     if (typeIn === EScopeMode.Data) return prefix + "fa-table";
@@ -33975,7 +33441,6 @@ class StaticScope {
     if (typeIn === EScopeMode.Spectrogram) return prefix + "fa-align-justify";
     return prefix;
   }
-
   static getModeName(typeIn) {
     if (typeIn === EScopeMode.Data) return "Data";
     if (typeIn === EScopeMode.Interleaved) return "Interleaved";
@@ -33984,54 +33449,36 @@ class StaticScope {
     if (typeIn === EScopeMode.Spectrogram) return "Spectrogram";
     return "";
   }
-
   constructor(options) {
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "raf", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "ctx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "container", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "canvas", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnSwitch", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnZoomOut", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnZoom", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnZoomIn", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "btnDownload", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "iSwitch", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "spanSwitch", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "divData", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "divDefault", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_mode", EScopeMode.Oscilloscope);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_zoom", {
       oscilloscope: 1,
       spectroscope: 1,
       spectrogram: 1
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_vzoom", {
       oscilloscope: 1,
       spectroscope: 1,
       spectrogram: 1
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "_zoomOffset", {
       oscilloscope: 0,
       spectroscope: 0,
       spectrogram: 0
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "data", {
       drawMode: "manual",
       t: undefined,
@@ -34041,19 +33488,12 @@ class StaticScope {
       fftSize: 256,
       fftOverlap: 2
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "cursor", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "dragging", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "spectTempCtx", void 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "lastSpect$", 0);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "drawSpectrogram", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "newDataArrived", false);
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleMouseMove", e => {
       if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
       if (this.mode === EScopeMode.Data) return;
@@ -34067,11 +33507,10 @@ class StaticScope {
       this.cursor = {
         x,
         y
-      }; // if (this.data.drawMode === "continuous") return;
-
+      };
+      // if (this.data.drawMode === "continuous") return;
       this.draw();
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleMouseDown", eDown => {
       if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
       if (this.mode === EScopeMode.Data) return;
@@ -34081,22 +33520,21 @@ class StaticScope {
       this.canvas.style.cursor = "grab";
       var origZoom = this.zoom;
       var origOffset = this.zoomOffset;
-      var prevX = eDown instanceof MouseEvent ? eDown.pageX : eDown.touches[0].pageX; // let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
-
+      var prevX = eDown instanceof MouseEvent ? eDown.pageX : eDown.touches[0].pageX;
+      // let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
       var handleMouseMove = eMove => {
-        var x = eMove instanceof MouseEvent ? eMove.pageX : eMove.touches[0].pageX; // const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
-
-        var dX = x - prevX; // const dY = y - prevY;
-
-        prevX = x; // prevY = y;
+        var x = eMove instanceof MouseEvent ? eMove.pageX : eMove.touches[0].pageX;
+        // const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
+        var dX = x - prevX;
+        // const dY = y - prevY;
+        prevX = x;
+        // prevY = y;
         // const multiplier = 1 / 1.015 ** dY;
-
-        var offset = -dX / this.zoom / this.canvas.width; // if (multiplier !== 1) this.zoom *= multiplier;
-
+        var offset = -dX / this.zoom / this.canvas.width;
+        // if (multiplier !== 1) this.zoom *= multiplier;
         if (offset !== 0) this.zoomOffset += offset;
         if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw();
       };
-
       var handleMouseUp = () => {
         this.dragging = false;
         this.canvas.style.cursor = "";
@@ -34105,33 +33543,27 @@ class StaticScope {
         document.removeEventListener("mouseup", handleMouseUp);
         document.removeEventListener("touchend", handleMouseUp);
       };
-
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("touchmove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
       document.addEventListener("touchend", handleMouseUp);
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "handleMouseLeave", () => {
       if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
       if (this.mode === EScopeMode.Data) return;
       this.cursor = undefined;
       this.draw();
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "drawCallback", () => {
       this.raf = undefined;
-
       if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) {
         if (this.divDefault.style.display === "none") {
           this.divDefault.style.display = "block";
           return;
         }
       } else if (this.divDefault.style.display !== "none") this.divDefault.style.display = "none";
-
       if (this.data && this.newDataArrived && this.drawSpectrogram) this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$);
       if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
-
       var w = this.container.clientWidth;
       var h = this.container.clientHeight;
       if (this.canvas.width !== w) this.canvas.width = w;
@@ -34139,28 +33571,23 @@ class StaticScope {
       if (this.mode === EScopeMode.Data) StaticScope.fillDivData(this.divData, this.data);else if (this.mode === EScopeMode.Interleaved) StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);else if (this.mode === EScopeMode.Oscilloscope) StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);else if (this.mode === EScopeMode.Spectroscope) StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);else if (this.mode === EScopeMode.Spectrogram) StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor);
       this.newDataArrived = false;
     });
-
     _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(this, "draw", data => {
       if (data) {
         this.data = data;
         this.newDataArrived = true;
       }
-
       if (this.raf) return;
       this.raf = requestAnimationFrame(this.drawCallback);
     });
-
     Object.assign(this, options);
     this.getChildren();
     this.bind();
     this.mode = EScopeMode.Oscilloscope;
   }
-
   getChildren() {
     this.spectTempCtx = document.createElement("canvas").getContext("2d");
     this.spectTempCtx.canvas.height = 1024;
     var ctrl;
-
     for (var i = 0; i < this.container.children.length; i++) {
       var e = this.container.children[i];
       if (e.classList.contains("static-scope-ui-controller")) ctrl = e;
@@ -34168,27 +33595,23 @@ class StaticScope {
       if (e.classList.contains("static-scope-data")) this.divData = e;
       if (e.classList.contains("static-scope-default")) this.divDefault = e;
     }
-
     if (!ctrl) {
       ctrl = document.createElement("div");
       ctrl.classList.add("static-scope-ui-controller");
       this.container.appendChild(ctrl);
     }
-
     if (!this.canvas) {
       var canvas = document.createElement("canvas");
       canvas.classList.add("static-scope-canvas");
       this.container.appendChild(canvas);
       this.canvas = canvas;
     }
-
     if (!this.divData) {
       var divData = document.createElement("div");
       divData.classList.add("static-scope-data");
       this.container.appendChild(divData);
       this.divData = divData;
     }
-
     if (!this.divDefault) {
       var divDefault = document.createElement("div");
       divDefault.classList.add("static-scope-default", "alert", "alert-info");
@@ -34197,9 +33620,7 @@ class StaticScope {
       this.container.appendChild(divDefault);
       this.divDefault = divDefault;
     }
-
     this.ctx = this.canvas.getContext("2d");
-
     for (var _i7 = 0; _i7 < ctrl.children.length; _i7++) {
       var _e = ctrl.children[_i7];
       if (_e.classList.contains("static-scope-ui-switch")) this.btnSwitch = _e;
@@ -34208,7 +33629,6 @@ class StaticScope {
       if (_e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = _e;
       if (_e.classList.contains("static-scope-ui-download")) this.btnDownload = _e;
     }
-
     if (!this.btnSwitch) {
       var btn = document.createElement("button");
       btn.className = "static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
@@ -34216,132 +33636,89 @@ class StaticScope {
       btn.setAttribute("data-placement", "top");
       btn.setAttribute("title", "Interleaved Scope / Stacked Scope / Data");
       ctrl.appendChild(btn);
-
       try {
         $(btn).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
-
       this.btnSwitch = btn;
     }
-
     if (!this.btnZoomOut) {
       var _btn = document.createElement("button");
-
       _btn.className = "static-scope-ui-zoomout btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-
       _btn.setAttribute("data-toggle", "tooltip");
-
       _btn.setAttribute("data-placement", "top");
-
       _btn.setAttribute("title", "Zoom Out");
-
       _btn.innerHTML = '<i class="fas fa-minus"></i>';
       ctrl.appendChild(_btn);
-
       try {
         $(_btn).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
-
       this.btnZoomOut = _btn;
     }
-
     if (!this.btnZoom) {
       var _btn2 = document.createElement("button");
-
       _btn2.className = "static-scope-ui-zoom btn btn-outline-light btn-sm btn-overlay";
-
       _btn2.setAttribute("data-toggle", "tooltip");
-
       _btn2.setAttribute("data-placement", "top");
-
       _btn2.setAttribute("title", "Reset Zoom");
-
       _btn2.innerText = "1.0x";
       ctrl.appendChild(_btn2);
-
       try {
         $(_btn2).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
-
       this.btnZoom = _btn2;
     }
-
     if (!this.btnZoomIn) {
       var _btn3 = document.createElement("button");
-
       _btn3.className = "static-scope-ui-zoomin btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-
       _btn3.setAttribute("data-toggle", "tooltip");
-
       _btn3.setAttribute("data-placement", "top");
-
       _btn3.setAttribute("title", "Zoom In");
-
       _btn3.innerHTML = '<i class="fas fa-plus"></i>';
       ctrl.appendChild(_btn3);
-
       try {
         $(_btn3).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
-
       this.btnZoomIn = _btn3;
     }
-
     if (!this.btnDownload) {
       var _btn4 = document.createElement("button");
-
       _btn4.className = "static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-
       _btn4.setAttribute("data-toggle", "tooltip");
-
       _btn4.setAttribute("data-placement", "top");
-
       _btn4.setAttribute("title", "Download Data");
-
       _btn4.innerHTML = '<i class="fas fa-download"></i>';
       ctrl.appendChild(_btn4);
-
       try {
         $(_btn4).tooltip({
           trigger: "hover",
           boundary: "viewport"
         });
       } catch (e) {} // eslint-disable-line no-empty
-
-
       this.btnDownload = _btn4;
     }
-
     for (var _i8 = 0; _i8 < this.btnSwitch.children.length; _i8++) {
       var _e2 = this.btnSwitch.children[_i8];
       if (_e2.classList.contains("fas")) this.iSwitch = _e2;
       if (_e2 instanceof HTMLSpanElement) this.spanSwitch = _e2;
     }
-
     if (!this.iSwitch) {
       var _i9 = document.createElement("i");
-
       _i9.className = "fas fa-sm fa-wave-square";
       this.btnSwitch.appendChild(_i9);
       this.iSwitch = _i9;
     }
-
     if (!this.spanSwitch) {
       var span = document.createElement("span");
       span.innerText = "Oscilloscope";
@@ -34349,7 +33726,6 @@ class StaticScope {
       this.spanSwitch = span;
     }
   }
-
   bind() {
     this.btnSwitch.addEventListener("click", () => {
       var newType = (this.mode + 1) % 5;
@@ -34363,7 +33739,6 @@ class StaticScope {
       var left = 50;
       var bottom = 20;
       var multiplier = Math.pow(1.5, e.deltaY > 0 ? -1 : 1);
-
       if (e.offsetX < left && e.offsetY < this.canvas.height - bottom) {
         if (multiplier !== 1) this.vzoom *= 1 / multiplier;
         this.draw();
@@ -34387,16 +33762,14 @@ class StaticScope {
     });
     this.btnDownload.addEventListener("click", () => {
       var data = "";
-
       if (this.mode === EScopeMode.Data || this.mode === EScopeMode.Interleaved || this.mode === EScopeMode.Oscilloscope) {
         if (this.data.t) {
           var _this$data = this.data,
-              t = _this$data.t,
-              _$ = _this$data.$;
+            t = _this$data.t,
+            _$ = _this$data.$;
           if (!t || !t.length || !t[0].length) return;
           var l = t[0].length;
           data += new Array(t.length).fill(null).map((v, i) => "channel".concat(i + 1)).join(",") + "\n";
-
           for (var j = 0; j < l; j++) {
             for (var i = 0; i < t.length; i++) {
               var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(j, _$, l);
@@ -34407,53 +33780,45 @@ class StaticScope {
         }
       } else if (this.mode === EScopeMode.Spectroscope) {
         var _this$data2 = this.data,
-            _$2 = _this$data2.$,
-            f = _this$data2.f,
-            fftSize = _this$data2.fftSize,
-            fftOverlap = _this$data2.fftOverlap;
+          _$2 = _this$data2.$,
+          f = _this$data2.f,
+          fftSize = _this$data2.fftSize,
+          fftOverlap = _this$data2.fftOverlap;
         if (!f || !f.length || !f[0].length) return;
         var fftBins = fftSize / 2;
         var $f = _$2 * fftOverlap / 2;
         $f -= $f % fftBins;
         var _l = f[0].length;
         data += new Array(f.length).fill(null).map((v, i) => "channel".concat(i + 1)).join(",") + "\n";
-
         for (var _j5 = _l - fftBins; _j5 < _l; _j5++) {
           for (var _i10 = 0; _i10 < f.length; _i10++) {
             var _$j4 = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j5, $f, _l);
-
             var _samp4 = f[_i10][_$j4];
             data += _samp4 + (_i10 === f.length - 1 ? "\n" : ",");
           }
         }
       } else if (this.mode === EScopeMode.Spectrogram) {
         var _this$data3 = this.data,
-            _$3 = _this$data3.$,
-            _f = _this$data3.f,
-            _fftSize = _this$data3.fftSize,
-            _fftOverlap = _this$data3.fftOverlap;
+          _$3 = _this$data3.$,
+          _f = _this$data3.f,
+          _fftSize = _this$data3.fftSize,
+          _fftOverlap = _this$data3.fftOverlap;
         if (!_f || !_f.length || !_f[0].length) return;
-
         var _fftBins = _fftSize / 2;
-
         var _$f = _$3 * _fftOverlap / 2;
-
         _$f -= _$f % _fftBins;
         var _l2 = _f[0].length;
         data += new Array(_l2 / _fftBins).fill(null).map((v, i) => new Array(_f.length).fill(null).map((v, j) => "frame".concat(i + 1, "_channel").concat(j + 1)).join(",")).join(",") + "\n";
-
         for (var _j6 = 0; _j6 < _fftBins; _j6++) {
           for (var h = 0; h < _l2 / _fftBins; h++) {
             for (var _i11 = 0; _i11 < _f.length; _i11++) {
               var _$j5 = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(h * _fftBins + _j6, _$f, _l2);
-
               var _samp5 = _f[_i11][_$j5];
               data += _samp5 + (_i11 === _f.length - 1 && h === _l2 / _fftBins - 1 ? "\n" : ",");
             }
           }
         }
       }
-
       if (!data) return;
       var blob = new Blob([data]);
       var url = URL.createObjectURL(blob);
@@ -34470,24 +33835,19 @@ class StaticScope {
     this.canvas.addEventListener("mouseleave", this.handleMouseLeave);
     this.canvas.addEventListener("touchend", this.handleMouseLeave);
   }
-
   get zoomType() {
     return this.mode === EScopeMode.Spectroscope ? "spectroscope" : this.mode === EScopeMode.Spectrogram ? "spectrogram" : "oscilloscope";
   }
-
   get vzoom() {
     return this._vzoom[this.zoomType];
   }
-
   set vzoom(zoomIn) {
     var maxZoom = 16;
     this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
   }
-
   get zoom() {
     return this._zoom[this.zoomType];
   }
-
   set zoom(zoomIn) {
     var maxZoom = this.data && this.data.t && this.data.t[0] ? Math.max(16, this.mode === EScopeMode.Spectroscope ? 16 : this.data.t[0].length / (this.inFreqDomain ? this.data.fftSize / 2 : this.data.bufferSize)) : 16;
     var w = this.canvas.width;
@@ -34499,15 +33859,12 @@ class StaticScope {
     this.zoomOffset = cursor - cursorIn / this.zoom;
     this.btnZoom.innerHTML = this.zoom.toFixed(1) + "x";
   }
-
   get zoomOffset() {
     return this._zoomOffset[this.zoomType];
   }
-
   set zoomOffset(zoomOffsetIn) {
     this._zoomOffset[this.zoomType] = Math.max(0, Math.min(1 - 1 / this.zoom, zoomOffsetIn));
   }
-
   resetZoom() {
     this._zoom = {
       oscilloscope: 1,
@@ -34520,16 +33877,13 @@ class StaticScope {
       spectrogram: 0
     };
   }
-
   get mode() {
     return this._mode;
   }
-
   set mode(modeIn) {
     this.iSwitch.className = StaticScope.getIconClassName(modeIn);
     this.spanSwitch.innerText = StaticScope.getModeName(modeIn);
     this._mode = modeIn;
-
     if (modeIn === EScopeMode.Data) {
       this.divData.style.display = "";
       this.canvas.style.display = "none";
@@ -34543,14 +33897,11 @@ class StaticScope {
       this.btnZoomIn.style.display = "";
       this.btnZoomOut.style.display = "";
     }
-
     this.draw();
   }
-
   get inFreqDomain() {
     return this.mode === EScopeMode.Spectrogram || this.mode === EScopeMode.Spectroscope;
   }
-
 }
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js")))
 
@@ -34568,6 +33919,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "faustDocURL", function() { return faustDocURL; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "docSections", function() { return docSections; });
 // Definitions related to the libraries documentation system
+
 var faustDocURL = "https://faustlibraries.grame.fr/libs";
 var docSections = {
   aa: "aanl",
@@ -34685,17 +34037,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./utils */ "./src/utils.ts");
 
 
-
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
-
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0___default()(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 
-
-
 /* eslint-disable newline-per-chained-call */
-
 /* eslint-disable @typescript-eslint/no-use-before-define */
-
 /* eslint-disable no-use-before-define */
 // TODO
 // webworkerify
@@ -34730,19 +34076,18 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 
 
+
 var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 var server = "https://faustservicecloud.grame.fr";
 $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee12() {
   var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
-
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee12$(_context12) {
     while (1) {
       switch (_context12.prev = _context12.next) {
         case 0:
           _context12.next = 2;
           return __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.t.bind(null, /*! faust2webaudio */ "./node_modules/faust2webaudio/dist/index.min.js", 7));
-
         case 2:
           _yield$import = _context12.sent;
           Faust = _yield$import.Faust;
@@ -34752,16 +34097,13 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           });
           _context12.next = 7;
           return faust.ready;
-
         case 7:
           _context12.next = 9;
           return fetch("./primitives.lib");
-
         case 9:
           faustPrimitiveLibFile = _context12.sent;
           _context12.next = 12;
           return faustPrimitiveLibFile.text();
-
         case 12:
           faustPrimitiveLib = _context12.sent;
           faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
@@ -34769,142 +34111,104 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           /**
            * To save dsp table to localStorage
            */
-
           saveEditorDspTable = () => {
             _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_table", faust.stringifyDspTable());
-          };
-          /**
-           * To load dsp table from localStorage
-           */
-
-
+          }; /**
+              * To load dsp table from localStorage
+              */
           loadEditorDspTable = () => {
             var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_table");
             if (str) faust.parseDspTable(str);
-          };
-          /**
-           * To save editor params to localStorage
-           */
-
-
+          }; /**
+              * To save editor params to localStorage
+              */
           saveEditorParams = () => {
             var str = JSON.stringify(compileOptions);
             _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_params", str);
-          };
-          /**
-           * To load editor params from localStorage
-           *
-           * @returns {(FaustEditorCompileOptions | {})}
-           */
-
-
+          }; /**
+              * To load editor params from localStorage
+              *
+              * @returns {(FaustEditorCompileOptions | {})}
+              */
           loadEditorParams = () => {
             var clientVersion = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_version");
             if (clientVersion !== _version__WEBPACK_IMPORTED_MODULE_22__) return {};
             var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params");
             if (!str) return {};
-
             try {
               return JSON.parse(str);
             } catch (e) {
               return {};
             }
-          };
-          /**
-           * To load dsp params from localStorage
-           *
-           * @returns {{ [path: string]: number }}
-           */
-
-
+          }; /**
+              * To load dsp params from localStorage
+              *
+              * @returns {{ [path: string]: number }}
+              */
           loadDspParams = () => {
             var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_params");
             if (!str) return {};
-
             try {
               return JSON.parse(str);
             } catch (e) {
               return {};
             }
-          };
-          /**
-           * To save dsp params to localStorage
-           */
-
-
+          }; /**
+              * To save dsp params to localStorage
+              */
           saveDspParams = () => {
             var str = JSON.stringify(dspParams);
             _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_params", str);
           };
-
-          dspParams = loadDspParams();
-          /**
-           * Load all files to Emscripten File System from localStorage
-           *
-           */
-
+          dspParams = loadDspParams(); /**
+                                        * Load all files to Emscripten File System from localStorage
+                                        *
+                                        */
           loadProject = () => {
             faust.fs.mkdir("project");
             var project;
-
             try {
               project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
             } catch (e) {
               project = {};
             }
-
             for (var fileName in project) {
               faust.fs.writeFile("project/" + fileName, project[fileName]);
             }
-          };
-          /**
-           * To show Error at bottom of center
-           *
-           * @param {string} e
-           */
-
-
+          }; /**
+              * To show Error at bottom of center
+              *
+              * @param {string} e
+              */
           showError = e => {
             $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
             $("#alert-faust-code").css("visibility", "visible");
-          };
-          /**
-           * Hide error display
-           *
-           */
-
-
-          clearError = () => $("#alert-faust-code").css("visibility", "hidden");
-          /**
-           * Async Load Monaco Editor Core
-           * Use import() for webpack code splitting, needs babel-dynamic-import
-           */
-
-
+          }; /**
+              * Hide error display
+              *
+              */
+          clearError = () => $("#alert-faust-code").css("visibility", "hidden"); /**
+                                                                                  * Async Load Monaco Editor Core
+                                                                                  * Use import() for webpack code splitting, needs babel-dynamic-import
+                                                                                  */
           _context12.next = 27;
           return initEditor(faust);
-
         case 27:
           _yield$initEditor = _context12.sent;
           editor = _yield$initEditor.editor;
           monaco = _yield$initEditor.monaco;
           editor.layout(); // Force editor to fill div
           // Editor and Diagram
-
           editorDecoration = []; // lines with error
-
           /**
            * Generate diagram and insert the svg into diagram container
            *
            * @param {string} code
            * @returns {{ success: boolean; error?: Error }}
            */
-
           updateDiagram = code => {
             var strSvg; // Diagram SVG as string
-
             editorDecoration = editor.deltaDecorations(editorDecoration, []);
-
             try {
               strSvg = faust.getDiagram(code, compileOptions.args);
             } catch (e) {
@@ -34912,7 +34216,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                * Parse Faust-generated error message to locate the lines with error
                */
               var matchLine = e.message.match(/FaustDSP : (\d+)/);
-
               if (matchLine) {
                 var line = matchLine[1];
                 editorDecoration = editor.deltaDecorations(editorDecoration, [{
@@ -34923,43 +34226,33 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                   }
                 }]);
               }
-
               showError(e);
               return {
                 error: e,
                 success: false
               };
-            } // const $svg = $("#diagram-svg>svg");
+            }
+            // const $svg = $("#diagram-svg>svg");
             // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-
-
             var svg = $(strSvg).filter("svg")[0];
             var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
             $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-
             $("#diagram-default").hide(); // hide "No Diagram" info
-
             clearError(); // Supress error shown
-
             $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
-
             return {
               success: true
             };
           };
-
-          isCompilingDsp = false;
-          /**
-           * Generate both diagram and dsp
-           *
-           * @param {string} code
-           * @returns {{ success: boolean; error?: Error }}
-           */
-
+          isCompilingDsp = false; /**
+                                   * Generate both diagram and dsp
+                                   *
+                                   * @param {string} code
+                                   * @returns {{ success: boolean; error?: Error }}
+                                   */
           runDsp = /*#__PURE__*/function () {
             var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(codeIn) {
               var code, audioCtx, gain, splitter, analyser, useWorklet, bufferSize, voices, args, node, mediaLengthRaf, mediaLengthFrame, mediaLengthSpan, mediaLengthDisplay, plotHandler, dsp, _path, channelsCount, uiWindow, bindUI, guiBuilder;
-
               return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
                 while (1) {
                   switch (_context.prev = _context.next) {
@@ -34968,12 +34261,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         _context.next = 2;
                         break;
                       }
-
                       return _context.abrupt("return", {
                         success: false,
                         error: new Error("Another DSP is compiling")
                       });
-
                     case 2:
                       isCompilingDsp = true;
                       code = "declare filename \"".concat(uiEnv.fileManager.mainFileName, "\"; declare name \"").concat(uiEnv.fileManager.mainFileNameWithoutSuffix, "\"; ").concat(codeIn);
@@ -34981,39 +34272,30 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       gain = audioEnv.gainInput;
                       splitter = audioEnv.splitterOutput;
                       analyser = audioEnv.analyserOutput;
-
                       if (audioCtx) {
                         _context.next = 12;
                         break;
                       }
-
                       _context.next = 11;
                       return initAudioCtx(audioEnv);
-
                     case 11:
                       initAnalysersUI(uiEnv, audioEnv);
-
                     case 12:
                       useWorklet = compileOptions.useWorklet, bufferSize = compileOptions.bufferSize, voices = compileOptions.voices, args = compileOptions.args;
                       mediaLengthFrame = 0;
                       mediaLengthSpan = $("#recorder-time")[0];
-
                       mediaLengthDisplay = t => {
                         mediaLengthFrame++;
-
                         if (mediaLengthFrame % 3 !== 0) {
                           if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
                           mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
                         }
-
                         var d = new Date(t * 1000);
                         var min = d.getMinutes();
                         var sec = "0".concat(d.getSeconds()).slice(-2);
                         var ms = "00".concat(d.getMilliseconds()).slice(-3);
                         mediaLengthSpan.innerText = "".concat(min, ":").concat(sec, ".").concat(ms);
                       }; // Receives buffer from DSP, send it to analyzer for scopes, and recorder
-
-
                       plotHandler = (plotted, index, events) => {
                         uiEnv.analyser.plotHandler(plotted, index, events);
                         if (!faustEnv.recorder.enabled) return;
@@ -35021,7 +34303,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
                         mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
                       };
-
                       _context.prev = 17;
                       _context.next = 20;
                       return faust.getNode(code, {
@@ -35032,25 +34313,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         args,
                         plotHandler
                       });
-
                     case 20:
                       node = _context.sent;
-
                       if (node) {
                         _context.next = 23;
                         break;
                       }
-
                       throw new Error("Unknown Error in WebAudio Node.");
-
                     case 23:
                       _context.next = 30;
                       break;
-
                     case 25:
                       _context.prev = 25;
                       _context.t0 = _context["catch"](17);
-
                       /*
                       const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
                       uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
@@ -35064,7 +34339,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         success: false,
                         error: _context.t0
                       });
-
                     case 30:
                       /**
                        * Push get diagram to end of scheduler
@@ -35072,16 +34346,13 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                        */
                       if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
                       $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-
                       if (audioEnv.dsp) {
                         // Disconnect current
                         dsp = audioEnv.dsp;
-
                         if (audioEnv.dspConnectedToInput) {
                           gain.disconnect(dsp);
                           audioEnv.dspConnectedToInput = false;
                         }
-
                         dsp.disconnect();
                         audioEnv.dspConnectedToOutput = false;
                         dsp.destroy();
@@ -35090,8 +34361,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       /**
                        * Update the dsp with saved params
                        */
-
-
                       if (compileOptions.saveParams) {
                         for (_path in dspParams) {
                           if (node.getParams().indexOf(_path) !== -1) {
@@ -35099,19 +34368,15 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           }
                         }
                       }
-
                       _context.next = 36;
                       return audioEnv.audioCtx.resume();
-
                     case 36:
                       // Resume audioContext for firefox
-
                       /**
                        * Connect the dsp to graph (use a new splitter)
                        */
                       audioEnv.dsp = node;
                       channelsCount = node.getNumOutputs();
-
                       if (!splitter || splitter.numberOfOutputs !== channelsCount) {
                         if (splitter) splitter.disconnect();
                         splitter = audioCtx.createChannelSplitter(channelsCount);
@@ -35122,25 +34387,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
                         splitter.connect(analyser, uiEnv.outputScope.channel);
                       }
-
                       if (audioEnv.gainInput && node.getNumInputs()) {
                         audioEnv.gainInput.connect(node);
                         audioEnv.dspConnectedToInput = true;
                       }
-
                       node.connect(splitter);
-
                       if (audioEnv.outputEnabled) {
                         node.connect(audioEnv.destination);
                         audioEnv.dspConnectedToOutput = true;
                       }
-
-                      uiWindow = $("#iframe-faust-ui")[0].contentWindow;
-                      /**
-                       * set handler for param changed of dsp
-                       * send current value to window
-                       */
-
+                      uiWindow = $("#iframe-faust-ui")[0].contentWindow; /**
+                                                                          * set handler for param changed of dsp
+                                                                          * send current value to window
+                                                                          */
                       node.setOutputParamHandler((path, value) => {
                         var msg = {
                           path,
@@ -35156,7 +34415,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                        * send a message with params into the window
                        * bind events on param change
                        */
-
                       bindUI = () => {
                         var callback = () => {
                           var msg = {
@@ -35166,16 +34424,13 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           /**
                            * Post param list json
                            */
-
                           uiWindow.postMessage(msg, "*");
                           if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
                           /**
                            * Post current param values
                            */
-
                           if (compileOptions.saveParams) {
                             var params = node.getParams();
-
                             for (var _path2 in dspParams) {
                               if (params.indexOf(_path2) !== -1) {
                                 var _msg = {
@@ -35192,41 +34447,27 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         /**
                          * if window is opened, bind directly, else bind when window is loaded.
                          */
-
-
                         if (!compileOptions.popup || uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
                           uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
                           uiEnv.uiPopup.onload = callback;
                         }
                       };
-
                       bindUI();
                       clearError(); // Supress error shown
-
                       $("#faust-ui-default").hide(); // Hide "No DSP yet" info
-
                       $("#nav-item-faust-ui").show(); // Show DSP UI tab
-
                       $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
-
                       $("#output-analyser-ui").show(); // Show dsp info on right panel
-
                       if (uiEnv.outputScope) uiEnv.outputScope.disabled = false;
                       refreshDspUI(node); // update dsp info
-
                       saveEditorDspTable(); // Save the new DSP table to localStorage
-
                       if (compileOptions.enableGuiBuilder) {
                         $("#gui-builder-default").hide(); // Hide "No DSP yet" info
-
                         $("#nav-item-gui-builder").show(); // Show GUI Builder tab
-
                         $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
-
                         guiBuilder = $("#iframe-gui-builder")[0];
                         guiBuilder.src = "";
                         guiBuilder.src = "".concat(compileOptions.guiBuilderUrl, "?name=").concat(uiEnv.fileManager.mainFileName);
-
                         guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
                           type: "build",
                           ui: node.getUI(),
@@ -35234,12 +34475,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           code: uiEnv.fileManager.mainCode
                         }, "*");
                       }
-
                       isCompilingDsp = false;
                       return _context.abrupt("return", {
                         success: true
                       });
-
                     case 57:
                     case "end":
                       return _context.stop();
@@ -35247,12 +34486,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee, null, [[17, 25]]);
             }));
-
             return function runDsp(_x) {
               return _ref2.apply(this, arguments);
             };
           }();
-
           audioEnv = {
             dspConnectedToInput: false,
             dspConnectedToOutput: false,
@@ -35309,9 +34546,7 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             container: $("#plot-ui")[0]
           });
           uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
-
           uiEnv.analyser.getSampleRate = () => compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate;
-
           if (compileOptions.saveCode) loadProject();else faust.fs.mkdir("project");
           uiEnv.fileManager = new _FileManager__WEBPACK_IMPORTED_MODULE_18__["FileManager"]({
             container: $("#filemanager")[0],
@@ -35321,33 +34556,27 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             selectHandler: (fileName, content) => editor.setValue(content),
             saveHandler: (fileName, content, mainCode) => {
               var project;
-
               try {
                 project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
               } catch (e) {
                 project = {};
               }
-
               project[fileName] = content;
-
               try {
                 _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_project", JSON.stringify(project));
               } catch (e) {
                 showError(e);
               }
-
               clearTimeout(rtCompileTimer);
               if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
             },
             deleteHandler: fileName => {
               var project;
-
               try {
                 project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
               } catch (e) {
                 return;
               }
-
               delete project[fileName];
               _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_project", JSON.stringify(project));
             },
@@ -35359,14 +34588,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }
           });
           if (compileOptions.saveDsp) loadEditorDspTable();
+
           /**
            * Bind DOM events
            */
           // Alerts
-
           $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
-          $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text())); // Tooltips
-
+          $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
+          // Tooltips
           $('[data-toggle="tooltip"]').tooltip({
             trigger: "hover",
             boundary: "viewport"
@@ -35385,10 +34614,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           });
           $("#enable-gui-editor").on("change", e => {
             var checked = e.currentTarget.checked;
-
             if (!checked) {
               $("#nav-item-gui-builder").hide(); // Hide GUI Builder tab
-
               $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
             }
 
@@ -35403,19 +34630,18 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * Left panel options
            */
           // Voices
-
           $("#select-voices").on("change", e => {
             compileOptions.voices = +e.currentTarget.value;
             saveEditorParams();
             if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          }); // BufferSize
-
+          });
+          // BufferSize
           $("#select-buffer-size").on("change", e => {
             compileOptions.bufferSize = +e.currentTarget.value;
             saveEditorParams();
             if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          }); // AudioWorklet
-
+          });
+          // AudioWorklet
           $("#check-worklet").on("change", e => {
             compileOptions.useWorklet = e.currentTarget.checked;
             var $options = $("#select-buffer-size").prop("disabled", true).children("option");
@@ -35425,45 +34651,44 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             $("#input-plot-samps").change();
             saveEditorParams();
             if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          }); // Save Params
-
+          });
+          // Save Params
           $("#check-save-code").on("change", e => {
             compileOptions.saveCode = e.currentTarget.checked;
             saveEditorParams();
-          })[0].checked = compileOptions.saveCode; // Save Params
-
+          })[0].checked = compileOptions.saveCode;
+          // Save Params
           $("#check-save-params").on("change", e => {
             compileOptions.saveParams = e.currentTarget.checked;
             saveEditorParams();
-          })[0].checked = compileOptions.saveParams; // Save DSP
-
+          })[0].checked = compileOptions.saveParams;
+          // Save DSP
           $("#check-save-dsp").on("change", e => {
             compileOptions.saveDsp = e.currentTarget.checked;
             loadEditorDspTable();
             saveEditorParams();
           })[0].checked = compileOptions.saveDsp;
-          if (compileOptions.saveDsp) loadEditorDspTable(); // Real-time Diagram
-
+          if (compileOptions.saveDsp) loadEditorDspTable();
+          // Real-time Diagram
           $("#check-realtime-compile").on("change", e => {
             compileOptions.realtimeCompile = e.currentTarget.checked;
             saveEditorParams();
-
             if (compileOptions.realtimeCompile) {
               var code = uiEnv.fileManager.mainCode;
               if (audioEnv.dsp) runDsp(code);else updateDiagram(code);
             }
-          }); // Save Params
+          });
 
+          // Save Params
           $("#check-popup").on("change", e => {
             compileOptions.popup = e.currentTarget.checked;
             saveEditorParams();
-          })[0].checked = compileOptions.popup; // Plot
-
+          })[0].checked = compileOptions.popup;
+          // Plot
           $("#select-plot-mode").on("change", e => {
             compileOptions.plotMode = e.currentTarget.value;
             uiEnv.analyser.drawMode = compileOptions.plotMode;
             var $span = $("#btn-plot").children("span");
-
             if (compileOptions.plotMode === "offline") {
               $("#btn-plot").show();
               $span.text("Plot First Samples");
@@ -35471,7 +34696,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#btn-plot").show();
               $span.text("Plot (Snapshot)");
             } else $("#btn-plot").hide();
-
             if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 2;
             var $plotSR = $("#input-plot-sr");
             if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
@@ -35481,8 +34705,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             if (compileOptions.plotMode === "offline") {
               var code = uiEnv.fileManager.mainCode;
               var args = compileOptions.args,
-                  plot = compileOptions.plot,
-                  plotSR = compileOptions.plotSR;
+                plot = compileOptions.plot,
+                plotSR = compileOptions.plotSR;
               faustEnv.faust.plot({
                 code,
                 args,
@@ -35502,7 +34726,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             var fftSize = compileOptions.plotFFT || 256;
             var step = Math.max(bufferSize, fftSize);
             var v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
-
             compileOptions.plot = v1;
             uiEnv.analyser.buffers = v1 / bufferSize;
             e.currentTarget.step = step.toString();
@@ -35519,8 +34742,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             uiEnv.inputScope.drawSpectrogram = compileOptions.drawSpectrogram;
             uiEnv.outputScope.drawSpectrogram = compileOptions.drawSpectrogram;
             saveEditorParams();
-          })[0].checked = compileOptions.drawSpectrogram; // Plot
-
+          })[0].checked = compileOptions.drawSpectrogram;
+          // Plot
           $("#select-plot-fftsize").on("change", e => {
             compileOptions.plotFFT = +e.currentTarget.value;
             uiEnv.analyser.fftSize = compileOptions.plotFFT;
@@ -35547,34 +34770,28 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * @param {string} url
            * @returns
            */
-
           loadURLParams = /*#__PURE__*/function () {
             var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(url) {
               var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
-
               return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
                 while (1) {
                   switch (_context2.prev = _context2.next) {
                     case 0:
                       urlParams = new URLSearchParams(url);
-
                       if (urlParams.has("realtime_compile")) {
                         compileOptions.realtimeCompile = !!+urlParams.get("realtime_compile");
                         saveEditorParams();
                       }
-
                       if (urlParams.has("voices")) {
                         voices = +urlParams.get("voices");
                         compileOptions.voices = [1, 2, 4, 8, 16, 32, 64, 128].indexOf(voices) === -1 ? 0 : voices;
                         saveEditorParams();
                       }
-
                       if (urlParams.has("buffer_size")) {
                         bufferSize = +urlParams.get("buffer_size");
                         compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : bufferSize;
                         saveEditorParams();
                       }
-
                       if (urlParams.has("mode")) {
                         if (urlParams.get("mode") === "amstram") {
                           server = "https://amstramservice.grame.fr/";
@@ -35586,7 +34803,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           $("#form-plot").css("display", "none");
                           $("#show-right-panel").click().change();
                         }
-
                         if (urlParams.get("mode") === "amstram-pro") {
                           server = "https://amstramservice.grame.fr/";
                           compileOptions.exportPlatform = "esp32";
@@ -35595,77 +34811,60 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           $("#btn-def-exp-content").html("Gramo");
                         }
                       }
-
                       if (!urlParams.has("code")) {
                         _context2.next = 20;
                         break;
                       }
-
                       codeURL = urlParams.get("code");
                       _name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                       uiEnv.fileManager.renameSelected("".concat(_name, ".dsp"));
                       _context2.prev = 9;
                       _context2.next = 12;
                       return fetch(codeURL);
-
                     case 12:
                       response = _context2.sent;
                       _context2.next = 15;
                       return response.text();
-
                     case 15:
                       code = _context2.sent;
                       _context2.next = 20;
                       break;
-
                     case 18:
                       _context2.prev = 18;
                       _context2.t0 = _context2["catch"](9);
-
                     case 20:
                       if (urlParams.has("code_string")) {
                         code = urlParams.get("code_string");
                       }
-
                       if (urlParams.has("inline")) {
                         b64Code = urlParams.get("inline").replace("-", "+").replace("_", "/");
                         code = atob(b64Code);
                       }
-
                       if (urlParams.has("name")) {
                         _name2 = urlParams.get("name").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
                         uiEnv.fileManager.renameSelected("".concat(_name2, ".dsp"));
                         saveEditorParams();
                       }
-
                       if (!code) {
                         _context2.next = 32;
                         break;
                       }
-
                       uiEnv.fileManager.setValue(code);
-
                       if (!(urlParams.has("autorun") && urlParams.get("autorun"))) {
                         _context2.next = 32;
                         break;
                       }
-
                       _context2.next = 28;
                       return runDsp(code);
-
                     case 28:
                       compileResult = _context2.sent;
-
                       if (compileResult.success) {
                         _context2.next = 31;
                         break;
                       }
-
                       return _context2.abrupt("return");
-
                     case 31:
                       if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
-
                     case 32:
                     case "end":
                       return _context2.stop();
@@ -35673,35 +34872,28 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee2, null, [[9, 18]]);
             }));
-
             return function loadURLParams(_x2) {
               return _ref3.apply(this, arguments);
             };
           }(); // Upload
-
-
           $("#btn-upload").on("click", () => {
             $("#input-upload").click();
           });
           $("#input-upload").on("input", e => {
             var file = e.currentTarget.files[0];
             var reader = new FileReader();
-
             reader.onload = () => {
               var fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
               var code = reader.result.toString();
               uiEnv.fileManager.newFile(fileName, code);
-
               if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
               }
             };
-
             reader.onerror = () => undefined;
-
             reader.readAsText(file);
-          }).on("click", e => e.stopPropagation()); // Save as //TODO zip
-
+          }).on("click", e => e.stopPropagation());
+          // Save as //TODO zip
           $("#btn-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3() {
             var zip, b, uri;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
@@ -35709,14 +34901,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 switch (_context3.prev = _context3.next) {
                   case 0:
                     zip = new jszip__WEBPACK_IMPORTED_MODULE_6__();
-
                     uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
-
                     _context3.next = 4;
                     return zip.generateAsync({
                       type: "blob"
                     });
-
                   case 4:
                     b = _context3.sent;
                     uri = URL.createObjectURL(b);
@@ -35724,7 +34913,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       href: uri,
                       download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".zip")
                     })[0].click();
-
                   case 7:
                   case "end":
                     return _context3.stop();
@@ -35732,15 +34920,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               }
             }, _callee3);
           })));
-          $("#a-save").on("click", e => e.stopPropagation()); // Docs
-
+          $("#a-save").on("click", e => e.stopPropagation());
+          // Docs
           $("#a-docs").on("click", e => e.stopPropagation());
           /**
            * Export
            * Append options to export model
            */
           // If true, the download argument will force the download of the generated target
-
           exportProgram = download => {
             $("#export-download").hide();
             $("#export-loading").css("display", "inline-block");
@@ -35750,11 +34937,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             $("#export-error").hide();
             var form = new FormData();
             var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-
             try {
               // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
-              var expandedCode = compileOptions.exportPlatform === "esp32" ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args); // eslint-disable-next-line no-console
-
+              var expandedCode = compileOptions.exportPlatform === "esp32" ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+              // eslint-disable-next-line no-console
               console.log(expandedCode);
               form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
             } catch (e) {
@@ -35764,7 +34950,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#export-error").html(e).show();
               return;
             }
-
             $.ajax({
               method: "POST",
               url: "".concat(server, "/filepost"),
@@ -35773,13 +34958,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               processData: false
             }).done(shaKey => {
               var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-
               if (matched) {
                 var plat = $("#export-platform").val();
                 var arch = $("#export-arch").val();
-
                 var _path3 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
-
                 $.ajax({
                   method: "GET",
                   url: "".concat(_path3, "/precompile")
@@ -35790,16 +34972,13 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       href
                     });
                     $("#export-download").show();
-
                     if (download === true) {
                       $("#export-download").click();
                     }
-
                     $("#qr-code").show();
                     qrcode__WEBPACK_IMPORTED_MODULE_4__["toCanvas"]($("#qr-code")[0], "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip"));
                     return;
                   }
-
                   $("#export-loading").css("display", "none");
                   $("#def-exp-loading").css("display", "none");
                   $("#def-exp-icon").show();
@@ -35813,7 +34992,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 });
                 return;
               }
-
               $("#export-loading").css("display", "none");
               $("#def-exp-loading").css("display", "none");
               $("#def-exp-icon").show();
@@ -35825,7 +35003,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
             });
           };
-
           getTargets = /*#__PURE__*/function () {
             var _ref5 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(server) {
               var response, targets, plats;
@@ -35840,24 +35017,20 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       $("#export-submit").prop("disabled", true).off("click");
                       _context4.next = 7;
                       return fetch("".concat(server, "/targets"));
-
                     case 7:
                       response = _context4.sent;
                       _context4.next = 10;
                       return response.json();
-
                     case 10:
                       targets = _context4.sent;
                       plats = Object.keys(targets);
                       plats.sort(); // sort platform names in alphabetic order
-
                       if (plats.length) {
                         plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
                         $("#export-platform").val(compileOptions.exportPlatform);
                         targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
                         $("#export-arch").val(compileOptions.exportArch).change();
                       }
-
                       $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
                       $("#export-name").on("keydown", e => {
                         if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
@@ -35870,8 +35043,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       });
                       $("#export-arch").on("change", e => {
                         compileOptions.exportArch = e.currentTarget.value;
-                        saveEditorParams(); // eslint-disable-next-line no-console
-
+                        saveEditorParams();
+                        // eslint-disable-next-line no-console
                         console.log(compileOptions);
                       });
                       $("#export-download").on("click", () => $("#a-export-download")[0].click());
@@ -35879,7 +35052,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       $("#export-submit").prop("disabled", false).on("click", () => {
                         exportProgram(false);
                       });
-
                     case 21:
                     case "end":
                       return _context4.stop();
@@ -35887,12 +35059,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee4);
             }));
-
             return function getTargets(_x3) {
               return _ref5.apply(this, arguments);
             };
           }();
-
           $("#export-server").val(server).on("change", e => {
             server = e.currentTarget.value;
             getTargets(e.currentTarget.value);
@@ -35900,19 +35070,15 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           _context12.prev = 81;
           _context12.next = 84;
           return getTargets(server);
-
         case 84:
           _context12.next = 89;
           break;
-
         case 86:
           _context12.prev = 86;
           _context12.t0 = _context12["catch"](81);
           console.error(_context12.t0); // eslint-disable-line no-console
-
         case 89:
           // Share
-
           /**
            * Make share URL with options
            *
@@ -35927,7 +35093,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             urlParams.set("inline", btoa(uiEnv.fileManager.mainCode).replace("+", "-").replace("/", "_"));
             return base + "?" + urlParams.toString();
           };
-
           $("#modal-share").on("shown.bs.modal", () => {
             $("#share-btn-copy").html("Copy");
             $("#share-url").val(makeURL());
@@ -35943,14 +35108,12 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#share-url").focus().select();
               document.execCommand("copy");
             }
-
             $(e.currentTarget).html('<i class="fas fa-check"></i>');
           });
           /**
            * Right panel options
            */
           // Keyboard as midi input
-
           key2Midi = new _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"]({
             keyMap: navigator.language === "fr-FR" ? _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP_FR : _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP,
             enabled: false
@@ -35962,16 +35125,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           $(document).on("keyup", e => {
             if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
             key2Midi.handleKeyUp(e.key);
-          }); // MIDI Devices select
-
+          });
+          // MIDI Devices select
           $("#select-midi-input").on("change", e => {
             var id = e.currentTarget.value;
             if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
             var keys = [];
-
             var listener = data => {
               if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
-
               if (data[0] === 144 && data[2]) {
                 // Show as pill midi note
                 if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
@@ -35981,21 +35142,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 if (keys.length === 0) $("#midi-ui-note").hide();else $("#midi-ui-note").text(keys[keys.length - 1]);
               }
             };
-
             if (id === "-2") {
               key2Midi.handler = listener;
               key2Midi.enabled = true;
               return;
             }
-
             key2Midi.enabled = false;
             if (id === "-1") return;
             var input = webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.getInputById(id);
             if (!input) return;
             midiEnv.input = input;
             input.addListener("midimessage", "all", e => listener(e.data));
-          }); // Append current connected devices
-
+          });
+          // Append current connected devices
           handleMIDIConnect = e => {
             if (e.port.type !== "input") return;
             var $select = $("#select-midi-input");
@@ -36004,7 +35163,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             $select.append($option);
             $option.prop("selected", true).change();
           };
-
           handleMIDIDisconnect = e => {
             if (e.port.type !== "input") return;
             var $select = $("#select-midi-input");
@@ -36013,7 +35171,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             $find.remove();
             $select.children("option").last().prop("selected", true).change();
           };
-
           $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
           webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.enable(e => {
             if (e) return;
@@ -36030,20 +35187,16 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           $("#select-audio-input").on("change", /*#__PURE__*/function () {
             var _ref6 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee5(e) {
               var id, _gain, _input, gain, input;
-
               return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee5$(_context5) {
                 while (1) {
                   switch (_context5.prev = _context5.next) {
                     case 0:
                       id = e.currentTarget.value;
-
                       if (!(audioEnv.currentInput === id)) {
                         _context5.next = 3;
                         break;
                       }
-
                       return _context5.abrupt("return");
-
                     case 3:
                       if (audioEnv.audioCtx && audioEnv.currentInput) {
                         _gain = audioEnv.gainInput;
@@ -36083,9 +35236,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                           audioEnv.gainUIInput.channels = wavesurfer.backend.buffer.numberOfChannels;
                         });
                         wavesurfer.load("./02-XYLO1.mp3");
-                      } // MediaElementSource, Waveform
-
-
+                      }
+                      // MediaElementSource, Waveform
                       if (id === "-1") {
                         $("#source-ui").show();
                         $("#input-analyser-ui").hide();
@@ -36096,19 +35248,16 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         $("#input-analyser-ui").show();
                         if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
                         audioEnv.gainUIInput.channels = 2;
-                      } // init audio environment
-
-
+                      }
+                      // init audio environment
                       _context5.next = 8;
                       return initAudioCtx(audioEnv, id);
-
                     case 8:
                       gain = audioEnv.gainInput;
                       input = audioEnv.inputs[id];
                       audioEnv.currentInput = id;
                       audioEnv.inputEnabled = true;
                       if (gain) input.connect(gain);
-
                     case 13:
                     case "end":
                       return _context5.stop();
@@ -36116,7 +35265,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee5);
             }));
-
             return function (_x4) {
               return _ref6.apply(this, arguments);
             };
@@ -36125,7 +35273,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * Audio Outputs
            * Choose and audio stream <audio />
            */
-
           $("#select-audio-output").on("change", /*#__PURE__*/function () {
             var _ref7 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee6(e) {
               var id, audio;
@@ -36137,19 +35284,15 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                         _context6.next = 2;
                         break;
                       }
-
                       return _context6.abrupt("return");
-
                     case 2:
                       id = e.currentTarget.value;
                       _context6.next = 5;
                       return initAudioCtx(audioEnv);
-
                     case 5:
                       faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
                       audio = $("#output-audio-stream")[0];
                       audio.setSinkId(id);
-
                     case 8:
                     case "end":
                       return _context6.stop();
@@ -36157,15 +35300,13 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee6);
             }));
-
             return function (_x5) {
               return _ref7.apply(this, arguments);
             };
-          }()).change(); // Waveform
-
+          }()).change();
+          // Waveform
           $("#btn-source-play").on("click", () => {
             if (!wavesurfer || !wavesurfer.isReady) return;
-
             if (wavesurfer.isPlaying()) {
               wavesurfer.pause();
             } else {
@@ -36178,11 +35319,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           });
           $("#btn-source-loop").on("click", e => {
             $(e.currentTarget).toggleClass("active");
-          }); // Waveform drag'n'drop
-
+          });
+          // Waveform drag'n'drop
           $("#source-waveform").on("dragenter dragover", e => {
             var event = e.originalEvent;
-
             if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
               e.preventDefault();
               e.stopPropagation();
@@ -36202,7 +35342,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             $(e.currentTarget).hide();
             if (!wavesurfer.isReady) return;
             var event = e.originalEvent;
-
             if (event.dataTransfer && event.dataTransfer.files.length) {
               // Stop the propagation of the event
               e.preventDefault();
@@ -36210,29 +35349,24 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               var gain = audioEnv.gainInput;
               var input = audioEnv.inputs[-1];
               if (gain) input.disconnect(gain); // Disconnect
-
               audioEnv.inputEnabled = false;
               var file = event.dataTransfer.files[0];
-
               try {
                 wavesurfer.load(URL.createObjectURL(file));
               } catch (e) {
                 console.error(e); // eslint-disable-line no-console
-
                 showError("Cannot load sound file: " + e.message);
                 return;
               }
-
               if ($("#source-waveform audio").length) {
                 audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
                 input = audioEnv.inputs[-1];
               }
-
               audioEnv.inputEnabled = true;
               if (gain) input.connect(gain);
             }
-          }); // Append connected audio devices
-
+          });
+          // Append connected audio devices
           handleMediaDeviceChange = /*#__PURE__*/function () {
             var _ref8 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee7() {
               var devices, $selectInput, $selectOutput;
@@ -36245,26 +35379,21 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       return navigator.mediaDevices.getUserMedia({
                         audio: true
                       });
-
                     case 3:
                       _context7.next = 7;
                       break;
-
                     case 5:
                       _context7.prev = 5;
                       _context7.t0 = _context7["catch"](0);
-
                     case 7:
                       _context7.next = 9;
                       return navigator.mediaDevices.enumerateDevices();
-
                     case 9:
                       devices = _context7.sent;
                       $selectInput = $("#select-audio-input");
                       $selectOutput = $("#select-audio-output");
                       $selectInput.children("option").each((i, e) => {
                         if (e.value === "-1") return;
-
                         if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
                           e.remove();
                           if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
@@ -36272,7 +35401,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       });
                       $selectOutput.children("option").each((i, e) => {
                         if (e.value === "-1") return;
-
                         if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
                           e.remove();
                           if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
@@ -36280,18 +35408,15 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       });
                       devices.forEach(device => {
                         if (!device.deviceId) return;
-
                         if (device.kind === "audioinput") {
                           if ($selectInput.find("option[value=".concat(device.deviceId, "]")).length) return;
                           $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
                         }
-
                         if (supportMediaStreamDestination && device.kind === "audiooutput") {
                           if ($selectOutput.find("option[value=".concat(device.deviceId, "]")).length) return;
                           $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
                         }
                       });
-
                     case 15:
                     case "end":
                       return _context7.stop();
@@ -36299,40 +35424,32 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 }
               }, _callee7, null, [[0, 5]]);
             }));
-
             return function handleMediaDeviceChange() {
               return _ref8.apply(this, arguments);
             };
           }();
-
           if (!navigator.mediaDevices) {
             _context12.next = 127;
             break;
           }
-
           _context12.prev = 112;
           _context12.next = 115;
           return navigator.mediaDevices.getUserMedia({
             audio: true
           });
-
         case 115:
           _context12.next = 119;
           break;
-
         case 117:
           _context12.prev = 117;
           _context12.t1 = _context12["catch"](112);
-
         case 119:
           _context12.next = 121;
           return navigator.mediaDevices.enumerateDevices();
-
         case 121:
           devices = _context12.sent;
           $("#input-ui-default").hide();
           $selectInput = $("#select-audio-input").prop("disabled", false);
-
           if (supportMediaStreamDestination) {
             if (devices.find(device => device.kind === "audiooutput")) {
               $("#output-ui-default").hide();
@@ -36343,24 +35460,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               supportMediaStreamDestination = false;
             }
           }
-
           navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
           devices.forEach(device => {
             if (!device.deviceId) return;
-
             if (device.kind === "audioinput") {
               $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
             }
-
             if (supportMediaStreamDestination && device.kind === "audiooutput") {
               $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
             }
           });
-
         case 127:
           // DSP info
           refreshDspUI();
-
           if (supportAudioWorklet) {
             // Switch between AW / SP nodes
             $("#dsp-ui-default").on("click", e => {
@@ -36369,12 +35481,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#check-worklet").change();
               if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
             });
-          } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none"); // Record
-
-
+          } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
+          // Record
           $("#recorder-aim").on("click", e => {
             var recorder = faustEnv.recorder;
-
             if ($(e.currentTarget).hasClass("btn-light")) {
               $(e.currentTarget).removeClass("btn-light").addClass("btn-danger");
               recorder.enabled = true;
@@ -36390,19 +35500,15 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 switch (_context8.prev = _context8.next) {
                   case 0:
                     recorder = faustEnv.recorder;
-
                     if (!(recorder.totalSec === 0)) {
                       _context8.next = 3;
                       break;
                     }
-
                     return _context8.abrupt("return");
-
                   case 3:
                     _context8.t0 = Blob;
                     _context8.next = 6;
                     return recorder.encode();
-
                   case 6:
                     _context8.t1 = _context8.sent;
                     _context8.t2 = [_context8.t1];
@@ -36415,7 +35521,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       href: url,
                       download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".wav")
                     })[0].click();
-
                   case 12:
                   case "end":
                     return _context8.stop();
@@ -36423,8 +35528,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               }
             }, _callee8);
           })));
-          $("#a-recorder-save").on("click", e => e.stopPropagation()); // Output switch to connect / disconnect dsp from destination
-
+          $("#a-recorder-save").on("click", e => e.stopPropagation());
+          // Output switch to connect / disconnect dsp from destination
           $(".btn-dac").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee9() {
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee9$(_context9) {
               while (1) {
@@ -36434,47 +35539,37 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                       _context9.next = 7;
                       break;
                     }
-
                     // disable audio output
                     audioEnv.outputEnabled = false;
-
                     if (audioEnv.dspConnectedToOutput) {
                       audioEnv.dsp.disconnect(audioEnv.destination);
                       audioEnv.dspConnectedToOutput = false;
                     }
-
                     $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
                     $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
                     _context9.next = 17;
                     break;
-
                   case 7:
                     // enable audio output
                     audioEnv.outputEnabled = true;
-
                     if (audioEnv.audioCtx) {
                       _context9.next = 14;
                       break;
                     }
-
                     _context9.next = 11;
                     return initAudioCtx(audioEnv);
-
                   case 11:
                     initAnalysersUI(uiEnv, audioEnv);
                     _context9.next = 15;
                     break;
-
                   case 14:
                     if (audioEnv.dsp) {
                       audioEnv.dsp.connect(audioEnv.destination);
                       audioEnv.dspConnectedToOutput = true;
                     }
-
                   case 15:
                     $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
                     $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
-
                   case 17:
                   case "end":
                     return _context9.stop();
@@ -36486,10 +35581,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
            * Center
            */
           // File Drag and drop
-
           $("#top").on("dragenter dragover", e => {
             var event = e.originalEvent;
-
             if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
               e.preventDefault();
               e.stopPropagation();
@@ -36508,89 +35601,77 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           $("#editor-overlay").on("drop", e => {
             $(e.currentTarget).hide();
             var event = e.originalEvent;
-
             if (event.dataTransfer && event.dataTransfer.files.length) {
               // Stop the propagation of the event
               e.preventDefault();
               e.stopPropagation();
               var file = event.dataTransfer.files[0];
               var reader = new FileReader();
-
               reader.onload = () => {
                 // Update filename
                 var fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
                 var code = reader.result.toString();
-                uiEnv.fileManager.newFile(fileName, code); // compile diagram or dsp if necessary
-
+                uiEnv.fileManager.newFile(fileName, code);
+                // compile diagram or dsp if necessary
                 if (compileOptions.realtimeCompile) {
                   if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
                 }
               };
-
               reader.onerror = () => undefined;
-
               reader.readAsText(file);
             }
-          }); // Examples
+          });
+          // Examples
 
           // Append each file in examples.json to div menu
           fetch("./examples.json").then(response => response.json()).then(tree => {
             var $menu = $("#tab-examples");
-
             var parseTree = (treeIn, $menu) => {
               if (treeIn.type === "file") {
                 var $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
                 $menu.append($item);
               } else {
                 var _$item = $("<div>").addClass(["dropright", "submenu"]);
-
                 var $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
                 $a.on("click", e => {
                   e.stopImmediatePropagation();
                   e.preventDefault();
                 });
                 var $submenu = $("<div>").addClass("dropdown-menu");
-
                 _$item.append($a, $submenu);
-
                 treeIn.children.forEach(v => parseTree(v, $submenu));
                 $menu.append(_$item);
                 $a.dropdown();
               }
             };
-
             if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
-          }).catch(() => undefined); // Load an example
-
+          }).catch(() => undefined);
+          // Load an example
           $("#tab-examples").on("click", ".faust-example", e => {
             e.preventDefault();
             e.stopPropagation();
             var path = $(e.currentTarget).data("path");
             var name = $(e.currentTarget).text();
-
             if (path) {
               fetch(path).then(response => response.text()).then(code => {
                 var fileName = name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
                 uiEnv.fileManager.newFile(fileName, code);
-
                 if (compileOptions.realtimeCompile) {
                   if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
                 }
               });
             }
-
             $("#tab-examples").dropdown("toggle");
           });
           /**
            * Save current code to localStorage
            * if realtime compile is on, do compile
            */
-
           editor.getModel().onDidChangeContent(() => {
             var code = editor.getValue();
             uiEnv.fileManager.setValue(code, false);
-          }); // Run Dsp Button
-
+          });
+          // Run Dsp Button
           $(".btn-run").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee10() {
             var compileResult;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee10$(_context10) {
@@ -36599,36 +35680,31 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                   case 0:
                     _context10.next = 2;
                     return runDsp(uiEnv.fileManager.mainCode);
-
                   case 2:
                     compileResult = _context10.sent;
-
                     if (compileResult.success) {
                       _context10.next = 5;
                       break;
                     }
-
                     return _context10.abrupt("return");
-
                   case 5:
-                    if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show"); // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
+                    if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
+                    // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
                     // node.setOutputParamHandler(dspOutputHandler);
-
                   case 6:
                   case "end":
                     return _context10.stop();
                 }
               }
             }, _callee10);
-          }))); // Default export button
-
+          })));
+          // Default export button
           $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee11() {
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee11$(_context11) {
               while (1) {
                 switch (_context11.prev = _context11.next) {
                   case 0:
                     exportProgram(true);
-
                   case 1:
                   case "end":
                     return _context11.stop();
@@ -36639,14 +35715,12 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           /**
            * Bind message event for changing dsp params on receiving msg from ui window
            */
-
           $(window).on("message", e => {
             var $e = e.originalEvent;
             if (!$e.data) return;
             var data = $e.data,
-                source = $e.source;
+              source = $e.source;
             if (!data.type) return;
-
             if (data.type === "param") {
               if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
               dspParams[data.path] = +data.value;
@@ -36660,10 +35734,10 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               if (_uiWindow !== source) _uiWindow.postMessage(msg, "*");
               if (uiEnv.uiPopup && uiEnv.uiPopup !== source) uiEnv.uiPopup.postMessage(msg, "*");
               return;
-            } // Pass keyboard midi messages even inner window is focused
-
-
-            if (data.type === "keydown") key2Midi.handleKeyDown(data.key);else if (data.type === "keyup") key2Midi.handleKeyUp(data.key); // From GUI Builder
+            }
+            // Pass keyboard midi messages even inner window is focused
+            if (data.type === "keydown") key2Midi.handleKeyDown(data.key);else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
+            // From GUI Builder
             else if (data.type === "export") {
               var form = new FormData();
               var fileName = uiEnv.fileManager.mainFileName;
@@ -36680,10 +35754,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 processData: false
               }).done(shaKey => {
                 var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-
                 if (matched) {
                   var _path4 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
-
                   $.ajax({
                     method: "GET",
                     url: "".concat(_path4, "/precompile")
@@ -36703,15 +35775,14 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 throw new Error(textStatus + ": " + jqXHR.responseText);
               });
             }
-          }); // Close DSP UI Popup when main window is closed
-
+          });
+          // Close DSP UI Popup when main window is closed
           $(window).on("beforeunload", () => uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined);
           $("#nav-item-faust-ui .btn-popup").on("click", e => {
             e.stopPropagation();
             e.preventDefault();
             var node = audioEnv.dsp;
             if (!node) return;
-
             var callback = () => {
               var msg = {
                 type: "ui",
@@ -36720,14 +35791,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               /**
                * Post param list json
                */
-
               if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
               /**
                * Post current param values
                */
-
               var params = node.getParams();
-
               for (var _path5 in dspParams) {
                 if (params.indexOf(_path5) !== -1) {
                   var _msg2 = {
@@ -36742,8 +35810,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             /**
              * if window is opened, bind directly, else bind when window is loaded.
              */
-
-
             if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
               uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
               uiEnv.uiPopup.onload = callback;
@@ -36752,23 +35818,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           $("#nav-item-faust-ui .btn-close-tab").on("click", e => {
             e.stopPropagation();
             e.preventDefault();
-
             if (audioEnv.dsp) {
               // Disconnect current
               var gain = audioEnv.gainInput;
               var dsp = audioEnv.dsp;
-
               if (audioEnv.dspConnectedToInput) {
                 gain.disconnect(dsp);
                 audioEnv.dspConnectedToInput = false;
               }
-
               dsp.disconnect();
               audioEnv.dspConnectedToOutput = false;
               dsp.destroy();
               delete audioEnv.dsp;
             }
-
             if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
             $("#nav-item-faust-ui").hide();
             if (uiEnv.uiPopup) uiEnv.uiPopup.close();
@@ -36779,12 +35841,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             refreshDspUI();
           });
           svgDragged = false; // svg inject
-
           $("#diagram-svg").on("click", "a", e => {
             e.preventDefault();
-            if (svgDragged) return; // const $svg = $("#diagram-svg>svg");
+            if (svgDragged) return;
+            // const $svg = $("#diagram-svg>svg");
             // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
-
             var fileName = e.currentTarget.href.baseVal;
             var strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, {
               encoding: "utf8"
@@ -36792,8 +35853,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             var svg = $(strSvg).filter("svg")[0];
             var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
             $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-          }); // svg zoom
-
+          });
+          // svg zoom
           $("#diagram-svg").on("mousedown", "svg", e => {
             e.preventDefault();
             e.stopPropagation();
@@ -36803,7 +35864,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             var y = e.pageY;
             var sL = $div.scrollLeft();
             var sT = $div.scrollTop();
-
             var handleMouseMove = e => {
               if (!e.originalEvent.movementX && !e.originalEvent.movementY) return;
               svgDragged = true;
@@ -36814,7 +35874,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               e.preventDefault();
               e.stopPropagation();
             };
-
             var handleMouseUp = e => {
               $(document).off("mousemove", handleMouseMove);
               $(document).off("mouseup", handleMouseUp);
@@ -36822,7 +35881,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               e.preventDefault();
               e.stopPropagation();
             };
-
             $(document).on("mousemove", handleMouseMove);
             $(document).on("mouseup", handleMouseUp);
           });
@@ -36835,8 +35893,8 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             var d = e.originalEvent.deltaY > 0 ? 1 : -1;
             var w = $svg.width();
             $svg.width(w * (1 - d * 0.25));
-          }); // Keys
-
+          });
+          // Keys
           $(document).on("keydown", e => {
             if (e.ctrlKey) {
               if (e.key === "d") {
@@ -36845,21 +35903,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
                 $("#btn-docs")[0].click();
                 return;
               }
-
               if (e.key === "r") {
                 e.preventDefault();
                 e.stopPropagation();
                 $("#btn-run").click();
               }
             }
-          }); // Resizables
-
+          });
+          // Resizables
           $(".resizable").on("mousedown touchstart", e => {
             if (e.originalEvent instanceof MouseEvent) {
               e.preventDefault();
               e.stopPropagation();
             }
-
             $("#iframe-faust-ui").css("pointer-events", "none");
             var $div = $(e.currentTarget).parent();
             var x = typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
@@ -36871,13 +35927,11 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
             if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
             if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
-
             var handleMouseMove = e => {
               if (e.originalEvent instanceof MouseEvent) {
                 e.preventDefault();
                 e.stopPropagation();
               }
-
               var dX = (typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
               var dY = (typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
               if (modes.indexOf("left") !== -1) $div.width(w - dX);
@@ -36885,28 +35939,24 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               if (modes.indexOf("top") !== -1) $div.height(h - dY);
               if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
               if (editor) editor.layout();
-
               if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
                 wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
                 wavesurfer.drawBuffer();
               }
             };
-
             var handleMouseUp = e => {
               if (e.originalEvent instanceof MouseEvent) {
                 e.preventDefault();
                 e.stopPropagation();
               }
-
               $("#iframe-faust-ui").css("pointer-events", "");
               $(document).off("mousemove touchmove", handleMouseMove);
               $(document).off("mouseup", handleMouseUp);
             };
-
             $(document).on("mousemove touchmove", handleMouseMove);
             $(document).on("mouseup touchend", handleMouseUp);
-          }); // Panels
-
+          });
+          // Panels
           $(".btn-show-left").on("click", e => {
             if ($(e.currentTarget).hasClass("active")) {
               $("#left").hide();
@@ -36915,7 +35965,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#left").show();
               $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
             }
-
             editor.layout();
           });
           $(".btn-show-right").on("click", e => {
@@ -36926,7 +35975,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#right").show();
               $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
             }
-
             editor.layout();
           });
           $(window).on("resize", () => {
@@ -36937,21 +35985,19 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
               $("#right").add("#left").show();
               $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
             }
-          }).resize(); // autorunning
-
+          }).resize();
+          // autorunning
           _context12.next = 157;
           return initAudioCtx(audioEnv);
-
         case 157:
-          faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate; // Analysers
-
+          faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
+          // Analysers
           initAnalysersUI(uiEnv, audioEnv);
           $("#output-analyser-ui").hide();
           uiEnv.outputScope.disabled = true;
           $("#select-audio-input").change();
           _context12.next = 164;
           return loadURLParams(window.location.search);
-
         case 164:
           $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
           $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
@@ -36967,7 +36013,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
           $("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
           if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
           window.faustEnv = faustEnv;
-
         case 175:
         case "end":
           return _context12.stop();
@@ -36982,7 +36027,6 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
  * @param {string} [deviceId]
  * @returns
  */
-
 var initAudioCtx = /*#__PURE__*/function () {
   var _ref13 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee13(audioEnv, deviceId) {
     var audioCtx, unlockAudioContext, stream;
@@ -37003,38 +36047,28 @@ var initAudioCtx = /*#__PURE__*/function () {
                   $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
                 }
               });
-
               unlockAudioContext = () => {
                 if (audioCtx.state !== "suspended") return;
-
-                var unlock = () => audioCtx.resume().then(clean); // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
-
-
+                var unlock = () => audioCtx.resume().then(clean);
+                // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
                 var clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
-
                 $("body").on("touchstart touchend mousedown keydown", unlock);
               };
-
               unlockAudioContext();
             }
-
             if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
             if (!audioEnv.inputs) audioEnv.inputs = {};
-
             if (!(deviceId && !audioEnv.inputs[deviceId])) {
               _context13.next = 12;
               break;
             }
-
             if (!(deviceId === "-1")) {
               _context13.next = 8;
               break;
             }
-
             if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
             _context13.next = 12;
             break;
-
           case 8:
             _context13.next = 10;
             return navigator.mediaDevices.getUserMedia({
@@ -37045,11 +36079,9 @@ var initAudioCtx = /*#__PURE__*/function () {
                 autoGainControl: false
               }
             });
-
           case 10:
             stream = _context13.sent;
             audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
-
           case 12:
             if (!audioEnv.meterInput) audioEnv.meterInput = Object(_MeterNode__WEBPACK_IMPORTED_MODULE_19__["createMeterNode"])(audioEnv.audioCtx);
             if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
@@ -37061,7 +36093,6 @@ var initAudioCtx = /*#__PURE__*/function () {
             if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
             if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
             audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-
             if (!audioEnv.destination) {
               audioEnv.destination = audioEnv.audioCtx.destination;
               /*
@@ -37074,13 +36105,10 @@ var initAudioCtx = /*#__PURE__*/function () {
                   audioEnv.destination = audioEnv.audioCtx.destination;
               }
               */
-
               audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
               audioEnv.destination.channelInterpretation = "discrete";
             }
-
             return _context13.abrupt("return", audioEnv);
-
           case 24:
           case "end":
             return _context13.stop();
@@ -37088,7 +36116,6 @@ var initAudioCtx = /*#__PURE__*/function () {
       }
     }, _callee13);
   }));
-
   return function initAudioCtx(_x6, _x7) {
     return _ref13.apply(this, arguments);
   };
@@ -37100,8 +36127,6 @@ var initAudioCtx = /*#__PURE__*/function () {
  * @param {FaustEditorAudioEnv} audioEnv
  * @returns
  */
-
-
 var initAnalysersUI = (uiEnv, audioEnv) => {
   if (uiEnv.analysersInited) return;
   uiEnv.inputScope = new _Scope__WEBPACK_IMPORTED_MODULE_8__["Scope"]({
@@ -37126,23 +36151,18 @@ var initAnalysersUI = (uiEnv, audioEnv) => {
  * @param {(FaustAudioWorkletNode | FaustScriptProcessorNode)} [node]
  * @returns
  */
-
-
 var refreshDspUI = node => {
   if (!node) {
     $("#dsp-ui-detail").hide();
     $("#dsp-ui-default").removeClass(["badge-success", "switch"]).addClass("badge-warning").html("no DSP yet");
     return;
   }
-
   $("#dsp-ui-detail").show();
-
   if (node instanceof ScriptProcessorNode) {
     $("#dsp-ui-default").removeClass("badge-success").addClass(["badge-warning", "switch"]).html("ScriptProcessor");
   } else {
     $("#dsp-ui-default").removeClass("badge-warning").addClass(["badge-success", "switch"]).html("AudioWorklet");
   }
-
   $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
   $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
   $("#dsp-ui-detail-params").html(node.getParams().length.toString());
@@ -37152,38 +36172,29 @@ var refreshDspUI = node => {
  *
  * @returns
  */
-
-
 var initEditor = /*#__PURE__*/function () {
   var _ref14 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee14(faust) {
     var code, polycode, monaco, _yield$faustLangRegis, faustLang, providers, saveCode, editor, showDoc;
-
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee14$(_context14) {
       while (1) {
         switch (_context14.prev = _context14.next) {
           case 0:
             code = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;"; // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
             polycode = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {\n    freq = hslider(\"freq\", 440, 40, 8000, 1);\n    gain = hslider(\"gain\", 0.5, 0, 1, 0.01);\n    gate = button(\"gate\");\n};\neffect = dm.freeverb_demo;";
             _context14.next = 4;
             return __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.t.bind(null, /*! monaco-editor/esm/vs/editor/editor.api */ "./include-loader!./node_modules/monaco-editor/esm/vs/editor/editor.api.js", 7));
-
           case 4:
             monaco = _context14.sent;
             _context14.next = 7;
             return Object(_monaco_faust_register__WEBPACK_IMPORTED_MODULE_21__["faustLangRegister"])(monaco, faust);
-
           case 7:
             _yield$faustLangRegis = _context14.sent;
             faustLang = _yield$faustLangRegis.faustLang;
             providers = _yield$faustLangRegis.providers;
             saveCode = false;
-
             try {
               saveCode = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params")).saveCode;
             } catch (_unused) {} // eslint-disable-line no-empty
-
-
             editor = monaco.editor.create($("#editor")[0], {
               value: saveCode ? _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_code") || code : code,
               language: "faust",
@@ -37199,10 +36210,8 @@ var initEditor = /*#__PURE__*/function () {
                 showDoc();
               }
             });
-
             showDoc = () => {
               var matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
-
               if (matched) {
                 var prefix = matched.nameArray.slice();
                 prefix.pop();
@@ -37210,17 +36219,14 @@ var initEditor = /*#__PURE__*/function () {
                 $("#a-docs").attr("href", "".concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["docSections"][prefix.toString().slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase()))[0].click();
                 return;
               }
-
               $("#a-docs").attr("href", _documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"])[0].click();
             };
-
             $("#btn-docs").off("click").on("click", showDoc);
             $(window).on("resize", () => editor.layout());
             return _context14.abrupt("return", {
               editor,
               monaco
             });
-
           case 18:
           case "end":
             return _context14.stop();
@@ -37228,7 +36234,6 @@ var initEditor = /*#__PURE__*/function () {
       }
     }, _callee14);
   }));
-
   return function initEditor(_x8) {
     return _ref14.apply(this, arguments);
   };
@@ -37262,7 +36267,6 @@ var faustLangRegister = /*#__PURE__*/function () {
           case 0:
             _context.next = 2;
             return Promise.all(/*! import() */[__webpack_require__.e(0), __webpack_require__.e(1)]).then(__webpack_require__.bind(null, /*! ./FaustLang */ "./src/monaco-faust/FaustLang.ts"));
-
           case 2:
             faustLang = _context.sent;
             monacoEditor.languages.register(faustLang.language);
@@ -37270,7 +36274,6 @@ var faustLangRegister = /*#__PURE__*/function () {
             monacoEditor.editor.defineTheme("vs-dark", faustLang.theme);
             _context.next = 8;
             return faustLang.getProviders(faust);
-
           case 8:
             providers = _context.sent;
             monacoEditor.languages.registerHoverProvider("faust", providers.hoverProvider);
@@ -37280,7 +36283,6 @@ var faustLangRegister = /*#__PURE__*/function () {
               providers,
               faustLang
             });
-
           case 13:
           case "end":
             return _context.stop();
@@ -37288,7 +36290,6 @@ var faustLangRegister = /*#__PURE__*/function () {
       }
     }, _callee);
   }));
-
   return function faustLangRegister(_x, _x2) {
     return _ref.apply(this, arguments);
   };
@@ -37321,17 +36322,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var window_function__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(window_function__WEBPACK_IMPORTED_MODULE_1__);
 
 
-/* eslint-disable no-param-reassign */
 
+/* eslint-disable no-param-reassign */
 /**
  * Mod support wrapping with negative numbers
  *
  * @param {number} x
  * @param {number} y
  */
-
 var mod = (x, y) => (x % y + y) % y;
 var wrap = (i, $, l) => mod(i + $, l);
+
 /**
  * Copy a Float32Array by given offset and length,
  * support negative pointer, will be wrapped correctly
@@ -37341,14 +36342,12 @@ var wrap = (i, $, l) => mod(i + $, l);
  * @param {number} [length]
  * @returns
  */
-
 var sliceWrap = (src, $begin, length) => {
   if (typeof $begin === "undefined") $begin = 0;
   if (typeof length === "undefined") length = src.length - $begin;
   var dest = new Float32Array(length);
   length = Math.min(src.length, length);
   var $dest = 0;
-
   while (length) {
     $begin = mod($begin, src.length);
     var amount = Math.min(length, src.length - $begin);
@@ -37357,9 +36356,9 @@ var sliceWrap = (src, $begin, length) => {
     length -= amount;
     $dest += amount;
   }
-
   return dest;
 };
+
 /**
  * Set a Float32Array with another by given offset,
  * support negative pointer, will be wrapped correctly
@@ -37369,12 +36368,10 @@ var sliceWrap = (src, $begin, length) => {
  * @param {number} [$dest]
  * @returns
  */
-
 var setWrap = (dest, src, $dest) => {
   if (typeof $dest === "undefined") $dest = 0;
   var $src = 0;
   var length = Math.min(dest.length, src.length);
-
   while (length) {
     $dest = mod($dest, dest.length);
     var amount = Math.min(length, dest.length - $dest);
@@ -37384,9 +36381,9 @@ var setWrap = (dest, src, $dest) => {
     $dest += amount;
     length -= amount;
   }
-
   return dest;
 };
+
 /**
  * CanvasRenderingContext2D.fillRect with wrap
  *
@@ -37396,34 +36393,29 @@ var setWrap = (dest, src, $dest) => {
  * @param {number} w
  * @param {number} h
  */
-
 var fillRectWrap = (ctx, x, y, w, h, canvasWidth, canvasHeight) => {
   var width = canvasWidth;
   var height = canvasHeight;
-
   if (!width && !height) {
     var _ctx$canvas = ctx.canvas;
     width = _ctx$canvas.width;
     height = _ctx$canvas.height;
   } else if (!width) width = ctx.canvas.width;else if (!height) height = ctx.canvas.height;
-
   var $x = 0;
-
   while ($x < w) {
     var $y = 0;
     var startX = wrap($x + x, 0, width);
     var drawW = startX + w < width ? w : width - startX;
-
     while ($y < h) {
       var startY = wrap($y + y, 0, height);
       var drawH = startY + h < height ? h : height - startY;
       ctx.fillRect(startX, startY, drawW, drawH);
       $y += drawH;
     }
-
     $x += drawW;
   }
 };
+
 /**
  * Calcute FFT power, result array is half sized
  *
@@ -37431,41 +36423,34 @@ var fillRectWrap = (ctx, x, y, w, h, canvasWidth, canvasHeight) => {
  * @param {FFT} fft
  * @returns
  */
-
 var getFrequencyDomainData = (t, fft) => {
   // eslint-disable-line arrow-body-style
   var ffted = fft.forward(window_function_apply__WEBPACK_IMPORTED_MODULE_0___default()(t, window_function__WEBPACK_IMPORTED_MODULE_1__["blackman"]));
   var f = new Float32Array(t.length / 2);
-
   for (var i = 0; i < f.length; i++) {
     f[i] = 20 * Math.log10(Math.pow(Math.pow(ffted[i * 2], 2) + Math.pow(ffted[i * 2 + 1], 2), 0.5) / f.length * 2.38328);
   }
-
   return f;
 };
 var estimateFreq = (fft, sampleRate) => {
   var index = 0;
   var max = -Infinity;
   var i = fft.length;
-
   while (i-- > 1) {
     var cur = fft[i];
     if (cur <= max) continue;
     max = cur;
     index = i;
   }
-
   return sampleRate / 2 * index / fft.length;
 };
 var indexToFreq = (i, fftBins, sampleRate) => i % fftBins / fftBins * sampleRate / 2;
 var getRms = t => {
   var i = t.length;
   var squareSum = 0;
-
   while (i--) {
     squareSum += Math.pow(t[i], 2);
   }
-
   return Math.pow(squareSum / t.length, 0.5);
 };
 var safeStorage = (() => {
@@ -37474,13 +36459,11 @@ var safeStorage = (() => {
       for (var _len = arguments.length, rest = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
         rest[_key - 1] = arguments[_key];
       }
-
       return localStorage[method](...rest);
     } catch (_unused) {
       return "";
     }
   };
-
   return {
     setItem: (key, val) => tryLocalStorage("setItem", key, val),
     removeItem: key => tryLocalStorage("removeItem", key),
@@ -37499,8 +36482,7 @@ var safeStorage = (() => {
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 var _require = __webpack_require__(/*! ../package.json */ "./package.json"),
-    version = _require.version;
-
+  version = _require.version;
 module.exports = version;
 
 /***/ })

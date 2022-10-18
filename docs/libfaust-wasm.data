@@ -43,9 +43,11 @@ si = library("signals.lib");
 ba = library("basics.lib");
 os = library("oscillators.lib");
 ho = library("hoa.lib");
+ro = library("routes.lib");
+de = library("delays.lib");
 
 declare name "High Order Ambisonics library";
-declare version "0.3";
+declare version "0.4";
 declare author "Pierre Guillot";
 declare author "Eliott Paris";
 declare author "Julien Colafrancesco";
@@ -3445,7 +3447,8 @@ selectoutn(N, s) = _ <: par(i, N, *(s==i));
 //========================================================================================
 
 //----------------------------`(ba.)latch`--------------------------------
-// Latch input on positive-going transition of "clock" ("sample-and-hold").
+// Latch input on positive-going transition of trig:"records" the input when trig 
+// switches from 0 to 1, outputs a frozen values everytime else.
 //
 // #### Usage
 //
@@ -3461,7 +3464,7 @@ latch(trig, x) = x * s : + ~ *(1-s) with { s = (trig' <= 0) & (trig > 0); };
 
 
 //--------------------------`(ba.)sAndH`-------------------------------
-// Sample And Hold.
+// Sample And Hold: "records" the input when trig is 1, outputs a frozen value when trig is 0.
 // `sAndH` is a standard Faust function.
 //
 // #### Usage
@@ -9753,7 +9756,7 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //------------------------------------------------------------
 version =   2,  // MAJOR version when we make incompatible API changes,
             14, // MINOR version when we add functionality in a backwards compatible manner,
-            0;  // PATCH version when we make backwards compatible bug fixes.
+            1;  // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################
@@ -33161,7 +33164,7 @@ with {
 // #### Usage
 //
 // ```
-// _,_ : fdnrev0_demo(N,NB,BBSO) : _,_
+// _,_,_,_ : fdnrev0_demo(N,NB,BBSO) : _,_
 // ```
 //
 // Where:
