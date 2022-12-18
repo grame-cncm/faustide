@@ -2479,7 +2479,7 @@ it = library("interpolators.lib");
 si = library("signals.lib");
 
 declare name "Faust Basic Element Library";
-declare version "0.8";
+declare version "0.9";
 
 //=============================Conversion Tools===========================================
 //========================================================================================
@@ -2617,7 +2617,7 @@ Michon and Julius O. Smith III, and are released under the
 //-----------------------------
 // tau2pole(tau) = exp(-1.0/(tau*ma.SR));
 
-tau2pole(tau) = ba.if(clipCond, 0.0, exp(-1.0/(tauCenterClipped*float(ma.SR)))) 
+tau2pole(tau) = ba.if(clipCond, 0.0, exp(-1.0/(tauCenterClipped*float(ma.SR))))
 with {
     clipCond = abs(tau)<ma.EPSILON;
     tauCenterClipped = ba.if(clipCond, 1.0, tau); // 1.0 can be any nonzero value (not used)
@@ -2688,7 +2688,7 @@ hz2midikey(freq) = 12.0*ma.log2(freq/440.0) + 69.0;
 //
 // Where:
 //
-// * `semi`: number of semitone 
+// * `semi`: number of semitone
 //-----------------------------
 semi2ratio(semi) = pow(2.0, semi/12.0);
 
@@ -2721,7 +2721,7 @@ ratio2semi(ratio) = 12.0*log(ratio)/log(2.0);
 //
 // Where:
 //
-// * `cent`: number of cents 
+// * `cent`: number of cents
 //-----------------------------
 cent2ratio(cent) = pow(2.0, cent/1200.0);
 
@@ -2784,8 +2784,8 @@ FAUST library file, GRAME section 2
 //========================================================================================
 
 //----------------------------`(ba.)counter`------------------------------
-// Starts counting 0, 1, 2, 3..., and raise the current integer value 
-// at each upfront of the trigger. 
+// Starts counting 0, 1, 2, 3..., and raise the current integer value
+// at each upfront of the trigger.
 //
 // #### Usage
 //
@@ -2891,8 +2891,8 @@ ramp = case {
 
 
 //-------`(ba.)line`----------
-// A linear ramp to reach a next value in 'n' samples. 
-// Note that the interpolation process is restarted every time 
+// A linear ramp to reach a next value in 'n' samples.
+// Note that the interpolation process is restarted every time
 // the desired output value changes, the interpolation time is sampled only then.
 //
 // #### Usage
@@ -2906,7 +2906,7 @@ ramp = case {
 //------------------------
 line(n, x) = state ~ (_,_) : !,_
 with {
-    state(t, c) = nt,nc 
+    state(t, c) = nt,nc
     with {
         nt = ba.if(x != x', n, t-1);
         nc = ba.if(nt > 0, c + (x - c)/nt, x);
@@ -3195,46 +3195,76 @@ subseq(head, 0, N)         = head;
 
 
 //============================Function tabulation=========================================
-//========================================================================================
-
+// The purpose of function tabulation is to speed up the computation of heavy functions over an interval, 
+// so that the computation at runtime can be faster than directly using the function. 
+// Two techniques are implemented: 
+//
+// * `tabulate` computes the function in a table and read the points using interpolation
+//
+// * `tabulate_chebychev` uses Chebyshev polynomial approximation
+//
+// #### Comparison program example 
+// ```
+///* Both tabulate() and tabulate_chebychev() create rdtable of size = 200, both use */
+///* cubic polynomials, so this comparison is more or less fair. */
+// process = line(50000, r0, r1) <: FX-tb,FX-ch : par(i, 2, maxerr)
+// with {
+//    C = 0;
+//    FX = sin; 
+//    NX = 50; 
+//    CD = 3;
+//    r0 = 0;
+//    r1 = ma.PI;
+//    tb(x) = ba.tabulate(C, FX, NX*(CD+1), r0, r1, x).cub;
+//    ch(x) = ba.tabulate_chebychev(C, FX, NX, CD, r0, r1, x);
+//    maxerr = abs : max ~ _;
+//    line(n, x0, x1) = x0 + (ba.time%n)/n * (x1-x0);
+// };
+// ```
+//
 //-------`(ba.)tabulate`----------
-// Tabulate an unary function on a [r0, r1] range in a table. 
-// The table value can then be read directly or with linear or cubic interpolation.
+// Tabulate a 1D function over the range [r0, r1] for access via nearest-value, linear, cubic interpolation.
+// In other words, the uniformly tabulated function can be evaluated using interpolation of order 0 (none), 1 (linear), or 3 (cubic).
 //
 // #### Usage
 //
 // ```
-// tabulate(C, fun, size, r0, r1, x).(val|lin|cub) : _
+// tabulate(C, FX, S, r0, r1, x).(val|lin|cub) : _
 // ```
 //
-// Where:
-//
-// * `C`: whether to dynamically force the index in [r0, r1] range: 1 force the check, 0 deactivate it (a constant numerical expression)
-// * `fun`: unary function
-// * `S`: size of the table (a constant numerical expression)
-// * `r0`: range minimal value
-// * `r1`: range maximal value
-// * `x`: input value to compute using the tabulated function
+// * `C`: whether to dynamically force the `x` value to the range [r0, r1]: 1 forces the check, 0 deactivates it (constant numerical expression)
+// * `FX`: unary function Y=F(X) with one output (scalar function of one variable) 
+// * `S`: size of the table in samples (constant numerical expression)
+// * `r0`: minimum value of argument x
+// * `r1`: maximum value of argument x
 //
 // ```
-// tabulate(C, fun, S, r0, r1, x).val uses the value in the table
+// tabulate(C, FX, S, r0, r1, x).val uses the value in the table closest to x
 // ```
 //
 // ```
-// tabulate(C, fun, S, r0, r1, x).lin uses the value in the table with linear interpolation
+// tabulate(C, FX, S, r0, r1, x).lin evaluates at x using linear interpolation between the closest stored values
 // ```
 //
 // ```
-// tabulate(C, fun, S, r0, r1, x).cub uses the value in the table with cubic interpolation
+// tabulate(C, FX, S, r0, r1, x).cub evaluates at x using cubic interpolation between the closest stored values
 // ```
+//
+// #### Example test program
+//
+// ```
+// midikey2hz(mk) = ba.tabulate(1, ba.midikey2hz, 512, 0, 127, mk).lin;
+// process = midikey2hz(ba.time), ba.midikey2hz(ba.time);
+// ```
+//
 //--------------------------------------------
-tabulate(C, fun, S, r0, r1, x) = environment {
+tabulate(C, FX, S, r0, r1, x) = environment {
 
     // Maximum index to access
     mid = S-1;
 
     // Create the table
-    wf = r0 + float(ba.time)*(r1-r0)/float(mid) : fun;
+    wf = r0 + float(ba.time)*(r1-r0)/float(mid) : FX;
 
     // Prepare the 'float' table read index
     id = (x-r0)/(r1-r0)*mid;
@@ -3243,10 +3273,10 @@ tabulate(C, fun, S, r0, r1, x) = environment {
     rid(x, 0) = x;
     rid(x, 1) = max(0, min(x, mid));
 
-    // Tabulate an unary 'fun' function on a range [r0, r1]
+    // Tabulate an unary 'FX' function on a range [r0, r1]
     val = y0 with { y0 = rdtable(S, wf, rid(int(id), C)); };
 
-    // Tabulate an unary 'fun' function on a range [r0, r1] with linear interpolation
+    // Tabulate an unary 'FX' function over the range [r0, r1] with linear interpolation
     lin = it.interpolate_linear(d,y0,y1)
     with {
         x0 = int(id);
@@ -3256,7 +3286,7 @@ tabulate(C, fun, S, r0, r1, x) = environment {
         y1 = rdtable(S, wf, rid(x1, C));
     };
 
-    // Tabulate an unary 'fun' function on a range [r0, r1] with cubic interpolation
+    // Tabulate an unary 'FX' function over the range [r0, r1] with cubic interpolation
     cub = it.interpolate_cubic(d,y0,y1,y2,y3)
     with {
         x0 = x1-1;
@@ -3273,12 +3303,80 @@ tabulate(C, fun, S, r0, r1, x) = environment {
 
 declare tabulate author "Stephane Letz";
 
+
+//-------`(ba.)tabulate_chebychev`----------
+// Tabulate a 1D function over the range [r0, r1] for access via Chebyshev polynomial approximation.
+// In contrast to `(ba.)tabulate`, which interpolates only between tabulated samples, `(ba.)tabulate_chebychev`
+// stores coefficients of Chebyshev polynomials that are evaluated to provide better approximations in many cases.
+// Two new arguments controlling this are NX, the number of segments into which [r0, r1] is divided, and CD,
+// the maximum Chebyshev polynomial degree to use for each segment. A `rdtable` of size NX*(CD+1) is internally used.
+//
+// Note that processing `r1` the last point in the interval is not safe. So either be sure the input stays in [r0, r1[ 
+// or use `C = 1`.
+//
+// #### Usage
+//
+// ```
+// _ : tabulate_chebychev(C, FX, NX, CD, r0, r1) : _
+// ```
+//
+// * `C`: whether to dynamically force the value to the range [r0, r1]: 1 forces the check, 0 deactivates it (constant numerical expression)
+// * `FX`: unary function Y=F(X) with one output (scalar function of one variable)
+// * `NX`: number of segments for uniformly partitioning [r0, r1] (constant numerical expression)
+// * `CD`: maximum polynomial degree for each Chebyshev polynomial (constant numerical expression)
+// * `r0`: minimum value of argument x
+// * `r1`: maximum value of argument x
+//
+// #### Example test program
+//
+// ```
+// midikey2hz_chebychev(mk) = ba.tabulate_chebychev(1, ba.midikey2hz, 100, 4, 0, 127, mk);
+// process = midikey2hz_chebychev(ba.time), ba.midikey2hz(ba.time);
+// ```
+//
+//--------------------------------------------
+tabulate_chebychev(C, FX, NX, CD, r0, r1, x) = y with {
+    ck(0) = _;
+    ck(1) = max(0) : min(NX-1);
+
+    // number of chebyshev coefficients
+    NC = CD + 1;
+    // length of the segments
+    DX = (r1 - r0) / NX;
+    // number of segment 'x' falls in
+    nx = (x  - r0) / DX : int : ck(C);
+    // center of n's segment
+    xc(n) = r0 + DX * (n + 1/2);
+    // so ch(0) .. ch(NC) are the coeffs we use for approximation
+    // on nx's segment
+    ch(i) = chtab(NC * nx + i);
+
+    // map the input in segment [nx*DX, (nx+1)*DX] to [-1,1]
+    y = (x - xc(nx)) * 2/DX <: sum(i, NC, ch(i) * ma.chebychev(i));
+
+    // map [-1,1] to the segment [nx*DX, (nx+1)*DX] so mapfx(nx)
+    // is simply the "renormalized" FX defined on [-1,1]
+    mapfx(nx, x) = FX(xc(nx) + DX/2 * x);
+
+    // calculate the nc's chebyshev coefficient we use on nx's segment
+    gench(nx, nc) = (1+(nc!=0))/NC * sum(k,NC,
+        mapfx(nx, cos(ma.PI*(k+1/2)/NC)) * cos(ma.PI*nc*(k+1/2)/NC));
+
+    // record gench(nx, nc) in rdtable() to avoid the run-time calculations
+    chtab = rdtable(NX*NC, (ba.time <: int(/(NC)), %(NC) : gench));
+};
+
+declare tabulate_chebychev author "Oleg Nesterov";
+declare tabulate_chebychev copyright "Copyright (C) 2022 Oleg Nesterov <oleg@redhat.com>";
+declare tabulate_chebychev license "MIT-style STK-4.3 license";
+
+
 //============================Selectors (Conditions)======================================
 //========================================================================================
 
 //-----------------------------`(ba.)if`-----------------------------------
 // if-then-else implemented with a select2. WARNING: since `select2` is strict (always evaluating both branches),
-// the resulting if does not have the usual "lazy" semantic of the C if form, and thus cannot be used to 
+// the resulting if does not have the usual "lazy" semantic of the C if form, and thus cannot be used to
 // protect against forbidden computations like division-by-zero for instance.
 //
 // #### Usage
@@ -3323,7 +3421,7 @@ cselector(i,n) = par(j, n, S(i, j))   with { S(i,i) = (_,_); S(i,j) = (!,!); }; 
 // #### Usage
 //
 // ```
-// _,_,_,_ : select2stereo(bpc) : _,_    
+// _,_,_,_ : select2stereo(bpc) : _,_
 // ```
 //
 // Where:
@@ -3361,7 +3459,7 @@ with {
 };
 
 
-// The generic version with a 'sel' function to be applied on: 
+// The generic version with a 'sel' function to be applied on:
 // - the channel index as a (possibly) fractional value
 // - the next channel index as an integer value
 // - the 2 signals to be selected between
@@ -3431,7 +3529,7 @@ with {
 // * `N`: number of outputs (int, known at compile time, N > 0)
 // * `i`: output number to route to (int, numbered from 0) (i.e. slider)
 //
-// #### Example
+// #### Example test program
 //
 // ```
 // process = 1 : selectoutn(3, sel) : par(i, 3, vbargraph("v.bargraph %i", 0, 1));
@@ -3447,7 +3545,7 @@ selectoutn(N, s) = _ <: par(i, N, *(s==i));
 //========================================================================================
 
 //----------------------------`(ba.)latch`--------------------------------
-// Latch input on positive-going transition of trig:"records" the input when trig 
+// Latch input on positive-going transition of trig:"records" the input when trig
 // switches from 0 to 1, outputs a frozen values everytime else.
 //
 // #### Usage
@@ -3516,7 +3614,7 @@ with {
 //
 // Where:
 //
-// `mode` means: 
+// `mode` means:
 //    0 - Pass through. A single sample 0 trigger will work as a reset.
 //  1 - Track and hold max value.
 //----------------------------------------------------------------
@@ -3560,7 +3658,7 @@ peakholder(holdTime, x) = loop ~ si.bus(2) : ! , _
                 output = ba.if(bypass, abs(x), outState);
             };
     };
-    
+
 
 /*
 // Alternate version with branchless code
@@ -3580,7 +3678,7 @@ peakholder(holdTime, x) = loop ~ si.bus(2) : ! , _
 
 /*
 // The function below is kept for back-compatibility in case any user relies
-// on it for their software. However, the function behaves differently than 
+// on it for their software. However, the function behaves differently than
 // expected: currently, the timer is not reset when a new peak is detected.
 //------------------------------------------------------------------------------
 declare peakholder author "Jonatan Liljedahl";
@@ -3593,9 +3691,9 @@ peakholder(n) = peakhold2 ~ reset : (!,_) with {
 
 
 //--------------------------`(ba.)impulsify`---------------------------
-// Turns a signal into an impulse with the value of the current sample 
-// (0.3,0.2,0.1 becomes 0.3,0.0,0.0). This function is typically used with a 
-// `button` to turn its output into an impulse. `impulsify` is a standard Faust 
+// Turns a signal into an impulse with the value of the current sample
+// (0.3,0.2,0.1 becomes 0.3,0.0,0.0). This function is typically used with a
+// `button` to turn its output into an impulse. `impulsify` is a standard Faust
 // function.
 //
 // #### Usage
@@ -3705,7 +3803,7 @@ listInterp(v) =
 
 
 //-------------------`(ba.)bypass1`-------------------------
-// Takes a mono input signal, route it to `e` and bypass it if `bpc = 1`. 
+// Takes a mono input signal, route it to `e` and bypass it if `bpc = 1`.
 // When bypassed, `e` is feed with zeros so that its state is cleanup up.
 // `bypass1` is a standard Faust function.
 //
@@ -3730,7 +3828,7 @@ with {
 
 
 //-------------------`(ba.)bypass2`-------------------------
-// Takes a stereo input signal, route it to `e` and bypass it if `bpc = 1`. 
+// Takes a stereo input signal, route it to `e` and bypass it if `bpc = 1`.
 // When bypassed, `e` is feed with zeros so that its state is cleanup up.
 // `bypass2` is a standard Faust function.
 //
@@ -3755,8 +3853,8 @@ with {
 
 
 //-------------------`(ba.)bypass1to2`-------------------------
-// Bypass switch for effect `e` having mono input signal and stereo output. 
-// Effect `e` is bypassed if `bpc = 1`.When bypassed, `e` is feed with zeros 
+// Bypass switch for effect `e` having mono input signal and stereo output.
+// Effect `e` is bypassed if `bpc = 1`.When bypassed, `e` is feed with zeros
 // so that its state is cleanup up.
 // `bypass1to2` is a standard Faust function.
 //
@@ -3781,10 +3879,10 @@ with {
 
 
 //-------------------`(ba.)bypass_fade`-------------------------
-// Bypass an arbitrary (N x N) circuit with 'n' samples crossfade. 
-// Inputs and outputs signals are faded out when 'e' is bypassed, 
-// so that 'e' state is cleanup up. 
-// Once bypassed the effect is replaced by `par(i,N,_)`. 
+// Bypass an arbitrary (N x N) circuit with 'n' samples crossfade.
+// Inputs and outputs signals are faded out when 'e' is bypassed,
+// so that 'e' state is cleanup up.
+// Once bypassed the effect is replaced by `par(i,N,_)`.
 // Bypassed circuits can be chained.
 //
 // #### Usage
@@ -3792,20 +3890,20 @@ with {
 // ```
 // _ : bypass_fade(n,b,e) : _
 // or
-// _,_ : bypass_fade(n,b,e) : _,_ 
+// _,_ : bypass_fade(n,b,e) : _,_
 // ```
 // * `n`: number of samples for the crossfade
 // * `b`: bypass switch (0/1)
 // * `e`: N x N circuit
 //
-// #### Examples
+// #### Example test program
 //
 // ```
 // process = bypass_fade(ma.SR/10, checkbox("bypass echo"), echo);
 // process = bypass_fade(ma.SR/10, checkbox("bypass reverb"), freeverb);
 // ```
 //---------------------------------------------------------------
-bypass_fade(n, b, e) = par(i, ins, _) 
+bypass_fade(n, b, e) = par(i, ins, _)
             <: (par(i, ins, *(1-xb)) : e : par(i, outs, *(1-xb))), par(i, ins, *(xb))
             :> par(i, outs, _)
 with {
@@ -3824,7 +3922,7 @@ with {
 // ```
 // _ : toggle : _
 // ```
-// #### Examples
+// #### Example test program
 //
 // ```
 // button("toggle") : toggle : vbargraph("output", 0, 1)
@@ -3850,7 +3948,7 @@ with {
 // _,_ : on_and_off : _
 // ```
 //
-// #### Example
+// #### Example test program
 //
 // ```
 // button("on"), button("off") : on_and_off : vbargraph("output", 0, 1)
@@ -4040,7 +4138,7 @@ with {
 // * turning it on or off: `useVal()`
 // * getting the maximum of all of them: `parallelOp()`
 //
-// In Faust, we can only do that for a fixed maximum number of values: `maxN`, known at compile time. 
+// In Faust, we can only do that for a fixed maximum number of values: `maxN`, known at compile time.
 
 //========================================================================================
 // Section contributed by Bart Brouns (bart@magnetophon.nl).
@@ -4080,11 +4178,11 @@ slidingReduce(op,n,maxN,disabledVal) =
     with {
        sequentialOperatorParOut(N,op) = seq(i, N, operator(i));
         operator(i) = si.bus(i), (_<: _ , op(_,_@(pow2(i))));
-        
+
         // The sum of all the sizes of the previous blocks
         sumOfPrevBlockSizes(0) = 0;
         sumOfPrevBlockSizes(i) = (ba.subseq((allBlockSizes),0,i):>_);
-        
+
         allBlockSizes = par(i, maxNrBits(maxN-1), (pow2(i)) * isUsed(i));
         maxNrBits(n) = int2nrOfBits(n);
 
@@ -6958,6 +7056,18 @@ with {
 //############################## oscillators.lib ######################################
 // This library contains a collection of sound generators. Its official prefix is `os`.
 //
+// The oscillators library is organized into 9 sections:
+//
+// * [Wave-Table-Based Oscillators](#wave-table-based-oscillators)
+// * [Low Frequency Oscillators](#low-frequency-oscillators)
+// * [Low Frequency Sawtooths](#low-frequency-sawtooths)
+// * [Alias-Suppressed Sawtooth](#alias-suppressed-sawtooth)
+// * [Alias-Suppressed Pulse, Square, and Impulse Trains](#alias-suppressed-pulse-square-and-impulse-trains)
+// * [Filter-Based Oscillators](#filter-based-oscillators)
+// * [Waveguide-Resonator-Based Oscillators](#waveguide-resonator-based-oscillators)
+// * [Casio CZ Oscillators](#casio-cz-oscillators)
+// * [PolyBLEP-Based Oscillators](#polyblep-based-oscillators)
+//
 // #### References
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/oscillators.lib>
 //########################################################################################
@@ -7006,7 +7116,7 @@ si = library("signals.lib");
 declare name "Faust Oscillator Library";
 declare version "0.3";
 
-// This library contains platform specific constants 
+// This library contains platform specific constants
 pl = library("platform.lib");
 
 //=========================Wave-Table-Based Oscillators===================================
@@ -7026,7 +7136,7 @@ pl = library("platform.lib");
 //
 // * `tablesize`: the table size
 //------------------------------------------------------------
-sinwaveform(tablesize) = 
+sinwaveform(tablesize) =
     sin(float(ba.period(tablesize)) * (2.0 * ma.PI) / float(tablesize));
 
 
@@ -7043,9 +7153,9 @@ sinwaveform(tablesize) =
 //
 // * `tablesize`: the table size
 //------------------------------------------------------------
-coswaveform(tablesize) = 
+coswaveform(tablesize) =
     cos(float(ba.period(tablesize)) * (2.0 * ma.PI) / float(tablesize));
-    
+
 
 // Generic phasor with `reset` and `phase` parameters to be specialised in concrete use-cases.
 // The `reset` must be 1 on first sample for the `phase` to be properly initialized.
@@ -7259,7 +7369,7 @@ osc = oscsin;
 FAUST library file, jos section
 
 Except where noted otherwise, The Faust functions below in this
-section are Copyright (C) 2003-2017 by Julius O. Smith III <jos@ccrma.stanford.edu>
+section are Copyright (C) 2003-2022 by Julius O. Smith III <jos@ccrma.stanford.edu>
 ([jos](http://ccrma.stanford.edu/~jos/)), and released under the
 (MIT-style) [STK-4.3](#stk-4.3-license) license.
 
@@ -7269,21 +7379,22 @@ Michon and Julius O. Smith III, and are released under the
 
 ************************************************************************/
 
-//===============================LFOs===============================
-// Low-Frequency Oscillators (LFOs) have prefix `lf_`
-// (no aliasing suppression, which is not audible at LF).
+//===============================Low Frequency Oscillators===============================
+// Low Frequency Oscillators (LFOs) have prefix `lf_`
+// (no aliasing suppression, since it is inaudible at LF).
+// Use `sawN` and its derivatives for audio oscillators with suppressed aliasing.
 //==================================================================
 
 //--------`(os.)lf_imptrain`----------
 // Unit-amplitude low-frequency impulse train.
 // `lf_imptrain` is a standard Faust function.
-//
+
 // #### Usage
 //
 // ```
 // lf_imptrain(freq) : _
 // ```
-//
+
 // Where:
 //
 // * `freq`: frequency in Hz
@@ -7536,74 +7647,61 @@ declare saw1 licence "STK-4.3";
 saw1(freq) = 2.0 * lf_sawpos(freq) - 1.0;
 lf_saw(freq) = saw1(freq);
 
-//================== Bandlimited Sawtooth ====================
+//================== Alias-Suppressed Sawtooth ====================
 //-----------------`(os.)sawN`--------------------
-// Bandlimited Sawtooth
+// Alias-Suppressed Sawtooth Audio-Frequency Oscillator using Nth-order polynomial transitions
+// to reduce aliasing.
 //
-// `sawN(N,freq)`, `sawNp`, `saw2dpw(freq)`, `saw2(freq)`, `saw3(freq)`,
-// `saw4(freq)`, `saw5(freq)`, `saw6(freq)`, `sawtooth(freq)`, `saw2f2(freq)`
-// `saw2f4(freq)`
-//
-// #### Method 1 (`saw2`)
-//
-// Polynomial Transition Regions (PTR) (for aliasing suppression).
-//
-// ##### References
-//
-// * Kleimola, J.; Valimaki, V., "Reducing Aliasing from Synthetic Audio
-//     Signals Using Polynomial Transition Regions," in Signal Processing
-//     Letters, IEEE , vol.19, no.2, pp.67-70, Feb. 2012
-// * <https://aaltodoc.aalto.fi/bitstream/handle/123456789/7747/publication6.pdf?sequence=9>
-// * <http://research.spa.aalto.fi/publications/papers/spl-ptr/>
-//
-// #### Method 2 (`sawN`)
-//
-// Differentiated Polynomial Waves (DPW) (for aliasing suppression).
-//
-// ##### Reference
-//
-// "Alias-Suppressed Oscillators based on Differentiated Polynomial Waveforms",
-// Vesa Valimaki, Juhan Nam, Julius Smith, and Jonathan Abel,
-// IEEE Tr. Acoustics, Speech, and Language Processing (IEEE-ASLP),
-// Vol. 18, no. 5, May 2010.
-//
-// #### Other Cases
-//
-// Correction-filtered versions of `saw2`: `saw2f2`, `saw2f4`
-// The correction filter compensates "droop" near half the sampling rate.
-// See reference for sawN.
+// `sawN(N,freq)`, `sawNp(N,freq,phase)`, `saw2dpw(freq)`, `saw2(freq)`, `saw3(freq)`,
+// `saw4(freq)`, `sawtooth(freq)`, `saw2f2(freq)`, `saw2f4(freq)`
 //
 // #### Usage
 //
 // ```
-// sawN(N,freq) : _
-// sawNp(N,freq,phase) : _
-// saw2dpw(freq) : _
-// saw2(freq) : _
-// saw3(freq) : _     // based on sawN
-// saw4(freq) : _     // based on sawN
-// saw5(freq) : _     // based on sawN
-// saw6(freq) : _     // based on sawN
-// sawtooth(freq) : _ // = saw2
-// saw2f2(freq) : _
-// saw2f4(freq) : _
+// sawN(N,freq) : _        // Nth-order aliasing-suppressed sawtooth using DPW method (see below)
+// sawNp(N,freq,phase) : _ // sawN with phase offset feature
+// saw2dpw(freq) : _       // saw2 using DPW
+// saw2ptr(freq) : _       // saw2 using the faster, stateless PTR method
+// saw2(freq) : _          // DPW method, but subject to change if a better method emerges
+// saw3(freq) : _          // sawN(3)
+// saw4(freq) : _          // sawN(4)
+// sawtooth(freq) : _      // saw2
+// saw2f2(freq) : _        // saw2dpw with 2nd-order droop-correction filtering
+// saw2f4(freq) : _        // saw2dpw with 4th-order droop-correction filtering
 // ```
 //
 // Where:
 //
-// * `N`: polynomial order, known at compile time
+// * `N`: polynomial order, a constant numerical expression between 1 and 4
 // * `freq`: frequency in Hz
 // * `phase`: phase between 0 and 1
-//===================================================================
-// --- sawN for N = 1 to 6 ---
-//We can do 6, but 5 and 6 have noise at low fundamentals: MAX_SAW_ORDER = 6; MAX_SAW_ORDER_NEXTPOW2 = 8;
-MAX_SAW_ORDER = 4; MAX_SAW_ORDER_NEXTPOW2 = 8; // par cannot handle the case of 0 elements
+//
+// #### Method
+// Differentiated Polynomial Wave (DPW).
+//
+// ##### Reference
+// "Alias-Suppressed Oscillators based on Differentiated Polynomial Waveforms",
+// Vesa Valimaki, Juhan Nam, Julius Smith, and Jonathan Abel,
+// IEEE Tr. Audio, Speech, and Language Processing (IEEE-ASLP),
+// Vol. 18, no. 5, pp 786-798, May 2010.
+// 10.1109/TASL.2009.2026507.
+//
+// #### Notes
+// The polynomial order `N` is limited to 4 because noise has been
+// observed at very low `freq` values.  (LFO sawtooths should of course
+// be generated using `lf_sawpos` instead.)
+//-----------------------------------------------------------------
+declare sawN author "Julius O. Smith III";
+declare sawN license "STK-4.3";
+// --- sawN for N = 1 to 4 ---
+// Orders 5 and 6 have noise at low fundamentals: MAX_SAW_ORDER = 6; MAX_SAW_ORDER_NEXTPOW2 = 8;
+MAX_SAW_ORDER = 4;
+MAX_SAW_ORDER_NEXTPOW2 = 8; // par cannot handle the case of 0 elements
 sawN(N,freq) = saw1l : poly(Nc) : D(Nc-1) : gate(Nc-1)
 with {
   Nc = max(1,min(N,MAX_SAW_ORDER));
   clippedFreq = max(20.0,abs(freq)); // use lf_sawpos(freq) for LFOs (freq < 20 Hz)
   saw1l = 2*lf_sawpos(clippedFreq) - 1; // zero-mean, amplitude +/- 1
-  // Also note the availability of lf_sawpos_phase above.
   poly(1,x) = x;
   poly(2,x) = x*x;
   poly(3,x) = x*x*x - x;
@@ -7621,43 +7719,101 @@ with {
 };
 
 //------------------`(os.)sawNp`--------------------------------
-// TODO: MarkDown doc in comments
-//--------------------------------------------------------
-// --- sawNp for N = 1 to 6 ---
-// Phase offset = delay (max 8191 samples is more than one period of audio):
-sawNp(N,freq,phase) = sawN(N,freq) : @(max(0,min(8191,int(phase*ma.SR/freq))));
-
-// Special named cases:
-
-//------------------`(os.)saw2dpw`--------------------------------
-// TODO: MarkDown doc in comments
-//--------------------------------------------------------
-// --- sawN ---
-saw2dpw(freq) = saw1(freq) <: * <: -(mem) : *(0.25'*ma.SR/freq); // inferior to saw2 below
-
-//------------------`(os.)saw3`--------------------------------
-// TODO: MarkDown doc in comments
-//--------------------------------------------------------
-saw3 = sawN(3); 
-saw4 = sawN(4); 
-saw5 = sawN(5); 
-saw6 = sawN(6);
-
-//------------------`(os.)sawtooth`--------------------------------
-// Alias-free sawtooth wave. 2nd order interpolation (based on `saw2`).
-// `sawtooth` is a standard Faust function.
+// Same as `(os.)sawN` but with a controllable waveform phase.
 //
 // #### Usage
 //
 // ```
-// sawtooth(freq) : _
+// sawNp(N,freq,phase) : _
 // ```
 //
-// Where:
+// where
+//
+// * `N`: waveform interpolation polynomial order 1 to 4 (constant integer expression)
+// * `freq`: frequency in Hz
+// * `phase`: waveform phase as a fraction of one period (rounded to nearest sample)
+//
+// #### Implementation Notes
+//
+// The phase offset is implemented by delaying `sawN(N,freq)` by
+// `round(phase*ma.SR/freq)` samples, for up to 8191 samples.
+// The minimum sawtooth frequency that can be delayed a whole period
+// is therefore `ma.SR/8191`, which is well below audibility for normal
+// audio sampling rates.
+//
+//-----------------------------------------------------------------
+declare sawNp author "Julius O. Smith III";
+declare sawNp license "STK-4.3";
+// --- sawNp for N = 1 to 4 ---
+// Phase offset = delay (max 8191 samples is more than one period of audio):
+sawNp(N,freq,phase) = sawN(N,freq) : @(max(0,min(8191,int(0.5+phase*ma.SR/freq))));
+
+//------------------`(os.)saw2, (os.)saw3, (os.)saw4`--------------
+// Alias-Suppressed Sawtooth Audio-Frequency Oscillators of order 2, 3, 4.
+//
+// #### Usage
+//
+// ```
+// saw2(freq) : _
+// saw3(freq) : _
+// saw4(freq) : _
+// ```
+//
+// where
 //
 // * `freq`: frequency in Hz
+//
+// ##### References
+// See `sawN` above.
+//
+// #### Implementation Notes
+//
+// Presently, only `saw2` uses the PTR method, while `saw3` and `saw4` use DPW.
+// This is because PTR has been implemented and tested for the 2nd-order case only.
+//
+//------------------------------------------------------------------
+saw2 = saw2ptr; // "faustlibraries choice"
+saw3 = sawN(3); // only choice available right now
+saw4 = sawN(4); // only choice available right now
+
+//---------------------------`(os.)saw2ptr`---------------------------
+// Alias-Suppressed Sawtooth Audio-Frequency Oscillator
+// using Polynomial Transition Regions (PTR) for order 2.
+//
+// #### Usage
+//
+// ```
+// saw2ptr(freq) : _
+// ```
+//
+// where
+//
+// * `freq`: frequency in Hz
+//
+// ##### Implementation
+//
+// Polynomial Transition Regions (PTR) method for aliasing suppression.
+//
+// ##### References
+//
+// * Kleimola, J.; Valimaki, V., "Reducing Aliasing from Synthetic Audio
+//     Signals Using Polynomial Transition Regions," in Signal Processing
+//     Letters, IEEE , vol.19, no.2, pp.67-70, Feb. 2012
+// * <https://aaltodoc.aalto.fi/bitstream/handle/123456789/7747/publication6.pdf?sequence=9>
+// * <http://research.spa.aalto.fi/publications/papers/spl-ptr/>
+//
+// ##### Notes
+//
+// Method PTR may be preferred because it requires less
+// computation and is stateless which means that the frequency `freq`
+// can be modulated arbitrarily fast over time without filtering
+// artifacts.  For this reason, `saw2` is presently defined as `saw2ptr`.
+//
 //--------------------------------------------------------
-saw2(freq) = y with { // newer PTR version (stateless - freq can vary at any speed)
+declare saw2ptr author "Julius O. Smith III";
+declare saw2ptr license "STK-4.3";
+// specialized reimplementation:
+saw2ptr(freq) = y with { // newer PTR version (stateless - freq can vary at any speed)
   p0 = float(ma.SR)/float(max(ma.EPSILON,abs(freq))); // period in samples
   t0 = 1.0/p0; // phase increment
   p = ((_<:(-(1)<:_,_),_) <: selector1,selector2) ~(+(t0)):!,_;
@@ -7666,38 +7822,88 @@ saw2(freq) = y with { // newer PTR version (stateless - freq can vary at any spe
   y = 2*p-1;
 };
 
-// --- sawtooth ---
+//----------------------`(os.)saw2dpw`---------------------
+// Alias-Suppressed Sawtooth Audio-Frequency Oscillator
+// using the Differentiated Polynomial Waveform (DWP) method.
+//
+// #### Usage
+//
+// ```
+// saw2dpw(freq) : _
+// ```
+//
+// where
+//
+// * `freq`: frequency in Hz
+//
+// This is the original Faust `saw2` function using the DPW method.
+// Since `saw2` is now defined as `saw2ptr`, the DPW version
+// is now available as `saw2dwp`.
+//--------------------------------------------------------
+declare saw2dpw author "Julius O. Smith III";
+declare saw2dpw license "STK-4.3";
+saw2dpw(freq) = saw1(freq) <: * <: -(mem) : *(0.25'*ma.SR/freq);
+
+//------------------`(os.)sawtooth`--------------------------------
+// Alias-suppressed aliasing-suppressed sawtooth oscillator, presently defined as `saw2`.
+// `sawtooth` is a standard Faust function.
+//
+// #### Usage
+//
+// ```
+// sawtooth(freq) : _
+// ```
+//
+// with
+//
+// * `freq`: frequency in Hz
+//--------------------------------------------------------
 sawtooth = saw2; // default choice for sawtooth signal - see also sawN
 
-//------------------`(os.)saw2f2`--------------------------------
-// TODO: MarkDown doc in comments
-//---------------------------------------------------------------
+//------------------`(os.)saw2f2, (os.)saw2f4`--------------------------------
+// Alias-Suppressed Sawtooth Audio-Frequency Oscillator with Order 2 or 4 Droop Correction Filtering.
+//
+// #### Usage
+//
+// ```
+// saw2f2(freq) : _
+// saw2f4(freq) : _
+// ```
+//
+// with
+//
+// * `freq`: frequency in Hz
+//
+// In return for aliasing suppression, there is some attenuation near half the sampling rate.
+// This can be considered as beneficial, or it can be compensated with a high-frequency boost.
+// The boost filter is second-order for `saw2f2` and fourth-order for `saw2f4`, and both are designed
+// for the DWP case and therefore use `saw2dpw`.
+// See Figure 4(b) in the DPW reference for a plot of the slight droop in the DPW case.
+//--------------------------------------------------------
+declare saw2f2 author "Julius O. Smith III";
+declare saw2f2 license "STK-4.3";
 // --- Correction-filtered versions of saw2: saw2f2, saw2f4 -----
-// The correction filter compensates "droop" near half the sampling rate.
-// See reference for sawN.
-saw2f2 = saw2 : cf2 with {
+saw2f2 = saw2dpw : cf2 with {
   cf2 = fi.tf2(1.155704605878911, 0.745184288225518,0.040305967265900,
         0.823765146386639, 0.117420665547108);
 };
-
-//------------------`(os.)saw2f4`--------------------------------
-// TODO: MarkDown doc in comments
-//---------------------------------------------------------------
-saw2f4 = saw2 : cf4 with {
+declare saw2f4 author "Julius O. Smith III";
+declare saw2f4 license "STK-4.3";
+saw2f4 = saw2dpw : cf4 with {
   cf4 = fi.iir((1.155727435125014, 2.285861038554662,
         1.430915027294021, 0.290713280893317, 0.008306401748854),
         (2.156834679164532, 1.559532244409321, 0.423036498118354,
         0.032080681130972));
 };
 
-//=========Bandlimited Pulse, Square, and Impulse Trains============
-// Bandlimited Pulse, Square and Impulse Trains.
+//=========Alias-Suppressed Pulse, Square, and Impulse Trains============
+// Alias-Suppressed Pulse, Square and Impulse Trains.
 //
 // `pulsetrainN`, `pulsetrain`, `squareN`, `square`, `imptrainN`, `imptrain`,
 // `triangleN`, `triangle`
 //
 // All are zero-mean and meant to oscillate in the audio frequency range.
-// Use simpler sample-rounded lf_* versions above for LFOs.
+// Use simpler sample-rounded `lf_*` versions above for LFOs.
 //
 // #### Usage
 //
@@ -7717,7 +7923,7 @@ saw2f4 = saw2 : cf4 with {
 //
 // Where:
 //
-// * `N`: polynomial order
+// * `N`: polynomial order, a constant numerical expression
 // * `freq`: frequency in Hz
 //====================================================================
 
@@ -7736,7 +7942,7 @@ impulse = 1-1';
 
 
 //------------------`(os.)pulsetrainN`--------------------------------
-// Bandlimited pulse train oscillator. 
+// Alias-suppressed pulse train oscillator.
 //
 // #### Usage
 //
@@ -7769,7 +7975,7 @@ pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
 
 
 //------------------`(os.)pulsetrain`--------------------------------
-// Bandlimited pulse train oscillator. Based on `pulsetrainN(2)`.
+// Alias-suppressed pulse train oscillator. Based on `pulsetrainN(2)`.
 // `pulsetrain` is a standard Faust function.
 //
 // #### Usage
@@ -7787,7 +7993,7 @@ pulsetrain = pulsetrainN(2);
 
 
 //------------------`(os.)squareN`--------------------------------
-// Bandlimited square wave oscillator. 
+// Alias-suppressed square wave oscillator.
 //
 // #### Usage
 //
@@ -7804,7 +8010,7 @@ squareN(N,freq) = pulsetrainN(N,freq,0.5);
 
 
 //------------------`(os.)square`--------------------------------
-// Bandlimited square wave oscillator. Based on `squareN(2)`.
+// Alias-suppressed square wave oscillator. Based on `squareN(2)`.
 // `square` is a standard Faust function.
 //
 // #### Usage
@@ -7821,7 +8027,7 @@ square = squareN(2);
 
 
 //------------------`(os.)imptrainN`--------------------------------
-// Bandlimited impulse train generator. 
+// Alias-suppressed impulse train generator.
 //
 // #### Usage
 //
@@ -7838,7 +8044,7 @@ imptrainN(N,freq) = impulse + 0.5*ma.diffn(sawN(N,freq));
 
 
 //------------------`(os.)imptrain`--------------------------------
-// Bandlimited impulse train generator. Based on `imptrainN(2)`.
+// Alias-suppressed impulse train generator. Based on `imptrainN(2)`.
 // `imptrain` is a standard Faust function.
 //
 // #### Usage
@@ -7855,7 +8061,7 @@ imptrain = imptrainN(2); // default based on saw2
 
 
 //------------------`(os.)triangleN`--------------------------------
-// Bandlimited triangle wave oscillator. 
+// Alias-suppressed triangle wave oscillator.
 //
 // #### Usage
 //
@@ -7875,7 +8081,7 @@ triangleN(N,freq) = squareN(N,freq) : fi.pole(p) : *(gain) with {
 
 
 //------------------`(os.)triangle`--------------------------------
-// Bandlimited triangle wave oscillator. Based on `triangleN(2)`.
+// Alias-suppressed triangle wave oscillator. Based on `triangleN(2)`.
 // `triangle` is a standard Faust function.
 //
 // #### Usage
@@ -8034,11 +8240,11 @@ with {
 // Authors:
 // Dario Sanfilippo <sanfilippo.dario@gmail.com>
 // and Oleg Nesterov (jos ed.)
-quadosc(f) = tick ~ (_,_) 
+quadosc(f) = tick ~ (_,_)
 with {
     k1 = tan(f * ma.PI / ma.SR);
     k2 = 2 * k1 / (1 + k1 * k1);
-    tick(u_0,v_0) = u_1,v_1 
+    tick(u_0,v_0) = u_1,v_1
     with {
         tmp = u_0 - k1 * v_0;
         v_1 = v_0 + k2 * tmp;
@@ -8148,13 +8354,17 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 // Oscillators that mimic some of the Casio CZ oscillators.
 //
 // There are two sets:
-// - A set with an index parameter
-// - A set with a res parameter
+//
+// * a set with an index parameter
+//
+// * a set with a res parameter
 //
 // The "index oscillators" outputs a sine wave at index=0 and gets brighter with a higher index.
 // There are two versions of the "index oscillators":
-// - with P appended to the name: is phase aligned with 'fund:sin'
-// - without P appended to the name: has the phase of the original CZ oscillators
+//
+// * with P appended to the name: is phase aligned with `fund:sin`
+//
+// * without P appended to the name: has the phase of the original CZ oscillators
 //
 // The "res oscillators" have a resonant frequency.
 // "res" is the frequency of resonance as a factor of the fundamental pitch.
@@ -8478,7 +8688,7 @@ declare CZresTrap licence "STK-4.3";
 CZresTrap(fund, res) = CZ.resTrap(fund, res);
 
 CZ = environment {
-  
+
     saw(fund, index) = sawChooseP(fund, index, 0);
     sawP(fund, index) = sawChooseP(fund, index, 1);
     sawChooseP(fund, index, p) =
@@ -8487,7 +8697,7 @@ CZ = environment {
       INDEX = (.5-(index*.5)):max(0.01):min(0.5);
       align = si.interpolate(index, 0.75, 0.5);
     };
-    
+
     square(fund, index) = squareChooseP(fund, index, 0);
     squareP(fund, index) = squareChooseP(fund, index, 1);
     squareChooseP(fund, index, p) = (FUND(fund,align,p)>=0.5), (ma.decimal((FUND(fund,align,p)*2)+1)<:_-min(_,(-1*_+1)*((INDEX)/(1-INDEX)))) :+ *ma.PI:cos
@@ -8519,7 +8729,7 @@ CZ = environment {
       INDEX = (.5-(index*0.5)):min(.5):max(.01);
       align = si.interpolate(index:min(0.975), -0.25, -0.5);
     };
-    
+
     FUND =
       case {
         (fund,align,0) => fund;
@@ -8551,7 +8761,7 @@ CZ = environment {
 //------------------------------------------------------------
 declare polyblep author "Jacek Wieczorek";
 
-polyblep(Q, phase) = (0, L(phase / Q), R((phase - 1) / Q)) : select3(sel) 
+polyblep(Q, phase) = (0, L(phase / Q), R((phase - 1) / Q)) : select3(sel)
 with {
     sel = (phase < Q) + 2*(phase > 1 - Q);
     L(x) = 2*x - x*x - 1; // Used near the left end of the interval
@@ -8559,7 +8769,7 @@ with {
 };
 
 //----------`(os.)polyblep_saw`----------
-// Sawtooth oscillator with suppressed aliasing (using polyBLEP).
+// Sawtooth oscillator with suppressed aliasing (using `polyblep`).
 //
 // #### Usage
 //
@@ -8569,7 +8779,7 @@ with {
 //
 // Where:
 //
-// * `freq`: frequency in Hz 
+// * `freq`: frequency in Hz
 //------------------------------------------------------------
 declare polyblep_saw author "Jacek Wieczorek";
 
@@ -8581,7 +8791,7 @@ with {
 };
 
 //----------`(os.)polyblep_square`----------
-// Square wave oscillator with suppressed aliasing (using polyBLEP).
+// Square wave oscillator with suppressed aliasing (using `polyblep`).
 //
 // #### Usage
 //
@@ -8591,7 +8801,7 @@ with {
 //
 // Where:
 //
-// * `freq`: frequency in Hz 
+// * `freq`: frequency in Hz
 //------------------------------------------------------------
 declare polyblep_square author "Jacek Wieczorek";
 
@@ -8603,7 +8813,7 @@ with {
 };
 
 //----------`(os.)polyblep_triangle`----------
-// Triangle wave oscillator with suppressed aliasing (using polyBLEP).
+// Triangle wave oscillator with suppressed aliasing (using `polyblep`).
 //
 // #### Usage
 //
@@ -8613,7 +8823,7 @@ with {
 //
 // Where:
 //
-// * `freq`: frequency in Hz 
+// * `freq`: frequency in Hz
 //------------------------------------------------------------
 declare polyblep_triangle author "Jacek Wieczorek";
 
@@ -9755,8 +9965,8 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //
 //------------------------------------------------------------
 version =   2,  // MAJOR version when we make incompatible API changes,
-            14, // MINOR version when we add functionality in a backwards compatible manner,
-            1;  // PATCH version when we make backwards compatible bug fixes.
+            15, // MINOR version when we add functionality in a backwards compatible manner,
+            0;  // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################
@@ -9814,7 +10024,7 @@ declare license "LGPL with exception";
 // biquad coeffs for various filters
 // usage : BiquadFilter(f0, dBgain, Q, aDetune).xxx
 //---------------------------------------------------
-	
+
 BiquadFilter(f0, dBgain, Q, aDetune) = environment
 {
     lowpass2 = setNormCoeffs(b0, b1, b2, a0, a1, a2)
@@ -25486,18 +25696,18 @@ closed source license or any other license if you decide so.
 ************************************************************************/
 
 declare name "Generic Platform Library";
-declare version "0.2";
+declare version "0.3";
 
 //---------------------------------`(pl.)SR`-----------------------------------
-// Current sampling rate (between 1Hz and 192000Hz). Constant during
+// Current sampling rate (between 1 and 192000Hz). Constant during
 // program execution.
 //-----------------------------------------------------------------------------
 SR = min(192000.0, max(1.0, fconstant(int fSamplingFreq, <math.h>)));
 
 //---------------------------------`(pl.)BS`---------------------------------------
-// Current block-size. Can change during the execution.
+// Current block-size (between 1 and 16384 frames). Can change during the execution.
 //-----------------------------------------------------------------------------
-BS = fvariable(int count, <math.h>);
+BS = min(16384.0, max(1.0, fvariable(int count, <math.h>)));
 
 //---------------------------------`(pl.)tablesize`----------------------------
 // Oscillator table size
@@ -25883,11 +26093,13 @@ wa = sf;
 // This library allows to build linear, explicit finite difference schemes
 // physical models in 1 or 2 dimensions using an approach based on the cellular
 // automata formalism. Its official prefix is `fd`. 
+// 
 // In order to use the library, one needs to discretize the linear partial
 // differential equation of the desired system both at boundaries and in-between
 // them, thus obtaining a set of explicit recursion relations. Each one
 // of these will provide, for each spatial point the scalar coefficients to be
 // multiplied by the states of the current and past neighbour points.
+//
 // Coefficients need to be stacked in parallel in order to form a coefficients
 // matrix for each point in the mesh. It is necessary to provide one matrix for
 // coefficients matrices are defined, they need to be placed in parallel and
@@ -26771,9 +26983,6 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 //##################################### filters.lib ########################################
 // Faust Filters library. Its official prefix is `fi`.
 //
-// #### References
-// * <https://github.com/grame-cncm/faustlibraries/blob/master/filters.lib>
-//
 // The Filters library is organized into 22 sections:
 //
 // * [Basic Filters](#basic-filters)
@@ -26798,6 +27007,9 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 // * [Linkwitz-Riley 4th-order 2-way, 3-way, and 4-way crossovers](#linkwitz-riley-4th-order-2-way-3-way-and-4-way-crossovers)
 // * [Standardized Filters](#standardized-filters)
 // * [Averaging Functions](#averaging-functions)
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/filters.lib>
 //
 //########################################################################################
 
@@ -27258,7 +27470,7 @@ iir(bv,av) = ma.sub ~ fir(av) : fir(bv);
 // `bv` is processed using pattern-matching at compile time,
 //       so it must have this normal form (parallel signals).
 //
-// #### Example
+// #### Example test program
 //
 // Smoothing white noise with a five-point moving average:
 //
@@ -28017,7 +28229,7 @@ with { s = ba.take(n,sv); cross = _,_ <: !,_,_,!; };
 // and `w1` is the desired digital frequency (in radians/second)
 // corresponding to analog frequency 1 rad/sec (i.e., `s = j`).
 //
-// #### Example
+// #### Example test program
 //
 // A second-order ANALOG Butterworth lowpass filter,
 // normalized to have cutoff frequency at 1 rad/sec,
@@ -28130,7 +28342,8 @@ tf3slf(b3,b2,b1,b0,a3,a2,a1,a0) = tf3(b0d,b1d,b2d,b3d,a1d,a2d,a3d) with {
 // and `w1` is the desired digital frequency (in radians/second)
 // corresponding to analog frequency 1 rad/sec (i.e., `s = j`).
 //
-// #### Example
+// #### Example test program
+//
 // A first-order ANALOG Butterworth lowpass filter,
 // normalized to have cutoff frequency at 1 rad/sec,
 // has transfer function:
@@ -28800,7 +29013,7 @@ with { // octave script output:
 // * `fc`: lower bandpass cutoff frequency in Hz.
 //   - Highpass cutoff frequency at ma.SR/2 - fc Hz.
 //
-// #### Example
+// #### Example test program
 //
 // * See `dm.pospass_demo`
 // * Look at frequency response
@@ -29106,7 +29319,8 @@ peak_eq_rm(Lfx,fx,tanPiBT) = _ <: _,A,_ : +,- : *(0.5),*(K/2.0) : + with {
 // * `alpha`: slope of roll-off desired in nepers per neper,
 //         between -1 and 1 (ln mag / ln radian freq)
 //
-// #### Examples
+// #### Example test program
+//
 // See `dm.spectral_tilt_demo` and the documentation for `no.pink_noise`.
 //
 // #### Reference
@@ -32450,7 +32664,8 @@ lagrangeN(N, x) = si.dot(N + 1, lagrange_h(N, x));
 // * `init`: signal for table initialisation
 // * `idx`: fractional index wrapped-around 0 and S
 //
-// Example: test the effectiveness of the 5th-order interpolation scheme by 
+// #### Example test program
+// Test the effectiveness of the 5th-order interpolation scheme by 
 // creating a table look-up oscillator using only 16 points of a sinewave; 
 // compare the result with a non-interpolated version:
 //
@@ -32497,7 +32712,8 @@ frdtable(N, S, init, idx) =
 // * `x`: input signal written on the w_idx positions
 // * `r_idx`: fractional index wrapped-around 0 and S
 //
-// Example: test the effectiveness of the 5th-order interpolation scheme by
+// #### Example test program
+// Test the effectiveness of the 5th-order interpolation scheme by
 // creating a table look-up oscillator using only 16 points of a sinewave;
 // compare the result with a non-interpolated version:
 //
@@ -34796,8 +35012,7 @@ greyhole(dt, damp, size, early_diff, feedback, mod_depth, mod_freq)
 // the previous category (e.g., nonlinear filters, etc.).
 //
 // This library is part of the Faust Physical Modeling ToolKit.
-// More information on how to use this library can be found on this page:
-// <https://ccrma.stanford.edu/~rmichon/pmFaust>. Tutorials on how to make
+// More information on how to use this library can be found on [this page](https://ccrma.stanford.edu/~rmichon/pmFaust). Tutorials on how to make
 // physical models of musical instruments using Faust can be found
 // [here](https://ccrma.stanford.edu/~rmichon/faustTutorials/#making-physical-models-of-musical-instruments-with-faust) as well.
 //
@@ -37990,7 +38205,10 @@ with {
 // Autobends the center frequencies of formants 1 and 2 based on
 // the fundamental frequency of the excitation signal and leaves
 // all other formant frequencies unchanged. Ported from `chant-lib`.
-// Reference: <https://ccrma.stanford.edu/~rmichon/chantLib/>.
+//
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~rmichon/chantLib/>.
 //
 // #### Usage
 //
@@ -38023,7 +38241,10 @@ with {
 // frequency of the excitation signal. Higher formants are
 // reinforced for higher fundamental frequencies.
 // Ported from `chant-lib`.
-// Reference: <https://ccrma.stanford.edu/~rmichon/chantLib/>.
+//
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~rmichon/chantLib/>.
 //
 // #### Usage
 //
@@ -38044,7 +38265,10 @@ vocalEffort(freq,gender) = _ <: ba.if(gender == 0,*(3+1.1*(400-freq)/300),*(0.8+
 
 //-------------------------`(pm.)fof`--------------------------
 // Function to generate a single Formant-Wave-Function.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
@@ -38080,7 +38304,10 @@ with {
 //-------------------------`(pm.)fofSH`-------------------------
 // FOF with sample and hold used on `bw` and a parameter
 // used in the filter-cycling FOF function `fofCycle`.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
@@ -38098,7 +38325,10 @@ fofSH(fc,bw,a,g) = _ <: (((_,bw):ba.sAndH),((_,a):ba.sAndH),_) : (fc,_,_,g,_') :
 //----------------------`(pm.)fofCycle`-------------------------
 // FOF implementation where time-varying filter parameter noise is
 // mitigated by using a cycle of `n` sample and hold FOF filters.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
