@@ -162,135 +162,133 @@ class Faust2Doc {
     return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee() {
       var depth, strIn, doc, path, inComment, idt, curName, strBuffer, lines, i, line, libs, imps, j, lib, _j, imp, _endC$endS$endT, endC, endS, endT, _c$s$t, c, s, t;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!(depthIn === 0)) {
-                _context.next = 2;
-                break;
-              }
-              return _context.abrupt("return", docIn);
-            case 2:
-              depth = depthIn || 2;
-              _context.next = 5;
-              return getFile(fileName);
-            case 5:
-              strIn = _context.sent;
-              doc = docIn || {};
-              path = pathIn || [];
-              inComment = false; // false: in code; true: in md-comment
-              idt = 0; // indentation retained to outdent comment lines
-              curName = ""; // current function name
-              strBuffer = ""; // current function doc
-              lines = strIn.split("\n");
-              i = 0;
-            case 14:
-              if (!(i < lines.length)) {
-                _context.next = 51;
-                break;
-              }
-              line = lines[i];
-              if (line) {
-                _context.next = 18;
-                break;
-              }
-              return _context.abrupt("continue", 48);
-            case 18:
-              if (_Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].isComment(line)) {
-                _context.next = 39;
-                break;
-              }
-              if (inComment) {
-                // we are closing a md-comment
-                inComment = false;
-                if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
-                  name: curName,
-                  path: [...path],
-                  doc: strBuffer
-                });
-                curName = "";
-                strBuffer = "";
-              }
-              libs = _this.matchLibrary(line);
-              imps = _this.matchImport(line);
-              j = 0;
-            case 23:
-              if (!(j < libs.length)) {
-                _context.next = 30;
-                break;
-              }
-              lib = libs[j];
-              _context.next = 27;
-              return _this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
-            case 27:
-              j++;
-              _context.next = 23;
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            if (!(depthIn === 0)) {
+              _context.next = 2;
               break;
-            case 30:
-              _j = 0;
-            case 31:
-              if (!(_j < imps.length)) {
-                _context.next = 38;
-                break;
-              }
-              imp = imps[_j];
-              _context.next = 35;
-              return _this.parse(imp, getFile, depth - 1, path, doc);
-            case 35:
-              _j++;
-              _context.next = 31;
+            }
+            return _context.abrupt("return", docIn);
+          case 2:
+            depth = depthIn || 2;
+            _context.next = 5;
+            return getFile(fileName);
+          case 5:
+            strIn = _context.sent;
+            doc = docIn || {};
+            path = pathIn || [];
+            inComment = false; // false: in code; true: in md-comment
+            idt = 0; // indentation retained to outdent comment lines
+            curName = ""; // current function name
+            strBuffer = ""; // current function doc
+            lines = strIn.split("\n");
+            i = 0;
+          case 14:
+            if (!(i < lines.length)) {
+              _context.next = 51;
               break;
-            case 38:
-              return _context.abrupt("continue", 48);
-            case 39:
-              if (!inComment) {
-                _context.next = 45;
-                break;
-              }
-              // we are in a md-comment (not first line)
-              if (idt === 0) idt = _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].indentation(line); // we have to measure the indentation
-              // check end of md-comment
-              _endC$endS$endT = {
-                endC: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndComment(line),
-                endS: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndSection(line),
-                endT: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndTitle(line)
-              }, endC = _endC$endS$endT.endC, endS = _endC$endS$endT.endS, endT = _endC$endS$endT.endT;
-              if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
-              else strBuffer += _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].outdent(line, idt) + "\n";
-              if (endC) {
-                // pop buffer
-                if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
-                  name: curName,
-                  path: [...path],
-                  doc: strBuffer
-                });
-                curName = "";
-                strBuffer = "";
-              }
-              return _context.abrupt("continue", 48);
-            case 45:
-              // check begin of md-comment
-              _c$s$t = {
-                c: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginComment(line),
-                s: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginSection(line),
-                t: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginTitle(line)
-              }, c = _c$s$t.c, s = _c$s$t.s, t = _c$s$t.t;
-              if (c) curName = _this.matchFuncName(c);
-              if (c || s || t) {
-                inComment = true;
-                idt = 0;
-                strBuffer = "";
-              }
-            case 48:
-              i++;
-              _context.next = 14;
+            }
+            line = lines[i];
+            if (line) {
+              _context.next = 18;
               break;
-            case 51:
-              return _context.abrupt("return", doc);
-            case 52:
-            case "end":
-              return _context.stop();
-          }
+            }
+            return _context.abrupt("continue", 48);
+          case 18:
+            if (_Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].isComment(line)) {
+              _context.next = 39;
+              break;
+            }
+            if (inComment) {
+              // we are closing a md-comment
+              inComment = false;
+              if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
+                name: curName,
+                path: [...path],
+                doc: strBuffer
+              });
+              curName = "";
+              strBuffer = "";
+            }
+            libs = _this.matchLibrary(line);
+            imps = _this.matchImport(line);
+            j = 0;
+          case 23:
+            if (!(j < libs.length)) {
+              _context.next = 30;
+              break;
+            }
+            lib = libs[j];
+            _context.next = 27;
+            return _this.parse(lib.fileName, getFile, depth - 1, [...path, lib.namespace], doc);
+          case 27:
+            j++;
+            _context.next = 23;
+            break;
+          case 30:
+            _j = 0;
+          case 31:
+            if (!(_j < imps.length)) {
+              _context.next = 38;
+              break;
+            }
+            imp = imps[_j];
+            _context.next = 35;
+            return _this.parse(imp, getFile, depth - 1, path, doc);
+          case 35:
+            _j++;
+            _context.next = 31;
+            break;
+          case 38:
+            return _context.abrupt("continue", 48);
+          case 39:
+            if (!inComment) {
+              _context.next = 45;
+              break;
+            }
+            // we are in a md-comment (not first line)
+            if (idt === 0) idt = _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].indentation(line); // we have to measure the indentation
+            // check end of md-comment
+            _endC$endS$endT = {
+              endC: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndComment(line),
+              endS: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndSection(line),
+              endT: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchEndTitle(line)
+            }, endC = _endC$endS$endT.endC, endS = _endC$endS$endT.endS, endT = _endC$endS$endT.endT;
+            if (endC || endS || endT) inComment = false; // end of md-comment switch back to mode O
+            else strBuffer += _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].outdent(line, idt) + "\n";
+            if (endC) {
+              // pop buffer
+              if (curName) _this.getAllConditions(curName).forEach(name => doc[path.concat(name).join(".")] = {
+                name: curName,
+                path: [...path],
+                doc: strBuffer
+              });
+              curName = "";
+              strBuffer = "";
+            }
+            return _context.abrupt("continue", 48);
+          case 45:
+            // check begin of md-comment
+            _c$s$t = {
+              c: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginComment(line),
+              s: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginSection(line),
+              t: _Faust2MD__WEBPACK_IMPORTED_MODULE_3__["Faust2MD"].matchBeginTitle(line)
+            }, c = _c$s$t.c, s = _c$s$t.s, t = _c$s$t.t;
+            if (c) curName = _this.matchFuncName(c);
+            if (c || s || t) {
+              inComment = true;
+              idt = 0;
+              strBuffer = "";
+            }
+          case 48:
+            i++;
+            _context.next = 14;
+            break;
+          case 51:
+            return _context.abrupt("return", doc);
+          case 52:
+          case "end":
+            return _context.stop();
         }
       }, _callee);
     }))();
@@ -657,27 +655,25 @@ var getFile = /*#__PURE__*/function () {
   var _ref = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(fileName, faust) {
     var libPath, res;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (!faust) {
-              _context.next = 2;
-              break;
-            }
-            return _context.abrupt("return", faust.fs.readFile("libraries/" + fileName, {
-              encoding: "utf8"
-            }));
-          case 2:
-            libPath = "https://faustlibraries.grame.fr/libs/";
-            _context.next = 5;
-            return fetch(libPath + fileName);
-          case 5:
-            res = _context.sent;
-            return _context.abrupt("return", res.text());
-          case 7:
-          case "end":
-            return _context.stop();
-        }
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          if (!faust) {
+            _context.next = 2;
+            break;
+          }
+          return _context.abrupt("return", faust.fs.readFile("libraries/" + fileName, {
+            encoding: "utf8"
+          }));
+        case 2:
+          libPath = "https://faustlibraries.grame.fr/libs/";
+          _context.next = 5;
+          return fetch(libPath + fileName);
+        case 5:
+          res = _context.sent;
+          return _context.abrupt("return", res.text());
+        case 7:
+        case "end":
+          return _context.stop();
       }
     }, _callee);
   }));
@@ -727,159 +723,153 @@ var getProviders = /*#__PURE__*/function () {
   var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(faust) {
     var libDocs, primDocs, faustLib, hoverProvider, tokensProvider, completionItemProvider;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee4$(_context4) {
-      while (1) {
-        switch (_context4.prev = _context4.next) {
-          case 0:
-            libDocs = {};
-            primDocs = {};
-            _context4.prev = 2;
-            _context4.next = 5;
-            return _Faust2Doc__WEBPACK_IMPORTED_MODULE_4__["Faust2Doc"].parse("stdfaust.lib", /*#__PURE__*/function () {
-              var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(fileName) {
-                return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
-                  while (1) {
-                    switch (_context2.prev = _context2.next) {
-                      case 0:
-                        return _context2.abrupt("return", getFile(fileName, faust));
-                      case 1:
-                      case "end":
-                        return _context2.stop();
-                    }
-                  }
-                }, _callee2);
-              }));
-              return function (_x4) {
-                return _ref3.apply(this, arguments);
-              };
-            }());
-          case 5:
-            libDocs = _context4.sent;
-            _context4.next = 8;
-            return _Faust2Doc__WEBPACK_IMPORTED_MODULE_4__["Faust2Doc"].parse("primitives.lib", /*#__PURE__*/function () {
-              var _ref4 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3(fileName) {
-                return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
-                  while (1) {
-                    switch (_context3.prev = _context3.next) {
-                      case 0:
-                        return _context3.abrupt("return", getFile(fileName, faust));
-                      case 1:
-                      case "end":
-                        return _context3.stop();
-                    }
-                  }
-                }, _callee3);
-              }));
-              return function (_x5) {
-                return _ref4.apply(this, arguments);
-              };
-            }());
-          case 8:
-            primDocs = _context4.sent;
-            _context4.next = 14;
-            break;
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](2);
-            console.error(_context4.t0);
-          case 14:
-            // eslint-disable-line no-empty, no-console
-            faustLib = Object.keys(libDocs);
-            hoverProvider = {
-              provideHover: (model, position) => {
-                var matched = matchDocKey(_objectSpread(_objectSpread({}, primDocs), libDocs), model, position);
-                if (matched) {
-                  var prefix = matched.nameArray.slice();
-                  var name = prefix.pop();
-                  var doc = matched.doc;
-                  return {
-                    range: matched.range,
-                    contents: [{
-                      value: "```\n".concat(prefix.length ? "(" + prefix.join(".") + ".)" : "").concat(name, "\n```")
-                    }, {
-                      value: doc.doc.replace(/#+/g, "######")
-                    }, {
-                      value: prefix.length ? "[Detail...](".concat(_documentation__WEBPACK_IMPORTED_MODULE_5__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_5__["docSections"][prefix.slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)"
-                    }]
-                  };
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          libDocs = {};
+          primDocs = {};
+          _context4.prev = 2;
+          _context4.next = 5;
+          return _Faust2Doc__WEBPACK_IMPORTED_MODULE_4__["Faust2Doc"].parse("stdfaust.lib", /*#__PURE__*/function () {
+            var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(fileName) {
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
+                while (1) switch (_context2.prev = _context2.next) {
+                  case 0:
+                    return _context2.abrupt("return", getFile(fileName, faust));
+                  case 1:
+                  case "end":
+                    return _context2.stop();
                 }
-                return null;
-              }
+              }, _callee2);
+            }));
+            return function (_x4) {
+              return _ref3.apply(this, arguments);
             };
-            tokensProvider = {
-              faustKeywords,
-              faustFunctions,
-              faustLib,
-              defaultToken: "invalid",
-              tokenPostfix: ".dsp",
-              faustCompOperators: ["~", ",", ":", "<:", ":>"],
-              operators: ["=", "+", "-", "*", "/", "%", "^", "&", "|", "xor", "<<", ">>", ">", "<", "==", "<=", ">=", "!=", "@", "'"],
-              // we include these common regular expressions
-              symbols: /[=><!~?:&|+\-*/^%]+/,
-              // C# style strings
-              escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
-              // The main tokenizer for our languages
-              tokenizer: {
-                root: [
-                // identifiers and keywords
-                [/!|_/, "keyword"], [/[a-z_$]([\w.$]*[\w$])?/, {
-                  cases: {
-                    "@faustFunctions": "faustFunctions",
-                    "@faustKeywords": "faustKeywords",
-                    "@faustLib": "faustLib",
-                    "@default": "identifier"
-                  }
-                }], [/[A-Z][\w$]*/, "type.identifier"],
-                // whitespace
-                {
-                  include: "@whitespace"
-                },
-                // delimiters and operators
-                [/[{}()[\]]/, "@brackets"], [/~|,|<:|:>|:/, "faustCompOperators"], [/[<>](?!@symbols)/, "@brackets"], [/=|\+|-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
-                  cases: {
-                    "@operators": "operators",
-                    "@default": ""
-                  }
-                }],
-                // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"], [/0[xX][0-9a-fA-F]+/, "number.hex"], [/\d+/, "number"],
-                // delimiter: after number because of .\d floats
-                [/[;.]/, "delimiter"],
-                // strings
-                [/"/, {
-                  token: "string",
-                  next: "@string"
-                }]],
-                comment: [[/[^/*]+/, "comment"], [/\/\*/, "comment", "@push"], [/\*\//, "comment", "@pop"], [/[/*]/, "comment"]],
-                string: [[/[^\\"$]+/, "string"], [/@escapes/, "string.escape"], [/\\./, "string.escape.invalid"], [/"/, "string", "@pop"]],
-                whitespace: [[/[ \t\r\n]+/, "white"], [/\/\*/, "comment", "@comment"], [/\/\/.*$/, "comment"]]
-              }
+          }());
+        case 5:
+          libDocs = _context4.sent;
+          _context4.next = 8;
+          return _Faust2Doc__WEBPACK_IMPORTED_MODULE_4__["Faust2Doc"].parse("primitives.lib", /*#__PURE__*/function () {
+            var _ref4 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3(fileName) {
+              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
+                while (1) switch (_context3.prev = _context3.next) {
+                  case 0:
+                    return _context3.abrupt("return", getFile(fileName, faust));
+                  case 1:
+                  case "end":
+                    return _context3.stop();
+                }
+              }, _callee3);
+            }));
+            return function (_x5) {
+              return _ref4.apply(this, arguments);
             };
-            completionItemProvider = {
-              provideCompletionItems: () => {
-                var suggestions = [];
-                [...faustKeywords, ...faustFunctions, ...faustLib].forEach(e => {
-                  suggestions.push({
-                    label: e,
-                    kind: monaco_editor_esm_vs_editor_editor_api__WEBPACK_IMPORTED_MODULE_3__["languages"].CompletionItemKind.Text,
-                    insertText: e,
-                    range: null
-                  });
-                });
+          }());
+        case 8:
+          primDocs = _context4.sent;
+          _context4.next = 14;
+          break;
+        case 11:
+          _context4.prev = 11;
+          _context4.t0 = _context4["catch"](2);
+          console.error(_context4.t0);
+        case 14:
+          // eslint-disable-line no-empty, no-console
+          faustLib = Object.keys(libDocs);
+          hoverProvider = {
+            provideHover: (model, position) => {
+              var matched = matchDocKey(_objectSpread(_objectSpread({}, primDocs), libDocs), model, position);
+              if (matched) {
+                var prefix = matched.nameArray.slice();
+                var name = prefix.pop();
+                var doc = matched.doc;
                 return {
-                  suggestions
+                  range: matched.range,
+                  contents: [{
+                    value: "```\n".concat(prefix.length ? "(" + prefix.join(".") + ".)" : "").concat(name, "\n```")
+                  }, {
+                    value: doc.doc.replace(/#+/g, "######")
+                  }, {
+                    value: prefix.length ? "[Detail...](".concat(_documentation__WEBPACK_IMPORTED_MODULE_5__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_5__["docSections"][prefix.slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase(), ")") : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)"
+                  }]
                 };
               }
-            };
-            return _context4.abrupt("return", {
-              hoverProvider,
-              tokensProvider,
-              completionItemProvider,
-              docs: libDocs
-            });
-          case 19:
-          case "end":
-            return _context4.stop();
-        }
+              return null;
+            }
+          };
+          tokensProvider = {
+            faustKeywords,
+            faustFunctions,
+            faustLib,
+            defaultToken: "invalid",
+            tokenPostfix: ".dsp",
+            faustCompOperators: ["~", ",", ":", "<:", ":>"],
+            operators: ["=", "+", "-", "*", "/", "%", "^", "&", "|", "xor", "<<", ">>", ">", "<", "==", "<=", ">=", "!=", "@", "'"],
+            // we include these common regular expressions
+            symbols: /[=><!~?:&|+\-*/^%]+/,
+            // C# style strings
+            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+            // The main tokenizer for our languages
+            tokenizer: {
+              root: [
+              // identifiers and keywords
+              [/!|_/, "keyword"], [/[a-z_$]([\w.$]*[\w$])?/, {
+                cases: {
+                  "@faustFunctions": "faustFunctions",
+                  "@faustKeywords": "faustKeywords",
+                  "@faustLib": "faustLib",
+                  "@default": "identifier"
+                }
+              }], [/[A-Z][\w$]*/, "type.identifier"],
+              // whitespace
+              {
+                include: "@whitespace"
+              },
+              // delimiters and operators
+              [/[{}()[\]]/, "@brackets"], [/~|,|<:|:>|:/, "faustCompOperators"], [/[<>](?!@symbols)/, "@brackets"], [/=|\+|-|\*|\/|%|\^|&|\||xor|<<|>>|>|<|==|<=|>=|!=|@|'/, {
+                cases: {
+                  "@operators": "operators",
+                  "@default": ""
+                }
+              }],
+              // numbers
+              [/\d*\.\d+([eE][-+]?\d+)?/, "number.float"], [/0[xX][0-9a-fA-F]+/, "number.hex"], [/\d+/, "number"],
+              // delimiter: after number because of .\d floats
+              [/[;.]/, "delimiter"],
+              // strings
+              [/"/, {
+                token: "string",
+                next: "@string"
+              }]],
+              comment: [[/[^/*]+/, "comment"], [/\/\*/, "comment", "@push"], [/\*\//, "comment", "@pop"], [/[/*]/, "comment"]],
+              string: [[/[^\\"$]+/, "string"], [/@escapes/, "string.escape"], [/\\./, "string.escape.invalid"], [/"/, "string", "@pop"]],
+              whitespace: [[/[ \t\r\n]+/, "white"], [/\/\*/, "comment", "@comment"], [/\/\/.*$/, "comment"]]
+            }
+          };
+          completionItemProvider = {
+            provideCompletionItems: () => {
+              var suggestions = [];
+              [...faustKeywords, ...faustFunctions, ...faustLib].forEach(e => {
+                suggestions.push({
+                  label: e,
+                  kind: monaco_editor_esm_vs_editor_editor_api__WEBPACK_IMPORTED_MODULE_3__["languages"].CompletionItemKind.Text,
+                  insertText: e,
+                  range: null
+                });
+              });
+              return {
+                suggestions
+              };
+            }
+          };
+          return _context4.abrupt("return", {
+            hoverProvider,
+            tokensProvider,
+            completionItemProvider,
+            docs: libDocs
+          });
+        case 19:
+        case "end":
+          return _context4.stop();
       }
     }, _callee4, null, [[2, 11]]);
   }));
@@ -891,4 +881,4 @@ var getProviders = /*#__PURE__*/function () {
 /***/ })
 
 }]);
-//# sourceMappingURL=a3d5222ac92d0a6b368d.js.map
+//# sourceMappingURL=ab48dc4db86e792ac012.js.map

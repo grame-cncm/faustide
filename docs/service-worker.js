@@ -84,7 +84,7 @@ if (!self.define) {
 define("./service-worker.js",['./workbox-f87e2ed3'], function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.861671357193303"
+    prefix: "1.0.871672266334209"
   });
   workbox.skipWaiting();
   workbox.clientsClaim();
@@ -936,7 +936,7 @@ define("./service-worker.js",['./workbox-f87e2ed3'], function (workbox) { 'use s
     "revision": "ed0bb4ef2ded005f6f0cf7351ea21406"
   }, {
     "url": "faust-ui/index.js",
-    "revision": "ab2ddfd41213cf174731f94eb45bd3de"
+    "revision": "fdb113e19e8d9ba0b08bd6e56ce7fd6c"
   }, {
     "url": "favicon.png",
     "revision": "8c793ef1d04148eb48e9595e54950310"
@@ -951,22 +951,22 @@ define("./service-worker.js",['./workbox-f87e2ed3'], function (workbox) { 'use s
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "338f023ff05c9e337fbda609dbe51f7a"
+    "revision": "8a1f88c17cffb135abfd0e8bb286c779"
   }, {
     "url": "js/1bb2de333acac7f4e574.js",
     "revision": "d5fba5a07ab9f363917963f17d16b4ad"
   }, {
-    "url": "js/a3d5222ac92d0a6b368d.js",
-    "revision": "d60c2e12f2faf66a95d29e4906f950cd"
+    "url": "js/ab48dc4db86e792ac012.js",
+    "revision": "1a12bb8cc9e4e7f2134a5adb9bfd9dbd"
   }, {
-    "url": "js/bc028950cca7467a8a42.js",
-    "revision": "42746ca52ae1b6b8bd425bcfcbaefcd0"
+    "url": "js/cad113cfc1ee39ae411f.js",
+    "revision": "4bee2e5c2f0f2602e27764f96322bde5"
   }, {
     "url": "libfaust-wasm.data",
     "revision": "fccd77576e97d66d49d26ed100fc7f0a"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "4caf2d2108ad6540bdc18b8f8715f08e"
+    "revision": "f9d83829993e442d2e2a7fed4896d4a0"
   }, {
     "url": "manifest.json",
     "revision": "f3d06b397bb5cb600d762d38b076fc44"

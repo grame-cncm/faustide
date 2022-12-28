@@ -7,7 +7,7 @@
 		exports["FaustUI"] = factory();
 	else
 		root["FaustUI"] = factory();
-})(self, function() {
+})(self, () => {
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
@@ -225,7 +225,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, ".faust-ui-group {\n  position: absolute;\n  display: block;\n  background-color: rgba(80, 80, 80, 0.75);\n  border-radius: 4px;\n  border: 1px rgba(255, 255, 255, 0.25) solid;\n}\n.faust-ui-group > .faust-ui-group-label {\n  position: relative;\n  margin: 4px;\n  width: calc(100% - 8px);\n  user-select: none;\n}\n.faust-ui-group > .faust-ui-group-label > canvas {\n  position: relative;\n  display: block;\n  max-width: 100%;\n  max-height: 100%;\n}\n.faust-ui-group .faust-ui-tgroup-tabs {\n  position: absolute;\n  display: inline-block;\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n  position: relative;\n  display: inline-block;\n  border-radius: 5px;\n  cursor: pointer;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  user-select: none;\n  margin: 10px;\n  text-align: center;\n  background-color: rgba(255, 255, 255, 0.5);\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n  background-color: white;\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n  background-color: #282828;\n  color: white;\n}", "",{"version":3,"sources":["webpack://./src/components/Group.scss"],"names":[],"mappings":"AACA;EACI,kBAAA;EACA,cAAA;EACA,wCAAA;EACA,kBAAA;EACA,2CAAA;AAAJ;AACI;EACI,kBAAA;EACA,WAAA;EACA,uBAAA;EACA,iBAAA;AACR;AAAQ;EACI,kBAAA;EACA,cAAA;EACA,eAAA;EACA,gBAAA;AAEZ;AACI;EACI,kBAAA;EACA,qBAAA;AACR;AAAQ;EACI,kBAAA;EACA,qBAAA;EACA,kBAAA;EACA,eAAA;EACA,uBAAA;EACA,mBAAA;EACA,iBAAA;EACA,YAAA;EACA,kBAAA;EACA,0CAAA;AAEZ;AADY;EACI,uBAAA;AAGhB;AADY;EACI,yBAAA;EACA,YAAA;AAGhB","sourcesContent":["\n.faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid;\n    & > .faust-ui-group-label {\n        position: relative;\n        margin: 4px;\n        width: calc(100% - 8px);\n        user-select: none;\n        & > canvas {\n            position: relative;\n            display: block;\n            max-width: 100%;\n            max-height: 100%;\n        }\n    }\n    & .faust-ui-tgroup-tabs {\n        position: absolute;\n        display: inline-block;\n        & .faust-ui-tgroup-tab {\n            position: relative;\n            display: inline-block;\n            border-radius: 5px;\n            cursor: pointer;\n            text-overflow: ellipsis;\n            white-space: nowrap;\n            user-select: none;\n            margin: 10px;\n            text-align: center;\n            background-color: rgba(255, 255, 255, 0.5);\n            &:hover {\n                background-color: rgba(255, 255, 255, 1);\n            }\n            &.active {\n                background-color: rgba(40, 40, 40, 1);\n                color: white;\n            }\n        }\n    }\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, ".faust-ui-group {\n  position: absolute;\n  display: block;\n  background-color: rgba(80, 80, 80, 0.75);\n  border-radius: 4px;\n  border: 1px rgba(255, 255, 255, 0.25) solid;\n}\n.faust-ui-group > .faust-ui-group-label {\n  position: relative;\n  margin: 4px;\n  width: calc(100% - 8px);\n  user-select: none;\n}\n.faust-ui-group > .faust-ui-group-label > canvas {\n  position: relative;\n  display: block;\n  max-width: 100%;\n  max-height: 100%;\n}\n.faust-ui-group .faust-ui-tgroup-tabs {\n  position: absolute;\n  display: inline-block;\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab {\n  position: relative;\n  display: inline-block;\n  border-radius: 5px;\n  cursor: pointer;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  user-select: none;\n  margin: 10px;\n  text-align: center;\n  background-color: rgba(255, 255, 255, 0.5);\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab:hover {\n  background-color: rgb(255, 255, 255);\n}\n.faust-ui-group .faust-ui-tgroup-tabs .faust-ui-tgroup-tab.active {\n  background-color: rgb(40, 40, 40);\n  color: white;\n}", "",{"version":3,"sources":["webpack://./src/components/Group.scss"],"names":[],"mappings":"AACA;EACI,kBAAA;EACA,cAAA;EACA,wCAAA;EACA,kBAAA;EACA,2CAAA;AAAJ;AACI;EACI,kBAAA;EACA,WAAA;EACA,uBAAA;EACA,iBAAA;AACR;AAAQ;EACI,kBAAA;EACA,cAAA;EACA,eAAA;EACA,gBAAA;AAEZ;AACI;EACI,kBAAA;EACA,qBAAA;AACR;AAAQ;EACI,kBAAA;EACA,qBAAA;EACA,kBAAA;EACA,eAAA;EACA,uBAAA;EACA,mBAAA;EACA,iBAAA;EACA,YAAA;EACA,kBAAA;EACA,0CAAA;AAEZ;AADY;EACI,oCAAA;AAGhB;AADY;EACI,iCAAA;EACA,YAAA;AAGhB","sourcesContent":["\n.faust-ui-group {\n    position: absolute;\n    display: block;\n    background-color: rgba(80, 80, 80, 0.75);\n    border-radius: 4px;\n    border: 1px rgba(255, 255, 255, 0.25) solid;\n    & > .faust-ui-group-label {\n        position: relative;\n        margin: 4px;\n        width: calc(100% - 8px);\n        user-select: none;\n        & > canvas {\n            position: relative;\n            display: block;\n            max-width: 100%;\n            max-height: 100%;\n        }\n    }\n    & .faust-ui-tgroup-tabs {\n        position: absolute;\n        display: inline-block;\n        & .faust-ui-tgroup-tab {\n            position: relative;\n            display: inline-block;\n            border-radius: 5px;\n            cursor: pointer;\n            text-overflow: ellipsis;\n            white-space: nowrap;\n            user-select: none;\n            margin: 10px;\n            text-align: center;\n            background-color: rgba(255, 255, 255, 0.5);\n            &:hover {\n                background-color: rgba(255, 255, 255, 1);\n            }\n            &.active {\n                background-color: rgba(40, 40, 40, 1);\n                color: white;\n            }\n        }\n    }\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -1354,10 +1354,10 @@ class Group extends _AbstractComponent__WEBPACK_IMPORTED_MODULE_0__["default"] {
       return { metaObject };
     metaIn.forEach((m) => Object.assign(metaObject, m));
     if (metaObject.style) {
-      const enumsRegex = /\{(?:(?:'|_)(.+?)(?:'|_):([-+]?[0-9]*\.?[0-9]+?);)+(?:(?:'|_)(.+?)(?:'|_):([-+]?[0-9]*\.?[0-9]+?))\}/;
+      const enumsRegex = /\{(?:(?:'|_|-)(.+?)(?:'|_|-):([-+]?[0-9]*\.?[0-9]+?);)+(?:(?:'|_|-)(.+?)(?:'|_|-):([-+]?[0-9]*\.?[0-9]+?))\}/;
       const matched = metaObject.style.match(enumsRegex);
       if (matched) {
-        const itemsRegex = /(?:(?:'|_)(.+?)(?:'|_):([-+]?[0-9]*\.?[0-9]+?))/g;
+        const itemsRegex = /(?:(?:'|_|-)(.+?)(?:'|_|-):([-+]?[0-9]*\.?[0-9]+?))/g;
         const enums = {};
         let item;
         while (item = itemsRegex.exec(matched[0])) {
@@ -2895,18 +2895,18 @@ class VSlider extends _AbstractItem__WEBPACK_IMPORTED_MODULE_0__["default"] {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "toMIDI": () => (/* binding */ toMIDI),
-/* harmony export */   "toRad": () => (/* binding */ toRad),
 /* harmony export */   "atodb": () => (/* binding */ atodb),
 /* harmony export */   "dbtoa": () => (/* binding */ dbtoa),
 /* harmony export */   "denormalize": () => (/* binding */ denormalize),
-/* harmony export */   "normalize": () => (/* binding */ normalize),
-/* harmony export */   "normLog": () => (/* binding */ normLog),
+/* harmony export */   "fillRoundedRect": () => (/* binding */ fillRoundedRect),
+/* harmony export */   "iNormExp": () => (/* binding */ iNormExp),
 /* harmony export */   "iNormLog": () => (/* binding */ iNormLog),
 /* harmony export */   "normExp": () => (/* binding */ normExp),
-/* harmony export */   "iNormExp": () => (/* binding */ iNormExp),
+/* harmony export */   "normLog": () => (/* binding */ normLog),
+/* harmony export */   "normalize": () => (/* binding */ normalize),
 /* harmony export */   "roundedRect": () => (/* binding */ roundedRect),
-/* harmony export */   "fillRoundedRect": () => (/* binding */ fillRoundedRect)
+/* harmony export */   "toMIDI": () => (/* binding */ toMIDI),
+/* harmony export */   "toRad": () => (/* binding */ toRad)
 /* harmony export */ });
 const toMIDI = (f) => ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][(f % 12 + 12) % 12] + Math.round(f / 12 - 2);
 const toRad = (degrees) => degrees * Math.PI / 180;
@@ -3263,6 +3263,7 @@ class HGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["default"] {
       }
       item.expand(dX$, dY$);
     });
+    this.layout.width += dX;
     return this;
   }
   offset() {
@@ -3709,6 +3710,7 @@ class VGroup extends _AbstractGroup__WEBPACK_IMPORTED_MODULE_0__["default"] {
       }
       item.expand(dX$, dY$);
     });
+    this.layout.height += dY;
     return this;
   }
   offset() {

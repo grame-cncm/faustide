@@ -43,7 +43,7 @@
 /******/
 /******/ 	// script path function
 /******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"a3d5222ac92d0a6b368d","2":"bc028950cca7467a8a42"}[chunkId] + ".js"
+/******/ 		return __webpack_require__.p + "js/" + {"0":"1bb2de333acac7f4e574","1":"ab48dc4db86e792ac012","2":"cad113cfc1ee39ae411f"}[chunkId] + ".js"
 /******/ 	}
 /******/
 /******/ 	// The require function
@@ -443,9 +443,7 @@ function _regeneratorRuntime() {
       if (!isNaN(iterable.length)) {
         var i = -1,
           next = function next() {
-            for (; ++i < iterable.length;) {
-              if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
-            }
+            for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
             return next.value = undefined, next.done = !0, next;
           };
         return next.next = next;
@@ -491,9 +489,7 @@ function _regeneratorRuntime() {
   }), exports.keys = function (val) {
     var object = Object(val),
       keys = [];
-    for (var key in object) {
-      keys.push(key);
-    }
+    for (var key in object) keys.push(key);
     return keys.reverse(), function next() {
       for (; keys.length;) {
         var key = keys.pop();
@@ -504,9 +500,7 @@ function _regeneratorRuntime() {
   }, exports.values = values, Context.prototype = {
     constructor: Context,
     reset: function reset(skipTempReset) {
-      if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) {
-        "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined);
-      }
+      if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined);
     },
     stop: function stop() {
       this.done = !0;
@@ -6239,7 +6233,7 @@ module.exports = Array.isArray || function (arr) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
- * jQuery JavaScript Library v3.6.2
+ * jQuery JavaScript Library v3.6.3
  * https://jquery.com/
  *
  * Includes Sizzle.js
@@ -6249,7 +6243,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
  * Released under the MIT license
  * https://jquery.org/license
  *
- * Date: 2022-12-13T14:56Z
+ * Date: 2022-12-20T21:28Z
  */
 ( function( global, factory ) {
 
@@ -6391,7 +6385,7 @@ function toType( obj ) {
 
 
 var
-	version = "3.6.2",
+	version = "3.6.3",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -6762,14 +6756,14 @@ function isArrayLike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v2.3.8
+ * Sizzle CSS Selector Engine v2.3.9
  * https://sizzlejs.com/
  *
  * Copyright JS Foundation and other contributors
  * Released under the MIT license
  * https://js.foundation/
  *
- * Date: 2022-11-16
+ * Date: 2022-12-19
  */
 ( function( window ) {
 var i,
@@ -7130,7 +7124,7 @@ function Sizzle( selector, context, results, seed ) {
 					if ( support.cssSupportsSelector &&
 
 						// eslint-disable-next-line no-undef
-						!CSS.supports( "selector(" + newSelector + ")" ) ) {
+						!CSS.supports( "selector(:is(" + newSelector + "))" ) ) {
 
 						// Support: IE 11+
 						// Throw to get to the same code path as an error directly in qSA.
@@ -7732,9 +7726,8 @@ setDocument = Sizzle.setDocument = function( node ) {
 		// `:has()` uses a forgiving selector list as an argument so our regular
 		// `try-catch` mechanism fails to catch `:has()` with arguments not supported
 		// natively like `:has(:contains("Foo"))`. Where supported & spec-compliant,
-		// we now use `CSS.supports("selector(SELECTOR_TO_BE_TESTED)")` but outside
-		// that, let's mark `:has` as buggy to always use jQuery traversal for
-		// `:has()`.
+		// we now use `CSS.supports("selector(:is(SELECTOR_TO_BE_TESTED))")`, but
+		// outside that we mark `:has` as buggy.
 		rbuggyQSA.push( ":has" );
 	}
 
@@ -31006,7 +30999,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, private, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.86\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.87\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -32397,37 +32390,35 @@ class Recorder {
     return _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee() {
       var sampleRate, buffers, channels, bufferSize, l, channelData, j, channel, i, bufferData;
       return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              if (!(!_this.data || !_this.data.length || !_this.data[0].length)) {
-                _context.next = 2;
-                break;
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            if (!(!_this.data || !_this.data.length || !_this.data[0].length)) {
+              _context.next = 2;
+              break;
+            }
+            return _context.abrupt("return", null);
+          case 2:
+            sampleRate = _this.sampleRate;
+            buffers = _this.data.length;
+            channels = _this.data[0].length;
+            bufferSize = _this.data[0][0].length;
+            l = buffers * bufferSize;
+            channelData = [];
+            for (j = 0; j < channels; j++) {
+              channel = new Float32Array(l);
+              for (i = 0; i < buffers; i++) {
+                bufferData = _this.data[i][j];
+                channel.set(bufferData, i * bufferSize);
               }
-              return _context.abrupt("return", null);
-            case 2:
-              sampleRate = _this.sampleRate;
-              buffers = _this.data.length;
-              channels = _this.data[0].length;
-              bufferSize = _this.data[0][0].length;
-              l = buffers * bufferSize;
-              channelData = [];
-              for (j = 0; j < channels; j++) {
-                channel = new Float32Array(l);
-                for (i = 0; i < buffers; i++) {
-                  bufferData = _this.data[i][j];
-                  channel.set(bufferData, i * bufferSize);
-                }
-                channelData.push(channel);
-              }
-              return _context.abrupt("return", Object(wav_encoder__WEBPACK_IMPORTED_MODULE_3__["encode"])({
-                sampleRate,
-                channelData
-              }));
-            case 10:
-            case "end":
-              return _context.stop();
-          }
+              channelData.push(channel);
+            }
+            return _context.abrupt("return", Object(wav_encoder__WEBPACK_IMPORTED_MODULE_3__["encode"])({
+              sampleRate,
+              channelData
+            }));
+          case 10:
+          case "end":
+            return _context.stop();
         }
       }, _callee);
     }))();
@@ -32509,15 +32500,11 @@ class Scope {
     var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
     var period = sr / freq;
     var times = Math.floor(l / period) - 1;
-    while (d[$zerox++] > thresh && $zerox < l) {
-      ;
-    }
+    while (d[$zerox++] > thresh && $zerox < l);
     if ($zerox >= l - 1) {
       $zerox = 0;
     } else {
-      while (d[$zerox++] < thresh && $zerox < l) {
-        ;
-      }
+      while (d[$zerox++] < thresh && $zerox < l);
       if ($zerox >= l - 1) {
         $zerox = 0;
       }
@@ -33009,15 +32996,11 @@ class StaticScope {
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
-      while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l) {
-        ;
-      }
+      while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l);
       if ($zerox >= l - 1) {
         $zerox = 0;
       } else {
-        while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l) {
-          ;
-        }
+        while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l);
         if ($zerox >= l - 1) {
           $zerox = 0;
         }
@@ -33113,16 +33096,12 @@ class StaticScope {
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
-      while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l) {
-        ;
-      } // Find first raise
+      while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] > thresh && $zerox < l); // Find first raise
       if ($zerox >= l - 1) {
         // Found nothing, no stablization
         $zerox = 0;
       } else {
-        while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l) {
-          ;
-        } // Find first drop
+        while (t[0][Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])($zerox++, $, l)] < thresh && $zerox < l); // Find first drop
         if ($zerox >= l - 1) {
           $zerox = 0;
         }
@@ -33428,9 +33407,7 @@ class StaticScope {
     ctx.strokeStyle = normalStrokeStyle;
     var hCh = (h - bottom) / channels;
     var vStep = 0.25;
-    while (yFactor / vStep > 2) {
-      vStep *= 2;
-    } // Maximum horizontal grids in channel one side = 2
+    while (yFactor / vStep > 2) vStep *= 2; // Maximum horizontal grids in channel one side = 2
     ctx.beginPath();
     ctx.textAlign = "right";
     var drawHLine = (y, yLabel) => {
@@ -33438,7 +33415,7 @@ class StaticScope {
       ctx.lineTo(w, y);
       ctx.fillText(yLabel, 45, Math.max(y, 10));
     };
-    var _loop = function _loop(i) {
+    var _loop = function _loop() {
       var y = (i + 0.5) * hCh;
       var $ = 0.5;
       var getYLabel = () => mode === EScopeMode.Spectrogram ? Object(_utils__WEBPACK_IMPORTED_MODULE_1__["indexToFreq"])(fftBins * $, fftBins, sampleRate).toFixed(0) : mode === EScopeMode.Spectroscope ? (-100 + 100 * $).toFixed(0) : (-yFactor + 2 * yFactor * $).toFixed(2);
@@ -33456,7 +33433,7 @@ class StaticScope {
       }
     };
     for (var i = 0; i < channels; i++) {
-      _loop(i);
+      _loop();
     }
     ctx.stroke();
     ctx.beginPath();
@@ -34219,884 +34196,1657 @@ var server = "https://faustservicecloud.grame.fr";
 $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee12() {
   var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee12$(_context12) {
-    while (1) {
-      switch (_context12.prev = _context12.next) {
-        case 0:
-          _context12.next = 2;
-          return __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.t.bind(null, /*! faust2webaudio */ "./node_modules/faust2webaudio/dist/index.min.js", 7));
-        case 2:
-          _yield$import = _context12.sent;
-          Faust = _yield$import.Faust;
-          faust = new Faust({
-            wasmLocation: "./libfaust-wasm.wasm",
-            dataLocation: "./libfaust-wasm.data"
-          });
-          _context12.next = 7;
-          return faust.ready;
-        case 7:
-          _context12.next = 9;
-          return fetch("./primitives.lib");
-        case 9:
-          faustPrimitiveLibFile = _context12.sent;
-          _context12.next = 12;
-          return faustPrimitiveLibFile.text();
-        case 12:
-          faustPrimitiveLib = _context12.sent;
-          faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
-          window.faust = faust;
-          /**
-           * To save dsp table to localStorage
-           */
-          saveEditorDspTable = () => {
-            _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_table", faust.stringifyDspTable());
-          };
-          /**
-           * To load dsp table from localStorage
-           */
-          loadEditorDspTable = () => {
-            var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_table");
-            if (str) faust.parseDspTable(str);
-          };
-          /**
-           * To save editor params to localStorage
-           */
-          saveEditorParams = () => {
-            var str = JSON.stringify(compileOptions);
-            _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_params", str);
-          };
-          /**
-           * To load editor params from localStorage
-           *
-           * @returns {(FaustEditorCompileOptions | {})}
-           */
-          loadEditorParams = () => {
-            var clientVersion = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_version");
-            if (clientVersion !== _version__WEBPACK_IMPORTED_MODULE_22__) return {};
-            var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params");
-            if (!str) return {};
-            try {
-              return JSON.parse(str);
-            } catch (e) {
-              return {};
+    while (1) switch (_context12.prev = _context12.next) {
+      case 0:
+        _context12.next = 2;
+        return __webpack_require__.e(/*! import() */ 2).then(__webpack_require__.t.bind(null, /*! faust2webaudio */ "./node_modules/faust2webaudio/dist/index.min.js", 7));
+      case 2:
+        _yield$import = _context12.sent;
+        Faust = _yield$import.Faust;
+        faust = new Faust({
+          wasmLocation: "./libfaust-wasm.wasm",
+          dataLocation: "./libfaust-wasm.data"
+        });
+        _context12.next = 7;
+        return faust.ready;
+      case 7:
+        _context12.next = 9;
+        return fetch("./primitives.lib");
+      case 9:
+        faustPrimitiveLibFile = _context12.sent;
+        _context12.next = 12;
+        return faustPrimitiveLibFile.text();
+      case 12:
+        faustPrimitiveLib = _context12.sent;
+        faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
+        window.faust = faust;
+        /**
+         * To save dsp table to localStorage
+         */
+        saveEditorDspTable = () => {
+          _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_table", faust.stringifyDspTable());
+        };
+        /**
+         * To load dsp table from localStorage
+         */
+        loadEditorDspTable = () => {
+          var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_table");
+          if (str) faust.parseDspTable(str);
+        };
+        /**
+         * To save editor params to localStorage
+         */
+        saveEditorParams = () => {
+          var str = JSON.stringify(compileOptions);
+          _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_params", str);
+        };
+        /**
+         * To load editor params from localStorage
+         *
+         * @returns {(FaustEditorCompileOptions | {})}
+         */
+        loadEditorParams = () => {
+          var clientVersion = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_version");
+          if (clientVersion !== _version__WEBPACK_IMPORTED_MODULE_22__) return {};
+          var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params");
+          if (!str) return {};
+          try {
+            return JSON.parse(str);
+          } catch (e) {
+            return {};
+          }
+        };
+        /**
+         * To load dsp params from localStorage
+         *
+         * @returns {{ [path: string]: number }}
+         */
+        loadDspParams = () => {
+          var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_params");
+          if (!str) return {};
+          try {
+            return JSON.parse(str);
+          } catch (e) {
+            return {};
+          }
+        };
+        /**
+         * To save dsp params to localStorage
+         */
+        saveDspParams = () => {
+          var str = JSON.stringify(dspParams);
+          _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_params", str);
+        };
+        dspParams = loadDspParams();
+        /**
+         * Load all files to Emscripten File System from localStorage
+         *
+         */
+        loadProject = () => {
+          faust.fs.mkdir("project");
+          var project;
+          try {
+            project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
+          } catch (e) {
+            project = {};
+          }
+          for (var fileName in project) {
+            faust.fs.writeFile("project/" + fileName, project[fileName]);
+          }
+        };
+        /**
+         * To show Error at bottom of center
+         *
+         * @param {string} e
+         */
+        showError = e => {
+          $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
+          $("#alert-faust-code").css("visibility", "visible");
+        };
+        /**
+         * Hide error display
+         *
+         */
+        clearError = () => $("#alert-faust-code").css("visibility", "hidden");
+        /**
+         * Async Load Monaco Editor Core
+         * Use import() for webpack code splitting, needs babel-dynamic-import
+         */
+        _context12.next = 27;
+        return initEditor(faust);
+      case 27:
+        _yield$initEditor = _context12.sent;
+        editor = _yield$initEditor.editor;
+        monaco = _yield$initEditor.monaco;
+        editor.layout(); // Force editor to fill div
+        // Editor and Diagram
+        editorDecoration = []; // lines with error
+        /**
+         * Generate diagram and insert the svg into diagram container
+         *
+         * @param {string} code
+         * @returns {{ success: boolean; error?: Error }}
+         */
+        updateDiagram = code => {
+          var strSvg; // Diagram SVG as string
+          editorDecoration = editor.deltaDecorations(editorDecoration, []);
+          try {
+            strSvg = faust.getDiagram(code, compileOptions.args);
+          } catch (e) {
+            /**
+             * Parse Faust-generated error message to locate the lines with error
+             */
+            var matchLine = e.message.match(/FaustDSP : (\d+)/);
+            if (matchLine) {
+              var line = matchLine[1];
+              editorDecoration = editor.deltaDecorations(editorDecoration, [{
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                  isWholeLine: true,
+                  linesDecorationsClassName: "monaco-decoration-error"
+                }
+              }]);
             }
+            showError(e);
+            return {
+              error: e,
+              success: false
+            };
+          }
+          // const $svg = $("#diagram-svg>svg");
+          // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
+          var svg = $(strSvg).filter("svg")[0];
+          var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
+          $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
+          $("#diagram-default").hide(); // hide "No Diagram" info
+          clearError(); // Supress error shown
+          $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
+          return {
+            success: true
           };
-          /**
-           * To load dsp params from localStorage
-           *
-           * @returns {{ [path: string]: number }}
-           */
-          loadDspParams = () => {
-            var str = _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_dsp_params");
-            if (!str) return {};
-            try {
-              return JSON.parse(str);
-            } catch (e) {
-              return {};
-            }
+        };
+        isCompilingDsp = false;
+        /**
+         * Generate both diagram and dsp
+         *
+         * @param {string} code
+         * @returns {{ success: boolean; error?: Error }}
+         */
+        runDsp = /*#__PURE__*/function () {
+          var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(codeIn) {
+            var code, audioCtx, gain, splitter, analyser, useWorklet, bufferSize, voices, args, node, mediaLengthRaf, mediaLengthFrame, mediaLengthSpan, mediaLengthDisplay, plotHandler, dsp, _path, channelsCount, uiWindow, bindUI, guiBuilder;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
+              while (1) switch (_context.prev = _context.next) {
+                case 0:
+                  if (!isCompilingDsp) {
+                    _context.next = 2;
+                    break;
+                  }
+                  return _context.abrupt("return", {
+                    success: false,
+                    error: new Error("Another DSP is compiling")
+                  });
+                case 2:
+                  isCompilingDsp = true;
+                  code = "declare filename \"".concat(uiEnv.fileManager.mainFileName, "\"; declare name \"").concat(uiEnv.fileManager.mainFileNameWithoutSuffix, "\"; ").concat(codeIn);
+                  audioCtx = audioEnv.audioCtx;
+                  gain = audioEnv.gainInput;
+                  splitter = audioEnv.splitterOutput;
+                  analyser = audioEnv.analyserOutput;
+                  if (audioCtx) {
+                    _context.next = 12;
+                    break;
+                  }
+                  _context.next = 11;
+                  return initAudioCtx(audioEnv);
+                case 11:
+                  initAnalysersUI(uiEnv, audioEnv);
+                case 12:
+                  useWorklet = compileOptions.useWorklet, bufferSize = compileOptions.bufferSize, voices = compileOptions.voices, args = compileOptions.args;
+                  mediaLengthFrame = 0;
+                  mediaLengthSpan = $("#recorder-time")[0];
+                  mediaLengthDisplay = t => {
+                    mediaLengthFrame++;
+                    if (mediaLengthFrame % 3 !== 0) {
+                      if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
+                      mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
+                    }
+                    var d = new Date(t * 1000);
+                    var min = d.getMinutes();
+                    var sec = "0".concat(d.getSeconds()).slice(-2);
+                    var ms = "00".concat(d.getMilliseconds()).slice(-3);
+                    mediaLengthSpan.innerText = "".concat(min, ":").concat(sec, ".").concat(ms);
+                  }; // Receives buffer from DSP, send it to analyzer for scopes, and recorder
+                  plotHandler = (plotted, index, events) => {
+                    uiEnv.analyser.plotHandler(plotted, index, events);
+                    if (!faustEnv.recorder.enabled) return;
+                    var t = faustEnv.recorder.append(plotted, index);
+                    if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
+                    mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
+                  };
+                  _context.prev = 17;
+                  _context.next = 20;
+                  return faust.getNode(code, {
+                    audioCtx,
+                    useWorklet,
+                    bufferSize,
+                    voices,
+                    args,
+                    plotHandler
+                  });
+                case 20:
+                  node = _context.sent;
+                  if (node) {
+                    _context.next = 23;
+                    break;
+                  }
+                  throw new Error("Unknown Error in WebAudio Node.");
+                case 23:
+                  _context.next = 30;
+                  break;
+                case 25:
+                  _context.prev = 25;
+                  _context.t0 = _context["catch"](17);
+                  /*
+                  const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
+                  uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
+                  $("#faust-ui-default").show();
+                  $("#iframe-faust-ui").css("visibility", "hidden");
+                  $("#output-analyser-ui").hide();
+                  refreshDspUI(); */
+                  showError(_context.t0);
+                  isCompilingDsp = false;
+                  return _context.abrupt("return", {
+                    success: false,
+                    error: _context.t0
+                  });
+                case 30:
+                  /**
+                   * Push get diagram to end of scheduler
+                   * generate diagram only when the tab is active
+                   */
+                  if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
+                  $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
+                  if (audioEnv.dsp) {
+                    // Disconnect current
+                    dsp = audioEnv.dsp;
+                    if (audioEnv.dspConnectedToInput) {
+                      gain.disconnect(dsp);
+                      audioEnv.dspConnectedToInput = false;
+                    }
+                    dsp.disconnect();
+                    audioEnv.dspConnectedToOutput = false;
+                    dsp.destroy();
+                    delete audioEnv.dsp;
+                  }
+                  /**
+                   * Update the dsp with saved params
+                   */
+                  if (compileOptions.saveParams) {
+                    for (_path in dspParams) {
+                      if (node.getParams().indexOf(_path) !== -1) {
+                        node.setParamValue(_path, dspParams[_path]);
+                      }
+                    }
+                  }
+                  _context.next = 36;
+                  return audioEnv.audioCtx.resume();
+                case 36:
+                  // Resume audioContext for firefox
+                  /**
+                   * Connect the dsp to graph (use a new splitter)
+                   */
+                  audioEnv.dsp = node;
+                  channelsCount = node.getNumOutputs();
+                  if (!splitter || splitter.numberOfOutputs !== channelsCount) {
+                    if (splitter) splitter.disconnect();
+                    splitter = audioCtx.createChannelSplitter(channelsCount);
+                    delete audioEnv.splitterOutput;
+                    audioEnv.splitterOutput = splitter;
+                    uiEnv.outputScope.splitter = splitter;
+                    uiEnv.outputScope.channels = channelsCount;
+                    uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
+                    splitter.connect(analyser, uiEnv.outputScope.channel);
+                  }
+                  if (audioEnv.gainInput && node.getNumInputs()) {
+                    audioEnv.gainInput.connect(node);
+                    audioEnv.dspConnectedToInput = true;
+                  }
+                  node.connect(splitter);
+                  if (audioEnv.outputEnabled) {
+                    node.connect(audioEnv.destination);
+                    audioEnv.dspConnectedToOutput = true;
+                  }
+                  uiWindow = $("#iframe-faust-ui")[0].contentWindow;
+                  /**
+                   * set handler for param changed of dsp
+                   * send current value to window
+                   */
+                  node.setOutputParamHandler((path, value) => {
+                    var msg = {
+                      path,
+                      value,
+                      type: "param"
+                    };
+                    if (uiWindow) uiWindow.postMessage(msg, "*");
+                    if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+                  });
+                  /**
+                   * Bind dsp params to ui interface
+                   * as UI is in an iframe and a popup window,
+                   * send a message with params into the window
+                   * bind events on param change
+                   */
+                  bindUI = () => {
+                    var callback = () => {
+                      var msg = {
+                        type: "ui",
+                        ui: node.getUI()
+                      };
+                      /**
+                       * Post param list json
+                       */
+                      uiWindow.postMessage(msg, "*");
+                      if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+                      /**
+                       * Post current param values
+                       */
+                      if (compileOptions.saveParams) {
+                        var params = node.getParams();
+                        for (var _path2 in dspParams) {
+                          if (params.indexOf(_path2) !== -1) {
+                            var _msg = {
+                              path: _path2,
+                              value: dspParams[_path2],
+                              type: "param"
+                            };
+                            uiWindow.postMessage(_msg, "*");
+                            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(_msg, "*");
+                          }
+                        }
+                      }
+                    };
+                    /**
+                     * if window is opened, bind directly, else bind when window is loaded.
+                     */
+                    if (!compileOptions.popup || uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
+                      uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+                      uiEnv.uiPopup.onload = callback;
+                    }
+                  };
+                  bindUI();
+                  clearError(); // Supress error shown
+                  $("#faust-ui-default").hide(); // Hide "No DSP yet" info
+                  $("#nav-item-faust-ui").show(); // Show DSP UI tab
+                  $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
+                  $("#output-analyser-ui").show(); // Show dsp info on right panel
+                  if (uiEnv.outputScope) uiEnv.outputScope.disabled = false;
+                  refreshDspUI(node); // update dsp info
+                  saveEditorDspTable(); // Save the new DSP table to localStorage
+                  if (compileOptions.enableGuiBuilder) {
+                    $("#gui-builder-default").hide(); // Hide "No DSP yet" info
+                    $("#nav-item-gui-builder").show(); // Show GUI Builder tab
+                    $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
+                    guiBuilder = $("#iframe-gui-builder")[0];
+                    guiBuilder.src = "";
+                    guiBuilder.src = "".concat(compileOptions.guiBuilderUrl, "?name=").concat(uiEnv.fileManager.mainFileName);
+                    guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
+                      type: "build",
+                      ui: node.getUI(),
+                      name: "".concat(uiEnv.fileManager.mainFileName),
+                      code: uiEnv.fileManager.mainCode
+                    }, "*");
+                  }
+                  isCompilingDsp = false;
+                  return _context.abrupt("return", {
+                    success: true
+                  });
+                case 57:
+                case "end":
+                  return _context.stop();
+              }
+            }, _callee, null, [[17, 25]]);
+          }));
+          return function runDsp(_x) {
+            return _ref2.apply(this, arguments);
           };
-          /**
-           * To save dsp params to localStorage
-           */
-          saveDspParams = () => {
-            var str = JSON.stringify(dspParams);
-            _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_dsp_params", str);
-          };
-          dspParams = loadDspParams();
-          /**
-           * Load all files to Emscripten File System from localStorage
-           *
-           */
-          loadProject = () => {
-            faust.fs.mkdir("project");
+        }();
+        audioEnv = {
+          dspConnectedToInput: false,
+          dspConnectedToOutput: false,
+          inputEnabled: false,
+          outputEnabled: false
+        };
+        midiEnv = {
+          input: null
+        };
+        uiEnv = {
+          analysersInited: false,
+          inputScope: null,
+          outputScope: null,
+          plotScope: undefined,
+          analyser: new _Analyser__WEBPACK_IMPORTED_MODULE_17__["Analyser"](16, "continuous"),
+          fileManager: undefined
+        };
+        compileOptions = _objectSpread(_objectSpread({
+          useWorklet: false,
+          bufferSize: 1024,
+          saveCode: true,
+          saveParams: false,
+          saveDsp: false,
+          popup: false,
+          voices: 0,
+          plotMode: "offline",
+          plot: 256,
+          plotSR: 48000,
+          plotFFT: 256,
+          plotFFTOverlap: 2,
+          drawSpectrogram: false,
+          enableGuiBuilder: false,
+          guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
+          exportPlatform: "owl",
+          exportArch: "owl"
+        }, loadEditorParams()), {}, {
+          realtimeCompile: false,
+          args: {
+            "-I": ["libraries/", "project/"]
+          }
+        });
+        faustEnv = {
+          audioEnv,
+          midiEnv,
+          uiEnv,
+          compileOptions,
+          jQuery,
+          editor,
+          faust,
+          recorder: new _Recorder__WEBPACK_IMPORTED_MODULE_20__["Recorder"]()
+        };
+        _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_version", _version__WEBPACK_IMPORTED_MODULE_22__);
+        uiEnv.plotScope = new _StaticScope__WEBPACK_IMPORTED_MODULE_16__["StaticScope"]({
+          container: $("#plot-ui")[0]
+        });
+        uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
+        uiEnv.analyser.getSampleRate = () => compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate;
+        if (compileOptions.saveCode) loadProject();else faust.fs.mkdir("project");
+        uiEnv.fileManager = new _FileManager__WEBPACK_IMPORTED_MODULE_18__["FileManager"]({
+          container: $("#filemanager")[0],
+          fs: faust.fs,
+          path: "project/",
+          $mainFile: compileOptions.mainFileIndex || 0,
+          selectHandler: (fileName, content) => editor.setValue(content),
+          saveHandler: (fileName, content, mainCode) => {
             var project;
             try {
               project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
             } catch (e) {
               project = {};
             }
-            for (var fileName in project) {
-              faust.fs.writeFile("project/" + fileName, project[fileName]);
-            }
-          };
-          /**
-           * To show Error at bottom of center
-           *
-           * @param {string} e
-           */
-          showError = e => {
-            $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
-            $("#alert-faust-code").css("visibility", "visible");
-          };
-          /**
-           * Hide error display
-           *
-           */
-          clearError = () => $("#alert-faust-code").css("visibility", "hidden");
-          /**
-           * Async Load Monaco Editor Core
-           * Use import() for webpack code splitting, needs babel-dynamic-import
-           */
-          _context12.next = 27;
-          return initEditor(faust);
-        case 27:
-          _yield$initEditor = _context12.sent;
-          editor = _yield$initEditor.editor;
-          monaco = _yield$initEditor.monaco;
-          editor.layout(); // Force editor to fill div
-          // Editor and Diagram
-          editorDecoration = []; // lines with error
-          /**
-           * Generate diagram and insert the svg into diagram container
-           *
-           * @param {string} code
-           * @returns {{ success: boolean; error?: Error }}
-           */
-          updateDiagram = code => {
-            var strSvg; // Diagram SVG as string
-            editorDecoration = editor.deltaDecorations(editorDecoration, []);
+            project[fileName] = content;
             try {
-              strSvg = faust.getDiagram(code, compileOptions.args);
-            } catch (e) {
-              /**
-               * Parse Faust-generated error message to locate the lines with error
-               */
-              var matchLine = e.message.match(/FaustDSP : (\d+)/);
-              if (matchLine) {
-                var line = matchLine[1];
-                editorDecoration = editor.deltaDecorations(editorDecoration, [{
-                  range: new monaco.Range(line, 1, line, 1),
-                  options: {
-                    isWholeLine: true,
-                    linesDecorationsClassName: "monaco-decoration-error"
-                  }
-                }]);
-              }
-              showError(e);
-              return {
-                error: e,
-                success: false
-              };
-            }
-            // const $svg = $("#diagram-svg>svg");
-            // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-            var svg = $(strSvg).filter("svg")[0];
-            var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
-            $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-            $("#diagram-default").hide(); // hide "No Diagram" info
-            clearError(); // Supress error shown
-            $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
-            return {
-              success: true
-            };
-          };
-          isCompilingDsp = false;
-          /**
-           * Generate both diagram and dsp
-           *
-           * @param {string} code
-           * @returns {{ success: boolean; error?: Error }}
-           */
-          runDsp = /*#__PURE__*/function () {
-            var _ref2 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee(codeIn) {
-              var code, audioCtx, gain, splitter, analyser, useWorklet, bufferSize, voices, args, node, mediaLengthRaf, mediaLengthFrame, mediaLengthSpan, mediaLengthDisplay, plotHandler, dsp, _path, channelsCount, uiWindow, bindUI, guiBuilder;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee$(_context) {
-                while (1) {
-                  switch (_context.prev = _context.next) {
-                    case 0:
-                      if (!isCompilingDsp) {
-                        _context.next = 2;
-                        break;
-                      }
-                      return _context.abrupt("return", {
-                        success: false,
-                        error: new Error("Another DSP is compiling")
-                      });
-                    case 2:
-                      isCompilingDsp = true;
-                      code = "declare filename \"".concat(uiEnv.fileManager.mainFileName, "\"; declare name \"").concat(uiEnv.fileManager.mainFileNameWithoutSuffix, "\"; ").concat(codeIn);
-                      audioCtx = audioEnv.audioCtx;
-                      gain = audioEnv.gainInput;
-                      splitter = audioEnv.splitterOutput;
-                      analyser = audioEnv.analyserOutput;
-                      if (audioCtx) {
-                        _context.next = 12;
-                        break;
-                      }
-                      _context.next = 11;
-                      return initAudioCtx(audioEnv);
-                    case 11:
-                      initAnalysersUI(uiEnv, audioEnv);
-                    case 12:
-                      useWorklet = compileOptions.useWorklet, bufferSize = compileOptions.bufferSize, voices = compileOptions.voices, args = compileOptions.args;
-                      mediaLengthFrame = 0;
-                      mediaLengthSpan = $("#recorder-time")[0];
-                      mediaLengthDisplay = t => {
-                        mediaLengthFrame++;
-                        if (mediaLengthFrame % 3 !== 0) {
-                          if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
-                          mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
-                        }
-                        var d = new Date(t * 1000);
-                        var min = d.getMinutes();
-                        var sec = "0".concat(d.getSeconds()).slice(-2);
-                        var ms = "00".concat(d.getMilliseconds()).slice(-3);
-                        mediaLengthSpan.innerText = "".concat(min, ":").concat(sec, ".").concat(ms);
-                      }; // Receives buffer from DSP, send it to analyzer for scopes, and recorder
-                      plotHandler = (plotted, index, events) => {
-                        uiEnv.analyser.plotHandler(plotted, index, events);
-                        if (!faustEnv.recorder.enabled) return;
-                        var t = faustEnv.recorder.append(plotted, index);
-                        if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
-                        mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
-                      };
-                      _context.prev = 17;
-                      _context.next = 20;
-                      return faust.getNode(code, {
-                        audioCtx,
-                        useWorklet,
-                        bufferSize,
-                        voices,
-                        args,
-                        plotHandler
-                      });
-                    case 20:
-                      node = _context.sent;
-                      if (node) {
-                        _context.next = 23;
-                        break;
-                      }
-                      throw new Error("Unknown Error in WebAudio Node.");
-                    case 23:
-                      _context.next = 30;
-                      break;
-                    case 25:
-                      _context.prev = 25;
-                      _context.t0 = _context["catch"](17);
-                      /*
-                      const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-                      uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
-                      $("#faust-ui-default").show();
-                      $("#iframe-faust-ui").css("visibility", "hidden");
-                      $("#output-analyser-ui").hide();
-                      refreshDspUI(); */
-                      showError(_context.t0);
-                      isCompilingDsp = false;
-                      return _context.abrupt("return", {
-                        success: false,
-                        error: _context.t0
-                      });
-                    case 30:
-                      /**
-                       * Push get diagram to end of scheduler
-                       * generate diagram only when the tab is active
-                       */
-                      if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
-                      $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-                      if (audioEnv.dsp) {
-                        // Disconnect current
-                        dsp = audioEnv.dsp;
-                        if (audioEnv.dspConnectedToInput) {
-                          gain.disconnect(dsp);
-                          audioEnv.dspConnectedToInput = false;
-                        }
-                        dsp.disconnect();
-                        audioEnv.dspConnectedToOutput = false;
-                        dsp.destroy();
-                        delete audioEnv.dsp;
-                      }
-                      /**
-                       * Update the dsp with saved params
-                       */
-                      if (compileOptions.saveParams) {
-                        for (_path in dspParams) {
-                          if (node.getParams().indexOf(_path) !== -1) {
-                            node.setParamValue(_path, dspParams[_path]);
-                          }
-                        }
-                      }
-                      _context.next = 36;
-                      return audioEnv.audioCtx.resume();
-                    case 36:
-                      // Resume audioContext for firefox
-                      /**
-                       * Connect the dsp to graph (use a new splitter)
-                       */
-                      audioEnv.dsp = node;
-                      channelsCount = node.getNumOutputs();
-                      if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-                        if (splitter) splitter.disconnect();
-                        splitter = audioCtx.createChannelSplitter(channelsCount);
-                        delete audioEnv.splitterOutput;
-                        audioEnv.splitterOutput = splitter;
-                        uiEnv.outputScope.splitter = splitter;
-                        uiEnv.outputScope.channels = channelsCount;
-                        uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
-                        splitter.connect(analyser, uiEnv.outputScope.channel);
-                      }
-                      if (audioEnv.gainInput && node.getNumInputs()) {
-                        audioEnv.gainInput.connect(node);
-                        audioEnv.dspConnectedToInput = true;
-                      }
-                      node.connect(splitter);
-                      if (audioEnv.outputEnabled) {
-                        node.connect(audioEnv.destination);
-                        audioEnv.dspConnectedToOutput = true;
-                      }
-                      uiWindow = $("#iframe-faust-ui")[0].contentWindow;
-                      /**
-                       * set handler for param changed of dsp
-                       * send current value to window
-                       */
-                      node.setOutputParamHandler((path, value) => {
-                        var msg = {
-                          path,
-                          value,
-                          type: "param"
-                        };
-                        if (uiWindow) uiWindow.postMessage(msg, "*");
-                        if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                      });
-                      /**
-                       * Bind dsp params to ui interface
-                       * as UI is in an iframe and a popup window,
-                       * send a message with params into the window
-                       * bind events on param change
-                       */
-                      bindUI = () => {
-                        var callback = () => {
-                          var msg = {
-                            type: "ui",
-                            ui: node.getUI()
-                          };
-                          /**
-                           * Post param list json
-                           */
-                          uiWindow.postMessage(msg, "*");
-                          if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                          /**
-                           * Post current param values
-                           */
-                          if (compileOptions.saveParams) {
-                            var params = node.getParams();
-                            for (var _path2 in dspParams) {
-                              if (params.indexOf(_path2) !== -1) {
-                                var _msg = {
-                                  path: _path2,
-                                  value: dspParams[_path2],
-                                  type: "param"
-                                };
-                                uiWindow.postMessage(_msg, "*");
-                                if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(_msg, "*");
-                              }
-                            }
-                          }
-                        };
-                        /**
-                         * if window is opened, bind directly, else bind when window is loaded.
-                         */
-                        if (!compileOptions.popup || uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
-                          uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
-                          uiEnv.uiPopup.onload = callback;
-                        }
-                      };
-                      bindUI();
-                      clearError(); // Supress error shown
-                      $("#faust-ui-default").hide(); // Hide "No DSP yet" info
-                      $("#nav-item-faust-ui").show(); // Show DSP UI tab
-                      $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
-                      $("#output-analyser-ui").show(); // Show dsp info on right panel
-                      if (uiEnv.outputScope) uiEnv.outputScope.disabled = false;
-                      refreshDspUI(node); // update dsp info
-                      saveEditorDspTable(); // Save the new DSP table to localStorage
-                      if (compileOptions.enableGuiBuilder) {
-                        $("#gui-builder-default").hide(); // Hide "No DSP yet" info
-                        $("#nav-item-gui-builder").show(); // Show GUI Builder tab
-                        $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
-                        guiBuilder = $("#iframe-gui-builder")[0];
-                        guiBuilder.src = "";
-                        guiBuilder.src = "".concat(compileOptions.guiBuilderUrl, "?name=").concat(uiEnv.fileManager.mainFileName);
-                        guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
-                          type: "build",
-                          ui: node.getUI(),
-                          name: "".concat(uiEnv.fileManager.mainFileName),
-                          code: uiEnv.fileManager.mainCode
-                        }, "*");
-                      }
-                      isCompilingDsp = false;
-                      return _context.abrupt("return", {
-                        success: true
-                      });
-                    case 57:
-                    case "end":
-                      return _context.stop();
-                  }
-                }
-              }, _callee, null, [[17, 25]]);
-            }));
-            return function runDsp(_x) {
-              return _ref2.apply(this, arguments);
-            };
-          }();
-          audioEnv = {
-            dspConnectedToInput: false,
-            dspConnectedToOutput: false,
-            inputEnabled: false,
-            outputEnabled: false
-          };
-          midiEnv = {
-            input: null
-          };
-          uiEnv = {
-            analysersInited: false,
-            inputScope: null,
-            outputScope: null,
-            plotScope: undefined,
-            analyser: new _Analyser__WEBPACK_IMPORTED_MODULE_17__["Analyser"](16, "continuous"),
-            fileManager: undefined
-          };
-          compileOptions = _objectSpread(_objectSpread({
-            useWorklet: false,
-            bufferSize: 1024,
-            saveCode: true,
-            saveParams: false,
-            saveDsp: false,
-            popup: false,
-            voices: 0,
-            plotMode: "offline",
-            plot: 256,
-            plotSR: 48000,
-            plotFFT: 256,
-            plotFFTOverlap: 2,
-            drawSpectrogram: false,
-            enableGuiBuilder: false,
-            guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
-            exportPlatform: "owl",
-            exportArch: "owl"
-          }, loadEditorParams()), {}, {
-            realtimeCompile: false,
-            args: {
-              "-I": ["libraries/", "project/"]
-            }
-          });
-          faustEnv = {
-            audioEnv,
-            midiEnv,
-            uiEnv,
-            compileOptions,
-            jQuery,
-            editor,
-            faust,
-            recorder: new _Recorder__WEBPACK_IMPORTED_MODULE_20__["Recorder"]()
-          };
-          _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_version", _version__WEBPACK_IMPORTED_MODULE_22__);
-          uiEnv.plotScope = new _StaticScope__WEBPACK_IMPORTED_MODULE_16__["StaticScope"]({
-            container: $("#plot-ui")[0]
-          });
-          uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
-          uiEnv.analyser.getSampleRate = () => compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate;
-          if (compileOptions.saveCode) loadProject();else faust.fs.mkdir("project");
-          uiEnv.fileManager = new _FileManager__WEBPACK_IMPORTED_MODULE_18__["FileManager"]({
-            container: $("#filemanager")[0],
-            fs: faust.fs,
-            path: "project/",
-            $mainFile: compileOptions.mainFileIndex || 0,
-            selectHandler: (fileName, content) => editor.setValue(content),
-            saveHandler: (fileName, content, mainCode) => {
-              var project;
-              try {
-                project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
-              } catch (e) {
-                project = {};
-              }
-              project[fileName] = content;
-              try {
-                _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_project", JSON.stringify(project));
-              } catch (e) {
-                showError(e);
-              }
-              clearTimeout(rtCompileTimer);
-              if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
-            },
-            deleteHandler: fileName => {
-              var project;
-              try {
-                project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
-              } catch (e) {
-                return;
-              }
-              delete project[fileName];
               _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_project", JSON.stringify(project));
-            },
-            mainFileChangeHandler: (index, mainCode) => {
-              compileOptions.mainFileIndex = index;
-              saveEditorParams();
-              clearTimeout(rtCompileTimer);
-              if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
+            } catch (e) {
+              showError(e);
             }
-          });
-          if (compileOptions.saveDsp) loadEditorDspTable();
+            clearTimeout(rtCompileTimer);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
+          },
+          deleteHandler: fileName => {
+            var project;
+            try {
+              project = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_project")) || {};
+            } catch (e) {
+              return;
+            }
+            delete project[fileName];
+            _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].setItem("faust_editor_project", JSON.stringify(project));
+          },
+          mainFileChangeHandler: (index, mainCode) => {
+            compileOptions.mainFileIndex = index;
+            saveEditorParams();
+            clearTimeout(rtCompileTimer);
+            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
+          }
+        });
+        if (compileOptions.saveDsp) loadEditorDspTable();
 
-          /**
-           * Bind DOM events
-           */
-          // Alerts
-          $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
-          $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
-          // Tooltips
-          $('[data-toggle="tooltip"]').tooltip({
-            trigger: "hover",
-            boundary: "viewport"
-          });
-          $("#btn-export").tooltip({
-            trigger: "hover",
-            boundary: "viewport"
-          });
-          $("#btn-share").tooltip({
-            trigger: "hover",
-            boundary: "viewport"
-          });
-          $("#btn-tab-setting").tooltip({
-            trigger: "hover",
-            boundary: "viewport"
-          });
-          $("#enable-gui-editor").on("change", e => {
-            var checked = e.currentTarget.checked;
-            if (!checked) {
-              $("#nav-item-gui-builder").hide(); // Hide GUI Builder tab
-              $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
-            }
+        /**
+         * Bind DOM events
+         */
+        // Alerts
+        $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
+        $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
+        // Tooltips
+        $('[data-toggle="tooltip"]').tooltip({
+          trigger: "hover",
+          boundary: "viewport"
+        });
+        $("#btn-export").tooltip({
+          trigger: "hover",
+          boundary: "viewport"
+        });
+        $("#btn-share").tooltip({
+          trigger: "hover",
+          boundary: "viewport"
+        });
+        $("#btn-tab-setting").tooltip({
+          trigger: "hover",
+          boundary: "viewport"
+        });
+        $("#enable-gui-editor").on("change", e => {
+          var checked = e.currentTarget.checked;
+          if (!checked) {
+            $("#nav-item-gui-builder").hide(); // Hide GUI Builder tab
+            $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
+          }
 
-            compileOptions.enableGuiBuilder = checked;
-            saveEditorParams();
-          })[0].checked = compileOptions.enableGuiBuilder;
-          $("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", e => {
-            compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/";
-            saveEditorParams();
-          });
-          /**
-           * Left panel options
-           */
-          // Voices
-          $("#select-voices").on("change", e => {
-            compileOptions.voices = +e.currentTarget.value;
-            saveEditorParams();
-            if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          });
-          // BufferSize
-          $("#select-buffer-size").on("change", e => {
-            compileOptions.bufferSize = +e.currentTarget.value;
-            saveEditorParams();
-            if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          });
-          // AudioWorklet
-          $("#check-worklet").on("change", e => {
-            compileOptions.useWorklet = e.currentTarget.checked;
-            var $options = $("#select-buffer-size").prop("disabled", true).children("option");
-            $options.eq(0).prop("disabled", !compileOptions.useWorklet);
-            $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
-            if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
-            $("#input-plot-samps").change();
-            saveEditorParams();
-            if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-          });
-          // Save Params
-          $("#check-save-code").on("change", e => {
-            compileOptions.saveCode = e.currentTarget.checked;
-            saveEditorParams();
-          })[0].checked = compileOptions.saveCode;
-          // Save Params
-          $("#check-save-params").on("change", e => {
-            compileOptions.saveParams = e.currentTarget.checked;
-            saveEditorParams();
-          })[0].checked = compileOptions.saveParams;
-          // Save DSP
-          $("#check-save-dsp").on("change", e => {
-            compileOptions.saveDsp = e.currentTarget.checked;
-            loadEditorDspTable();
-            saveEditorParams();
-          })[0].checked = compileOptions.saveDsp;
-          if (compileOptions.saveDsp) loadEditorDspTable();
-          // Real-time Diagram
-          $("#check-realtime-compile").on("change", e => {
-            compileOptions.realtimeCompile = e.currentTarget.checked;
-            saveEditorParams();
-            if (compileOptions.realtimeCompile) {
-              var code = uiEnv.fileManager.mainCode;
-              if (audioEnv.dsp) runDsp(code);else updateDiagram(code);
-            }
-          });
+          compileOptions.enableGuiBuilder = checked;
+          saveEditorParams();
+        })[0].checked = compileOptions.enableGuiBuilder;
+        $("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", e => {
+          compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/";
+          saveEditorParams();
+        });
+        /**
+         * Left panel options
+         */
+        // Voices
+        $("#select-voices").on("change", e => {
+          compileOptions.voices = +e.currentTarget.value;
+          saveEditorParams();
+          if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+        });
+        // BufferSize
+        $("#select-buffer-size").on("change", e => {
+          compileOptions.bufferSize = +e.currentTarget.value;
+          saveEditorParams();
+          if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+        });
+        // AudioWorklet
+        $("#check-worklet").on("change", e => {
+          compileOptions.useWorklet = e.currentTarget.checked;
+          var $options = $("#select-buffer-size").prop("disabled", true).children("option");
+          $options.eq(0).prop("disabled", !compileOptions.useWorklet);
+          $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
+          if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
+          $("#input-plot-samps").change();
+          saveEditorParams();
+          if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+        });
+        // Save Params
+        $("#check-save-code").on("change", e => {
+          compileOptions.saveCode = e.currentTarget.checked;
+          saveEditorParams();
+        })[0].checked = compileOptions.saveCode;
+        // Save Params
+        $("#check-save-params").on("change", e => {
+          compileOptions.saveParams = e.currentTarget.checked;
+          saveEditorParams();
+        })[0].checked = compileOptions.saveParams;
+        // Save DSP
+        $("#check-save-dsp").on("change", e => {
+          compileOptions.saveDsp = e.currentTarget.checked;
+          loadEditorDspTable();
+          saveEditorParams();
+        })[0].checked = compileOptions.saveDsp;
+        if (compileOptions.saveDsp) loadEditorDspTable();
+        // Real-time Diagram
+        $("#check-realtime-compile").on("change", e => {
+          compileOptions.realtimeCompile = e.currentTarget.checked;
+          saveEditorParams();
+          if (compileOptions.realtimeCompile) {
+            var code = uiEnv.fileManager.mainCode;
+            if (audioEnv.dsp) runDsp(code);else updateDiagram(code);
+          }
+        });
 
-          // Save Params
-          $("#check-popup").on("change", e => {
-            compileOptions.popup = e.currentTarget.checked;
-            saveEditorParams();
-          })[0].checked = compileOptions.popup;
-          // Plot
-          $("#select-plot-mode").on("change", e => {
-            compileOptions.plotMode = e.currentTarget.value;
-            uiEnv.analyser.drawMode = compileOptions.plotMode;
-            var $span = $("#btn-plot").children("span");
-            if (compileOptions.plotMode === "offline") {
-              $("#btn-plot").show();
-              $span.text("Plot First Samples");
-            } else if (compileOptions.plotMode === "manual") {
-              $("#btn-plot").show();
-              $span.text("Plot (Snapshot)");
-            } else $("#btn-plot").hide();
-            if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 2;
-            var $plotSR = $("#input-plot-sr");
-            if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
-            saveEditorParams();
-          });
-          $("#btn-plot").on("click", () => {
-            if (compileOptions.plotMode === "offline") {
-              var code = uiEnv.fileManager.mainCode;
-              var args = compileOptions.args,
-                plot = compileOptions.plot,
-                plotSR = compileOptions.plotSR;
-              faustEnv.faust.plot({
-                code,
-                args,
-                size: plot,
-                sampleRate: plotSR
-              }).then(t => uiEnv.analyser.plotHandler(t, 0, undefined, true));
-              if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
-            } else {
-              // eslint-disable-next-line no-lonely-if
-              if (audioEnv.dsp) uiEnv.analyser.draw();else runDsp(uiEnv.fileManager.mainCode);
-            }
-          });
-          $("#tab-plot-ui").on("shown.bs.tab", () => uiEnv.plotScope.draw());
-          $("#input-plot-samps").on("change", e => {
-            var v = +e.currentTarget.value;
-            var bufferSize = compileOptions.useWorklet ? 128 : compileOptions.bufferSize;
-            var fftSize = compileOptions.plotFFT || 256;
-            var step = Math.max(bufferSize, fftSize);
-            var v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
-            compileOptions.plot = v1;
-            uiEnv.analyser.buffers = v1 / bufferSize;
-            e.currentTarget.step = step.toString();
-            e.currentTarget.value = v1.toString();
-            saveEditorParams();
-          })[0].value = compileOptions.plot.toString();
-          $("#input-plot-sr").on("change", e => {
-            compileOptions.plotSR = +e.currentTarget.value;
-            saveEditorParams();
-          })[0].value = compileOptions.plotSR.toString();
-          $("#check-draw-spectrogram").on("change", e => {
-            compileOptions.drawSpectrogram = e.currentTarget.checked;
-            uiEnv.plotScope.drawSpectrogram = compileOptions.drawSpectrogram;
-            uiEnv.inputScope.drawSpectrogram = compileOptions.drawSpectrogram;
-            uiEnv.outputScope.drawSpectrogram = compileOptions.drawSpectrogram;
-            saveEditorParams();
-          })[0].checked = compileOptions.drawSpectrogram;
-          // Plot
-          $("#select-plot-fftsize").on("change", e => {
-            compileOptions.plotFFT = +e.currentTarget.value;
-            uiEnv.analyser.fftSize = compileOptions.plotFFT;
-            $("#input-plot-samps").change();
-            saveEditorParams();
-          });
-          $("#select-plot-fftoverlap").on("change", e => {
-            compileOptions.plotFFTOverlap = +e.currentTarget.value;
-            uiEnv.analyser.fftOverlap = compileOptions.plotFFTOverlap;
-            saveEditorParams();
-          });
-          /**
-           * Load options from URL, override current
-           * Available params:
-           * {boolean} autorun
-           * {boolean} realtime_compile
-           * {string} name - as string
-           * {string} code - as URL to fetch
-           * {string} inline - as Base64URL (should be url safe version)
-           * {string} code_string - as string
-           * {number} voices - poly voices
-           * {number} buffer_size - buffer size
-           *
-           * @param {string} url
-           * @returns
-           */
-          loadURLParams = /*#__PURE__*/function () {
-            var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(url) {
-              var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
-                while (1) {
-                  switch (_context2.prev = _context2.next) {
-                    case 0:
-                      urlParams = new URLSearchParams(url);
-                      if (urlParams.has("realtime_compile")) {
-                        compileOptions.realtimeCompile = !!+urlParams.get("realtime_compile");
-                        saveEditorParams();
-                      }
-                      if (urlParams.has("voices")) {
-                        voices = +urlParams.get("voices");
-                        compileOptions.voices = [1, 2, 4, 8, 16, 32, 64, 128].indexOf(voices) === -1 ? 0 : voices;
-                        saveEditorParams();
-                      }
-                      if (urlParams.has("buffer_size")) {
-                        bufferSize = +urlParams.get("buffer_size");
-                        compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : bufferSize;
-                        saveEditorParams();
-                      }
-                      if (urlParams.has("mode")) {
-                        if (urlParams.get("mode") === "amstram") {
-                          server = "https://amstramservice.grame.fr/";
-                          compileOptions.exportPlatform = "esp32";
-                          compileOptions.exportArch = "gramophoneFlash";
-                          $("#export-server").val(server).change();
-                          $("#btn-def-exp-content").html("Gramo");
-                          $("#ide-params").css("display", "none");
-                          $("#form-plot").css("display", "none");
-                          $("#show-right-panel").click().change();
-                        }
-                        if (urlParams.get("mode") === "amstram-pro") {
-                          server = "https://amstramservice.grame.fr/";
-                          compileOptions.exportPlatform = "esp32";
-                          compileOptions.exportArch = "gramophoneFlash";
-                          $("#export-server").val(server).change();
-                          $("#btn-def-exp-content").html("Gramo");
-                        }
-                      }
-                      if (!urlParams.has("code")) {
-                        _context2.next = 20;
-                        break;
-                      }
-                      codeURL = urlParams.get("code");
-                      _name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                      uiEnv.fileManager.renameSelected("".concat(_name, ".dsp"));
-                      _context2.prev = 9;
-                      _context2.next = 12;
-                      return fetch(codeURL);
-                    case 12:
-                      response = _context2.sent;
-                      _context2.next = 15;
-                      return response.text();
-                    case 15:
-                      code = _context2.sent;
-                      _context2.next = 20;
-                      break;
-                    case 18:
-                      _context2.prev = 18;
-                      _context2.t0 = _context2["catch"](9);
-                    case 20:
-                      if (urlParams.has("code_string")) {
-                        code = urlParams.get("code_string");
-                      }
-                      if (urlParams.has("inline")) {
-                        b64Code = urlParams.get("inline").replace("-", "+").replace("_", "/");
-                        code = atob(b64Code);
-                      }
-                      if (urlParams.has("name")) {
-                        _name2 = urlParams.get("name").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-                        uiEnv.fileManager.renameSelected("".concat(_name2, ".dsp"));
-                        saveEditorParams();
-                      }
-                      if (!code) {
-                        _context2.next = 32;
-                        break;
-                      }
-                      uiEnv.fileManager.setValue(code);
-                      if (!(urlParams.has("autorun") && urlParams.get("autorun"))) {
-                        _context2.next = 32;
-                        break;
-                      }
-                      _context2.next = 28;
-                      return runDsp(code);
-                    case 28:
-                      compileResult = _context2.sent;
-                      if (compileResult.success) {
-                        _context2.next = 31;
-                        break;
-                      }
-                      return _context2.abrupt("return");
-                    case 31:
-                      if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
-                    case 32:
-                    case "end":
-                      return _context2.stop();
+        // Save Params
+        $("#check-popup").on("change", e => {
+          compileOptions.popup = e.currentTarget.checked;
+          saveEditorParams();
+        })[0].checked = compileOptions.popup;
+        // Plot
+        $("#select-plot-mode").on("change", e => {
+          compileOptions.plotMode = e.currentTarget.value;
+          uiEnv.analyser.drawMode = compileOptions.plotMode;
+          var $span = $("#btn-plot").children("span");
+          if (compileOptions.plotMode === "offline") {
+            $("#btn-plot").show();
+            $span.text("Plot First Samples");
+          } else if (compileOptions.plotMode === "manual") {
+            $("#btn-plot").show();
+            $span.text("Plot (Snapshot)");
+          } else $("#btn-plot").hide();
+          if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 2;
+          var $plotSR = $("#input-plot-sr");
+          if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
+          saveEditorParams();
+        });
+        $("#btn-plot").on("click", () => {
+          if (compileOptions.plotMode === "offline") {
+            var code = uiEnv.fileManager.mainCode;
+            var args = compileOptions.args,
+              plot = compileOptions.plot,
+              plotSR = compileOptions.plotSR;
+            faustEnv.faust.plot({
+              code,
+              args,
+              size: plot,
+              sampleRate: plotSR
+            }).then(t => uiEnv.analyser.plotHandler(t, 0, undefined, true));
+            if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
+          } else {
+            // eslint-disable-next-line no-lonely-if
+            if (audioEnv.dsp) uiEnv.analyser.draw();else runDsp(uiEnv.fileManager.mainCode);
+          }
+        });
+        $("#tab-plot-ui").on("shown.bs.tab", () => uiEnv.plotScope.draw());
+        $("#input-plot-samps").on("change", e => {
+          var v = +e.currentTarget.value;
+          var bufferSize = compileOptions.useWorklet ? 128 : compileOptions.bufferSize;
+          var fftSize = compileOptions.plotFFT || 256;
+          var step = Math.max(bufferSize, fftSize);
+          var v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
+          compileOptions.plot = v1;
+          uiEnv.analyser.buffers = v1 / bufferSize;
+          e.currentTarget.step = step.toString();
+          e.currentTarget.value = v1.toString();
+          saveEditorParams();
+        })[0].value = compileOptions.plot.toString();
+        $("#input-plot-sr").on("change", e => {
+          compileOptions.plotSR = +e.currentTarget.value;
+          saveEditorParams();
+        })[0].value = compileOptions.plotSR.toString();
+        $("#check-draw-spectrogram").on("change", e => {
+          compileOptions.drawSpectrogram = e.currentTarget.checked;
+          uiEnv.plotScope.drawSpectrogram = compileOptions.drawSpectrogram;
+          uiEnv.inputScope.drawSpectrogram = compileOptions.drawSpectrogram;
+          uiEnv.outputScope.drawSpectrogram = compileOptions.drawSpectrogram;
+          saveEditorParams();
+        })[0].checked = compileOptions.drawSpectrogram;
+        // Plot
+        $("#select-plot-fftsize").on("change", e => {
+          compileOptions.plotFFT = +e.currentTarget.value;
+          uiEnv.analyser.fftSize = compileOptions.plotFFT;
+          $("#input-plot-samps").change();
+          saveEditorParams();
+        });
+        $("#select-plot-fftoverlap").on("change", e => {
+          compileOptions.plotFFTOverlap = +e.currentTarget.value;
+          uiEnv.analyser.fftOverlap = compileOptions.plotFFTOverlap;
+          saveEditorParams();
+        });
+        /**
+         * Load options from URL, override current
+         * Available params:
+         * {boolean} autorun
+         * {boolean} realtime_compile
+         * {string} name - as string
+         * {string} code - as URL to fetch
+         * {string} inline - as Base64URL (should be url safe version)
+         * {string} code_string - as string
+         * {number} voices - poly voices
+         * {number} buffer_size - buffer size
+         *
+         * @param {string} url
+         * @returns
+         */
+        loadURLParams = /*#__PURE__*/function () {
+          var _ref3 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee2(url) {
+            var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee2$(_context2) {
+              while (1) switch (_context2.prev = _context2.next) {
+                case 0:
+                  urlParams = new URLSearchParams(url);
+                  if (urlParams.has("realtime_compile")) {
+                    compileOptions.realtimeCompile = !!+urlParams.get("realtime_compile");
+                    saveEditorParams();
                   }
+                  if (urlParams.has("voices")) {
+                    voices = +urlParams.get("voices");
+                    compileOptions.voices = [1, 2, 4, 8, 16, 32, 64, 128].indexOf(voices) === -1 ? 0 : voices;
+                    saveEditorParams();
+                  }
+                  if (urlParams.has("buffer_size")) {
+                    bufferSize = +urlParams.get("buffer_size");
+                    compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : bufferSize;
+                    saveEditorParams();
+                  }
+                  if (urlParams.has("mode")) {
+                    if (urlParams.get("mode") === "amstram") {
+                      server = "https://amstramservice.grame.fr/";
+                      compileOptions.exportPlatform = "esp32";
+                      compileOptions.exportArch = "gramophoneFlash";
+                      $("#export-server").val(server).change();
+                      $("#btn-def-exp-content").html("Gramo");
+                      $("#ide-params").css("display", "none");
+                      $("#form-plot").css("display", "none");
+                      $("#show-right-panel").click().change();
+                    }
+                    if (urlParams.get("mode") === "amstram-pro") {
+                      server = "https://amstramservice.grame.fr/";
+                      compileOptions.exportPlatform = "esp32";
+                      compileOptions.exportArch = "gramophoneFlash";
+                      $("#export-server").val(server).change();
+                      $("#btn-def-exp-content").html("Gramo");
+                    }
+                  }
+                  if (!urlParams.has("code")) {
+                    _context2.next = 20;
+                    break;
+                  }
+                  codeURL = urlParams.get("code");
+                  _name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                  uiEnv.fileManager.renameSelected("".concat(_name, ".dsp"));
+                  _context2.prev = 9;
+                  _context2.next = 12;
+                  return fetch(codeURL);
+                case 12:
+                  response = _context2.sent;
+                  _context2.next = 15;
+                  return response.text();
+                case 15:
+                  code = _context2.sent;
+                  _context2.next = 20;
+                  break;
+                case 18:
+                  _context2.prev = 18;
+                  _context2.t0 = _context2["catch"](9);
+                case 20:
+                  if (urlParams.has("code_string")) {
+                    code = urlParams.get("code_string");
+                  }
+                  if (urlParams.has("inline")) {
+                    b64Code = urlParams.get("inline").replace("-", "+").replace("_", "/");
+                    code = atob(b64Code);
+                  }
+                  if (urlParams.has("name")) {
+                    _name2 = urlParams.get("name").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+                    uiEnv.fileManager.renameSelected("".concat(_name2, ".dsp"));
+                    saveEditorParams();
+                  }
+                  if (!code) {
+                    _context2.next = 32;
+                    break;
+                  }
+                  uiEnv.fileManager.setValue(code);
+                  if (!(urlParams.has("autorun") && urlParams.get("autorun"))) {
+                    _context2.next = 32;
+                    break;
+                  }
+                  _context2.next = 28;
+                  return runDsp(code);
+                case 28:
+                  compileResult = _context2.sent;
+                  if (compileResult.success) {
+                    _context2.next = 31;
+                    break;
+                  }
+                  return _context2.abrupt("return");
+                case 31:
+                  if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
+                case 32:
+                case "end":
+                  return _context2.stop();
+              }
+            }, _callee2, null, [[9, 18]]);
+          }));
+          return function loadURLParams(_x2) {
+            return _ref3.apply(this, arguments);
+          };
+        }(); // Upload
+        $("#btn-upload").on("click", () => {
+          $("#input-upload").click();
+        });
+        $("#input-upload").on("input", e => {
+          var file = e.currentTarget.files[0];
+          var reader = new FileReader();
+          reader.onload = () => {
+            var fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
+            var code = reader.result.toString();
+            uiEnv.fileManager.newFile(fileName, code);
+            if (compileOptions.realtimeCompile) {
+              if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
+            }
+          };
+          reader.onerror = () => undefined;
+          reader.readAsText(file);
+        }).on("click", e => e.stopPropagation());
+        // Save as //TODO zip
+        $("#btn-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3() {
+          var zip, b, uri;
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
+            while (1) switch (_context3.prev = _context3.next) {
+              case 0:
+                zip = new jszip__WEBPACK_IMPORTED_MODULE_6__();
+                uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
+                _context3.next = 4;
+                return zip.generateAsync({
+                  type: "blob"
+                });
+              case 4:
+                b = _context3.sent;
+                uri = URL.createObjectURL(b);
+                $("#a-save").attr({
+                  href: uri,
+                  download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".zip")
+                })[0].click();
+              case 7:
+              case "end":
+                return _context3.stop();
+            }
+          }, _callee3);
+        })));
+        $("#a-save").on("click", e => e.stopPropagation());
+        // Docs
+        $("#a-docs").on("click", e => e.stopPropagation());
+        /**
+         * Export
+         * Append options to export model
+         */
+        // If true, the download argument will force the download of the generated target
+        exportProgram = download => {
+          $("#export-download").hide();
+          $("#export-loading").css("display", "inline-block");
+          $("#def-exp-icon").hide();
+          $("#def-exp-loading").css("display", "inline-block");
+          $("#qr-code").hide();
+          $("#export-error").hide();
+          var form = new FormData();
+          var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+          try {
+            // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
+            var expandedCode = compileOptions.exportPlatform === "esp32" ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            // eslint-disable-next-line no-console
+            console.log(expandedCode);
+            form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
+          } catch (e) {
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(e).show();
+            return;
+          }
+          $.ajax({
+            method: "POST",
+            url: "".concat(server, "/filepost"),
+            data: form,
+            contentType: false,
+            processData: false
+          }).done(shaKey => {
+            var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
+            if (matched) {
+              var plat = $("#export-platform").val();
+              var arch = $("#export-arch").val();
+              var _path3 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
+              $.ajax({
+                method: "GET",
+                url: "".concat(_path3, "/precompile")
+              }).done(result => {
+                if (result === "DONE") {
+                  var href = "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip");
+                  $("#a-export-download").attr({
+                    href
+                  });
+                  $("#export-download").show();
+                  if (download === true) {
+                    $("#export-download").click();
+                  }
+                  $("#qr-code").show();
+                  qrcode__WEBPACK_IMPORTED_MODULE_4__["toCanvas"]($("#qr-code")[0], "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip"));
+                  return;
                 }
-              }, _callee2, null, [[9, 18]]);
-            }));
-            return function loadURLParams(_x2) {
-              return _ref3.apply(this, arguments);
-            };
-          }(); // Upload
-          $("#btn-upload").on("click", () => {
-            $("#input-upload").click();
+                $("#export-loading").css("display", "none");
+                $("#def-exp-loading").css("display", "none");
+                $("#def-exp-icon").show();
+                $("#export-error").html(result).show();
+              }).fail((jqXHR, textStatus) => {
+                $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+              }).always(() => {
+                $("#export-loading").css("display", "none");
+                $("#def-exp-loading").css("display", "none");
+                $("#def-exp-icon").show();
+              });
+              return;
+            }
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(shaKey).show();
+          }).fail((jqXHR, textStatus) => {
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
+            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
           });
-          $("#input-upload").on("input", e => {
-            var file = e.currentTarget.files[0];
+        };
+        getTargets = /*#__PURE__*/function () {
+          var _ref5 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(server) {
+            var response, targets, plats;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee4$(_context4) {
+              while (1) switch (_context4.prev = _context4.next) {
+                case 0:
+                  $("#export-platform").add("#export-arch").empty();
+                  $("#export-platform").off("change");
+                  $("#export-download").off("click");
+                  $("#a-export-download").off("click");
+                  $("#export-submit").prop("disabled", true).off("click");
+                  _context4.next = 7;
+                  return fetch("".concat(server, "/targets"));
+                case 7:
+                  response = _context4.sent;
+                  _context4.next = 10;
+                  return response.json();
+                case 10:
+                  targets = _context4.sent;
+                  plats = Object.keys(targets);
+                  plats.sort(); // sort platform names in alphabetic order
+                  if (plats.length) {
+                    plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
+                    $("#export-platform").val(compileOptions.exportPlatform);
+                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                    $("#export-arch").val(compileOptions.exportArch).change();
+                  }
+                  $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
+                  $("#export-name").on("keydown", e => {
+                    if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
+                  });
+                  $("#export-platform").on("change", e => {
+                    compileOptions.exportPlatform = e.currentTarget.value;
+                    saveEditorParams();
+                    $("#export-arch").empty();
+                    targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
+                  });
+                  $("#export-arch").on("change", e => {
+                    compileOptions.exportArch = e.currentTarget.value;
+                    saveEditorParams();
+                    // eslint-disable-next-line no-console
+                    console.log(compileOptions);
+                  });
+                  $("#export-download").on("click", () => $("#a-export-download")[0].click());
+                  $("#a-export-download").on("click", e => e.stopPropagation());
+                  $("#export-submit").prop("disabled", false).on("click", () => {
+                    exportProgram(false);
+                  });
+                case 21:
+                case "end":
+                  return _context4.stop();
+              }
+            }, _callee4);
+          }));
+          return function getTargets(_x3) {
+            return _ref5.apply(this, arguments);
+          };
+        }();
+        $("#export-server").val(server).on("change", e => {
+          server = e.currentTarget.value;
+          getTargets(e.currentTarget.value);
+        });
+        _context12.prev = 81;
+        _context12.next = 84;
+        return getTargets(server);
+      case 84:
+        _context12.next = 89;
+        break;
+      case 86:
+        _context12.prev = 86;
+        _context12.t0 = _context12["catch"](81);
+        console.error(_context12.t0); // eslint-disable-line no-console
+      case 89:
+        // Share
+        /**
+         * Make share URL with options
+         *
+         * @returns
+         */
+        makeURL = () => {
+          var base = window.location.origin + window.location.pathname;
+          var urlParams = new URLSearchParams();
+          urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
+          urlParams.set("voices", compileOptions.voices.toString());
+          urlParams.set("name", uiEnv.fileManager.mainFileNameWithoutSuffix);
+          urlParams.set("inline", btoa(uiEnv.fileManager.mainCode).replace("+", "-").replace("/", "_"));
+          return base + "?" + urlParams.toString();
+        };
+        $("#modal-share").on("shown.bs.modal", () => {
+          $("#share-btn-copy").html("Copy");
+          $("#share-url").val(makeURL());
+        });
+        $("#share-autorun").on("change", () => {
+          $("#share-btn-copy").html("Copy");
+          $("#share-url").val(makeURL());
+        });
+        $("#share-btn-copy").on("click", e => {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText($("#share-url").val());
+          } else {
+            $("#share-url").focus().select();
+            document.execCommand("copy");
+          }
+          $(e.currentTarget).html('<i class="fas fa-check"></i>');
+        });
+        /**
+         * Right panel options
+         */
+        // Keyboard as midi input
+        key2Midi = new _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"]({
+          keyMap: navigator.language === "fr-FR" ? _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP_FR : _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP,
+          enabled: false
+        });
+        $(document).on("keydown", e => {
+          if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+          key2Midi.handleKeyDown(e.key);
+        });
+        $(document).on("keyup", e => {
+          if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
+          key2Midi.handleKeyUp(e.key);
+        });
+        // MIDI Devices select
+        $("#select-midi-input").on("change", e => {
+          var id = e.currentTarget.value;
+          if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
+          var keys = [];
+          var listener = data => {
+            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
+            if (data[0] === 144 && data[2]) {
+              // Show as pill midi note
+              if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
+              $("#midi-ui-note").text(data[1]).show();
+            } else if (data[0] === 128 || data[0] === 144 && !data[2]) {
+              keys.splice(keys.indexOf(data[1]), 1);
+              if (keys.length === 0) $("#midi-ui-note").hide();else $("#midi-ui-note").text(keys[keys.length - 1]);
+            }
+          };
+          if (id === "-2") {
+            key2Midi.handler = listener;
+            key2Midi.enabled = true;
+            return;
+          }
+          key2Midi.enabled = false;
+          if (id === "-1") return;
+          var input = webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.getInputById(id);
+          if (!input) return;
+          midiEnv.input = input;
+          input.addListener("midimessage", "all", e => listener(e.data));
+        });
+        // Append current connected devices
+        handleMIDIConnect = e => {
+          if (e.port.type !== "input") return;
+          var $select = $("#select-midi-input");
+          if ($select.find("option[value=\"".concat(e.port.id, "\"]")).length) return;
+          var $option = $(new Option(e.port.name, e.port.id));
+          $select.append($option);
+          $option.prop("selected", true).change();
+        };
+        handleMIDIDisconnect = e => {
+          if (e.port.type !== "input") return;
+          var $select = $("#select-midi-input");
+          var $find = $select.find("option[value=\"".concat(e.port.id, "\"]"));
+          if (!$find.length) return;
+          $find.remove();
+          $select.children("option").last().prop("selected", true).change();
+        };
+        $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
+        webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.enable(e => {
+          if (e) return;
+          $("#midi-ui-default").hide();
+          $("#select-midi-input").prop("disabled", false);
+          webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.addListener("connected", handleMIDIConnect);
+          webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.addListener("disconnected", handleMIDIDisconnect);
+        });
+        /**
+         * Audio Inputs
+         * Use WaveSurfer lib with MediaElement and <audio />
+         */
+
+        $("#select-audio-input").on("change", /*#__PURE__*/function () {
+          var _ref6 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee5(e) {
+            var id, _gain, _input, gain, input;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee5$(_context5) {
+              while (1) switch (_context5.prev = _context5.next) {
+                case 0:
+                  id = e.currentTarget.value;
+                  if (!(audioEnv.currentInput === id)) {
+                    _context5.next = 3;
+                    break;
+                  }
+                  return _context5.abrupt("return");
+                case 3:
+                  if (audioEnv.audioCtx && audioEnv.currentInput) {
+                    _gain = audioEnv.gainInput;
+                    _input = audioEnv.inputs[audioEnv.currentInput];
+                    if (_gain) _input.disconnect(_gain); // Disconnect
+                  }
+
+                  if (!wavesurfer) {
+                    wavesurfer = wavesurfer_js__WEBPACK_IMPORTED_MODULE_5__["create"]({
+                      container: $("#source-waveform")[0],
+                      audioContext: audioEnv.audioCtx,
+                      backend: "MediaElement",
+                      cursorColor: "#EEE",
+                      progressColor: "#888",
+                      waveColor: "#BBB",
+                      height: 60,
+                      splitChannels: true
+                    });
+                    wavesurfer.on("play", () => {
+                      $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
+                      $("#input-analyser-ui").show();
+                      if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
+                    });
+                    wavesurfer.on("pause", () => {
+                      $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+                      $("#input-analyser-ui").hide();
+                      if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
+                    });
+                    wavesurfer.on("finish", () => {
+                      if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();else {
+                        $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
+                        $("#input-analyser-ui").hide();
+                        if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
+                      }
+                    });
+                    wavesurfer.on("waveform-ready", () => {
+                      audioEnv.gainUIInput.channels = wavesurfer.backend.buffer.numberOfChannels;
+                    });
+                    wavesurfer.load("./02-XYLO1.mp3");
+                  }
+                  // MediaElementSource, Waveform
+                  if (id === "-1") {
+                    $("#source-ui").show();
+                    $("#input-analyser-ui").hide();
+                    if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
+                    audioEnv.gainUIInput.channels = wavesurfer.backend.buffer ? wavesurfer.backend.buffer.numberOfChannels : 2;
+                  } else {
+                    $("#source-ui").hide();
+                    $("#input-analyser-ui").show();
+                    if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
+                    audioEnv.gainUIInput.channels = 2;
+                  }
+                  // init audio environment
+                  _context5.next = 8;
+                  return initAudioCtx(audioEnv, id);
+                case 8:
+                  gain = audioEnv.gainInput;
+                  input = audioEnv.inputs[id];
+                  audioEnv.currentInput = id;
+                  audioEnv.inputEnabled = true;
+                  if (gain) input.connect(gain);
+                case 13:
+                case "end":
+                  return _context5.stop();
+              }
+            }, _callee5);
+          }));
+          return function (_x4) {
+            return _ref6.apply(this, arguments);
+          };
+        }());
+        /**
+         * Audio Outputs
+         * Choose and audio stream <audio />
+         */
+        $("#select-audio-output").on("change", /*#__PURE__*/function () {
+          var _ref7 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee6(e) {
+            var id, audio;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee6$(_context6) {
+              while (1) switch (_context6.prev = _context6.next) {
+                case 0:
+                  if (supportMediaStreamDestination) {
+                    _context6.next = 2;
+                    break;
+                  }
+                  return _context6.abrupt("return");
+                case 2:
+                  id = e.currentTarget.value;
+                  _context6.next = 5;
+                  return initAudioCtx(audioEnv);
+                case 5:
+                  faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
+                  audio = $("#output-audio-stream")[0];
+                  audio.setSinkId(id);
+                case 8:
+                case "end":
+                  return _context6.stop();
+              }
+            }, _callee6);
+          }));
+          return function (_x5) {
+            return _ref7.apply(this, arguments);
+          };
+        }()).change();
+        // Waveform
+        $("#btn-source-play").on("click", () => {
+          if (!wavesurfer || !wavesurfer.isReady) return;
+          if (wavesurfer.isPlaying()) {
+            wavesurfer.pause();
+          } else {
+            wavesurfer.play();
+          }
+        });
+        $("#btn-source-rewind").on("click", () => {
+          if (!wavesurfer.isReady) return;
+          wavesurfer.seekTo(0);
+        });
+        $("#btn-source-loop").on("click", e => {
+          $(e.currentTarget).toggleClass("active");
+        });
+        // Waveform drag'n'drop
+        $("#source-waveform").on("dragenter dragover", e => {
+          var event = e.originalEvent;
+          if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#source-overlay").show();
+          }
+        });
+        $("#source-overlay").on("dragleave dragend", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          $(e.currentTarget).hide();
+        });
+        $("#source-overlay").on("dragenter dragover", e => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        $("#source-overlay").on("drop", e => {
+          $(e.currentTarget).hide();
+          if (!wavesurfer.isReady) return;
+          var event = e.originalEvent;
+          if (event.dataTransfer && event.dataTransfer.files.length) {
+            // Stop the propagation of the event
+            e.preventDefault();
+            e.stopPropagation();
+            var gain = audioEnv.gainInput;
+            var input = audioEnv.inputs[-1];
+            if (gain) input.disconnect(gain); // Disconnect
+            audioEnv.inputEnabled = false;
+            var file = event.dataTransfer.files[0];
+            try {
+              wavesurfer.load(URL.createObjectURL(file));
+            } catch (e) {
+              console.error(e); // eslint-disable-line no-console
+              showError("Cannot load sound file: " + e.message);
+              return;
+            }
+            if ($("#source-waveform audio").length) {
+              audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
+              input = audioEnv.inputs[-1];
+            }
+            audioEnv.inputEnabled = true;
+            if (gain) input.connect(gain);
+          }
+        });
+        // Append connected audio devices
+        handleMediaDeviceChange = /*#__PURE__*/function () {
+          var _ref8 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee7() {
+            var devices, $selectInput, $selectOutput;
+            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee7$(_context7) {
+              while (1) switch (_context7.prev = _context7.next) {
+                case 0:
+                  _context7.prev = 0;
+                  _context7.next = 3;
+                  return navigator.mediaDevices.getUserMedia({
+                    audio: true
+                  });
+                case 3:
+                  _context7.next = 7;
+                  break;
+                case 5:
+                  _context7.prev = 5;
+                  _context7.t0 = _context7["catch"](0);
+                case 7:
+                  _context7.next = 9;
+                  return navigator.mediaDevices.enumerateDevices();
+                case 9:
+                  devices = _context7.sent;
+                  $selectInput = $("#select-audio-input");
+                  $selectOutput = $("#select-audio-output");
+                  $selectInput.children("option").each((i, e) => {
+                    if (e.value === "-1") return;
+                    if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
+                      e.remove();
+                      if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
+                    }
+                  });
+                  $selectOutput.children("option").each((i, e) => {
+                    if (e.value === "-1") return;
+                    if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
+                      e.remove();
+                      if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
+                    }
+                  });
+                  devices.forEach(device => {
+                    if (!device.deviceId) return;
+                    if (device.kind === "audioinput") {
+                      if ($selectInput.find("option[value=".concat(device.deviceId, "]")).length) return;
+                      $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+                    }
+                    if (supportMediaStreamDestination && device.kind === "audiooutput") {
+                      if ($selectOutput.find("option[value=".concat(device.deviceId, "]")).length) return;
+                      $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
+                    }
+                  });
+                case 15:
+                case "end":
+                  return _context7.stop();
+              }
+            }, _callee7, null, [[0, 5]]);
+          }));
+          return function handleMediaDeviceChange() {
+            return _ref8.apply(this, arguments);
+          };
+        }();
+        if (!navigator.mediaDevices) {
+          _context12.next = 127;
+          break;
+        }
+        _context12.prev = 112;
+        _context12.next = 115;
+        return navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+      case 115:
+        _context12.next = 119;
+        break;
+      case 117:
+        _context12.prev = 117;
+        _context12.t1 = _context12["catch"](112);
+      case 119:
+        _context12.next = 121;
+        return navigator.mediaDevices.enumerateDevices();
+      case 121:
+        devices = _context12.sent;
+        $("#input-ui-default").hide();
+        $selectInput = $("#select-audio-input").prop("disabled", false);
+        if (supportMediaStreamDestination) {
+          if (devices.find(device => device.kind === "audiooutput")) {
+            $("#output-ui-default").hide();
+            $selectOutput = $("#select-audio-output").prop("disabled", false);
+          } else {
+            // No audio outputs, fallback to audioCtx.destination
+            if (audioEnv.audioCtx && audioEnv.destination) audioEnv.destination = audioEnv.audioCtx.destination;
+            supportMediaStreamDestination = false;
+          }
+        }
+        navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
+        devices.forEach(device => {
+          if (!device.deviceId) return;
+          if (device.kind === "audioinput") {
+            $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
+          }
+          if (supportMediaStreamDestination && device.kind === "audiooutput") {
+            $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
+          }
+        });
+      case 127:
+        // DSP info
+        refreshDspUI();
+        if (supportAudioWorklet) {
+          // Switch between AW / SP nodes
+          $("#dsp-ui-default").on("click", e => {
+            if (!$(e.currentTarget).hasClass("switch")) return;
+            $("#check-worklet")[0].checked = !compileOptions.useWorklet;
+            $("#check-worklet").change();
+            if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
+          });
+        } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
+        // Record
+        $("#recorder-aim").on("click", e => {
+          var recorder = faustEnv.recorder;
+          if ($(e.currentTarget).hasClass("btn-light")) {
+            $(e.currentTarget).removeClass("btn-light").addClass("btn-danger");
+            recorder.enabled = true;
+          } else {
+            $(e.currentTarget).addClass("btn-light").removeClass("btn-danger");
+            recorder.enabled = false;
+          }
+        });
+        $("#recorder-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee8() {
+          var recorder, b, url;
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee8$(_context8) {
+            while (1) switch (_context8.prev = _context8.next) {
+              case 0:
+                recorder = faustEnv.recorder;
+                if (!(recorder.totalSec === 0)) {
+                  _context8.next = 3;
+                  break;
+                }
+                return _context8.abrupt("return");
+              case 3:
+                _context8.t0 = Blob;
+                _context8.next = 6;
+                return recorder.encode();
+              case 6:
+                _context8.t1 = _context8.sent;
+                _context8.t2 = [_context8.t1];
+                _context8.t3 = {
+                  type: "audio/wav"
+                };
+                b = new _context8.t0(_context8.t2, _context8.t3);
+                url = URL.createObjectURL(b);
+                $("#a-recorder-save").attr({
+                  href: url,
+                  download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".wav")
+                })[0].click();
+              case 12:
+              case "end":
+                return _context8.stop();
+            }
+          }, _callee8);
+        })));
+        $("#a-recorder-save").on("click", e => e.stopPropagation());
+        // Output switch to connect / disconnect dsp from destination
+        $(".btn-dac").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee9() {
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee9$(_context9) {
+            while (1) switch (_context9.prev = _context9.next) {
+              case 0:
+                if (!audioEnv.outputEnabled) {
+                  _context9.next = 7;
+                  break;
+                }
+                // disable audio output
+                audioEnv.outputEnabled = false;
+                if (audioEnv.dspConnectedToOutput) {
+                  audioEnv.dsp.disconnect(audioEnv.destination);
+                  audioEnv.dspConnectedToOutput = false;
+                }
+                $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
+                $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
+                _context9.next = 17;
+                break;
+              case 7:
+                // enable audio output
+                audioEnv.outputEnabled = true;
+                if (audioEnv.audioCtx) {
+                  _context9.next = 14;
+                  break;
+                }
+                _context9.next = 11;
+                return initAudioCtx(audioEnv);
+              case 11:
+                initAnalysersUI(uiEnv, audioEnv);
+                _context9.next = 15;
+                break;
+              case 14:
+                if (audioEnv.dsp) {
+                  audioEnv.dsp.connect(audioEnv.destination);
+                  audioEnv.dspConnectedToOutput = true;
+                }
+              case 15:
+                $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
+                $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
+              case 17:
+              case "end":
+                return _context9.stop();
+            }
+          }, _callee9);
+        })));
+        /**
+         * Center
+         */
+        // File Drag and drop
+        $("#top").on("dragenter dragover", e => {
+          var event = e.originalEvent;
+          if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
+            e.preventDefault();
+            e.stopPropagation();
+            $("#editor-overlay").show();
+          }
+        });
+        $("#editor-overlay").on("dragleave dragend", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          $(e.currentTarget).hide();
+        });
+        $("#editor-overlay").on("dragenter dragover", e => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        $("#editor-overlay").on("drop", e => {
+          $(e.currentTarget).hide();
+          var event = e.originalEvent;
+          if (event.dataTransfer && event.dataTransfer.files.length) {
+            // Stop the propagation of the event
+            e.preventDefault();
+            e.stopPropagation();
+            var file = event.dataTransfer.files[0];
             var reader = new FileReader();
             reader.onload = () => {
+              // Update filename
               var fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
               var code = reader.result.toString();
               uiEnv.fileManager.newFile(fileName, code);
+              // compile diagram or dsp if necessary
               if (compileOptions.realtimeCompile) {
                 if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
               }
             };
             reader.onerror = () => undefined;
             reader.readAsText(file);
-          }).on("click", e => e.stopPropagation());
-          // Save as //TODO zip
-          $("#btn-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee3() {
-            var zip, b, uri;
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee3$(_context3) {
-              while (1) {
-                switch (_context3.prev = _context3.next) {
-                  case 0:
-                    zip = new jszip__WEBPACK_IMPORTED_MODULE_6__();
-                    uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
-                    _context3.next = 4;
-                    return zip.generateAsync({
-                      type: "blob"
-                    });
-                  case 4:
-                    b = _context3.sent;
-                    uri = URL.createObjectURL(b);
-                    $("#a-save").attr({
-                      href: uri,
-                      download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".zip")
-                    })[0].click();
-                  case 7:
-                  case "end":
-                    return _context3.stop();
-                }
-              }
-            }, _callee3);
-          })));
-          $("#a-save").on("click", e => e.stopPropagation());
-          // Docs
-          $("#a-docs").on("click", e => e.stopPropagation());
-          /**
-           * Export
-           * Append options to export model
-           */
-          // If true, the download argument will force the download of the generated target
-          exportProgram = download => {
-            $("#export-download").hide();
-            $("#export-loading").css("display", "inline-block");
-            $("#def-exp-icon").hide();
-            $("#def-exp-loading").css("display", "inline-block");
-            $("#qr-code").hide();
-            $("#export-error").hide();
-            var form = new FormData();
-            var name = $("#export-name").val().replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            try {
-              // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
-              var expandedCode = compileOptions.exportPlatform === "esp32" ? uiEnv.fileManager.mainCode : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-              // eslint-disable-next-line no-console
-              console.log(expandedCode);
-              form.append("file", new File(["declare filename \"".concat(name, ".dsp\"; declare name \"").concat(name, "\"; ").concat(expandedCode)], "".concat(name, ".dsp")));
-            } catch (e) {
-              $("#export-loading").css("display", "none");
-              $("#def-exp-loading").css("display", "none");
-              $("#def-exp-icon").show();
-              $("#export-error").html(e).show();
-              return;
+          }
+        });
+        // Examples
+
+        // Append each file in examples.json to div menu
+        fetch("./examples.json").then(response => response.json()).then(tree => {
+          var $menu = $("#tab-examples");
+          var parseTree = (treeIn, $menu) => {
+            if (treeIn.type === "file") {
+              var $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
+              $menu.append($item);
+            } else {
+              var _$item = $("<div>").addClass(["dropright", "submenu"]);
+              var $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
+              $a.on("click", e => {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+              });
+              var $submenu = $("<div>").addClass("dropdown-menu");
+              _$item.append($a, $submenu);
+              treeIn.children.forEach(v => parseTree(v, $submenu));
+              $menu.append(_$item);
+              $a.dropdown();
             }
+          };
+          if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
+        }).catch(() => undefined);
+        // Load an example
+        $("#tab-examples").on("click", ".faust-example", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          var path = $(e.currentTarget).data("path");
+          var name = $(e.currentTarget).text();
+          if (path) {
+            fetch(path).then(response => response.text()).then(code => {
+              var fileName = name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
+              uiEnv.fileManager.newFile(fileName, code);
+              if (compileOptions.realtimeCompile) {
+                if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
+              }
+            });
+          }
+          $("#tab-examples").dropdown("toggle");
+        });
+        /**
+         * Save current code to localStorage
+         * if realtime compile is on, do compile
+         */
+        editor.getModel().onDidChangeContent(() => {
+          var code = editor.getValue();
+          uiEnv.fileManager.setValue(code, false);
+        });
+        // Run Dsp Button
+        $(".btn-run").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee10() {
+          var compileResult;
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee10$(_context10) {
+            while (1) switch (_context10.prev = _context10.next) {
+              case 0:
+                _context10.next = 2;
+                return runDsp(uiEnv.fileManager.mainCode);
+              case 2:
+                compileResult = _context10.sent;
+                if (compileResult.success) {
+                  _context10.next = 5;
+                  break;
+                }
+                return _context10.abrupt("return");
+              case 5:
+                if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
+                // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
+                // node.setOutputParamHandler(dspOutputHandler);
+              case 6:
+              case "end":
+                return _context10.stop();
+            }
+          }, _callee10);
+        })));
+        // Default export button
+        $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee11() {
+          return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee11$(_context11) {
+            while (1) switch (_context11.prev = _context11.next) {
+              case 0:
+                exportProgram(true);
+              case 1:
+              case "end":
+                return _context11.stop();
+            }
+          }, _callee11);
+        })));
+        /**
+         * Bind message event for changing dsp params on receiving msg from ui window
+         */
+        $(window).on("message", e => {
+          var $e = e.originalEvent;
+          if (!$e.data) return;
+          var data = $e.data,
+            source = $e.source;
+          if (!data.type) return;
+          if (data.type === "param") {
+            if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
+            dspParams[data.path] = +data.value;
+            if (compileOptions.saveParams) saveDspParams();
+            var _uiWindow = $("#iframe-faust-ui")[0].contentWindow;
+            var msg = {
+              path: data.path,
+              value: +data.value,
+              type: "param"
+            };
+            if (_uiWindow !== source) _uiWindow.postMessage(msg, "*");
+            if (uiEnv.uiPopup && uiEnv.uiPopup !== source) uiEnv.uiPopup.postMessage(msg, "*");
+            return;
+          }
+          // Pass keyboard midi messages even inner window is focused
+          if (data.type === "keydown") key2Midi.handleKeyDown(data.key);else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
+          // From GUI Builder
+          else if (data.type === "export") {
+            var form = new FormData();
+            var fileName = uiEnv.fileManager.mainFileName;
+            var _name3 = uiEnv.fileManager.mainFileNameWithoutSuffix;
+            var plat = data.plat || "web";
+            var arch = data.arch || "wap";
+            var expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            form.append("file", new File(["declare filename \"".concat(fileName, "\"; declare name \"").concat(_name3, "\"; ").concat(expandedCode)], "".concat(fileName)));
             $.ajax({
               method: "POST",
               url: "".concat(server, "/filepost"),
@@ -35106,1064 +35856,267 @@ $( /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE
             }).done(shaKey => {
               var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
               if (matched) {
-                var plat = $("#export-platform").val();
-                var arch = $("#export-arch").val();
-                var _path3 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
+                var _path4 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
                 $.ajax({
                   method: "GET",
-                  url: "".concat(_path3, "/precompile")
+                  url: "".concat(_path4, "/precompile")
                 }).done(result => {
                   if (result === "DONE") {
-                    var href = "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip");
-                    $("#a-export-download").attr({
+                    var href = "".concat(_path4, "/binary.zip");
+                    e.originalEvent.source.postMessage({
+                      type: "exported",
                       href
-                    });
-                    $("#export-download").show();
-                    if (download === true) {
-                      $("#export-download").click();
-                    }
-                    $("#qr-code").show();
-                    qrcode__WEBPACK_IMPORTED_MODULE_4__["toCanvas"]($("#qr-code")[0], "".concat(_path3, "/").concat(plat === "android" ? "binary.apk" : "binary.zip"));
-                    return;
+                    }, "*");
                   }
-                  $("#export-loading").css("display", "none");
-                  $("#def-exp-loading").css("display", "none");
-                  $("#def-exp-icon").show();
-                  $("#export-error").html(result).show();
                 }).fail((jqXHR, textStatus) => {
-                  $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                }).always(() => {
-                  $("#export-loading").css("display", "none");
-                  $("#def-exp-loading").css("display", "none");
-                  $("#def-exp-icon").show();
+                  throw new Error(textStatus + ": " + jqXHR.responseText);
                 });
-                return;
               }
-              $("#export-loading").css("display", "none");
-              $("#def-exp-loading").css("display", "none");
-              $("#def-exp-icon").show();
-              $("#export-error").html(shaKey).show();
             }).fail((jqXHR, textStatus) => {
-              $("#export-loading").css("display", "none");
-              $("#def-exp-loading").css("display", "none");
-              $("#def-exp-icon").show();
-              $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
+              throw new Error(textStatus + ": " + jqXHR.responseText);
             });
-          };
-          getTargets = /*#__PURE__*/function () {
-            var _ref5 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee4(server) {
-              var response, targets, plats;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee4$(_context4) {
-                while (1) {
-                  switch (_context4.prev = _context4.next) {
-                    case 0:
-                      $("#export-platform").add("#export-arch").empty();
-                      $("#export-platform").off("change");
-                      $("#export-download").off("click");
-                      $("#a-export-download").off("click");
-                      $("#export-submit").prop("disabled", true).off("click");
-                      _context4.next = 7;
-                      return fetch("".concat(server, "/targets"));
-                    case 7:
-                      response = _context4.sent;
-                      _context4.next = 10;
-                      return response.json();
-                    case 10:
-                      targets = _context4.sent;
-                      plats = Object.keys(targets);
-                      plats.sort(); // sort platform names in alphabetic order
-                      if (plats.length) {
-                        plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-                        $("#export-platform").val(compileOptions.exportPlatform);
-                        targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                        $("#export-arch").val(compileOptions.exportArch).change();
-                      }
-                      $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
-                      $("#export-name").on("keydown", e => {
-                        if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
-                      });
-                      $("#export-platform").on("change", e => {
-                        compileOptions.exportPlatform = e.currentTarget.value;
-                        saveEditorParams();
-                        $("#export-arch").empty();
-                        targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-                      });
-                      $("#export-arch").on("change", e => {
-                        compileOptions.exportArch = e.currentTarget.value;
-                        saveEditorParams();
-                        // eslint-disable-next-line no-console
-                        console.log(compileOptions);
-                      });
-                      $("#export-download").on("click", () => $("#a-export-download")[0].click());
-                      $("#a-export-download").on("click", e => e.stopPropagation());
-                      $("#export-submit").prop("disabled", false).on("click", () => {
-                        exportProgram(false);
-                      });
-                    case 21:
-                    case "end":
-                      return _context4.stop();
-                  }
-                }
-              }, _callee4);
-            }));
-            return function getTargets(_x3) {
-              return _ref5.apply(this, arguments);
-            };
-          }();
-          $("#export-server").val(server).on("change", e => {
-            server = e.currentTarget.value;
-            getTargets(e.currentTarget.value);
-          });
-          _context12.prev = 81;
-          _context12.next = 84;
-          return getTargets(server);
-        case 84:
-          _context12.next = 89;
-          break;
-        case 86:
-          _context12.prev = 86;
-          _context12.t0 = _context12["catch"](81);
-          console.error(_context12.t0); // eslint-disable-line no-console
-        case 89:
-          // Share
-          /**
-           * Make share URL with options
-           *
-           * @returns
-           */
-          makeURL = () => {
-            var base = window.location.origin + window.location.pathname;
-            var urlParams = new URLSearchParams();
-            urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
-            urlParams.set("voices", compileOptions.voices.toString());
-            urlParams.set("name", uiEnv.fileManager.mainFileNameWithoutSuffix);
-            urlParams.set("inline", btoa(uiEnv.fileManager.mainCode).replace("+", "-").replace("/", "_"));
-            return base + "?" + urlParams.toString();
-          };
-          $("#modal-share").on("shown.bs.modal", () => {
-            $("#share-btn-copy").html("Copy");
-            $("#share-url").val(makeURL());
-          });
-          $("#share-autorun").on("change", () => {
-            $("#share-btn-copy").html("Copy");
-            $("#share-url").val(makeURL());
-          });
-          $("#share-btn-copy").on("click", e => {
-            if (navigator.clipboard) {
-              navigator.clipboard.writeText($("#share-url").val());
-            } else {
-              $("#share-url").focus().select();
-              document.execCommand("copy");
-            }
-            $(e.currentTarget).html('<i class="fas fa-check"></i>');
-          });
-          /**
-           * Right panel options
-           */
-          // Keyboard as midi input
-          key2Midi = new _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"]({
-            keyMap: navigator.language === "fr-FR" ? _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP_FR : _Key2Midi__WEBPACK_IMPORTED_MODULE_7__["Key2Midi"].KEY_MAP,
-            enabled: false
-          });
-          $(document).on("keydown", e => {
-            if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-            key2Midi.handleKeyDown(e.key);
-          });
-          $(document).on("keyup", e => {
-            if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-            key2Midi.handleKeyUp(e.key);
-          });
-          // MIDI Devices select
-          $("#select-midi-input").on("change", e => {
-            var id = e.currentTarget.value;
-            if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-            var keys = [];
-            var listener = data => {
-              if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
-              if (data[0] === 144 && data[2]) {
-                // Show as pill midi note
-                if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
-                $("#midi-ui-note").text(data[1]).show();
-              } else if (data[0] === 128 || data[0] === 144 && !data[2]) {
-                keys.splice(keys.indexOf(data[1]), 1);
-                if (keys.length === 0) $("#midi-ui-note").hide();else $("#midi-ui-note").text(keys[keys.length - 1]);
-              }
-            };
-            if (id === "-2") {
-              key2Midi.handler = listener;
-              key2Midi.enabled = true;
-              return;
-            }
-            key2Midi.enabled = false;
-            if (id === "-1") return;
-            var input = webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.getInputById(id);
-            if (!input) return;
-            midiEnv.input = input;
-            input.addListener("midimessage", "all", e => listener(e.data));
-          });
-          // Append current connected devices
-          handleMIDIConnect = e => {
-            if (e.port.type !== "input") return;
-            var $select = $("#select-midi-input");
-            if ($select.find("option[value=\"".concat(e.port.id, "\"]")).length) return;
-            var $option = $(new Option(e.port.name, e.port.id));
-            $select.append($option);
-            $option.prop("selected", true).change();
-          };
-          handleMIDIDisconnect = e => {
-            if (e.port.type !== "input") return;
-            var $select = $("#select-midi-input");
-            var $find = $select.find("option[value=\"".concat(e.port.id, "\"]"));
-            if (!$find.length) return;
-            $find.remove();
-            $select.children("option").last().prop("selected", true).change();
-          };
-          $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
-          webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.enable(e => {
-            if (e) return;
-            $("#midi-ui-default").hide();
-            $("#select-midi-input").prop("disabled", false);
-            webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.addListener("connected", handleMIDIConnect);
-            webmidi__WEBPACK_IMPORTED_MODULE_3___default.a.addListener("disconnected", handleMIDIDisconnect);
-          });
-          /**
-           * Audio Inputs
-           * Use WaveSurfer lib with MediaElement and <audio />
-           */
-
-          $("#select-audio-input").on("change", /*#__PURE__*/function () {
-            var _ref6 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee5(e) {
-              var id, _gain, _input, gain, input;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee5$(_context5) {
-                while (1) {
-                  switch (_context5.prev = _context5.next) {
-                    case 0:
-                      id = e.currentTarget.value;
-                      if (!(audioEnv.currentInput === id)) {
-                        _context5.next = 3;
-                        break;
-                      }
-                      return _context5.abrupt("return");
-                    case 3:
-                      if (audioEnv.audioCtx && audioEnv.currentInput) {
-                        _gain = audioEnv.gainInput;
-                        _input = audioEnv.inputs[audioEnv.currentInput];
-                        if (_gain) _input.disconnect(_gain); // Disconnect
-                      }
-
-                      if (!wavesurfer) {
-                        wavesurfer = wavesurfer_js__WEBPACK_IMPORTED_MODULE_5__["create"]({
-                          container: $("#source-waveform")[0],
-                          audioContext: audioEnv.audioCtx,
-                          backend: "MediaElement",
-                          cursorColor: "#EEE",
-                          progressColor: "#888",
-                          waveColor: "#BBB",
-                          height: 60,
-                          splitChannels: true
-                        });
-                        wavesurfer.on("play", () => {
-                          $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
-                          $("#input-analyser-ui").show();
-                          if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
-                        });
-                        wavesurfer.on("pause", () => {
-                          $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
-                          $("#input-analyser-ui").hide();
-                          if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-                        });
-                        wavesurfer.on("finish", () => {
-                          if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();else {
-                            $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
-                            $("#input-analyser-ui").hide();
-                            if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-                          }
-                        });
-                        wavesurfer.on("waveform-ready", () => {
-                          audioEnv.gainUIInput.channels = wavesurfer.backend.buffer.numberOfChannels;
-                        });
-                        wavesurfer.load("./02-XYLO1.mp3");
-                      }
-                      // MediaElementSource, Waveform
-                      if (id === "-1") {
-                        $("#source-ui").show();
-                        $("#input-analyser-ui").hide();
-                        if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-                        audioEnv.gainUIInput.channels = wavesurfer.backend.buffer ? wavesurfer.backend.buffer.numberOfChannels : 2;
-                      } else {
-                        $("#source-ui").hide();
-                        $("#input-analyser-ui").show();
-                        if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
-                        audioEnv.gainUIInput.channels = 2;
-                      }
-                      // init audio environment
-                      _context5.next = 8;
-                      return initAudioCtx(audioEnv, id);
-                    case 8:
-                      gain = audioEnv.gainInput;
-                      input = audioEnv.inputs[id];
-                      audioEnv.currentInput = id;
-                      audioEnv.inputEnabled = true;
-                      if (gain) input.connect(gain);
-                    case 13:
-                    case "end":
-                      return _context5.stop();
-                  }
-                }
-              }, _callee5);
-            }));
-            return function (_x4) {
-              return _ref6.apply(this, arguments);
-            };
-          }());
-          /**
-           * Audio Outputs
-           * Choose and audio stream <audio />
-           */
-          $("#select-audio-output").on("change", /*#__PURE__*/function () {
-            var _ref7 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee6(e) {
-              var id, audio;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee6$(_context6) {
-                while (1) {
-                  switch (_context6.prev = _context6.next) {
-                    case 0:
-                      if (supportMediaStreamDestination) {
-                        _context6.next = 2;
-                        break;
-                      }
-                      return _context6.abrupt("return");
-                    case 2:
-                      id = e.currentTarget.value;
-                      _context6.next = 5;
-                      return initAudioCtx(audioEnv);
-                    case 5:
-                      faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
-                      audio = $("#output-audio-stream")[0];
-                      audio.setSinkId(id);
-                    case 8:
-                    case "end":
-                      return _context6.stop();
-                  }
-                }
-              }, _callee6);
-            }));
-            return function (_x5) {
-              return _ref7.apply(this, arguments);
-            };
-          }()).change();
-          // Waveform
-          $("#btn-source-play").on("click", () => {
-            if (!wavesurfer || !wavesurfer.isReady) return;
-            if (wavesurfer.isPlaying()) {
-              wavesurfer.pause();
-            } else {
-              wavesurfer.play();
-            }
-          });
-          $("#btn-source-rewind").on("click", () => {
-            if (!wavesurfer.isReady) return;
-            wavesurfer.seekTo(0);
-          });
-          $("#btn-source-loop").on("click", e => {
-            $(e.currentTarget).toggleClass("active");
-          });
-          // Waveform drag'n'drop
-          $("#source-waveform").on("dragenter dragover", e => {
-            var event = e.originalEvent;
-            if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
-              e.preventDefault();
-              e.stopPropagation();
-              $("#source-overlay").show();
-            }
-          });
-          $("#source-overlay").on("dragleave dragend", e => {
-            e.preventDefault();
-            e.stopPropagation();
-            $(e.currentTarget).hide();
-          });
-          $("#source-overlay").on("dragenter dragover", e => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-          $("#source-overlay").on("drop", e => {
-            $(e.currentTarget).hide();
-            if (!wavesurfer.isReady) return;
-            var event = e.originalEvent;
-            if (event.dataTransfer && event.dataTransfer.files.length) {
-              // Stop the propagation of the event
-              e.preventDefault();
-              e.stopPropagation();
-              var gain = audioEnv.gainInput;
-              var input = audioEnv.inputs[-1];
-              if (gain) input.disconnect(gain); // Disconnect
-              audioEnv.inputEnabled = false;
-              var file = event.dataTransfer.files[0];
-              try {
-                wavesurfer.load(URL.createObjectURL(file));
-              } catch (e) {
-                console.error(e); // eslint-disable-line no-console
-                showError("Cannot load sound file: " + e.message);
-                return;
-              }
-              if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
-                input = audioEnv.inputs[-1];
-              }
-              audioEnv.inputEnabled = true;
-              if (gain) input.connect(gain);
-            }
-          });
-          // Append connected audio devices
-          handleMediaDeviceChange = /*#__PURE__*/function () {
-            var _ref8 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee7() {
-              var devices, $selectInput, $selectOutput;
-              return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee7$(_context7) {
-                while (1) {
-                  switch (_context7.prev = _context7.next) {
-                    case 0:
-                      _context7.prev = 0;
-                      _context7.next = 3;
-                      return navigator.mediaDevices.getUserMedia({
-                        audio: true
-                      });
-                    case 3:
-                      _context7.next = 7;
-                      break;
-                    case 5:
-                      _context7.prev = 5;
-                      _context7.t0 = _context7["catch"](0);
-                    case 7:
-                      _context7.next = 9;
-                      return navigator.mediaDevices.enumerateDevices();
-                    case 9:
-                      devices = _context7.sent;
-                      $selectInput = $("#select-audio-input");
-                      $selectOutput = $("#select-audio-output");
-                      $selectInput.children("option").each((i, e) => {
-                        if (e.value === "-1") return;
-                        if (!devices.find(device => device.deviceId === e.value && device.kind === "audioinput")) {
-                          e.remove();
-                          if (e.selected) $selectInput.find("option").eq(0).prop("selected", true).change();
-                        }
-                      });
-                      $selectOutput.children("option").each((i, e) => {
-                        if (e.value === "-1") return;
-                        if (!devices.find(device => device.deviceId === e.value && device.kind === "audiooutput")) {
-                          e.remove();
-                          if (e.selected) $selectOutput.find("option").eq(0).prop("selected", true).change();
-                        }
-                      });
-                      devices.forEach(device => {
-                        if (!device.deviceId) return;
-                        if (device.kind === "audioinput") {
-                          if ($selectInput.find("option[value=".concat(device.deviceId, "]")).length) return;
-                          $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
-                        }
-                        if (supportMediaStreamDestination && device.kind === "audiooutput") {
-                          if ($selectOutput.find("option[value=".concat(device.deviceId, "]")).length) return;
-                          $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
-                        }
-                      });
-                    case 15:
-                    case "end":
-                      return _context7.stop();
-                  }
-                }
-              }, _callee7, null, [[0, 5]]);
-            }));
-            return function handleMediaDeviceChange() {
-              return _ref8.apply(this, arguments);
-            };
-          }();
-          if (!navigator.mediaDevices) {
-            _context12.next = 127;
-            break;
           }
-          _context12.prev = 112;
-          _context12.next = 115;
-          return navigator.mediaDevices.getUserMedia({
-            audio: true
-          });
-        case 115:
-          _context12.next = 119;
-          break;
-        case 117:
-          _context12.prev = 117;
-          _context12.t1 = _context12["catch"](112);
-        case 119:
-          _context12.next = 121;
-          return navigator.mediaDevices.enumerateDevices();
-        case 121:
-          devices = _context12.sent;
-          $("#input-ui-default").hide();
-          $selectInput = $("#select-audio-input").prop("disabled", false);
-          if (supportMediaStreamDestination) {
-            if (devices.find(device => device.kind === "audiooutput")) {
-              $("#output-ui-default").hide();
-              $selectOutput = $("#select-audio-output").prop("disabled", false);
-            } else {
-              // No audio outputs, fallback to audioCtx.destination
-              if (audioEnv.audioCtx && audioEnv.destination) audioEnv.destination = audioEnv.audioCtx.destination;
-              supportMediaStreamDestination = false;
-            }
-          }
-          navigator.mediaDevices.ondevicechange = handleMediaDeviceChange;
-          devices.forEach(device => {
-            if (!device.deviceId) return;
-            if (device.kind === "audioinput") {
-              $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
-            }
-            if (supportMediaStreamDestination && device.kind === "audiooutput") {
-              $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
-            }
-          });
-        case 127:
-          // DSP info
-          refreshDspUI();
-          if (supportAudioWorklet) {
-            // Switch between AW / SP nodes
-            $("#dsp-ui-default").on("click", e => {
-              if (!$(e.currentTarget).hasClass("switch")) return;
-              $("#check-worklet")[0].checked = !compileOptions.useWorklet;
-              $("#check-worklet").change();
-              if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
-            });
-          } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
-          // Record
-          $("#recorder-aim").on("click", e => {
-            var recorder = faustEnv.recorder;
-            if ($(e.currentTarget).hasClass("btn-light")) {
-              $(e.currentTarget).removeClass("btn-light").addClass("btn-danger");
-              recorder.enabled = true;
-            } else {
-              $(e.currentTarget).addClass("btn-light").removeClass("btn-danger");
-              recorder.enabled = false;
-            }
-          });
-          $("#recorder-save").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee8() {
-            var recorder, b, url;
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee8$(_context8) {
-              while (1) {
-                switch (_context8.prev = _context8.next) {
-                  case 0:
-                    recorder = faustEnv.recorder;
-                    if (!(recorder.totalSec === 0)) {
-                      _context8.next = 3;
-                      break;
-                    }
-                    return _context8.abrupt("return");
-                  case 3:
-                    _context8.t0 = Blob;
-                    _context8.next = 6;
-                    return recorder.encode();
-                  case 6:
-                    _context8.t1 = _context8.sent;
-                    _context8.t2 = [_context8.t1];
-                    _context8.t3 = {
-                      type: "audio/wav"
-                    };
-                    b = new _context8.t0(_context8.t2, _context8.t3);
-                    url = URL.createObjectURL(b);
-                    $("#a-recorder-save").attr({
-                      href: url,
-                      download: "".concat(uiEnv.fileManager.mainFileNameWithoutSuffix, ".wav")
-                    })[0].click();
-                  case 12:
-                  case "end":
-                    return _context8.stop();
-                }
-              }
-            }, _callee8);
-          })));
-          $("#a-recorder-save").on("click", e => e.stopPropagation());
-          // Output switch to connect / disconnect dsp from destination
-          $(".btn-dac").on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee9() {
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee9$(_context9) {
-              while (1) {
-                switch (_context9.prev = _context9.next) {
-                  case 0:
-                    if (!audioEnv.outputEnabled) {
-                      _context9.next = 7;
-                      break;
-                    }
-                    // disable audio output
-                    audioEnv.outputEnabled = false;
-                    if (audioEnv.dspConnectedToOutput) {
-                      audioEnv.dsp.disconnect(audioEnv.destination);
-                      audioEnv.dspConnectedToOutput = false;
-                    }
-                    $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
-                    $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
-                    _context9.next = 17;
-                    break;
-                  case 7:
-                    // enable audio output
-                    audioEnv.outputEnabled = true;
-                    if (audioEnv.audioCtx) {
-                      _context9.next = 14;
-                      break;
-                    }
-                    _context9.next = 11;
-                    return initAudioCtx(audioEnv);
-                  case 11:
-                    initAnalysersUI(uiEnv, audioEnv);
-                    _context9.next = 15;
-                    break;
-                  case 14:
-                    if (audioEnv.dsp) {
-                      audioEnv.dsp.connect(audioEnv.destination);
-                      audioEnv.dspConnectedToOutput = true;
-                    }
-                  case 15:
-                    $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
-                    $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
-                  case 17:
-                  case "end":
-                    return _context9.stop();
-                }
-              }
-            }, _callee9);
-          })));
-          /**
-           * Center
-           */
-          // File Drag and drop
-          $("#top").on("dragenter dragover", e => {
-            var event = e.originalEvent;
-            if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
-              e.preventDefault();
-              e.stopPropagation();
-              $("#editor-overlay").show();
-            }
-          });
-          $("#editor-overlay").on("dragleave dragend", e => {
-            e.preventDefault();
-            e.stopPropagation();
-            $(e.currentTarget).hide();
-          });
-          $("#editor-overlay").on("dragenter dragover", e => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-          $("#editor-overlay").on("drop", e => {
-            $(e.currentTarget).hide();
-            var event = e.originalEvent;
-            if (event.dataTransfer && event.dataTransfer.files.length) {
-              // Stop the propagation of the event
-              e.preventDefault();
-              e.stopPropagation();
-              var file = event.dataTransfer.files[0];
-              var reader = new FileReader();
-              reader.onload = () => {
-                // Update filename
-                var fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-                var code = reader.result.toString();
-                uiEnv.fileManager.newFile(fileName, code);
-                // compile diagram or dsp if necessary
-                if (compileOptions.realtimeCompile) {
-                  if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
-                }
-              };
-              reader.onerror = () => undefined;
-              reader.readAsText(file);
-            }
-          });
-          // Examples
-
-          // Append each file in examples.json to div menu
-          fetch("./examples.json").then(response => response.json()).then(tree => {
-            var $menu = $("#tab-examples");
-            var parseTree = (treeIn, $menu) => {
-              if (treeIn.type === "file") {
-                var $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
-                $menu.append($item);
-              } else {
-                var _$item = $("<div>").addClass(["dropright", "submenu"]);
-                var $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
-                $a.on("click", e => {
-                  e.stopImmediatePropagation();
-                  e.preventDefault();
-                });
-                var $submenu = $("<div>").addClass("dropdown-menu");
-                _$item.append($a, $submenu);
-                treeIn.children.forEach(v => parseTree(v, $submenu));
-                $menu.append(_$item);
-                $a.dropdown();
-              }
-            };
-            if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
-          }).catch(() => undefined);
-          // Load an example
-          $("#tab-examples").on("click", ".faust-example", e => {
-            e.preventDefault();
-            e.stopPropagation();
-            var path = $(e.currentTarget).data("path");
-            var name = $(e.currentTarget).text();
-            if (path) {
-              fetch(path).then(response => response.text()).then(code => {
-                var fileName = name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-                uiEnv.fileManager.newFile(fileName, code);
-                if (compileOptions.realtimeCompile) {
-                  if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);else updateDiagram(uiEnv.fileManager.mainCode);
-                }
-              });
-            }
-            $("#tab-examples").dropdown("toggle");
-          });
-          /**
-           * Save current code to localStorage
-           * if realtime compile is on, do compile
-           */
-          editor.getModel().onDidChangeContent(() => {
-            var code = editor.getValue();
-            uiEnv.fileManager.setValue(code, false);
-          });
-          // Run Dsp Button
-          $(".btn-run").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee10() {
-            var compileResult;
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee10$(_context10) {
-              while (1) {
-                switch (_context10.prev = _context10.next) {
-                  case 0:
-                    _context10.next = 2;
-                    return runDsp(uiEnv.fileManager.mainCode);
-                  case 2:
-                    compileResult = _context10.sent;
-                    if (compileResult.success) {
-                      _context10.next = 5;
-                      break;
-                    }
-                    return _context10.abrupt("return");
-                  case 5:
-                    if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
-                    // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
-                    // node.setOutputParamHandler(dspOutputHandler);
-                  case 6:
-                  case "end":
-                    return _context10.stop();
-                }
-              }
-            }, _callee10);
-          })));
-          // Default export button
-          $(".btn-def-exp").prop("disabled", false).on("click", /*#__PURE__*/_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee11() {
-            return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee11$(_context11) {
-              while (1) {
-                switch (_context11.prev = _context11.next) {
-                  case 0:
-                    exportProgram(true);
-                  case 1:
-                  case "end":
-                    return _context11.stop();
-                }
-              }
-            }, _callee11);
-          })));
-          /**
-           * Bind message event for changing dsp params on receiving msg from ui window
-           */
-          $(window).on("message", e => {
-            var $e = e.originalEvent;
-            if (!$e.data) return;
-            var data = $e.data,
-              source = $e.source;
-            if (!data.type) return;
-            if (data.type === "param") {
-              if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
-              dspParams[data.path] = +data.value;
-              if (compileOptions.saveParams) saveDspParams();
-              var _uiWindow = $("#iframe-faust-ui")[0].contentWindow;
-              var msg = {
-                path: data.path,
-                value: +data.value,
-                type: "param"
-              };
-              if (_uiWindow !== source) _uiWindow.postMessage(msg, "*");
-              if (uiEnv.uiPopup && uiEnv.uiPopup !== source) uiEnv.uiPopup.postMessage(msg, "*");
-              return;
-            }
-            // Pass keyboard midi messages even inner window is focused
-            if (data.type === "keydown") key2Midi.handleKeyDown(data.key);else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
-            // From GUI Builder
-            else if (data.type === "export") {
-              var form = new FormData();
-              var fileName = uiEnv.fileManager.mainFileName;
-              var _name3 = uiEnv.fileManager.mainFileNameWithoutSuffix;
-              var plat = data.plat || "web";
-              var arch = data.arch || "wap";
-              var expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-              form.append("file", new File(["declare filename \"".concat(fileName, "\"; declare name \"").concat(_name3, "\"; ").concat(expandedCode)], "".concat(fileName)));
-              $.ajax({
-                method: "POST",
-                url: "".concat(server, "/filepost"),
-                data: form,
-                contentType: false,
-                processData: false
-              }).done(shaKey => {
-                var matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-                if (matched) {
-                  var _path4 = "".concat(server, "/").concat(shaKey, "/").concat(plat, "/").concat(arch);
-                  $.ajax({
-                    method: "GET",
-                    url: "".concat(_path4, "/precompile")
-                  }).done(result => {
-                    if (result === "DONE") {
-                      var href = "".concat(_path4, "/binary.zip");
-                      e.originalEvent.source.postMessage({
-                        type: "exported",
-                        href
-                      }, "*");
-                    }
-                  }).fail((jqXHR, textStatus) => {
-                    throw new Error(textStatus + ": " + jqXHR.responseText);
-                  });
-                }
-              }).fail((jqXHR, textStatus) => {
-                throw new Error(textStatus + ": " + jqXHR.responseText);
-              });
-            }
-          });
-          // Close DSP UI Popup when main window is closed
-          $(window).on("beforeunload", () => uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined);
-          $("#nav-item-faust-ui .btn-popup").on("click", e => {
-            e.stopPropagation();
-            e.preventDefault();
-            var node = audioEnv.dsp;
-            if (!node) return;
-            var callback = () => {
-              var msg = {
-                type: "ui",
-                ui: node.getUI()
-              };
-              /**
-               * Post param list json
-               */
-              if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-              /**
-               * Post current param values
-               */
-              var params = node.getParams();
-              for (var _path5 in dspParams) {
-                if (params.indexOf(_path5) !== -1) {
-                  var _msg2 = {
-                    path: _path5,
-                    value: dspParams[_path5],
-                    type: "param"
-                  };
-                  if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(_msg2, "*");
-                }
-              }
+        });
+        // Close DSP UI Popup when main window is closed
+        $(window).on("beforeunload", () => uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined);
+        $("#nav-item-faust-ui .btn-popup").on("click", e => {
+          e.stopPropagation();
+          e.preventDefault();
+          var node = audioEnv.dsp;
+          if (!node) return;
+          var callback = () => {
+            var msg = {
+              type: "ui",
+              ui: node.getUI()
             };
             /**
-             * if window is opened, bind directly, else bind when window is loaded.
+             * Post param list json
              */
-            if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
-              uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
-              uiEnv.uiPopup.onload = callback;
-            }
-          });
-          $("#nav-item-faust-ui .btn-close-tab").on("click", e => {
-            e.stopPropagation();
-            e.preventDefault();
-            if (audioEnv.dsp) {
-              // Disconnect current
-              var gain = audioEnv.gainInput;
-              var dsp = audioEnv.dsp;
-              if (audioEnv.dspConnectedToInput) {
-                gain.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
+            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
+            /**
+             * Post current param values
+             */
+            var params = node.getParams();
+            for (var _path5 in dspParams) {
+              if (params.indexOf(_path5) !== -1) {
+                var _msg2 = {
+                  path: _path5,
+                  value: dspParams[_path5],
+                  type: "param"
+                };
+                if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(_msg2, "*");
               }
-              dsp.disconnect();
-              audioEnv.dspConnectedToOutput = false;
-              dsp.destroy();
-              delete audioEnv.dsp;
             }
-            if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
-            $("#nav-item-faust-ui").hide();
-            if (uiEnv.uiPopup) uiEnv.uiPopup.close();
-            $("#faust-ui-default").show();
-            $("#iframe-faust-ui").css("visibility", "hidden");
-            $("#output-analyser-ui").hide();
-            if (uiEnv.outputScope) uiEnv.outputScope.disabled = true;
-            refreshDspUI();
+          };
+          /**
+           * if window is opened, bind directly, else bind when window is loaded.
+           */
+          if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();else {
+            uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
+            uiEnv.uiPopup.onload = callback;
+          }
+        });
+        $("#nav-item-faust-ui .btn-close-tab").on("click", e => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (audioEnv.dsp) {
+            // Disconnect current
+            var gain = audioEnv.gainInput;
+            var dsp = audioEnv.dsp;
+            if (audioEnv.dspConnectedToInput) {
+              gain.disconnect(dsp);
+              audioEnv.dspConnectedToInput = false;
+            }
+            dsp.disconnect();
+            audioEnv.dspConnectedToOutput = false;
+            dsp.destroy();
+            delete audioEnv.dsp;
+          }
+          if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
+          $("#nav-item-faust-ui").hide();
+          if (uiEnv.uiPopup) uiEnv.uiPopup.close();
+          $("#faust-ui-default").show();
+          $("#iframe-faust-ui").css("visibility", "hidden");
+          $("#output-analyser-ui").hide();
+          if (uiEnv.outputScope) uiEnv.outputScope.disabled = true;
+          refreshDspUI();
+        });
+        svgDragged = false; // svg inject
+        $("#diagram-svg").on("click", "a", e => {
+          e.preventDefault();
+          if (svgDragged) return;
+          // const $svg = $("#diagram-svg>svg");
+          // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
+          var fileName = e.currentTarget.href.baseVal;
+          var strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, {
+            encoding: "utf8"
           });
-          svgDragged = false; // svg inject
-          $("#diagram-svg").on("click", "a", e => {
-            e.preventDefault();
-            if (svgDragged) return;
-            // const $svg = $("#diagram-svg>svg");
-            // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
-            var fileName = e.currentTarget.href.baseVal;
-            var strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, {
-              encoding: "utf8"
-            });
-            var svg = $(strSvg).filter("svg")[0];
-            var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
-            $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-          });
-          // svg zoom
-          $("#diagram-svg").on("mousedown", "svg", e => {
+          var svg = $(strSvg).filter("svg")[0];
+          var width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
+          $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
+        });
+        // svg zoom
+        $("#diagram-svg").on("mousedown", "svg", e => {
+          e.preventDefault();
+          e.stopPropagation();
+          svgDragged = false;
+          var $div = $(e.currentTarget).parent();
+          var x = e.pageX;
+          var y = e.pageY;
+          var sL = $div.scrollLeft();
+          var sT = $div.scrollTop();
+          var handleMouseMove = e => {
+            if (!e.originalEvent.movementX && !e.originalEvent.movementY) return;
+            svgDragged = true;
+            var dX = e.pageX - x;
+            var dY = e.pageY - y;
+            $div.scrollLeft(sL - dX);
+            $div.scrollTop(sT - dY);
             e.preventDefault();
             e.stopPropagation();
-            svgDragged = false;
-            var $div = $(e.currentTarget).parent();
-            var x = e.pageX;
-            var y = e.pageY;
-            var sL = $div.scrollLeft();
-            var sT = $div.scrollTop();
-            var handleMouseMove = e => {
-              if (!e.originalEvent.movementX && !e.originalEvent.movementY) return;
-              svgDragged = true;
-              var dX = e.pageX - x;
-              var dY = e.pageY - y;
-              $div.scrollLeft(sL - dX);
-              $div.scrollTop(sT - dY);
+          };
+          var handleMouseUp = e => {
+            $(document).off("mousemove", handleMouseMove);
+            $(document).off("mouseup", handleMouseUp);
+            if (!svgDragged) return;
+            e.preventDefault();
+            e.stopPropagation();
+          };
+          $(document).on("mousemove", handleMouseMove);
+          $(document).on("mouseup", handleMouseUp);
+        });
+        $("#diagram").on("wheel", e => {
+          if (!e.ctrlKey) return;
+          var $svg = $(e.currentTarget).find("svg");
+          if (!$svg.length) return;
+          e.preventDefault();
+          e.stopPropagation();
+          var d = e.originalEvent.deltaY > 0 ? 1 : -1;
+          var w = $svg.width();
+          $svg.width(w * (1 - d * 0.25));
+        });
+        // Keys
+        $(document).on("keydown", e => {
+          if (e.ctrlKey) {
+            if (e.key === "d") {
               e.preventDefault();
               e.stopPropagation();
-            };
-            var handleMouseUp = e => {
-              $(document).off("mousemove", handleMouseMove);
-              $(document).off("mouseup", handleMouseUp);
-              if (!svgDragged) return;
+              $("#btn-docs")[0].click();
+              return;
+            }
+            if (e.key === "r") {
               e.preventDefault();
               e.stopPropagation();
-            };
-            $(document).on("mousemove", handleMouseMove);
-            $(document).on("mouseup", handleMouseUp);
-          });
-          $("#diagram").on("wheel", e => {
-            if (!e.ctrlKey) return;
-            var $svg = $(e.currentTarget).find("svg");
-            if (!$svg.length) return;
+              $("#btn-run").click();
+            }
+          }
+        });
+        // Resizables
+        $(".resizable").on("mousedown touchstart", e => {
+          if (e.originalEvent instanceof MouseEvent) {
             e.preventDefault();
             e.stopPropagation();
-            var d = e.originalEvent.deltaY > 0 ? 1 : -1;
-            var w = $svg.width();
-            $svg.width(w * (1 - d * 0.25));
-          });
-          // Keys
-          $(document).on("keydown", e => {
-            if (e.ctrlKey) {
-              if (e.key === "d") {
-                e.preventDefault();
-                e.stopPropagation();
-                $("#btn-docs")[0].click();
-                return;
-              }
-              if (e.key === "r") {
-                e.preventDefault();
-                e.stopPropagation();
-                $("#btn-run").click();
-              }
-            }
-          });
-          // Resizables
-          $(".resizable").on("mousedown touchstart", e => {
+          }
+          $("#iframe-faust-ui").css("pointer-events", "none");
+          var $div = $(e.currentTarget).parent();
+          var x = typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
+          var y = typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
+          var w = $div.width();
+          var h = $div.height();
+          var modes = [];
+          if ($(e.currentTarget).hasClass("resizable-left")) modes.push("left");
+          if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
+          if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
+          if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
+          var handleMouseMove = e => {
             if (e.originalEvent instanceof MouseEvent) {
               e.preventDefault();
               e.stopPropagation();
             }
-            $("#iframe-faust-ui").css("pointer-events", "none");
-            var $div = $(e.currentTarget).parent();
-            var x = typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
-            var y = typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
-            var w = $div.width();
-            var h = $div.height();
-            var modes = [];
-            if ($(e.currentTarget).hasClass("resizable-left")) modes.push("left");
-            if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
-            if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
-            if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
-            var handleMouseMove = e => {
-              if (e.originalEvent instanceof MouseEvent) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
-              var dX = (typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
-              var dY = (typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
-              if (modes.indexOf("left") !== -1) $div.width(w - dX);
-              if (modes.indexOf("right") !== -1) $div.width(w + dX);
-              if (modes.indexOf("top") !== -1) $div.height(h - dY);
-              if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
-              if (editor) editor.layout();
-              if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
-                wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
-                wavesurfer.drawBuffer();
-              }
-            };
-            var handleMouseUp = e => {
-              if (e.originalEvent instanceof MouseEvent) {
-                e.preventDefault();
-                e.stopPropagation();
-              }
-              $("#iframe-faust-ui").css("pointer-events", "");
-              $(document).off("mousemove touchmove", handleMouseMove);
-              $(document).off("mouseup", handleMouseUp);
-            };
-            $(document).on("mousemove touchmove", handleMouseMove);
-            $(document).on("mouseup touchend", handleMouseUp);
-          });
-          // Panels
-          $(".btn-show-left").on("click", e => {
-            if ($(e.currentTarget).hasClass("active")) {
-              $("#left").hide();
-              $(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-            } else {
-              $("#left").show();
-              $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+            var dX = (typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
+            var dY = (typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
+            if (modes.indexOf("left") !== -1) $div.width(w - dX);
+            if (modes.indexOf("right") !== -1) $div.width(w + dX);
+            if (modes.indexOf("top") !== -1) $div.height(h - dY);
+            if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
+            if (editor) editor.layout();
+            if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
+              wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
+              wavesurfer.drawBuffer();
             }
-            editor.layout();
-          });
-          $(".btn-show-right").on("click", e => {
-            if ($(e.currentTarget).hasClass("active")) {
-              $("#right").hide();
-              $(".btn-show-right").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-            } else {
-              $("#right").show();
-              $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+          };
+          var handleMouseUp = e => {
+            if (e.originalEvent instanceof MouseEvent) {
+              e.preventDefault();
+              e.stopPropagation();
             }
-            editor.layout();
-          });
-          $(window).on("resize", () => {
-            if (window.innerWidth <= 900) {
-              $("#right").add("#left").hide();
-              $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-            } else {
-              $("#right").add("#left").show();
-              $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
-            }
-          }).resize();
-          // autorunning
-          _context12.next = 157;
-          return initAudioCtx(audioEnv);
-        case 157:
-          faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
-          // Analysers
-          initAnalysersUI(uiEnv, audioEnv);
-          $("#output-analyser-ui").hide();
-          uiEnv.outputScope.disabled = true;
-          $("#select-audio-input").change();
-          _context12.next = 164;
-          return loadURLParams(window.location.search);
-        case 164:
-          $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
-          $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
-          if (supportAudioWorklet) $("#check-worklet").prop({
-            disabled: false,
-            checked: true
-          }).change();
-          $("#select-plot-mode").children("option[value=".concat(compileOptions.plotMode, "]")).prop("selected", true).change();
-          $("#select-plot-fftsize").children("option[value=".concat(compileOptions.plotFFT, "]")).prop("selected", true).change();
-          $("#select-plot-fftoverlap").children("option[value=".concat(compileOptions.plotFFTOverlap, "]")).prop("selected", true).change();
-          $("#input-plot-samps").change();
-          $("#check-draw-spectrogram").change();
-          $("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
-          if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
-          window.faustEnv = faustEnv;
-        case 175:
-        case "end":
-          return _context12.stop();
-      }
+            $("#iframe-faust-ui").css("pointer-events", "");
+            $(document).off("mousemove touchmove", handleMouseMove);
+            $(document).off("mouseup", handleMouseUp);
+          };
+          $(document).on("mousemove touchmove", handleMouseMove);
+          $(document).on("mouseup touchend", handleMouseUp);
+        });
+        // Panels
+        $(".btn-show-left").on("click", e => {
+          if ($(e.currentTarget).hasClass("active")) {
+            $("#left").hide();
+            $(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+          } else {
+            $("#left").show();
+            $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+          }
+          editor.layout();
+        });
+        $(".btn-show-right").on("click", e => {
+          if ($(e.currentTarget).hasClass("active")) {
+            $("#right").hide();
+            $(".btn-show-right").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+          } else {
+            $("#right").show();
+            $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+          }
+          editor.layout();
+        });
+        $(window).on("resize", () => {
+          if (window.innerWidth <= 900) {
+            $("#right").add("#left").hide();
+            $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
+          } else {
+            $("#right").add("#left").show();
+            $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
+          }
+        }).resize();
+        // autorunning
+        _context12.next = 157;
+        return initAudioCtx(audioEnv);
+      case 157:
+        faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
+        // Analysers
+        initAnalysersUI(uiEnv, audioEnv);
+        $("#output-analyser-ui").hide();
+        uiEnv.outputScope.disabled = true;
+        $("#select-audio-input").change();
+        _context12.next = 164;
+        return loadURLParams(window.location.search);
+      case 164:
+        $("#select-voices").children("option[value=".concat(compileOptions.voices, "]")).prop("selected", true);
+        $("#select-buffer-size").children("option[value=".concat(compileOptions.bufferSize, "]")).prop("selected", true);
+        if (supportAudioWorklet) $("#check-worklet").prop({
+          disabled: false,
+          checked: true
+        }).change();
+        $("#select-plot-mode").children("option[value=".concat(compileOptions.plotMode, "]")).prop("selected", true).change();
+        $("#select-plot-fftsize").children("option[value=".concat(compileOptions.plotFFT, "]")).prop("selected", true).change();
+        $("#select-plot-fftoverlap").children("option[value=".concat(compileOptions.plotFFTOverlap, "]")).prop("selected", true).change();
+        $("#input-plot-samps").change();
+        $("#check-draw-spectrogram").change();
+        $("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
+        if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
+        window.faustEnv = faustEnv;
+      case 175:
+      case "end":
+        return _context12.stop();
     }
   }, _callee12, null, [[81, 86], [112, 117]]);
 })));
@@ -36178,88 +36131,86 @@ var initAudioCtx = /*#__PURE__*/function () {
   var _ref13 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee13(audioEnv, deviceId) {
     var audioCtx, unlockAudioContext, stream;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee13$(_context13) {
-      while (1) {
-        switch (_context13.prev = _context13.next) {
-          case 0:
-            if (!audioEnv.audioCtx) {
-              audioCtx = new (window.webkitAudioContext || window.AudioContext)({
-                latencyHint: 0.00001
-              });
-              audioEnv.audioCtx = audioCtx;
-              audioEnv.outputEnabled = true;
-              audioCtx.addEventListener("statechange", () => {
-                if (audioCtx.state === "running") {
-                  $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
-                } else {
-                  $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
-                }
-              });
-              unlockAudioContext = () => {
-                if (audioCtx.state !== "suspended") return;
-                var unlock = () => audioCtx.resume().then(clean);
-                // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
-                var clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
-                $("body").on("touchstart touchend mousedown keydown", unlock);
-              };
-              unlockAudioContext();
-            }
-            if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
-            if (!audioEnv.inputs) audioEnv.inputs = {};
-            if (!(deviceId && !audioEnv.inputs[deviceId])) {
-              _context13.next = 12;
-              break;
-            }
-            if (!(deviceId === "-1")) {
-              _context13.next = 8;
-              break;
-            }
-            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
-            _context13.next = 12;
-            break;
-          case 8:
-            _context13.next = 10;
-            return navigator.mediaDevices.getUserMedia({
-              audio: {
-                deviceId,
-                echoCancellation: false,
-                noiseSuppression: false,
-                autoGainControl: false
+      while (1) switch (_context13.prev = _context13.next) {
+        case 0:
+          if (!audioEnv.audioCtx) {
+            audioCtx = new (window.webkitAudioContext || window.AudioContext)({
+              latencyHint: 0.00001
+            });
+            audioEnv.audioCtx = audioCtx;
+            audioEnv.outputEnabled = true;
+            audioCtx.addEventListener("statechange", () => {
+              if (audioCtx.state === "running") {
+                $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
+              } else {
+                $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
               }
             });
-          case 10:
-            stream = _context13.sent;
-            audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
-          case 12:
-            if (!audioEnv.meterInput) audioEnv.meterInput = Object(_MeterNode__WEBPACK_IMPORTED_MODULE_19__["createMeterNode"])(audioEnv.audioCtx);
-            if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
-            audioEnv.gainInput.connect(audioEnv.meterInput, 0, 0);
-            if (!audioEnv.gainUIInput) audioEnv.gainUIInput = new _MeterNode__WEBPACK_IMPORTED_MODULE_19__["GainUI"]($("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
-            audioEnv.gainUIInput.value = 0;
-            if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
-            audioEnv.meterInput.connect(audioEnv.splitterInput, 0, 0);
-            if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
-            if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
-            audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-            if (!audioEnv.destination) {
-              audioEnv.destination = audioEnv.audioCtx.destination;
-              /*
-              if (supportMediaStreamDestination) {
-                  audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
-                  const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
-                  if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
-                  else (audio as HTMLAudioElement).src = URL.createObjectURL(audioEnv.destination.stream);
-              } else {
-                  audioEnv.destination = audioEnv.audioCtx.destination;
-              }
-              */
-              audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
-              audioEnv.destination.channelInterpretation = "discrete";
+            unlockAudioContext = () => {
+              if (audioCtx.state !== "suspended") return;
+              var unlock = () => audioCtx.resume().then(clean);
+              // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
+              var clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
+              $("body").on("touchstart touchend mousedown keydown", unlock);
+            };
+            unlockAudioContext();
+          }
+          if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
+          if (!audioEnv.inputs) audioEnv.inputs = {};
+          if (!(deviceId && !audioEnv.inputs[deviceId])) {
+            _context13.next = 12;
+            break;
+          }
+          if (!(deviceId === "-1")) {
+            _context13.next = 8;
+            break;
+          }
+          if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($("#source-waveform audio")[0]);
+          _context13.next = 12;
+          break;
+        case 8:
+          _context13.next = 10;
+          return navigator.mediaDevices.getUserMedia({
+            audio: {
+              deviceId,
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
             }
-            return _context13.abrupt("return", audioEnv);
-          case 24:
-          case "end":
-            return _context13.stop();
-        }
+          });
+        case 10:
+          stream = _context13.sent;
+          audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
+        case 12:
+          if (!audioEnv.meterInput) audioEnv.meterInput = Object(_MeterNode__WEBPACK_IMPORTED_MODULE_19__["createMeterNode"])(audioEnv.audioCtx);
+          if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
+          audioEnv.gainInput.connect(audioEnv.meterInput, 0, 0);
+          if (!audioEnv.gainUIInput) audioEnv.gainUIInput = new _MeterNode__WEBPACK_IMPORTED_MODULE_19__["GainUI"]($("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
+          audioEnv.gainUIInput.value = 0;
+          if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
+          audioEnv.meterInput.connect(audioEnv.splitterInput, 0, 0);
+          if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
+          if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
+          audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
+          if (!audioEnv.destination) {
+            audioEnv.destination = audioEnv.audioCtx.destination;
+            /*
+            if (supportMediaStreamDestination) {
+                audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
+                const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
+                if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
+                else (audio as HTMLAudioElement).src = URL.createObjectURL(audioEnv.destination.stream);
+            } else {
+                audioEnv.destination = audioEnv.audioCtx.destination;
+            }
+            */
+            audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
+            audioEnv.destination.channelInterpretation = "discrete";
+          }
+          return _context13.abrupt("return", audioEnv);
+        case 24:
+        case "end":
+          return _context13.stop();
       }
     }, _callee13);
   }));
@@ -36323,61 +36274,59 @@ var initEditor = /*#__PURE__*/function () {
   var _ref14 = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.mark(function _callee14(faust) {
     var code, polycode, monaco, _yield$faustLangRegis, faustLang, providers, saveCode, editor, showDoc;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default.a.wrap(function _callee14$(_context14) {
-      while (1) {
-        switch (_context14.prev = _context14.next) {
-          case 0:
-            code = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;"; // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            polycode = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {\n    freq = hslider(\"freq\", 440, 40, 8000, 1);\n    gain = hslider(\"gain\", 0.5, 0, 1, 0.01);\n    gate = button(\"gate\");\n};\neffect = dm.freeverb_demo;";
-            _context14.next = 4;
-            return __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.t.bind(null, /*! monaco-editor/esm/vs/editor/editor.api */ "./include-loader!./node_modules/monaco-editor/esm/vs/editor/editor.api.js", 7));
-          case 4:
-            monaco = _context14.sent;
-            _context14.next = 7;
-            return Object(_monaco_faust_register__WEBPACK_IMPORTED_MODULE_21__["faustLangRegister"])(monaco, faust);
-          case 7:
-            _yield$faustLangRegis = _context14.sent;
-            faustLang = _yield$faustLangRegis.faustLang;
-            providers = _yield$faustLangRegis.providers;
-            saveCode = false;
-            try {
-              saveCode = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params")).saveCode;
-            } catch (_unused) {} // eslint-disable-line no-empty
-            editor = monaco.editor.create($("#editor")[0], {
-              value: saveCode ? _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_code") || code : code,
-              language: "faust",
-              theme: "vs-dark",
-              dragAndDrop: true,
-              mouseWheelZoom: true,
-              wordWrap: "on"
-            });
-            editor.onKeyDown(e => {
-              if (e.ctrlKey && e.browserEvent.key === "d") {
-                e.stopPropagation();
-                e.preventDefault();
-                showDoc();
-              }
-            });
-            showDoc = () => {
-              var matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
-              if (matched) {
-                var prefix = matched.nameArray.slice();
-                prefix.pop();
-                var doc = matched.doc;
-                $("#a-docs").attr("href", "".concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["docSections"][prefix.toString().slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase()))[0].click();
-                return;
-              }
-              $("#a-docs").attr("href", _documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"])[0].click();
-            };
-            $("#btn-docs").off("click").on("click", showDoc);
-            $(window).on("resize", () => editor.layout());
-            return _context14.abrupt("return", {
-              editor,
-              monaco
-            });
-          case 18:
-          case "end":
-            return _context14.stop();
-        }
+      while (1) switch (_context14.prev = _context14.next) {
+        case 0:
+          code = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;"; // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          polycode = "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {\n    freq = hslider(\"freq\", 440, 40, 8000, 1);\n    gain = hslider(\"gain\", 0.5, 0, 1, 0.01);\n    gate = button(\"gate\");\n};\neffect = dm.freeverb_demo;";
+          _context14.next = 4;
+          return __webpack_require__.e(/*! import() */ 0).then(__webpack_require__.t.bind(null, /*! monaco-editor/esm/vs/editor/editor.api */ "./include-loader!./node_modules/monaco-editor/esm/vs/editor/editor.api.js", 7));
+        case 4:
+          monaco = _context14.sent;
+          _context14.next = 7;
+          return Object(_monaco_faust_register__WEBPACK_IMPORTED_MODULE_21__["faustLangRegister"])(monaco, faust);
+        case 7:
+          _yield$faustLangRegis = _context14.sent;
+          faustLang = _yield$faustLangRegis.faustLang;
+          providers = _yield$faustLangRegis.providers;
+          saveCode = false;
+          try {
+            saveCode = JSON.parse(_utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_params")).saveCode;
+          } catch (_unused) {} // eslint-disable-line no-empty
+          editor = monaco.editor.create($("#editor")[0], {
+            value: saveCode ? _utils__WEBPACK_IMPORTED_MODULE_24__["safeStorage"].getItem("faust_editor_code") || code : code,
+            language: "faust",
+            theme: "vs-dark",
+            dragAndDrop: true,
+            mouseWheelZoom: true,
+            wordWrap: "on"
+          });
+          editor.onKeyDown(e => {
+            if (e.ctrlKey && e.browserEvent.key === "d") {
+              e.stopPropagation();
+              e.preventDefault();
+              showDoc();
+            }
+          });
+          showDoc = () => {
+            var matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
+            if (matched) {
+              var prefix = matched.nameArray.slice();
+              prefix.pop();
+              var doc = matched.doc;
+              $("#a-docs").attr("href", "".concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"], "/").concat(_documentation__WEBPACK_IMPORTED_MODULE_23__["docSections"][prefix.toString().slice(0, 2)], "/#").concat(prefix.join(".")).concat(doc.name.replace(/[[\]|]/g, "").toLowerCase()))[0].click();
+              return;
+            }
+            $("#a-docs").attr("href", _documentation__WEBPACK_IMPORTED_MODULE_23__["faustDocURL"])[0].click();
+          };
+          $("#btn-docs").off("click").on("click", showDoc);
+          $(window).on("resize", () => editor.layout());
+          return _context14.abrupt("return", {
+            editor,
+            monaco
+          });
+        case 18:
+        case "end":
+          return _context14.stop();
       }
     }, _callee14);
   }));
@@ -36409,31 +36358,29 @@ var faustLangRegister = /*#__PURE__*/function () {
   var _ref = _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0___default()( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.mark(function _callee(monacoEditor, faust) {
     var faustLang, providers;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default.a.wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return Promise.all(/*! import() */[__webpack_require__.e(0), __webpack_require__.e(1)]).then(__webpack_require__.bind(null, /*! ./FaustLang */ "./src/monaco-faust/FaustLang.ts"));
-          case 2:
-            faustLang = _context.sent;
-            monacoEditor.languages.register(faustLang.language);
-            monacoEditor.languages.setLanguageConfiguration("faust", faustLang.config);
-            monacoEditor.editor.defineTheme("vs-dark", faustLang.theme);
-            _context.next = 8;
-            return faustLang.getProviders(faust);
-          case 8:
-            providers = _context.sent;
-            monacoEditor.languages.registerHoverProvider("faust", providers.hoverProvider);
-            monacoEditor.languages.setMonarchTokensProvider("faust", providers.tokensProvider);
-            monacoEditor.languages.registerCompletionItemProvider("faust", providers.completionItemProvider);
-            return _context.abrupt("return", {
-              providers,
-              faustLang
-            });
-          case 13:
-          case "end":
-            return _context.stop();
-        }
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return Promise.all(/*! import() */[__webpack_require__.e(0), __webpack_require__.e(1)]).then(__webpack_require__.bind(null, /*! ./FaustLang */ "./src/monaco-faust/FaustLang.ts"));
+        case 2:
+          faustLang = _context.sent;
+          monacoEditor.languages.register(faustLang.language);
+          monacoEditor.languages.setLanguageConfiguration("faust", faustLang.config);
+          monacoEditor.editor.defineTheme("vs-dark", faustLang.theme);
+          _context.next = 8;
+          return faustLang.getProviders(faust);
+        case 8:
+          providers = _context.sent;
+          monacoEditor.languages.registerHoverProvider("faust", providers.hoverProvider);
+          monacoEditor.languages.setMonarchTokensProvider("faust", providers.tokensProvider);
+          monacoEditor.languages.registerCompletionItemProvider("faust", providers.completionItemProvider);
+          return _context.abrupt("return", {
+            providers,
+            faustLang
+          });
+        case 13:
+        case "end":
+          return _context.stop();
       }
     }, _callee);
   }));
