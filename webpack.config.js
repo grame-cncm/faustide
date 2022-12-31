@@ -9,6 +9,10 @@ const VERSION = require("./src/version");
 const config = {
   entry: './src/index.ts',
   resolve: {
+    fallback: {
+      "fs": false,
+      "path": false
+    },
     extensions: ['.ts', '.js']
   },
   output: {
@@ -17,9 +21,6 @@ const config = {
     filename: "index.js"
   },
   devtool: 'source-map',
-  node: {
-    fs: 'empty'
-  },
   module: {
     rules: [{
         test: /\.(ts|js)x?$/,
@@ -45,15 +46,10 @@ const config = {
       },
       {
         test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'assets/',
-              publicPath: 'assets/'
-            }
-          }
-        ]
+        type: 'asset',
+        generator: {
+            filename: 'assets/[hash][ext][query]'
+        }
       },
       {
         test: /\.js$/,
@@ -65,12 +61,14 @@ const config = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new CopyWebpackPlugin([
-      { context: './src/static', from: './', to: './', globOptions: { ignore: ['**/.DS_Store'] } },
-      { from: './src/monaco-faust/primitives.lib', to: './' },
-      { from: './node_modules/faust2webaudio/dist/libfaust-wasm.*', to: './', flatten: true },
-      { from: './node_modules/@shren/faust-ui/dist/index.*', to: './faust-ui/', flatten: true }
-    ]),
+    new CopyWebpackPlugin({
+      patterns: [
+        { context: './src/static', from: './', to: './', globOptions: { ignore: ['**/.DS_Store'] } },
+        { from: './src/monaco-faust/primitives.lib', to: './' },
+        { from: './node_modules/faust2webaudio/dist/libfaust-wasm.*', to: './[name][ext]' },
+        { from: './node_modules/@shren/faust-ui/dist/index.*', to: './faust-ui/[name][ext]' }
+      ]
+    }),
     new MonacoWebpackPlugin({
       output: 'js',
       languages: []

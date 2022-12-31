@@ -13,7 +13,7 @@
 // snippets
 // indexDB
 
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+import * as monaco from "monaco-editor";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
@@ -1817,7 +1817,7 @@ process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0
     gate = button("gate");
 };
 effect = dm.freeverb_demo;`;
-    const monaco = await import("monaco-editor/esm/vs/editor/editor.api");
+    const monaco = await import("monaco-editor");
     const { faustLang, providers } = await faustLangRegister(monaco, faust);
     let saveCode = false;
     try {
