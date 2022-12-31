@@ -30999,7 +30999,7 @@ module.exports = welch
 /*! exports provided: name, version, description, main, private, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.87\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
+module.exports = JSON.parse("{\"name\":\"fausteditorweb\",\"version\":\"1.0.88\",\"description\":\"Faust Editor\",\"main\":\"src/index.ts\",\"private\":true,\"scripts\":{\"prebuild\":\"node ./src/listEx.js\",\"build\":\"webpack --mode development\",\"serve\":\"luvi -p 8000 -n\",\"serve-docs\":\"luvi -r docs -p 8001 -n\",\"dist\":\"npm run prebuild && webpack --mode production\",\"test-eslint\":\"eslint -c .eslintrc.json src\",\"test-stylelint\":\"stylelint src/**/*.scss\",\"test\":\"run-s -s test-eslint test-stylelint\",\"publish\":\"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs\",\"version\":\"npm run build\"},\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/grame-cncm/faustide.git\"},\"keywords\":[\"Faust\",\"WebAudio\",\"WebAssembly\"],\"author\":\"Grame-CNCM\",\"license\":\"GPL-3.0-or-later\",\"bugs\":{\"url\":\"https://github.com/grame-cncm/faustide/issues\"},\"homepage\":\"https://github.com/grame-cncm/faustide#readme\",\"devDependencies\":{\"@babel/core\":\"^7.18.9\",\"@babel/plugin-proposal-class-properties\":\"^7.18.6\",\"@babel/plugin-transform-runtime\":\"^7.18.9\",\"@babel/preset-env\":\"^7.18.9\",\"@babel/preset-typescript\":\"^7.18.6\",\"@babel/runtime\":\"^7.18.9\",\"@fortawesome/fontawesome-free\":\"^5.15.3\",\"@shren/faust-ui\":\"^1.1.1\",\"@types/bootstrap\":\"^4.6.0\",\"@types/jquery\":\"^3.5.5\",\"@types/qrcode\":\"^1.4.0\",\"@types/wavesurfer.js\":\"^3.3.2\",\"@typescript-eslint/eslint-plugin\":\"^2.34.0\",\"@typescript-eslint/parser\":\"^2.34.0\",\"babel-loader\":\"^8.2.2\",\"bootstrap\":\"^4.6.0\",\"clean-webpack-plugin\":\"^3.0.0\",\"copy-webpack-plugin\":\"^5.1.2\",\"css-loader\":\"^5.2.5\",\"directory-tree\":\"^2.2.7\",\"eslint\":\"^6.8.0\",\"eslint-config-airbnb-base\":\"^14.2.1\",\"eslint-plugin-import\":\"^2.26.0\",\"faust2webaudio\":\"github:grame-cncm/faust2webaudio\",\"file-loader\":\"^5.1.0\",\"jquery\":\"^3.6.0\",\"jszip\":\"^3.10.0\",\"kissfft-js\":\"^0.1.8\",\"luvi\":\"^5.2.0\",\"monaco-editor\":\"^0.20.0\",\"monaco-editor-webpack-plugin\":\"^1.9.1\",\"npm-run-all\":\"^4.1.5\",\"popper.js\":\"^1.16.1\",\"qrcode\":\"^1.5.1\",\"sass\":\"^1.54.0\",\"sass-loader\":\"^10.3.1\",\"source-map-loader\":\"^0.2.4\",\"style-loader\":\"^1.3.0\",\"stylelint\":\"^13.13.1\",\"stylelint-config-recommended\":\"^5.0.0\",\"typescript\":\"^3.9.9\",\"wav-encoder\":\"^1.3.0\",\"wavesurfer.js\":\"^3.3.3\",\"webmidi\":\"^2.5.2\",\"webpack\":\"^4.46.0\",\"webpack-cli\":\"^3.3.12\",\"window-function\":\"^2.1.0\",\"workbox-webpack-plugin\":\"^5.1.4\"}}");
 
 /***/ }),
 
@@ -32980,19 +32980,20 @@ class StaticScope {
     var min = t[0][0];
     var max = t[0][0];
     var i = t.length;
+    var samp;
     while (i--) {
       var j = l;
       while (j--) {
-        var s = t[i][j];
-        if (s < min) min = s;else if (s > max) max = s;
+        samp = t[i][j];
+        if (samp < min) min = samp;else if (samp > max) max = samp;
       }
     }
     var yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
     var $0 = 0; // Draw start
     var $1 = l - 1; // Draw End
     var $zerox = 0;
-    if (drawMode === "continuous") {
-      // Stablize
+    if (drawMode === "continuous" && l < sampleRate) {
+      // Stablize when window size < 1 sec
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
@@ -33023,27 +33024,28 @@ class StaticScope {
       ctx.beginPath();
       ctx.strokeStyle = "hsl(".concat(_i * 60, ", 100%, 85%)");
       var maxInStep = void 0;
-      var minInstep = void 0;
+      var minInStep = void 0;
+      var $j = void 0;
+      var $step = void 0;
+      var x = void 0;
+      var y = void 0;
       for (var _j = $0; _j < $1; _j++) {
-        var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j, $, l); // True index
-        var samp = t[_i][$j];
-        var $step = (_j - $0) % step;
+        $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j, $, l); // True index
+        samp = t[_i][$j];
+        $step = (_j - $0) % step;
         if ($step === 0) {
           maxInStep = samp;
-          minInstep = samp;
+          minInStep = samp;
+        } else {
+          if (samp > maxInStep) maxInStep = samp;
+          if (samp < minInStep) minInStep = samp;
         }
-        if ($step !== step - 1) {
-          if ($step !== 0) {
-            if (samp > maxInStep) maxInStep = samp;
-            if (samp < minInstep) minInstep = samp;
-          }
-          continue;
-        }
-        var x = (_j - $0) * gridX + left;
-        var y = hCh * (_i + 0.5 - maxInStep / yFactor * 0.5);
+        if ($step !== step - 1) continue;
+        x = (_j - $0) * gridX + left;
+        y = hCh * (_i + 0.5 - maxInStep / yFactor * 0.5);
         if (_j === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
-        if (minInstep !== maxInStep) {
-          y = hCh * (_i + 0.5 - minInstep / yFactor * 0.5);
+        if (minInStep !== maxInStep) {
+          y = hCh * (_i + 0.5 - minInStep / yFactor * 0.5);
           ctx.lineTo(x, y);
         }
       }
@@ -33080,19 +33082,20 @@ class StaticScope {
     var min = t[0][0];
     var max = t[0][0];
     var i = t.length;
+    var samp;
     while (i--) {
       var j = l;
       while (j--) {
-        var s = t[i][j];
-        if (s < min) min = s;else if (s > max) max = s;
+        samp = t[i][j];
+        if (samp < min) min = samp;else if (samp > max) max = samp;
       }
     }
     var yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
     var $0 = 0; // Draw start
     var $1 = l - 1; // Draw End
     var $zerox = 0;
-    if (drawMode === "continuous") {
-      // Stablize
+    if (drawMode === "continuous" && l < sampleRate) {
+      // Stablize when window size < 1 sec
       var thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
       var period = sampleRate / freqEstimated;
       var times = Math.floor(l / period) - 1;
@@ -33124,23 +33127,24 @@ class StaticScope {
       ctx.strokeStyle = t.length === 1 ? "white" : "hsl(".concat(_i3 * 60, ", 100%, 85%)");
       var maxInStep = void 0;
       var minInStep = void 0;
+      var $j = void 0;
+      var $step = void 0;
+      var x = void 0;
+      var y = void 0;
       for (var _j2 = $0; _j2 < $1; _j2++) {
-        var $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j2, $, l);
-        var samp = t[_i3][$j];
-        var $step = (_j2 - $0) % step;
+        $j = Object(_utils__WEBPACK_IMPORTED_MODULE_1__["wrap"])(_j2, $, l);
+        samp = t[_i3][$j];
+        $step = (_j2 - $0) % step;
         if ($step === 0) {
           maxInStep = samp;
           minInStep = samp;
+        } else {
+          if (samp > maxInStep) maxInStep = samp;
+          if (samp < minInStep) minInStep = samp;
         }
-        if ($step !== step - 1) {
-          if ($step !== 0) {
-            if (samp > maxInStep) maxInStep = samp;
-            if (samp < minInStep) minInStep = samp;
-          }
-          continue;
-        }
-        var x = (_j2 - $0) * gridX + left;
-        var y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
+        if ($step !== step - 1) continue;
+        x = (_j2 - $0) * gridX + left;
+        y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
         if (_j2 === $0) ctx.moveTo(x, y);else ctx.lineTo(x, y);
         if (minInStep !== maxInStep) {
           y = (h - bottom) * (0.5 - minInStep / yFactor * 0.5);
