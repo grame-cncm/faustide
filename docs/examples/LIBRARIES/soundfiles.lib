@@ -1,5 +1,8 @@
 //#################################### soundfiles.lib ########################################
 // A library to handle soundfiles in Faust. Its official prefix is `so`.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/soundfiles.lib>
 //########################################################################################
 
 /************************************************************************
@@ -34,14 +37,14 @@ closed source license or any other license if you decide so.
 ************************************************************************
 ************************************************************************/
 
-declare name "Faust Soundfile Library";
-declare version "0.7";
-
 ba = library("basics.lib");
 ma = library("maths.lib");
 si = library("signals.lib");
 ro = library("routes.lib");
 it = library("interpolators.lib");
+
+declare name "Faust Soundfile Library";
+declare version "0.7";
 
 //=======================================================================
 // Utility functions added in a 'super' environment (to test the idea...)
@@ -97,7 +100,7 @@ super = environment {
 // #### Usage
 //
 // ```
-// loop(sf, part)
+// loop(sf, part) : si.bus(outputs(sf))
 // ```
 //
 // Where:
@@ -116,7 +119,7 @@ loop(sf, part) = super.loop(sf, part);
 // #### Usage
 //
 // ```
-// loop_speed(sf, part, speed)
+// loop_speed(sf, part, speed) : si.bus(outputs(sf))
 // ```
 //
 // Where:
@@ -136,7 +139,7 @@ loop_speed(sf, part, speed) = super.loop_speed(sf, part, speed);
 // #### Usage
 //
 // ```
-// loop_speed_level(sf, part, speed, level)
+// loop_speed_level(sf, part, speed, level) : si.bus(outputs(sf))
 // ```
 //
 // Where:

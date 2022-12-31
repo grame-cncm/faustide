@@ -1,5 +1,8 @@
 //#################################### reducemaps.lib ########################################
 // A library to handle reduce/map kind of operation in Faust. Its official prefix is `rm`.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/reducemaps.lib>
 //##############################################################################################
 
 /************************************************************************
@@ -34,13 +37,13 @@ closed source license or any other license if you decide so.
 ************************************************************************
 ************************************************************************/
 
+ba = library("basics.lib");
+
 declare name "Reduce Library";
 declare author "Yann Orlarey (orlarey at grame.fr)";
 declare copyright "Grame";
 declare version "0.1";
 declare license "LGPL with exception"; 
-
-ba = library("basics.lib");
 
 //---------------------------------------------------------------
 // Provides various operations on block of samples
@@ -55,9 +58,9 @@ ba = library("basics.lib");
 
 
 //--------------------`(rm.)reduce`------------------------------
-// Fold-like high order function. Apply a binary operation <op> 
-// on a block of <n> consecutive samples of a signal <x>. 
-// For example : reduce(max,128) will compute the maximun of each
+// Fold-like high order function. Apply a binary operation `op`
+// on a block of consecutive samples of a signal `x`. 
+// For example: `reduce(max,128)` will compute the maximun of each
 // block of 128 samples. Please note that the resulting
 // value, while produced continuously, will be constant for 
 // the duration of a block. A new value is only produced 
@@ -81,9 +84,9 @@ reduce(op, n, x) = compute ~ (_,_,_) : (!,!,_)
 
 
 //--------------------`(rm.)reducemap`---------------------------
-// Like reduce but a foo function is applied to the result. From
-// a mathematical point of view :
-// reducemap(op,foo,n) is equivalent to reduce(op,n):foo
+// Like `reduce` but a `foo` function is applied to the result. From
+// a mathematical point of view:
+// `reducemap(op,foo,n)` is equivalent to `reduce(op,n):foo`
 // but more efficient.
 //
 // #### Usage

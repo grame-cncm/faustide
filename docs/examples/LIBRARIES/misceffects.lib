@@ -1,5 +1,8 @@
 //################################## misceffects.lib ##########################################
 // This library contains a collection of audio effects. Its official prefix is `ef`.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/misceffects.lib>
 //########################################################################################
 
 /************************************************************************
@@ -43,7 +46,7 @@ fi = library("filters.lib");
 ef = library("misceffects.lib"); // for compatible copy/paste out of this file
 
 declare name "Misc Effects Library";
-declare version "2.0"; // TODO to check
+declare version "2.0"; 
 
 //########################################################################################
 /************************************************************************
@@ -65,7 +68,7 @@ Michon and Julius O. Smith III, and are released under the
 
 //---------------------`(ef.)cubicnl`-----------------------
 // Cubic nonlinearity distortion.
-// `cubicnl` is a standard Faust library.
+// `cubicnl` is a standard Faust function.
 //
 // #### Usage:
 //
@@ -176,7 +179,7 @@ gate_gain_mono(thresh,att,hold,rel,x) = x : extendedrawgate : an.amp_follower_ar
 //
 // Example based on measured Celestion G12 (12" speaker):
 //
-// `speakerbp` is a standard Faust function
+// `speakerbp` is a standard Faust function.
 //
 // #### Usage
 //
@@ -225,6 +228,7 @@ speakerbp(f1,f2) = fi.dcblockerat(f1) : fi.dcblockerat(f1) : fi.lowpass(4,f2);
 //------------------------------------------------------------
 // TODO: perhaps this should be moved to physmodels.lib?
 // [JOS: I vote yes when there is a piano model in physmodels.lib.]
+
 piano_dispersion_filter(M,B,f0) = -Df0*M,seq(i,M,fi.tf1(a1,1,a1))
 with {
  a1 = (1-D)/(1+D); // By Eq. 3, have D >= 0, hence a1 >= 0 also
@@ -289,7 +293,7 @@ with {
 // #### Usage
 //
 // ```
-// bus(4*N) : mesh_square(N) : bus(4*N);
+// bus(4*N) : mesh_square(N) : bus(4*N)
 // ```
 //
 // Where:
@@ -302,9 +306,9 @@ with {
 //
 // #### Signal Order In and Out
 //
-// The mesh is constructed recursively using 2x2 embeddings.  Thus,
+// The mesh is constructed recursively using 2x2 embeddings. Thus,
 // the top level of `mesh_square(M)` is a block 2x2 mesh, where each
-// block is a `mesh(M/2)`.  Let these blocks be numbered 1,2,3,4 in the
+// block is a `mesh(M/2)`. Let these blocks be numbered 1,2,3,4 in the
 // geometry NW,NE,SW,SE, i.e., as
 //         1 2
 //         3 4
@@ -400,7 +404,7 @@ with {
 };
 
 //--------------------`(ef.)reverseEchoN(nChans,delay)`-------------------
-// Reverse echo effect
+// Reverse echo effect.
 //
 // #### Usage
 //
@@ -410,7 +414,7 @@ with {
 //
 // Where:
 //
-// *     `N`: Number of channels desired (1 or more)
+// *     `N`: Number of output channels desired (1 or more)
 // * `delay`: echo delay (integer power of 2)
 //
 // #### Demo
@@ -427,7 +431,7 @@ with {
 reverseEchoN(N,delMax) = _<: par(i,N,ef.reverseDelayRamped(delMax,i/N));
 
 //-------------------`(ef.)reverseDelayRamped(delay,phase)`------------------
-// Reverse delay with amplitude ramp
+// Reverse delay with amplitude ramp.
 //
 // #### Usage
 //
@@ -443,7 +447,7 @@ reverseEchoN(N,delMax) = _<: par(i,N,ef.reverseDelayRamped(delMax,i/N));
 // #### Demo
 //
 // ```
-// _ : dm.reverseEchoN(N) : _,_
+// _ : ef.reverseDelayRamped(32,0.6) : _,_
 // ```
 //
 //------------------------------------------------------------
@@ -451,11 +455,11 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
   rampGain = 4 * (del/delMax) * (1 - del/delMax); // suppress click when delay-line wraps around
   delOffset = int(floor(0.5 + delMax * max(0,min(0.999999,phs)))); // starting point in delay line
   startPulse = (1-1') * delOffset;
-  del = int(startPulse : +  ~ +(2)) & (delMax-1);
+  del = int(startPulse : + ~ +(2)) & (delMax-1);
 };
 
 //-------------------`(ef.)uniformPanToStereo(nChans)`------------------
-// Pan nChans channels to the stereo field, spread uniformly left to right
+// Pan nChans channels to the stereo field, spread uniformly left to right.
 //
 // #### Usage
 //
@@ -470,7 +474,7 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
 // #### Demo
 //
 // ```
-// _ : dm.reverseEchoN(N) : _,_
+// _,_,_ : ef.uniformPanToStereo(3) : _,_
 // ```
 //
 //------------------------------------------------------------
@@ -520,8 +524,7 @@ closed source license or any other license if you decide so.
 
 //----------`(ef.)echo`----------
 // A simple echo effect.
-//
-// `echo` is a standard Faust function
+// `echo` is a standard Faust function.
 //
 // #### Usage
 //
@@ -535,7 +538,8 @@ closed source license or any other license if you decide so.
 // * `duration`: the echo duration in seconds
 // * `feedback`: the feedback coefficient
 //----------------------------------------------------
-// TODO: author RM
+declare echo author "Romain Michon";
+
 echo(maxDuration,duration,feedback) = +~de.delay(maxDel,del)*feedback
 with{
   maxDel = ma.SR*maxDuration;
@@ -576,9 +580,9 @@ with {
 // considered as "deprecated".
 //////////////////////////////////////////////////////////////////////////////////////////
 
-echo1s  = vgroup("echo  1000", +~(de.delay(65536,   int(hslider("millisecond", 0, 0,	1000, 0.10)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
-echo2s  = vgroup("echo  2000", +~(de.delay(131072,  int(hslider("millisecond", 0, 0,	2000, 0.25)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
-echo5s  = vgroup("echo  5000", +~(de.delay(262144,  int(hslider("millisecond", 0, 0,	5000, 0.50)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
-echo10s = vgroup("echo 10000", +~(de.delay(524288,  int(hslider("millisecond", 0, 0,  10000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
-echo21s = vgroup("echo 21000", +~(de.delay(1048576, int(hslider("millisecond", 0, 0,  21000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
-echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0, 0,  43000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0,  100, 0.1)/100.0)));
+echo1s  = vgroup("echo 1000", +~(de.delay(65536, int(hslider("millisecond", 0, 0, 1000, 0.10)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+echo2s  = vgroup("echo 2000", +~(de.delay(131072, int(hslider("millisecond", 0, 0, 2000, 0.25)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+echo5s  = vgroup("echo 5000", +~(de.delay(262144, int(hslider("millisecond", 0, 0, 5000, 0.50)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+echo10s = vgroup("echo 10000", +~(de.delay(524288, int(hslider("millisecond", 0, 0, 10000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+echo21s = vgroup("echo 21000", +~(de.delay(1048576, int(hslider("millisecond", 0, 0, 21000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0, 0, 43000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));

@@ -1,5 +1,8 @@
 //################################### maths.lib ##########################################
 //  Mathematic library for Faust. Its official prefix is `ma`.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/maths.lib>
 //########################################################################################
 // Some functions are implemented as Faust foreign functions of `math.h` functions
 // that are not part of Faust's primitives. Defines also various constants and several
@@ -46,23 +49,22 @@ closed source license or any other license if you decide so.
 ************************************************************************
 ************************************************************************/
 
-declare name "Faust Math Library";
-declare version "2.3";
-declare author "GRAME";
-declare copyright "GRAME";
-declare license "LGPL with exception";
-
 // This library contains platform specific constants 
 pl = library("platform.lib");
 ma = library("maths.lib"); // for compatible copy/paste out of this file
+
+declare name "Faust Math Library";
+declare version "2.5";
+declare author "GRAME";
+declare copyright "GRAME";
+declare license "LGPL with exception";
 
 //=============================Functions Reference========================================
 //========================================================================================
 
 
 //---------------------------------`(ma.)SR`---------------------------------------
-// Current sampling rate. Constant during
-// program execution.
+// Current sampling rate given at init time. Constant during program execution.
 //
 // #### Usage
 //
@@ -72,9 +74,19 @@ ma = library("maths.lib"); // for compatible copy/paste out of this file
 //-----------------------------------------------------------------------------
 SR = pl.SR;
 
+//---------------------------------`(ma.)T`---------------------------------------
+// Current sampling rate given at init time. Constant during program execution.
+//
+// #### Usage
+//
+// ```
+// T : _
+// ```
+//-----------------------------------------------------------------------------
+T = 1.0 / SR;
 
 //---------------------------------`(ma.)BS`---------------------------------------
-// Current block-size. Can change during the execution.
+// Current block-size. Can change during the execution at each block.
 //
 // #### Usage
 //
@@ -82,7 +94,7 @@ SR = pl.SR;
 // BS : _
 // ```
 //-----------------------------------------------------------------------------
-BS = fvariable(int count, <math.h>);
+BS = pl.BS;
 
 
 //---------------------------------`(ma.)PI`---------------------------------------
@@ -121,6 +133,7 @@ E = 2.71828182845904523536;
 singleprecision EPSILON = 1.192092896e-07;
 doubleprecision EPSILON = 2.2204460492503131e-016;
 quadprecision EPSILON = 2.2204460492503131e-016;
+fixedpointprecision EPSILON = 2.2204460492503131e-016;
 
 
 //---------------------------------`(ma.)MIN`---------------------------------------
@@ -135,21 +148,25 @@ quadprecision EPSILON = 2.2204460492503131e-016;
 singleprecision MIN = 1.175494351e-38;
 doubleprecision MIN = 2.2250738585072014e-308;
 quadprecision MIN = 2.2250738585072014e-308;
+fixedpointprecision MIN = 2.2250738585072014e-308;
 
 
-//---------------------------------`(ma.)INFINITY`------------------------------
-// Constant INFINITY in simple/double/quad precision (maximal positive value).
+//---------------------------------`(ma.)MAX`------------------------------
+// Constant MAX in simple/double/quad precision (maximal positive value).
 //
 // #### Usage
 //
 // ```
-// INFINITY : _
+// MAX : _
 // ```
 //-----------------------------------------------------------------------------
-singleprecision INFINITY = 3.402823466e+38;
-doubleprecision INFINITY = 1.7976931348623158e+308;
-quadprecision INFINITY = 1.7976931348623158e+308;
+singleprecision MAX = 3.402823466e+38;
+doubleprecision MAX = 1.7976931348623158e+308;
+quadprecision MAX = 1.7976931348623158e+308;
+fixedpointprecision MAX = 1.7976931348623158e+308;
 
+// Obsolete, kept for compatibility reasons
+INFINITY = MAX; 
 
 //---------------------------------`(ma.)FTZ`---------------------------------------
 // Flush to zero: force samples under the "maximum subnormal number"
@@ -169,6 +186,18 @@ quadprecision INFINITY = 1.7976931348623158e+308;
 FTZ(x) = x * (abs(x) > MIN);
 
 
+//---------------------------------`(ma.)copysign`---------------------------------------
+// Changes the sign of x (first input) to that of y (second input).
+//
+// #### Usage
+//
+// ```
+// _,_ : copysign : _
+// ```
+//-----------------------------------------------------------------------------
+copysign = ffunction(float copysignf|copysign|copysignl (float, float), <math.h>,"");
+
+
 //---------------------------------`(ma.)neg`---------------------------------------
 // Invert the sign (-x) of a signal.
 //
@@ -183,6 +212,12 @@ neg(x) = -x;
 
 //-------`(ma.)sub(x,y)`------------------
 // Subtract `x` and `y`.
+//
+// #### Usage
+//
+// ```
+// _,_ : sub : _
+// ```
 //------------------------------
 sub(x,y) = y-x;
 
@@ -552,6 +587,7 @@ np2 = -(1) <: >>(1)|_ <: >>(2)|_ <: >>(4)|_ <: >>(8)|_ <: >>(16)|_ : +(1);
 //------------------------------------------------------------------------------
 frac(n) = n - floor(n);
 decimal = frac;
+
 // NOTE: decimal does the same thing as frac but using floor instead. JOS uses frac a lot
 // in filters.lib so we decided to keep that one... decimal is declared though for
 // backward compatibility.
@@ -564,15 +600,15 @@ decimal = frac;
 // #### Usage
 //
 // ```
-// modulo(x,N) : _
+// modulo(x,y) : _
 // ```
 //
 // Where:
 //
 // * `x`: the numerator
-// * `N`: the denominator
+// * `y`: the denominator
 //------------------------------------------------------------------------------
-modulo(x,N) = (x % N + N) % N;
+modulo(x,y) = (x % y + y) % y;
 
 
 //---------------`(ma.)isnan`----------------
@@ -612,17 +648,17 @@ nextafter = ffunction(float nextafter(float, float),<math.h>,"");
 
 
 //---------------------------`(ma.)chebychev`-------------------------------
-// Chebychev transformation of order n.
+// Chebychev transformation of order N.
 //
 // #### Usage
 //
 // ```
-// _ : chebychev(n) : _
+// _ : chebychev(N) : _
 // ```
 //
 // Where:
 //
-// * `n`: the order of the polynomial
+// * `N`: the order of the polynomial, a constant numerical expression
 //
 // #### Semantics
 //
@@ -698,7 +734,7 @@ signum(x) = (x>0)-(x<0);
 // #### Usage
 //
 // ```
-// 2^nextpow2(n)
+// 2^nextpow2(n) : _
 // ```
 // Useful for allocating delay lines, e.g., 
 // ```

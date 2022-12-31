@@ -20,7 +20,7 @@
 // * [Bowed String Instruments](#bowed-string-instruments): parts and models
 // specific to bowed string instruments (e.g., bows, bridges, violins, etc.).
 // * [Wind Instrument](#wind-instruments): parts and models specific to wind
-// string instruments (e.g., reeds, mouthpieces, flutes, clarinets, etc.).
+// instruments (e.g., reeds, mouthpieces, flutes, clarinets, etc.).
 // * [Exciters](#exciters): pluck generators, "blowers", etc.
 // * [Modal Percussions](#modal-percussions): percussion instruments based on
 // modal models.
@@ -30,14 +30,19 @@
 // the previous category (e.g., nonlinear filters, etc.).
 //
 // This library is part of the Faust Physical Modeling ToolKit.
-// More information on how to use this library can be found on this page:
-// <https://ccrma.stanford.edu/~rmichon/pmFaust>. Tutorials on how to make
+// More information on how to use this library can be found on [this page](https://ccrma.stanford.edu/~rmichon/pmFaust). Tutorials on how to make
 // physical models of musical instruments using Faust can be found
 // [here](https://ccrma.stanford.edu/~rmichon/faustTutorials/#making-physical-models-of-musical-instruments-with-faust) as well.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/physmodels.lib>
 //########################################################################################
 // Authors: Romain Michon, Pierre-Amaury Grumiaux, and Yann Orlarey
 
 import("stdfaust.lib");
+
+declare name "Faust Physical Models Library";
+declare version "0.1";
 
 /*
 TODO:
@@ -46,7 +51,7 @@ TODO:
 	- When setting pole of filters by hand (e.g. smooth, should adjust pole in function of SR)
 	- Probably need a single resonator function / see how to integrate that with "mode"
 	- Need a non-linear function and see how this can be integrated with modal synthesis
-	- See how bowed modal models could be integarted to this
+	- See how bowed modal models could be integrated to this
 	- Currently still missing keyboard instruments
 	- Currently still missing vocal synth: easy to fix (create a formant filter function)
 	- Real polyphonic instruments should be designated with some kind of prefix (e.g.,
@@ -306,7 +311,7 @@ rTermination(b,c) = (_,_,_,_ : +,_,_ : b) ~ (!,c);
 // #### Usage
 //
 // ```
-// closeIns : chain(...) : 	_,_,_
+// closeIns : chain(...) : _,_,_
 // ```
 //----------------------------------------
 closeIns = 0,0,0;
@@ -847,7 +852,7 @@ with{
 // A simple electric guitar model (without audio effects, of course) with
 // selectable pluck position.
 // This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function. Pitch is changed by
+// by making a polyphonic application out of this function. Pitch is changed by
 // changing the length of the string and not through a finger model.
 //
 // #### Usage
@@ -882,7 +887,7 @@ with{
 // [`elecGuitarModel`](#elecguitarmodel)) implementing an excitation
 // model.
 // This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function.
+// by making a polyphonic application out of this function.
 //
 // #### Usage
 //
@@ -950,7 +955,7 @@ with{
 //-------`(pm.)guitarModel`----------
 // A simple acoustic guitar model with steel strings and selectable excitation
 // position. This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function. Pitch is changed by
+// by making a polyphonic application out of this function. Pitch is changed by
 // changing the length of the string and not through a finger model.
 // WARNING: this function doesn't currently implement a body (just strings and
 // bridge).
@@ -981,7 +986,7 @@ with{
 // A simple acoustic guitar model with steel strings (based on
 // [`guitarModel`](#guitarmodel)) implementing an excitation model.
 // This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function.
+// by making a polyphonic application out of this function.
 //
 // #### Usage
 //
@@ -1031,7 +1036,7 @@ with{
 //-------`(pm.)nylonGuitarModel`----------
 // A simple acoustic guitar model with nylon strings and selectable excitation
 // position. This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function. Pitch is changed by
+// by making a polyphonic application out of this function. Pitch is changed by
 // changing the length of the string and not through a finger model.
 // WARNING: this function doesn't currently implement a body (just strings and
 // bridge).
@@ -1062,7 +1067,7 @@ with{
 // A simple acoustic guitar model with nylon strings (based on
 // [`nylonGuitarModel`](#nylonguitarmodel)) implementing an excitation model.
 // This model implements a single string. Additional strings should be created
-// by making a polyphonic applications out of this function.
+// by making a polyphonic application out of this function.
 //
 // #### Usage
 //
@@ -1478,7 +1483,7 @@ with{
 //-------`(pm.)violinModel`----------
 // Ready-to-use simple violin physical model. This model implements a single
 // string. Additional strings should be created
-// by making a polyphonic applications out of this function. Pitch is changed
+// by making a polyphonic application out of this function. Pitch is changed
 // by changing the length of the string (and not through a finger model).
 //
 // #### Usage
@@ -2481,7 +2486,7 @@ with{
 // * `freq`: the frequency of the bar/tube couple
 // * `strikePosition`: strike position (0-4)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2582,7 +2587,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2619,7 +2624,7 @@ with{
 // English church bell modal model generated by `mesh2faust` from
 // `libraries/modalmodels/englishBell`.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2656,7 +2661,7 @@ with{
 //-------`(pm.)englishBell`----------
 // English church bell modal model.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2679,7 +2684,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2701,7 +2706,7 @@ englishBellModel(50,strikePosition,30,1,3);
 englishBell_ui =
 englishBell(strikePosition,strikeCutoff,strikeSharpness,gain,gate)
 with{
-    strikePosition = nentry("v:englishBell/[0]strikePosition",0,0,4,1);
+    strikePosition = nentry("v:englishBell/[0]strikePosition",0,0,6,1);
     strikeCutoff = hslider("v:englishBell/[1]strikeCutOff",6500,20,20000,1);
     strikeSharpness = hslider("v:englishBell/[2]strikeSharpness",0.5,0.01,5,0.01);
     gain = hslider("v:englishBell/[3]gain",1,0,1,0.01);
@@ -2713,7 +2718,7 @@ with{
 // French church bell modal model generated by `mesh2faust` from
 // `libraries/modalmodels/frenchBell`.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2750,7 +2755,7 @@ with{
 //-------`(pm.)frenchBell`----------
 // French church bell modal model.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2773,7 +2778,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2795,7 +2800,7 @@ frenchBellModel(50,strikePosition,30,1,3);
 frenchBell_ui =
 frenchBell(strikePosition,strikeCutoff,strikeSharpness,gain,gate)
 with{
-    strikePosition = nentry("v:frenchBell/[0]strikePosition",0,0,4,1);
+    strikePosition = nentry("v:frenchBell/[0]strikePosition",0,0,6,1);
     strikeCutoff = hslider("v:frenchBell/[1]strikeCutOff",6500,20,20000,1);
     strikeSharpness = hslider("v:frenchBell/[2]strikeSharpness",0.5,0.01,5,0.01);
     gain = hslider("v:frenchBell/[3]gain",1,0,1,0.01);
@@ -2807,7 +2812,7 @@ with{
 // German church bell modal model generated by `mesh2faust` from
 // `libraries/modalmodels/germanBell`.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2844,7 +2849,7 @@ with{
 //-------`(pm.)germanBell`----------
 // German church bell modal model.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2867,7 +2872,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2889,7 +2894,7 @@ germanBellModel(50,strikePosition,30,1,2.5);
 germanBell_ui =
 germanBell(strikePosition,strikeCutoff,strikeSharpness,gain,gate)
 with{
-    strikePosition = nentry("v:germanBell/[0]strikePosition",0,0,4,1);
+    strikePosition = nentry("v:germanBell/[0]strikePosition",0,0,6,1);
     strikeCutoff = hslider("v:germanBell/[1]strikeCutOff",6500,20,20000,1);
     strikeSharpness = hslider("v:germanBell/[2]strikeSharpness",0.5,0.01,5,0.01);
     gain = hslider("v:germanBell/[3]gain",1,0,1,0.01);
@@ -2901,7 +2906,7 @@ with{
 // Russian church bell modal model generated by `mesh2faust` from
 // `libraries/modalmodels/russianBell`.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2938,7 +2943,7 @@ with{
 //-------`(pm.)russianBell`----------
 // Russian church bell modal model.
 //
-// Modeled after D. Bartocha and . Baron, Influence of Tin Bronze Melting and
+// Modeled after D.Bartocha and Baron, Influence of Tin Bronze Melting and
 // Pouring Parameters on Its Properties and Bell' Tone, Archives of Foundry
 // Engineering, 2016.
 //
@@ -2961,7 +2966,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -2983,7 +2988,7 @@ russianBellModel(50,strikePosition,30,1,3);
 russianBell_ui =
 russianBell(strikePosition,strikeCutoff,strikeSharpness,gain,gate)
 with{
-    strikePosition = nentry("v:russianBell/[0]strikePosition",0,0,4,1);
+    strikePosition = nentry("v:russianBell/[0]strikePosition",0,0,6,1);
     strikeCutoff = hslider("v:russianBell/[1]strikeCutOff",6500,20,20000,1);
     strikeSharpness = hslider("v:russianBell/[2]strikeSharpness",0.5,0.01,5,0.01);
     gain = hslider("v:russianBell/[3]gain",1,0,1,0.01);
@@ -3052,7 +3057,7 @@ with{
 // * `excitation`: the excitation signal
 // * `strikePosition`: strike position (0-6)
 // * `strikeCutoff`: cuttoff frequency of the strike genarator (recommended: ~7000Hz)
-// * `strikeSharpness`: shaarpness of the strike (recommened: ~0.25)
+// * `strikeSharpness`: sharpness of the strike (recommended: ~0.25)
 // * `gain`: gain of the strike (0-1)
 // * `trigger` signal (0: off, 1: on)
 //----------------------------------
@@ -3074,7 +3079,7 @@ standardBellModel(50,strikePosition,30,1,2.5);
 standardBell_ui =
 standardBell(strikePosition,strikeCutoff,strikeSharpness,gain,gate)
 with{
-	strikePosition = nentry("v:standardBell/[0]strikePosition",0,0,4,1);
+	strikePosition = nentry("v:standardBell/[0]strikePosition",0,0,6,1);
 	strikeCutoff = hslider("v:standardBell/[1]strikeCutOff",6500,20,20000,1);
 	strikeSharpness = hslider("v:standardBell/[2]strikeSharpness",0.5,0.01,5,0.01);
 	gain = hslider("v:standardBell/[3]gain",1,0,1,0.01);
@@ -3176,10 +3181,10 @@ maxGenderFreq = (523.25,1046.5);
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 //---------------------------------------------
-// Author: Mike Olsen
+declare voiceGender author "Mike Olsen";
+
 voiceGender(voiceType) = ba.if(voiceType == 0,1,ba.if(voiceType == 3,1,0));
 
 
@@ -3199,7 +3204,8 @@ voiceGender(voiceType) = ba.if(voiceType == 0,1,ba.if(voiceType == 3,1,0));
 // * `freq`: the fundamental frequency of the excitation signal
 // * `gender`: gender of the voice used in the fof filter (0: male, 1: female)
 //---------------------------------------------
-// Author: Mike Olsen
+declare skirtWidthMultiplier author "Mike Olsen";
+
 skirtWidthMultiplier(vowel,freq,gender) = (multMax-multMin)*skirtParam+multMin
 with {
 	nVowels = 5;
@@ -3217,7 +3223,10 @@ with {
 // Autobends the center frequencies of formants 1 and 2 based on
 // the fundamental frequency of the excitation signal and leaves
 // all other formant frequencies unchanged. Ported from `chant-lib`.
-// Reference: <https://ccrma.stanford.edu/~rmichon/chantLib/>.
+//
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~rmichon/chantLib/>.
 //
 // #### Usage
 //
@@ -3229,11 +3238,11 @@ with {
 //
 // * `n`: formant index
 // * `freq`: the fundamental frequency of the excitation signal
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-//		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * input is the center frequency of the corresponding formant
 //---------------------------------------------
-// Author: Mike Olsen
+declare autobendFreq author "Mike Olsen";
+
 autobendFreq(n,freq,voiceType) = autobend(n)
 with {
 	autobend(0) = _ <: ba.if(_ <= freq,freq,_);
@@ -3250,7 +3259,10 @@ with {
 // frequency of the excitation signal. Higher formants are
 // reinforced for higher fundamental frequencies.
 // Ported from `chant-lib`.
-// Reference: <https://ccrma.stanford.edu/~rmichon/chantLib/>.
+//
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~rmichon/chantLib/>.
 //
 // #### Usage
 //
@@ -3264,13 +3276,17 @@ with {
 // * `gender`: the gender of the voice type (0: male, 1: female)
 // * input is the linear amplitude of the formant
 //---------------------------------------------
-// Author: Mike Olsen
+declare vocalEffort author "Mike Olsen";
+
 vocalEffort(freq,gender) = _ <: ba.if(gender == 0,*(3+1.1*(400-freq)/300),*(0.8+1.05*(1000-freq)/1250));
 
 
 //-------------------------`(pm.)fof`--------------------------
 // Function to generate a single Formant-Wave-Function.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
@@ -3286,7 +3302,8 @@ vocalEffort(freq,gender) = _ <: ba.if(gender == 0,*(3+1.1*(400-freq)/300),*(0.8+
 // * `g`: linear scale factor (g=1 gives 0dB amplitude response at fc)
 // * input is an impulse signal to excite filter
 //---------------------------------------------------------
-// Author: Mike Olsen
+declare fof author "Mike Olsen";
+
 fof(fc,bw,sw,g) = _ <: (_',_) : (f * s)
 with {
 	T = 1/ma.SR; 	      	// sample period
@@ -3305,7 +3322,10 @@ with {
 //-------------------------`(pm.)fofSH`-------------------------
 // FOF with sample and hold used on `bw` and a parameter
 // used in the filter-cycling FOF function `fofCycle`.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
@@ -3315,14 +3335,18 @@ with {
 //
 // Where: all parameters same as for [`fof`](#fof)
 //---------------------------------------------------------
-// Author: Mike Olsen
+declare fofSH author "Mike Olsen";
+
 fofSH(fc,bw,a,g) = _ <: (((_,bw):ba.sAndH),((_,a):ba.sAndH),_) : (fc,_,_,g,_') : fof;
 
 
 //----------------------`(pm.)fofCycle`-------------------------
 // FOF implementation where time-varying filter parameter noise is
 // mitigated by using a cycle of `n` sample and hold FOF filters.
-// Reference: <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
+// 
+// #### Reference
+//
+// <https://ccrma.stanford.edu/~mjolsen/pdfs/smc2016_MOlsenFOF.pdf>.
 //
 // #### Usage
 //
@@ -3335,7 +3359,8 @@ fofSH(fc,bw,a,g) = _ <: (((_,bw):ba.sAndH),((_,a):ba.sAndH),_) : (fc,_,_,g,_') :
 // * `n`: the number of FOF filters to cycle through
 // * all other parameters are same as for [`fof`](#fof)
 //---------------------------------------------------------
-// Author: Mike Olsen
+declare fofCycle author "Mike Olsen";
+
 fofCycle(fc,bw,a,g,n) = _ : ba.cycle(n) : par(i,n,fofSH(fc,bw,a,g)) :> _;
 
 
@@ -3355,7 +3380,8 @@ fofCycle(fc,bw,a,g,n) = _ : ba.cycle(n) : par(i,n,fofSH(fc,bw,a,g)) :> _;
 // * `tau`: the desired smoothing time constant in seconds
 // * all other parameters are same as for [`fof`](#fof)
 //---------------------------------------------------------
-// Author: Mike Olsen
+declare fofSmooth author "Mike Olsen";
+
 fofSmooth(fc,bw,sw,g,tau) = fof(fc,bw2,sw2,g)
 with{
     sw2 = sw : si.smooth(ba.tau2pole(tau));
@@ -3389,7 +3415,8 @@ with{
 // * `freq`: fundamental frequency of excitation signal. Used to calculate
 //         rise time of envelope
 //--------------------------------------
-// Author: Mike Olsen
+declare formantFilterFofCycle author "Mike Olsen";
+
 formantFilterFofCycle(voiceType,vowel,nFormants,i,freq) =
 	fofCycle(formantFreq(i),formantBw(i),formantSw(i),formantGain(i),n)
 with{
@@ -3430,7 +3457,8 @@ with{
 // * `freq`: fundamental frequency of excitation signal. Used to calculate
 //         rise time of envelope
 //--------------------------------------
-// Author: Mike Olsen
+declare formantFilterFofSmooth author "Mike Olsen";
+
 formantFilterFofSmooth(voiceType,vowel,nFormants,i,freq) =
 	fofSmooth(formantFreq(i),formantBw(i),formantSw(i),formantGain(i),tau)
 with{
@@ -3461,8 +3489,7 @@ with{
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u)
 // * `nFormants`: number of formant regions in frequency domain, typically 5
 // * `i`: formant index used to index formant data value arrays
@@ -3497,15 +3524,15 @@ with{
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 	 	  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u)
 // * `formantGen`: the specific formant filterbank function
-//                 (i.e. FormantFilterbankBP, FormantFilterbankFof,...)
+//  (i.e. FormantFilterbankBP, FormantFilterbankFof,...)
 // * `freq`: fundamental frequency of excitation signal. Needed for FOF
-//         version to calculate rise time of envelope
+//  version to calculate rise time of envelope
 //--------------------------------------
-// Author: Mike Olsen
+declare formantFilterbank author "Mike Olsen";
+
 formantFilterbank(voiceType,vowel,formantGen,freq) =
 	_ <: par(i,nFormants,formantGen(voiceType,vowel,nFormants,i,freq)) :> _
 with{
@@ -3527,14 +3554,13 @@ with{
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u)
-// * `freq`: the fundamental frequency of the excitation signal. Needed to
-//	     calculate the skirtwidth of the FOF envelopes and for the
-//	     autobendFreq and vocalEffort functions
+// * `freq`: the fundamental frequency of the excitation signal. Needed to calculate the skirtwidth 
+// of the FOF envelopes and for the autobendFreq and vocalEffort functions
 //-------------------------------------
-// Author: Mike Olsen
+declare formantFilterbankFofCycle author "Mike Olsen";
+
 formantFilterbankFofCycle(voiceType,vowel,freq) =
 formantFilterbank(voiceType,vowel,formantFilterFofCycle,freq);
 
@@ -3553,14 +3579,14 @@ formantFilterbank(voiceType,vowel,formantFilterFofCycle,freq);
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u)
 // * `freq`: the fundamental frequency of the excitation signal. Needed to
-//	     calculate the skirtwidth of the FOF envelopes and for the
-//	     autobendFreq and vocalEffort functions
+// calculate the skirtwidth of the FOF envelopes and for the
+// autobendFreq and vocalEffort functions
 //-------------------------------------
-// Author: Mike Olsen
+declare formantFilterbankFofSmooth author "Mike Olsen";
+
 formantFilterbankFofSmooth(voiceType,vowel,freq) =
 formantFilterbank(voiceType,vowel,formantFilterFofSmooth,freq);
 
@@ -3574,16 +3600,14 @@ formantFilterbank(voiceType,vowel,formantFilterFofSmooth,freq);
 // #### Usage
 //
 // ```
-// _ : formantFilterbankBP(voiceType,vowel) : _
+// _ : formantFilterbankBP(voiceType,vowel,freq) : _
 // ```
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u)
-// * `freq`: the fundamental frequency of the excitation signal. Needed
-//	     for the autobendFreq and vocalEffort functions
+// * `freq`: the fundamental frequency of the excitation signal. Needed for the autobendFreq and vocalEffort functions
 //--------------------------------------
 formantFilterbankBP(voiceType,vowel,freq) =
 formantFilterbank(voiceType,vowel,formantFilterBP,freq);
@@ -3606,15 +3630,15 @@ formantFilterbank(voiceType,vowel,formantFilterBP,freq);
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u
 // * `exType`: voice vs. fricative sound ratio (0-1 where 1 is 100% fricative)
 // * `freq`: the fundamental frequency of the source signal
 // * `gain`: linear gain multiplier to multiply the source by
 // * `isFof`: whether model is FOF based (0: no, 1: yes)
 //--------------------------------------
-// Author: Mike Olsen
+declare SFFormantModel author "Mike Olsen";
+
 SFFormantModel(voiceType,vowel,exType,freq,gain,source,filterbank,isFof) =
 	excitation : resonance
 with{
@@ -3642,13 +3666,13 @@ with{
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u
 // * `freq`: the fundamental frequency of the source signal
 // * `gain`: linear gain multiplier to multiply the source by
 //---------------------------------------
-// Author: Mike Olsen
+declare SFFormantModelFofCycle author "Mike Olsen";
+
 SFFormantModelFofCycle(voiceType,vowel,freq,gain) =
 SFFormantModel(voiceType,vowel,0,freq,gain,os.lf_imptrain(freq),
 formantFilterbankFofCycle,1);
@@ -3669,13 +3693,13 @@ formantFilterbankFofCycle,1);
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u
 // * `freq`: the fundamental frequency of the source signal
 // * `gain`: linear gain multiplier to multiply the source by
 //---------------------------------------
-// Author: Mike Olsen
+declare SFFormantModelFofSmooth author "Mike Olsen";
+
 SFFormantModelFofSmooth(voiceType,vowel,freq,gain) =
 SFFormantModel(voiceType,vowel,0,freq,gain,os.lf_imptrain(freq),
 formantFilterbankFofSmooth,1);
@@ -3699,8 +3723,7 @@ formantFilterbankFofSmooth,1);
 //
 // Where:
 //
-// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor,
-// 		  3: soprano, 4: tenor)
+// * `voiceType`: the voice type (0: alto, 1: bass, 2: countertenor, 3: soprano, 4: tenor)
 // * `vowel`: the vowel (0: a, 1: e, 2: i, 3: o, 4: u
 // * `exType`: voice vs. fricative sound ratio (0-1 where 1 is 100% fricative)
 // * `freq`: the fundamental frequency of the source signal
@@ -3720,7 +3743,8 @@ formantFilterbankBP,0);
 // SFFormantModelFofCycle_ui : _
 // ```
 //----------------------------------
-// Author: Mike Olsen
+declare SFFormantModelFofCycle_ui author "Mike Olsen";
+
 SFFormantModelFofCycle_ui = SFFormantModelFofCycle(voiceType,vowel,freq2,gain*corrFactor)
 with{
 	freq1 = hslider("v:vocal/[0]freq",440,50,1000,0.01);
@@ -3743,7 +3767,8 @@ with{
 // SFFormantModelFofSmooth_ui : _
 // ```
 //----------------------------------
-// Author: Mike Olsen
+declare SFFormantModelFofSmooth_ui author "Mike Olsen";
+
 SFFormantModelFofSmooth_ui = SFFormantModelFofSmooth(voiceType,vowel,freq2,gain*corrFactor)
 with{
 	freq1 = hslider("v:vocal/[0]freq",440,50,1000,0.01);
@@ -3926,7 +3951,7 @@ with{
 // UNCATEGORIZED FUNCTIONS (TODO)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-//-------`modalModel`--------------
+//-------`(pm).modalModel`--------------
 //
 // Implement multiple resonance modes using resonant bandpass filters.
 //

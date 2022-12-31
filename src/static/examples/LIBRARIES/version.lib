@@ -1,10 +1,12 @@
 //################################ version.lib ##########################################
 // Semantic versioning for the Faust libraries. Its official prefix is `vl`.
+//
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/version.lib>
 //########################################################################################
 
-
 //---------------------------`(vl.)version`---------------------------
-// Return the version number of the Faust standard libraries. 
+// Return the version number of the Faust standard libraries as a MAJOR, MINOR, PATCH versioning triplet.
 //
 // #### Usage
 //
@@ -13,8 +15,8 @@
 // ```
 //
 //------------------------------------------------------------
-version =   2, // MAJOR version when we make incompatible API changes,
-            1, // MINOR version when we add functionality in a backwards compatible manner,
-            0; // PATCH version when we make backwards compatible bug fixes.
+version =   2,  // MAJOR version when we make incompatible API changes,
+            15, // MINOR version when we add functionality in a backwards compatible manner,
+            0;  // PATCH version when we make backwards compatible bug fixes.
 
             

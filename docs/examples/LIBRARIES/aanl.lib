@@ -1,6 +1,5 @@
-// #############################################################################
-// ##########  Antialiased nonlinearities (aanl.lib) ###########################
-// #############################################################################
+//################################ aanl.lib ##########################################
+// A library for antialiased nonlinearities. Its official prefix is `aa`. 
 //
 // This library provides aliasing-suppressed nonlinearities through first-order 
 // and second-order approximations of continuous-time signals, functions,
@@ -29,85 +28,98 @@
 // Also note that due to division by differences, it is vital to use
 // double-precision or more to reduce errors.
 //
-// The environment identifier for this library is "aa". After importing
-// the standard libraries in Faust, the functions below can be called as:
-//
-//    "aa.function_name".
-//
-// Reference:
-// https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf.
-//
-// #############################################################################
-
-declare name "Antialiased nonlinearities";
-declare version "0.1";
+// The environment identifier for this library is `aa`. After importing
+// the standard libraries in Faust, the functions below can be called as `aa.function_name`.
+// 
+// #### References
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/aanl.lib>
+// * <https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf>
+//########################################################################################
 
 ba = library("basics.lib");
 ma = library("maths.lib");
 
+declare name "Faust Antialiased Nonlinearities";
+declare version "0.3";
 
+//==============================Auxiliary Functions=======================================
+//========================================================================================
 
-// =============================================================================
-// ========== Auxiliary Functions ==============================================
-// =============================================================================
-
-// ---------- Constant --------------------------------------------------------
-//
-MAX = ma.INFINITY;
-// -----------------------------------------------------------------------------
-
-// ---------- clip; ------------------------------------------------------------
-//
+//-------`(aa.)clip`-----------
+// Clipping function.
+//-----------------------------
 clip(l, h, x) = max(l, min(h, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued sqrt() -----------------------------------------------
-//
+
+//-------`(aa.)Rsqrt`----------
+// Real-valued sqrt().
+//-----------------------------
 Rsqrt(x) = sqrt(max(0.0, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued log() ------------------------------------------------
-//
+
+//-------`(aa.)Rlog`-----------
+// Real-valued log().
+//-----------------------------
 Rlog(x) = log(max(ma.EPSILON, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued tan() ------------------------------------------------
-//
-Rtan(x) = tan(clip(-MAX, MAX, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued acos() -----------------------------------------------
-//
+//-------`(aa.)Rtan`-----------
+// Real-valued tan().
+//-----------------------------
+Rtan(x) = tan(clip(-ma.MAX, ma.MAX, x));
+
+
+//-------`(aa.)Racos`----------
+// Real-valued acos().
+//-----------------------------
 Racos(x) = acos(clip(-1.0, 1.0, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued asin() -----------------------------------------------
-//
+
+//-------`(aa.)Rasin`----------
+// Real-valued asin().
+//-----------------------------
 Rasin(x) = asin(clip(-1.0, 1.0, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued acosh() ----------------------------------------------
-//
-Racosh(x) = ma.acosh(clip(1.0, MAX, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued cosh() -----------------------------------------------
-//
-Rcosh(x) = min(MAX, ma.cosh(x));
-// -----------------------------------------------------------------------------
+//-------`(aa.)Racosh`----------
+// Real-valued acosh()
+//------------------------------
+Racosh(x) = ma.acosh(clip(1.0, ma.MAX, x));
 
-// ---------- Real-valued sinh() -----------------------------------------------
-//
-Rsinh(x) = clip(-MAX, MAX, ma.sinh(x));
-// -----------------------------------------------------------------------------
 
-// ---------- Real-valued atanh() ----------------------------------------------
-//
+//-------`(aa.)Rcosh`----------
+// Real-valued cosh().
+//-----------------------------
+Rcosh(x) = min(ma.MAX, ma.cosh(x));
+
+
+//-------`(aa.)Rsinh`-----------
+// Real-valued sinh().
+//------------------------------
+Rsinh(x) = clip(-ma.MAX, ma.MAX, ma.sinh(x));
+
+
+//-------`(aa.)Ratanh`----------
+// Real-valued atanh().
+//------------------------------
 Ratanh(x) = ma.atanh(clip(-1.0 + ma.EPSILON, 1.0 - ma.EPSILON, x));
-// -----------------------------------------------------------------------------
 
-// ---------- Generalised first-order ADAA function ----------------------------
+
+//-------`(aa.)ADAA1`---------------------
+//  Generalised first-order ADAA function.
 //
+// #### Usage
+//
+// ```
+// _ : ADAA1(EPS, f, F1) : _
+// ```
+// 
+// Where:
+//
+// * `EPS`: a threshold to handle ill-conditioned cases
+// * `f`: a function that we want to process with ADAA
+// * `F1`: f's first antiderivative
+
 declare ADAA1 author "Dario Sanfilippo";
 declare ADAA1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -121,10 +133,24 @@ ADAA1(EPS, f, F1, x) = D1q
                    x_m = .5 * (x + x');
                };
       };
-// -----------------------------------------------------------------------------
 
-// ---------- Generalised second-order ADAA function ---------------------------
+
+//-------`(aa.)ADAA2`---------------------
+//  Generalised second-order ADAA function.
 //
+// #### Usage
+//
+// ```
+// _ : ADAA2(EPS, f, F1, F2) : _
+// ```
+//
+// Where:
+//
+// * `EPS`: a threshold to handle ill-conditioned cases
+// * `f`: a function that we want to process with ADAA
+// * `F1`: f's first antiderivative
+// * `F2`: f's second antiderivative
+
 declare ADAA2 author "Dario Sanfilippo";
 declare ADAA2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -144,17 +170,12 @@ ADAA2(EPS, f, F1, F2, x) = T1 + T2
                        ((x'' - x') ^ 2.0);
                };
       };
-// -----------------------------------------------------------------------------
 
 
+//==============================Main functions============================================
+//========================================================================================
 
-// =============================================================================
-// ========== Main functions ===================================================
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// ---------- Saturators -------------------------------------------------------
-// -----------------------------------------------------------------------------
+//================= Saturators ===============
 //
 // These antialiased saturators perform best with high-amplitude input
 // signals. If the input is only slightly saturated, hence producing
@@ -166,9 +187,9 @@ ADAA2(EPS, f, F1, F2, x) = T1 + T2
 // functions perform adequately, it might be sensible to cross-fade
 // between the trivial and the antialiased saturators according to the
 // amplitude profile of the input signal.
-// -----------------------------------------------------------------------------
+//==============================================
 
-// ---------- (aa.)hardclip; ---------------------------------------------------
+//-------`(aa.)hardclip`---------------------
 //
 // First-order ADAA hard-clip.
 //
@@ -176,8 +197,9 @@ ADAA2(EPS, f, F1, F2, x) = T1 + T2
 //
 // #### Usage
 // ```
-// _ : aa.hardclip : _;
+// _ : aa.hardclip : _
 // ```
+//---------------------------------------------
 declare hardclip author "Dario Sanfilippo";
 declare hardclip copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -190,9 +212,9 @@ hardclip(x) = ADAA1(EPS, f, F1, x)
                                .5 * x_F1 ^ 2.0, 
                                x_F1 * ma.signum(x_F1) - .5);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)hardclip2; --------------------------------------------------
+
+//-------`(aa.)hardclip2`---------------------
 //
 // Second-order ADAA hard-clip.
 //
@@ -200,8 +222,9 @@ hardclip(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.hardclip2 : _;
+// _ : aa.hardclip2 : _
 // ```
+//---------------------------------------------
 declare hardclip2 author "Dario Sanfilippo";
 declare hardclip2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -218,9 +241,9 @@ hardclip2(x) = ADAA2(EPS, f, F1, F2, x)
                                ((.5 * x_F2 ^ 2.0) - 1.0 / 6.0) * 
                                    ma.signum(x_F2));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)cubic; ------------------------------------------------------
+
+//-------`(aa.)cubic1`---------------------
 //
 // First-order ADAA cubic saturator.
 //
@@ -229,13 +252,14 @@ hardclip2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.cubic : _;
+// _ : aa.cubic1 : _
 // ```
-declare cubic author "Dario Sanfilippo";
-declare cubic copyright "Copyright (C) 2021 Dario Sanfilippo
+//-------------------------------------------
+declare cubic1 author "Dario Sanfilippo";
+declare cubic1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare cubic license "LGPL v3.0 license";
-cubic(x) = ADAA1(EPS, f, F1, x)
+declare cubic1 license "LGPL v3.0 license";
+cubic1(x) = ADAA1(EPS, f, F1, x)
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = ba.if( (x_f < 1.0) & (x_f > -1.0), 
@@ -247,9 +271,9 @@ cubic(x) = ADAA1(EPS, f, F1, x)
                                        x_F1 * 2.0 / 3.0,
                                        x_F1 ^ 2.0 / 2.0 - x_F1 ^ 4.0 / 12.0));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)parabolic; --------------------------------------------------
+
+//-------`(aa.)parabolic`---------------------
 //
 // First-order ADAA parabolic saturator.
 //
@@ -257,8 +281,9 @@ cubic(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.parabolic : _;
+// _ : aa.parabolic : _
 // ```
+//--------------------------------------------
 declare parabolic author "Dario Sanfilippo";
 declare parabolic copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -274,9 +299,9 @@ parabolic(x) = ADAA1(EPS, f, F1, x)
                                    (x_F1 * ma.signum(x_F1) - 6.0),
                                abs(x_F1));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)parabolic2; -------------------------------------------------
+
+//-------`(aa.)parabolic2`---------------------
 //
 // Second-order ADAA parabolic saturator.
 //
@@ -284,8 +309,9 @@ parabolic(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.parabolic : _;
+// _ : aa.parabolic : _
 // ```
+//---------------------------------------------
 declare parabolic2 author "Dario Sanfilippo";
 declare parabolic2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -305,9 +331,9 @@ parabolic2(x) = ADAA2(EPS, f, F1, F2, x)
                                    (16.0 - 3.0 * x_F2 * ma.signum(x_F2)),
                                .5 * x_F2 ^ 2.0 * ma.signum(x_F2));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)hyperbolic; -------------------------------------------------
+
+//-------`(aa.)hyperbolic`---------------------
 //
 // First-order ADAA hyperbolic saturator.
 //
@@ -315,21 +341,22 @@ parabolic2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.hyperbolic : _;
+// _ : aa.hyperbolic : _
 // ```
+//---------------------------------------------
 declare hyperbolic author "Dario Sanfilippo";
 declare hyperbolic copyright "Copyright (C) 2021 Dario Sanfilippo
      <sanfilippo.dario@gmail.com>";
 declare hyperbolic license "LGPL v3.0 license";
 hyperbolic(x) = ADAA1(EPS, f, F1, x)
-      with {
-           EPS = 1.0 / ma.SR;
-           f(x_f) = x_f / (1.0 + abs(x_f));
-           F1(x_F1) = abs(x_F1) - log(1.0 + abs(x_F1));
-      };
-// -----------------------------------------------------------------------------
+    with {
+        EPS = 1.0 / ma.SR;
+        f(x_f) = x_f / (1.0 + abs(x_f));
+        F1(x_F1) = abs(x_F1) - log(1.0 + abs(x_F1));
+    };
 
-// ---------- (aa.)hyperbolic2; ------------------------------------------------
+
+//-------`(aa.)hyperbolic2`---------------------
 //
 // Second-order ADAA hyperbolic saturator.
 //
@@ -337,24 +364,24 @@ hyperbolic(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.hyperbolic2 : _;
+// _ : aa.hyperbolic2 : _
 // ```
+//----------------------------------------------
 declare hyperbolic2 author "Dario Sanfilippo";
 declare hyperbolic2 copyright "Copyright (C) 2021 Dario Sanfilippo
      <sanfilippo.dario@gmail.com>";
 declare hyperbolic2 license "LGPL v3.0 license";
 hyperbolic2(x) = ADAA2(EPS, f, F1, F2, x)
-     with {
-           EPS = 1.0 / ma.SR;
-           f(x_f) = x_f / (1.0 + abs(x_f));
-           F1(x_F1) = abs(x_F1) - log(1.0 + abs(x_F1));
-           F2(x_F2) = ma.signum(x_F2) * (.5 * (3.0 - 2.0 * abs(x_F2) +
-                 x_F2 ^ 2.0 + 2.0 * log(1.0 + abs(x_F2))) - 3.0 / 2.0) + 
-                   3.0 / 2.0;
-     };
-// -----------------------------------------------------------------------------
+    with {
+        EPS = 1.0 / ma.SR;
+        f(x_f) = x_f / (1.0 + abs(x_f));
+        F1(x_F1) = abs(x_F1) - log(1.0 + abs(x_F1));
+        F2(x_F2) = ma.signum(x_F2) * (.5 * (3.0 - 2.0 * abs(x_F2) + x_F2 ^ 2.0 + 
+            2.0 * log(1.0 + abs(x_F2))) - 3.0 / 2.0) + 3.0 / 2.0;
+    };
 
-// ---------- (aa.)sinarctan; --------------------------------------------------
+
+//-------`(aa.)sinarctan`---------------------
 //
 // First-order ADAA sin(atan()) saturator.
 //
@@ -362,8 +389,9 @@ hyperbolic2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.sinatan : _;
+// _ : aa.sinatan : _
 // ```
+//----------------------------------------------
 declare sinarctan author "Dario Sanfilippo";
 declare sinarctan copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -377,9 +405,9 @@ sinarctan(x) = ADAA1(EPS, f, F1, x)
                    const = -1.0; // for F1(0) = 0 to minimise precision loss
                };
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)sinarctan2; -------------------------------------------------
+
+//-------`(aa.)sinarctan2`---------------------
 //
 // Second-order ADAA sin(atan()) saturator.
 //
@@ -387,8 +415,9 @@ sinarctan(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.sinarctan2 : _;
+// _ : aa.sinarctan2 : _
 // ```
+//----------------------------------------------
 declare sinarctan2 author "Dario Sanfilippo";
 declare sinarctan2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -403,9 +432,9 @@ sinarctan2(x) = ADAA2(EPS, f, F1, F2, x)
                };
            F2(x_F2) = .5 * x_F2 * sqrt(x_F2 ^ 2.0 + 1.0) - .5 * ma.asinh(x_F2);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)tanh; -------------------------------------------------------
+
+//-------`(aa.)tanh1`---------------------
 //
 // First-order ADAA tanh() saturator.
 //
@@ -413,21 +442,22 @@ sinarctan2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.tanh : _;
+// _ : aa.tanh1 : _
 // ```
-declare tanh author "Dario Sanfilippo";
-declare tanh copyright "Copyright (C) 2021 Dario Sanfilippo
+//----------------------------------------------
+declare tanh1 author "Dario Sanfilippo";
+declare tanh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare tanh license "LGPL v3.0 license";
-tanh(x) = ADAA1(EPS, f, F1, x) 
+declare tanh1 license "LGPL v3.0 license";
+tanh1(x) = ADAA1(EPS, f, F1, x) 
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = ma.tanh(x_f);
            F1(x_F1) = log(Rcosh(x_F1));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arctan; -----------------------------------------------------
+
+//-------`(aa.)arctan`---------------------
 //
 // First-order ADAA atan().
 //
@@ -435,8 +465,9 @@ tanh(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.arctan : _;
+// _ : aa.arctan : _
 // ```
+//-------------------------------------------
 declare arctan author "Dario Sanfilippo";
 declare arctan copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -447,9 +478,9 @@ arctan(x) = ADAA1(EPS, f, F1, x)
            f(x_f) = atan(x_f);
            F1(x_F1) = x_F1 * f(x_F1) - .5 * log(x_F1 ^ 2.0 + 1.0);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arctan2; ----------------------------------------------------
+
+//-------`(aa.)arctan2`---------------------
 //
 // Second-order ADAA atan().
 //
@@ -457,8 +488,9 @@ arctan(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.arctan2 : _;
+// _ : aa.arctan2 : _
 // ```
+//-------------------------------------------
 declare arctan2 author "Dario Sanfilippo";
 declare arctan2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -470,9 +502,9 @@ arctan2(x) = ADAA2(EPS, f, F1, F2, x)
            F1(x_F1) = x_F1 * f(x_F1) - .5 * log(x_F1 ^ 2.0 + 1.0);
            F2(x_F2) = .5 * x_F2 ^ 2.0 * f(x_F2) - x_F2 / 2.0 + .5 * f(x_F2);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)asinh; ------------------------------------------------------
+
+//-------`(aa.)asinh1`---------------------
 //
 // First-order ADAA asinh() saturator (unbounded).
 //
@@ -480,13 +512,14 @@ arctan2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.asinh : _;
+// _ : aa.asinh1 : _
 // ```
-declare asinh author "Dario Sanfilippo";
-declare asinh copyright "Copyright (C) 2021 Dario Sanfilippo
+//-------------------------------------------
+declare asinh1 author "Dario Sanfilippo";
+declare asinh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare asinh license "LGPL v3.0 license";
-asinh(x) = ADAA1(EPS, f, F1, x)
+declare asinh1 license "LGPL v3.0 license";
+asinh1(x) = ADAA1(EPS, f, F1, x)
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = ma.asinh(x_f);
@@ -494,11 +527,10 @@ asinh(x) = ADAA1(EPS, f, F1, x)
                with {
                    const = 1.0; // for F1(0) = 0 to minimise precision loss
                };
-
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)asinh2; -----------------------------------------------------
+
+//-------`(aa.)asinh2`---------------------
 //
 // Second-order ADAA asinh() saturator (unbounded).
 //
@@ -506,8 +538,9 @@ asinh(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.asinh2 : _;
+// _ : aa.asinh2 : _
 // ```
+//-------------------------------------------
 declare asinh2 author "Dario Sanfilippo";
 declare asinh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -522,20 +555,15 @@ asinh2(x) = ADAA2(EPS, f, F1, F2, x)
                };
            F2(x_F2) = .25 * (2.0 * x_F2 ^ 2.0 * f(x_F2) + f(x_F2) - 
                sqrt(x_F2 ^ 2.0 + 1.0) * x_F2);
-
       };
-// -----------------------------------------------------------------------------
 
 
-
-// -----------------------------------------------------------------------------
-// ---------- Trigonometry -----------------------------------------------------
-// -----------------------------------------------------------------------------
-//
+//================= Trigonometry ===============
 // These functions are reliable if input signals are within their domains.
-// -----------------------------------------------------------------------------
+//============================================
 
-// ---------- (aa.)cosine; -----------------------------------------------------
+
+//-------`(aa.)cosine1`---------------------
 //
 // First-order ADAA cos().
 //
@@ -543,21 +571,22 @@ asinh2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.cosine : _;
+// _ : aa.cosine1 : _
 // ```
-declare cosine author "Dario Sanfilippo";
-declare cosine copyright "Copyright (C) 2021 Dario Sanfilippo
+//-------------------------------------------
+declare cosine1 author "Dario Sanfilippo";
+declare cosine1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare cosine license "LGPL v3.0 license";
-cosine(x) = ADAA1(EPS, f, F1, x)
+declare cosine1 license "LGPL v3.0 license";
+cosine1(x) = ADAA1(EPS, f, F1, x)
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = cos(x_f);
            F1(x_F1) = sin(x_F1);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)cosine2; ----------------------------------------------------
+
+//-------`(aa.)cosine2`---------------------
 //
 // Second-order ADAA cos().
 //
@@ -565,8 +594,9 @@ cosine(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.cosine2 : _;
+// _ : aa.cosine2 : _
 // ```
+//-------------------------------------------
 declare cosine2 author "Dario Sanfilippo";
 declare cosine2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -578,9 +608,9 @@ cosine2(x) = ADAA2(EPS, f, F1, F2, x)
            F1(x_F1) = sin(x_F1);
            F2(x_F2) = x_F2 * sin(x_F2) + cos(x_F2);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arccos; -----------------------------------------------------
+
+//-------`(aa.)arccos`---------------------
 //
 // First-order ADAA acos().
 //
@@ -589,8 +619,9 @@ cosine2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.arccos : _;
+// _ : aa.arccos : _
 // ```
+//------------------------------------------
 declare arccos author "Dario Sanfilippo";
 declare arccos copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -604,9 +635,9 @@ arccos(x) = ADAA1(EPS, f, F1, x)
                    const = 1.0; // for F1(0) = 0 to minimise precision loss
                };
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arccos2; ----------------------------------------------------
+
+//-------`(aa.)arccos2`---------------------
 //
 // Second-order ADAA acos().
 //
@@ -618,8 +649,9 @@ arccos(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.arccos2 : _;
+// _ : aa.arccos2 : _
 // ```
+//--------------------------------------------
 declare arccos2 author "Dario Sanfilippo";
 declare arccos2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -635,9 +667,9 @@ arccos2(x) = ADAA2(EPS, f, F1, F2, x)
            F2(x_F2) = .25 * (2.0 * x_F2 ^ 2.0 * f(x_F2) + Rasin(x_F2) -
                Rsqrt(1.0 - x_F2 ^ 2.0));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)acosh; ------------------------------------------------------
+
+//-------`(aa.)acosh1`---------------------
 //
 // First-order ADAA acosh(). 
 //
@@ -645,21 +677,22 @@ arccos2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.acosh : _;
+// _ : aa.acosh1 : _
 // ```
-declare acosh author "Dario Sanfilippo";
-declare acosh copyright "Copyright (C) 2021 Dario Sanfilippo
+//------------------------------------------
+declare acosh1 author "Dario Sanfilippo";
+declare acosh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare acosh license "LGPL v3.0 license";
-acosh(x) = ADAA1(EPS, f, F1, x)
+declare acosh1 license "LGPL v3.0 license";
+acosh1(x) = ADAA1(EPS, f, F1, x)
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = Racosh(x_f);
            F1(x_F1) = x_F1 * f(x_F1) - Rsqrt(x_F1 - 1.0) * Rsqrt(x_F1 + 1.0);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)acosh2; -----------------------------------------------------
+
+//-------`(aa.)acosh2`---------------------
 //
 // Second-order ADAA acosh().
 //
@@ -670,8 +703,9 @@ acosh(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.acosh2 : _;
+// _ : aa.acosh2 : _
 // ```
+//-------------------------------------------
 declare acosh2 author "Dario Sanfilippo";
 declare acosh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -685,9 +719,9 @@ acosh2(x) = ADAA2(EPS, f, F1, F2, x)
                Rsqrt(x_F2 - 1.0) * Rsqrt(x_F2 + 1.0) * x_F2 -
                    .25 * Rlog(x_F2 + Rsqrt(x_F2 - 1.0) * Rsqrt(x_F2 + 1.0));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)sine; -------------------------------------------------------
+
+//-------`(aa.)sine`---------------------
 //
 // First-order ADAA sin().
 //
@@ -695,8 +729,9 @@ acosh2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.sine : _;
+// _ : aa.sine : _
 // ```
+//----------------------------------------
 declare sine author "Dario Sanfilippo";
 declare sine copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -707,9 +742,9 @@ sine(x) = ADAA1(EPS, f, F1, x)
            f(x_f) = sin(x_f);
            F1(x_F1) = -1.0 * cos(x_F1);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)sine2; ------------------------------------------------------
+
+//-------`(aa.)sine2`---------------------
 //
 // Second-order ADAA sin().
 //
@@ -717,8 +752,9 @@ sine(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.sine2 : _;
+// _ : aa.sine2 : _
 // ```
+//----------------------------------------
 declare sine2 author "Dario Sanfilippo";
 declare sine2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -730,9 +766,9 @@ sine2(x) = ADAA2(EPS, f, F1, F2, x)
            F1(x_F1) = 1.0 - cos(x_F1);
            F2(x_F2) = sin(x_F2) - x_F2 * cos(x_F2);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arcsin; -----------------------------------------------------
+
+//-------`(aa.)arcsin`---------------------
 //
 // First-order ADAA asin().
 //
@@ -741,8 +777,9 @@ sine2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.arcsin : _;
+// _ : aa.arcsin : _
 // ```
+//------------------------------------------
 declare arcsin author "Dario Sanfilippo";
 declare arcsin copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -756,9 +793,9 @@ arcsin(x) = ADAA1(EPS, f, F1, x)
                    const = -1.0; // for F1(0) = 0 to minimise precision loss
                };
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)arcsin2; ----------------------------------------------------
+
+//-------`(aa.)arcsin2`---------------------
 //
 // Second-order ADAA asin().
 //
@@ -770,8 +807,9 @@ arcsin(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.arcsin2 : _;
+// _ : aa.arcsin2 : _
 // ```
+//------------------------------------------
 declare arcsin2 author "Dario Sanfilippo";
 declare arcsin2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -787,9 +825,9 @@ arcsin2(x) = ADAA2(EPS, f, F1, F2, x)
            F2(x_F2) = .25 * (Rsqrt(1.0 - x_F2 ^ 2.0) * x_F2 + 
                (2.0 * x_F2 ^ 2.0 - 1.0) * f(x_F2));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)tangent; ----------------------------------------------------
+
+//-------`(aa.)tangent`---------------------
 //
 // First-order ADAA tan().
 //
@@ -797,8 +835,9 @@ arcsin2(x) = ADAA2(EPS, f, F1, F2, x)
 //
 // #### Usage
 // ```
-// _ : aa.tangent : _;
+// _ : aa.tangent : _
 // ```
+//------------------------------------------
 declare tangent author "Dario Sanfilippo";
 declare tangent copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -809,9 +848,9 @@ tangent(x) = ADAA1(EPS, f, F1, x)
            f(x_f) = Rtan(x_f);
            F1(x_F1) = -1.0 * Rlog(cos(x_F1));
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)atanh; ------------------------------------------------------
+
+//-------`(aa.)atanh1`---------------------
 //
 // First-order ADAA atanh(). 
 //
@@ -819,21 +858,22 @@ tangent(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.atanh : _;
+// _ : aa.atanh1 : _
 // ```
-declare atanh author "Dario Sanfilippo";
-declare atanh copyright "Copyright (C) 2021 Dario Sanfilippo
+//------------------------------------------
+declare atanh1 author "Dario Sanfilippo";
+declare atanh1 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare atanh license "LGPL v3.0 license";
-atanh(x) = ADAA1(EPS, f, F1, x)
+declare atanh1 license "LGPL v3.0 license";
+atanh1(x) = ADAA1(EPS, f, F1, x)
       with {
            EPS = 1.0 / ma.SR;
            f(x_f) = Ratanh(x_f);
            F1(x_F1) = .5 * Rlog(1.0 - x_F1 ^ 2.0) + x_F1 * f(x_F1);
       };
-// -----------------------------------------------------------------------------
 
-// ---------- (aa.)atanh2; -----------------------------------------------------
+
+//-------`(aa.)atanh2`---------------------
 //
 // Second-order ADAA atanh().
 //
@@ -841,8 +881,9 @@ atanh(x) = ADAA1(EPS, f, F1, x)
 //
 // #### Usage
 // ```
-// _ : aa.atanh2 : _;
+// _ : aa.atanh2 : _
 // ```
+//------------------------------------------
 declare atanh2 author "Dario Sanfilippo";
 declare atanh2 copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
@@ -855,4 +896,3 @@ atanh2(x) = ADAA2(EPS, f, F1, F2, x)
            F2(x_F2) = .5 * x_F2 ^ 2.0 * f(x_F2) + x_F2 / 2.0 + .25 * 
                Rlog(1.0 - x_F2) - .25 * Rlog(1.0 + x_F2);
       };
-// -----------------------------------------------------------------------------

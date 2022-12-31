@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.0.88",
+  "version": "1.0.89",
   "description": "Faust Editor",
   "main": "src/index.ts",
   "private": true,
