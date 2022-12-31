@@ -126,19 +126,20 @@ export class StaticScope {
         let min = t[0][0];
         let max = t[0][0];
         let i = t.length;
+        let samp: number;
         while (i--) {
             let j = l;
             while (j--) {
-                const s = t[i][j];
-                if (s < min) min = s;
-                else if (s > max) max = s;
+                samp = t[i][j];
+                if (samp < min) min = samp;
+                else if (samp > max) max = samp;
             }
         }
         const yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
-        if (drawMode === "continuous") { // Stablize
+        if (drawMode === "continuous" && l < sampleRate) { // Stablize when window size < 1 sec
             const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
@@ -168,29 +169,30 @@ export class StaticScope {
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
-            let maxInStep;
-            let minInstep;
+            let maxInStep: number;
+            let minInStep: number;
+            let $j: number;
+            let $step: number;
+            let x: number;
+            let y: number;
             for (let j = $0; j < $1; j++) {
-                const $j = wrap(j, $, l); // True index
-                const samp = t[i][$j];
-                const $step = (j - $0) % step;
+                $j = wrap(j, $, l); // True index
+                samp = t[i][$j];
+                $step = (j - $0) % step;
                 if ($step === 0) {
                     maxInStep = samp;
-                    minInstep = samp;
+                    minInStep = samp;
+                } else {
+                    if (samp > maxInStep) maxInStep = samp;
+                    if (samp < minInStep) minInStep = samp;
                 }
-                if ($step !== step - 1) {
-                    if ($step !== 0) {
-                        if (samp > maxInStep) maxInStep = samp;
-                        if (samp < minInstep) minInstep = samp;
-                    }
-                    continue;
-                }
-                const x = (j - $0) * gridX + left;
-                let y = hCh * (i + 0.5 - maxInStep / yFactor * 0.5);
+                if ($step !== step - 1) continue;
+                x = (j - $0) * gridX + left;
+                y = hCh * (i + 0.5 - maxInStep / yFactor * 0.5);
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
-                if (minInstep !== maxInStep) {
-                    y = hCh * (i + 0.5 - minInstep / yFactor * 0.5);
+                if (minInStep !== maxInStep) {
+                    y = hCh * (i + 0.5 - minInStep / yFactor * 0.5);
                     ctx.lineTo(x, y);
                 }
             }
@@ -221,19 +223,20 @@ export class StaticScope {
         let min = t[0][0];
         let max = t[0][0];
         let i = t.length;
+        let samp: number;
         while (i--) {
             let j = l;
             while (j--) {
-                const s = t[i][j];
-                if (s < min) min = s;
-                else if (s > max) max = s;
+                samp = t[i][j];
+                if (samp < min) min = samp;
+                else if (samp > max) max = samp;
             }
         }
         const yFactor = Math.max(1, Math.abs(min), Math.abs(max)) * vzoom;
         let $0 = 0; // Draw start
         let $1 = l - 1; // Draw End
         let $zerox = 0;
-        if (drawMode === "continuous") { // Stablize
+        if (drawMode === "continuous" && l < sampleRate) { // Stablize when window size < 1 sec
             const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
             const period = sampleRate / freqEstimated;
             const times = Math.floor(l / period) - 1;
@@ -262,25 +265,26 @@ export class StaticScope {
         for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
             ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
-            let maxInStep;
-            let minInStep;
+            let maxInStep: number;
+            let minInStep: number;
+            let $j: number;
+            let $step: number;
+            let x: number;
+            let y: number;
             for (let j = $0; j < $1; j++) {
-                const $j = wrap(j, $, l);
-                const samp = t[i][$j];
-                const $step = (j - $0) % step;
+                $j = wrap(j, $, l);
+                samp = t[i][$j];
+                $step = (j - $0) % step;
                 if ($step === 0) {
                     maxInStep = samp;
                     minInStep = samp;
+                } else {
+                    if (samp > maxInStep) maxInStep = samp;
+                    if (samp < minInStep) minInStep = samp;
                 }
-                if ($step !== step - 1) {
-                    if ($step !== 0) {
-                        if (samp > maxInStep) maxInStep = samp;
-                        if (samp < minInStep) minInStep = samp;
-                    }
-                    continue;
-                }
-                const x = (j - $0) * gridX + left;
-                let y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
+                if ($step !== step - 1) continue;
+                x = (j - $0) * gridX + left;
+                y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
                 if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
                 if (minInStep !== maxInStep) {
