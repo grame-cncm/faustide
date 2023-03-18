@@ -145,6 +145,11 @@ class Analyser {
         if (index === this.buffers - 1) this.draw();
       } else this.draw();
     });
+    /**
+     * The function property can be overwritten to get the sampleRate differently.
+     *
+     * @memberof Analyser
+     */
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "getSampleRate", () => 48000);
     this.buffers = buffers || 0;
     this.drawMode = drawMode || "manual";
@@ -218,12 +223,6 @@ class Analyser {
       e: this.e.slice()
     });
   }
-  /**
-   * The function property can be overwritten to get the sampleRate differently.
-   *
-   * @memberof Analyser
-   */
-
   get sampleRate() {
     return this.getSampleRate();
   }
@@ -802,6 +801,13 @@ class Key2Midi {
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "velMap", []);
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "handler", void 0);
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "enabled", void 0);
+    /**
+     * KeyDown Handler
+     *
+     * @param {string} str
+     * @returns {void}
+     * @memberof Key2Midi
+     */
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "handleKeyDown", str => {
       if (!this.enabled) return;
       var converted = this.keyMap[str];
@@ -831,6 +837,13 @@ class Key2Midi {
         this.velocity = Math.max(20, this.velocity - 20);
       }
     });
+    /**
+     * KeyUp Handler
+     *
+     * @param {string} str
+     * @returns {void}
+     * @memberof Key2Midi
+     */
     (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(this, "handleKeyUp", str => {
       if (!this.enabled) return;
       var converted = this.keyMap[str];
@@ -847,14 +860,6 @@ class Key2Midi {
     this.handler = options.handler || (() => undefined);
     this.enabled = options.enabled ||  false && 0;
   }
-  /**
-   * KeyDown Handler
-   *
-   * @param {string} str
-   * @returns {void}
-   * @memberof Key2Midi
-   */
-
   /**
    * Mute All
    *
@@ -1411,12 +1416,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var TScopeType;
-(function (TScopeType) {
+var TScopeType = /*#__PURE__*/function (TScopeType) {
   TScopeType[TScopeType["Oscilloscope"] = 0] = "Oscilloscope";
   TScopeType[TScopeType["Spectroscope"] = 1] = "Spectroscope";
   TScopeType[TScopeType["Spectrogram"] = 2] = "Spectrogram";
-})(TScopeType || (TScopeType = {}));
+  return TScopeType;
+}(TScopeType || {});
 class Scope {
   static drawOscilloscope(ctx, w, h, d, freq, sr, zoom, zoomOffset) {
     this.drawBackground(ctx, w, h);
@@ -1864,14 +1869,14 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var EScopeMode;
-(function (EScopeMode) {
+var EScopeMode = /*#__PURE__*/function (EScopeMode) {
   EScopeMode[EScopeMode["Data"] = 0] = "Data";
   EScopeMode[EScopeMode["Interleaved"] = 1] = "Interleaved";
   EScopeMode[EScopeMode["Oscilloscope"] = 2] = "Oscilloscope";
   EScopeMode[EScopeMode["Spectroscope"] = 3] = "Spectroscope";
   EScopeMode[EScopeMode["Spectrogram"] = 4] = "Spectrogram";
-})(EScopeMode || (EScopeMode = {}));
+  return EScopeMode;
+}(EScopeMode || {});
 class StaticScope {
   static drawInterleaved(ctx, w, h, d, zoom, zoomOffset, vzoom, cursor) {
     this.drawBackground(ctx, w, h);
@@ -6476,7 +6481,7 @@ module.exports = function encodeUtf8 (input) {
 /***/ (function(module, exports) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
- * jQuery JavaScript Library v3.6.3
+ * jQuery JavaScript Library v3.6.4
  * https://jquery.com/
  *
  * Includes Sizzle.js
@@ -6486,7 +6491,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
  * Released under the MIT license
  * https://jquery.org/license
  *
- * Date: 2022-12-20T21:28Z
+ * Date: 2023-03-08T15:28Z
  */
 ( function( global, factory ) {
 
@@ -6628,7 +6633,7 @@ function toType( obj ) {
 
 
 var
-	version = "3.6.3",
+	version = "3.6.4",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -6999,14 +7004,14 @@ function isArrayLike( obj ) {
 }
 var Sizzle =
 /*!
- * Sizzle CSS Selector Engine v2.3.9
+ * Sizzle CSS Selector Engine v2.3.10
  * https://sizzlejs.com/
  *
  * Copyright JS Foundation and other contributors
  * Released under the MIT license
  * https://js.foundation/
  *
- * Date: 2022-12-19
+ * Date: 2023-02-14
  */
 ( function( window ) {
 var i,
@@ -7110,7 +7115,7 @@ var i,
 		whitespace + "+$", "g" ),
 
 	rcomma = new RegExp( "^" + whitespace + "*," + whitespace + "*" ),
-	rcombinators = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" + whitespace +
+	rleadingCombinator = new RegExp( "^" + whitespace + "*([>+~]|" + whitespace + ")" + whitespace +
 		"*" ),
 	rdescend = new RegExp( whitespace + "|>" ),
 
@@ -7327,7 +7332,7 @@ function Sizzle( selector, context, results, seed ) {
 				// as such selectors are not recognized by querySelectorAll.
 				// Thanks to Andrew Dupont for this technique.
 				if ( nodeType === 1 &&
-					( rdescend.test( selector ) || rcombinators.test( selector ) ) ) {
+					( rdescend.test( selector ) || rleadingCombinator.test( selector ) ) ) {
 
 					// Expand context for sibling selectors
 					newContext = rsibling.test( selector ) && testContext( context.parentNode ) ||
@@ -7356,27 +7361,6 @@ function Sizzle( selector, context, results, seed ) {
 				}
 
 				try {
-
-					// `qSA` may not throw for unrecognized parts using forgiving parsing:
-					// https://drafts.csswg.org/selectors/#forgiving-selector
-					// like the `:has()` pseudo-class:
-					// https://drafts.csswg.org/selectors/#relational
-					// `CSS.supports` is still expected to return `false` then:
-					// https://drafts.csswg.org/css-conditional-4/#typedef-supports-selector-fn
-					// https://drafts.csswg.org/css-conditional-4/#dfn-support-selector
-					if ( support.cssSupportsSelector &&
-
-						// eslint-disable-next-line no-undef
-						!CSS.supports( "selector(:is(" + newSelector + "))" ) ) {
-
-						// Support: IE 11+
-						// Throw to get to the same code path as an error directly in qSA.
-						// Note: once we only support browser supporting
-						// `CSS.supports('selector(...)')`, we can most likely drop
-						// the `try-catch`. IE doesn't implement the API.
-						throw new Error();
-					}
-
 					push.apply( results,
 						newContext.querySelectorAll( newSelector )
 					);
@@ -7672,29 +7656,22 @@ setDocument = Sizzle.setDocument = function( node ) {
 			!el.querySelectorAll( ":scope fieldset div" ).length;
 	} );
 
-	// Support: Chrome 105+, Firefox 104+, Safari 15.4+
-	// Make sure forgiving mode is not used in `CSS.supports( "selector(...)" )`.
-	//
-	// `:is()` uses a forgiving selector list as an argument and is widely
-	// implemented, so it's a good one to test against.
-	support.cssSupportsSelector = assert( function() {
-		/* eslint-disable no-undef */
-
-		return CSS.supports( "selector(*)" ) &&
-
-			// Support: Firefox 78-81 only
-			// In old Firefox, `:is()` didn't use forgiving parsing. In that case,
-			// fail this test as there's no selector to test against that.
-			// `CSS.supports` uses unforgiving parsing
-			document.querySelectorAll( ":is(:jqfake)" ) &&
-
-			// `*` is needed as Safari & newer Chrome implemented something in between
-			// for `:has()` - it throws in `qSA` if it only contains an unsupported
-			// argument but multiple ones, one of which is supported, are fine.
-			// We want to play safe in case `:is()` gets the same treatment.
-			!CSS.supports( "selector(:is(*,:jqfake))" );
-
-		/* eslint-enable */
+	// Support: Chrome 105 - 110+, Safari 15.4 - 16.3+
+	// Make sure the the `:has()` argument is parsed unforgivingly.
+	// We include `*` in the test to detect buggy implementations that are
+	// _selectively_ forgiving (specifically when the list includes at least
+	// one valid selector).
+	// Note that we treat complete lack of support for `:has()` as if it were
+	// spec-compliant support, which is fine because use of `:has()` in such
+	// environments will fail in the qSA path and fall back to jQuery traversal
+	// anyway.
+	support.cssHas = assert( function() {
+		try {
+			document.querySelector( ":has(*,:jqfake)" );
+			return false;
+		} catch ( e ) {
+			return true;
+		}
 	} );
 
 	/* Attributes
@@ -7963,14 +7940,14 @@ setDocument = Sizzle.setDocument = function( node ) {
 		} );
 	}
 
-	if ( !support.cssSupportsSelector ) {
+	if ( !support.cssHas ) {
 
-		// Support: Chrome 105+, Safari 15.4+
-		// `:has()` uses a forgiving selector list as an argument so our regular
-		// `try-catch` mechanism fails to catch `:has()` with arguments not supported
-		// natively like `:has(:contains("Foo"))`. Where supported & spec-compliant,
-		// we now use `CSS.supports("selector(:is(SELECTOR_TO_BE_TESTED))")`, but
-		// outside that we mark `:has` as buggy.
+		// Support: Chrome 105 - 110+, Safari 15.4 - 16.3+
+		// Our regular `try-catch` mechanism fails to detect natively-unsupported
+		// pseudo-classes inside `:has()` (such as `:has(:contains("Foo"))`)
+		// in browsers that parse the `:has()` argument as a forgiving selector list.
+		// https://drafts.csswg.org/selectors/#relational now requires the argument
+		// to be parsed unforgivingly, but browsers have not yet fully adjusted.
 		rbuggyQSA.push( ":has" );
 	}
 
@@ -8883,7 +8860,7 @@ tokenize = Sizzle.tokenize = function( selector, parseOnly ) {
 		matched = false;
 
 		// Combinators
-		if ( ( match = rcombinators.exec( soFar ) ) ) {
+		if ( ( match = rleadingCombinator.exec( soFar ) ) ) {
 			matched = match.shift();
 			tokens.push( {
 				value: matched,
@@ -23500,24 +23477,19 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 
 var stylesInDOM = [];
-
 function getIndexByIdentifier(identifier) {
   var result = -1;
-
   for (var i = 0; i < stylesInDOM.length; i++) {
     if (stylesInDOM[i].identifier === identifier) {
       result = i;
       break;
     }
   }
-
   return result;
 }
-
 function modulesToDom(list, options) {
   var idCountMap = {};
   var identifiers = [];
-
   for (var i = 0; i < list.length; i++) {
     var item = list[i];
     var id = options.base ? item[0] + options.base : item[0];
@@ -23532,7 +23504,6 @@ function modulesToDom(list, options) {
       supports: item[4],
       layer: item[5]
     };
-
     if (indexByIdentifier !== -1) {
       stylesInDOM[indexByIdentifier].references++;
       stylesInDOM[indexByIdentifier].updater(obj);
@@ -23545,59 +23516,45 @@ function modulesToDom(list, options) {
         references: 1
       });
     }
-
     identifiers.push(identifier);
   }
-
   return identifiers;
 }
-
 function addElementStyle(obj, options) {
   var api = options.domAPI(options);
   api.update(obj);
-
   var updater = function updater(newObj) {
     if (newObj) {
       if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap && newObj.supports === obj.supports && newObj.layer === obj.layer) {
         return;
       }
-
       api.update(obj = newObj);
     } else {
       api.remove();
     }
   };
-
   return updater;
 }
-
 module.exports = function (list, options) {
   options = options || {};
   list = list || [];
   var lastIdentifiers = modulesToDom(list, options);
   return function update(newList) {
     newList = newList || [];
-
     for (var i = 0; i < lastIdentifiers.length; i++) {
       var identifier = lastIdentifiers[i];
       var index = getIndexByIdentifier(identifier);
       stylesInDOM[index].references--;
     }
-
     var newLastIdentifiers = modulesToDom(newList, options);
-
     for (var _i = 0; _i < lastIdentifiers.length; _i++) {
       var _identifier = lastIdentifiers[_i];
-
       var _index = getIndexByIdentifier(_identifier);
-
       if (stylesInDOM[_index].references === 0) {
         stylesInDOM[_index].updater();
-
         stylesInDOM.splice(_index, 1);
       }
     }
-
     lastIdentifiers = newLastIdentifiers;
   };
 };
@@ -23614,12 +23571,13 @@ module.exports = function (list, options) {
 
 
 var memo = {};
-/* istanbul ignore next  */
 
+/* istanbul ignore next  */
 function getTarget(target) {
   if (typeof memo[target] === "undefined") {
-    var styleTarget = document.querySelector(target); // Special case to return head of iframe instead of iframe itself
+    var styleTarget = document.querySelector(target);
 
+    // Special case to return head of iframe instead of iframe itself
     if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
       try {
         // This will throw an exception if access to iframe is blocked
@@ -23630,25 +23588,19 @@ function getTarget(target) {
         styleTarget = null;
       }
     }
-
     memo[target] = styleTarget;
   }
-
   return memo[target];
 }
+
 /* istanbul ignore next  */
-
-
 function insertBySelector(insert, style) {
   var target = getTarget(insert);
-
   if (!target) {
     throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
   }
-
   target.appendChild(style);
 }
-
 module.exports = insertBySelector;
 
 /***/ }),
@@ -23669,7 +23621,6 @@ function insertStyleElement(options) {
   options.insert(element, options.options);
   return element;
 }
-
 module.exports = insertStyleElement;
 
 /***/ }),
@@ -23686,12 +23637,10 @@ module.exports = insertStyleElement;
 /* istanbul ignore next  */
 function setAttributesWithoutAttributes(styleElement) {
   var nonce =  true ? __webpack_require__.nc : 0;
-
   if (nonce) {
     styleElement.setAttribute("nonce", nonce);
   }
 }
-
 module.exports = setAttributesWithoutAttributes;
 
 /***/ }),
@@ -23708,59 +23657,51 @@ module.exports = setAttributesWithoutAttributes;
 /* istanbul ignore next  */
 function apply(styleElement, options, obj) {
   var css = "";
-
   if (obj.supports) {
     css += "@supports (".concat(obj.supports, ") {");
   }
-
   if (obj.media) {
     css += "@media ".concat(obj.media, " {");
   }
-
   var needLayer = typeof obj.layer !== "undefined";
-
   if (needLayer) {
     css += "@layer".concat(obj.layer.length > 0 ? " ".concat(obj.layer) : "", " {");
   }
-
   css += obj.css;
-
   if (needLayer) {
     css += "}";
   }
-
   if (obj.media) {
     css += "}";
   }
-
   if (obj.supports) {
     css += "}";
   }
-
   var sourceMap = obj.sourceMap;
-
   if (sourceMap && typeof btoa !== "undefined") {
     css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
-  } // For old IE
+  }
 
+  // For old IE
   /* istanbul ignore if  */
-
-
   options.styleTagTransform(css, styleElement, options.options);
 }
-
 function removeStyleElement(styleElement) {
   // istanbul ignore if
   if (styleElement.parentNode === null) {
     return false;
   }
-
   styleElement.parentNode.removeChild(styleElement);
 }
+
 /* istanbul ignore next  */
-
-
 function domAPI(options) {
+  if (typeof document === "undefined") {
+    return {
+      update: function update() {},
+      remove: function remove() {}
+    };
+  }
   var styleElement = options.insertStyleElement(options);
   return {
     update: function update(obj) {
@@ -23771,7 +23712,6 @@ function domAPI(options) {
     }
   };
 }
-
 module.exports = domAPI;
 
 /***/ }),
@@ -23793,11 +23733,9 @@ function styleTagTransform(css, styleElement) {
     while (styleElement.firstChild) {
       styleElement.removeChild(styleElement.firstChild);
     }
-
     styleElement.appendChild(document.createTextNode(css));
   }
 }
-
 module.exports = styleTagTransform;
 
 /***/ }),
@@ -31590,7 +31528,7 @@ function _typeof(obj) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.89","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.1","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.34.1","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.75.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
+module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.90","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.1","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.34.1","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.76.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
 
 /***/ })
 
@@ -31701,7 +31639,7 @@ module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.89","descri
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "js/" + {"vendors-node_modules_faust2webaudio_dist_index_min_js":"ae76be0ffa40166bac09","vendors-include-loader_node_modules_monaco-editor_esm_vs_editor_editor_main_js":"aa38625b9bdedaf00f57","data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5_AAAAAXNSR0IArs4c6QAAAARnQU1-ba2ffd":"948b16577e780e652668","src_monaco-faust_FaustLang_ts-data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8-ee670f":"064d84390c87f69b427c","vendors-node_modules_monaco-editor_esm_vs_basic-languages_abap_abap_js":"f5beab8ab7123dac4bb5","node_modules_monaco-editor_esm_vs_basic-languages_apex_apex_js":"31961b7517dfe8eebe45","node_modules_monaco-editor_esm_vs_basic-languages_azcli_azcli_js":"868b29cdeefaafd5cfb7","node_modules_monaco-editor_esm_vs_basic-languages_bat_bat_js":"09f9aebd27a285656188","node_modules_monaco-editor_esm_vs_basic-languages_bicep_bicep_js":"47323f340e3fefd03d29","node_modules_monaco-editor_esm_vs_basic-languages_cameligo_cameligo_js":"42eead714a7d871c60f0","vendors-node_modules_monaco-editor_esm_vs_basic-languages_clojure_clojure_js":"0a243956b6403557db8c","node_modules_monaco-editor_esm_vs_basic-languages_coffee_coffee_js":"d7ce16f5038f6ba51e51","node_modules_monaco-editor_esm_vs_basic-languages_cpp_cpp_js":"b99b437695d4ade3ef2f","node_modules_monaco-editor_esm_vs_basic-languages_csharp_csharp_js":"8428c65fd96f8b53d382","node_modules_monaco-editor_esm_vs_basic-languages_csp_csp_js":"1a3f8415f753792ccabf","node_modules_monaco-editor_esm_vs_basic-languages_css_css_js":"6d6932de73c132e6f9b3","node_modules_monaco-editor_esm_vs_basic-languages_cypher_cypher_js":"ea5d5de5c34840f3b2d9","node_modules_monaco-editor_esm_vs_basic-languages_dart_dart_js":"cf7510aac667db950e67","node_modules_monaco-editor_esm_vs_basic-languages_dockerfile_dockerfile_js":"ec9ac55b81ff161e2cac","node_modules_monaco-editor_esm_vs_basic-languages_ecl_ecl_js":"f0d8975c9c8d80df2421","vendors-node_modules_monaco-editor_esm_vs_basic-languages_elixir_elixir_js":"c3b6c20c58eaa1fbf8ae","node_modules_monaco-editor_esm_vs_basic-languages_flow9_flow9_js":"faf57641c4bf2f103f25","node_modules_monaco-editor_esm_vs_basic-languages_fsharp_fsharp_js":"62bfcfb6d28b5a4d32c1","vendors-node_modules_monaco-editor_esm_vs_basic-languages_freemarker2_freemarker2_js":"44144b6599302e1abdd4","node_modules_monaco-editor_esm_vs_basic-languages_go_go_js":"2e3aa1eaa307e04216b3","node_modules_monaco-editor_esm_vs_basic-languages_graphql_graphql_js":"2973f5a2a77a9e2bc451","vendors-node_modules_monaco-editor_esm_vs_basic-languages_handlebars_handlebars_js":"f37fbc52e150546c80bc","node_modules_monaco-editor_esm_vs_basic-languages_hcl_hcl_js":"58598ce42c576d618d9f","node_modules_monaco-editor_esm_vs_basic-languages_html_html_js":"828d901e114cc41377b7","node_modules_monaco-editor_esm_vs_basic-languages_ini_ini_js":"1f11664695410dc3bace","node_modules_monaco-editor_esm_vs_basic-languages_java_java_js":"2e7588c460485acce4c5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_javascript_javascript_js":"8a08edc78efbcd0e14f3","vendors-node_modules_monaco-editor_esm_vs_basic-languages_julia_julia_js":"179e546e346713dff4ac","node_modules_monaco-editor_esm_vs_basic-languages_kotlin_kotlin_js":"56c2ad3d43b61670e7f9","node_modules_monaco-editor_esm_vs_basic-languages_less_less_js":"76ad40a8284c399987d0","node_modules_monaco-editor_esm_vs_basic-languages_lexon_lexon_js":"acd711ea8c6a7661e7c2","node_modules_monaco-editor_esm_vs_basic-languages_lua_lua_js":"c32f9074cb5c23c4f288","node_modules_monaco-editor_esm_vs_basic-languages_liquid_liquid_js":"a83ac5529b7d207b8b87","node_modules_monaco-editor_esm_vs_basic-languages_m3_m3_js":"62129917b8b000c9993f","node_modules_monaco-editor_esm_vs_basic-languages_markdown_markdown_js":"cb74851d935568da8659","node_modules_monaco-editor_esm_vs_basic-languages_mips_mips_js":"b3a6345e59c81bd3e172","node_modules_monaco-editor_esm_vs_basic-languages_msdax_msdax_js":"414ea5601a6953631dc2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_mysql_mysql_js":"0d755dc460249badcc85","node_modules_monaco-editor_esm_vs_basic-languages_objective-c_objective-c_js":"258ae672857550e9c4c5","node_modules_monaco-editor_esm_vs_basic-languages_pascal_pascal_js":"0574c771f6b2276906b3","node_modules_monaco-editor_esm_vs_basic-languages_pascaligo_pascaligo_js":"bd50069295e6a126395c","vendors-node_modules_monaco-editor_esm_vs_basic-languages_perl_perl_js":"39ac9e5c65f1d0cbc1d2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_pgsql_pgsql_js":"4238c2c890d73e5ffd54","vendors-node_modules_monaco-editor_esm_vs_basic-languages_php_php_js":"d13a2c721ef2c716bd86","node_modules_monaco-editor_esm_vs_basic-languages_pla_pla_js":"9475deb54982556eb44b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_postiats_postiats_js":"dd179878988c9b3080fb","vendors-node_modules_monaco-editor_esm_vs_basic-languages_powerquery_powerquery_js":"e9dbc0dc494c50b3f7a1","node_modules_monaco-editor_esm_vs_basic-languages_powershell_powershell_js":"7f9c27e7d59a4e443c23","vendors-node_modules_monaco-editor_esm_vs_basic-languages_protobuf_protobuf_js":"c2dca5715c8d79acfbc4","node_modules_monaco-editor_esm_vs_basic-languages_pug_pug_js":"f28370dcccb368d4950d","node_modules_monaco-editor_esm_vs_basic-languages_python_python_js":"02ba839479faf071c7bd","node_modules_monaco-editor_esm_vs_basic-languages_qsharp_qsharp_js":"f14bcbc0d619f3cf4fef","node_modules_monaco-editor_esm_vs_basic-languages_r_r_js":"2fd6e1eefb2c93dec258","vendors-node_modules_monaco-editor_esm_vs_basic-languages_razor_razor_js":"fee315ae8c34f1663fbc","node_modules_monaco-editor_esm_vs_basic-languages_redis_redis_js":"a43a329d9a0f2ba28e79","vendors-node_modules_monaco-editor_esm_vs_basic-languages_redshift_redshift_js":"4c659ad26fa60489e3c5","node_modules_monaco-editor_esm_vs_basic-languages_restructuredtext_restructuredtext_js":"ce850f79523f5eed6dd2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_ruby_ruby_js":"3c7289714441e09eb1e0","node_modules_monaco-editor_esm_vs_basic-languages_rust_rust_js":"9f7ea056cb967b0c8987","node_modules_monaco-editor_esm_vs_basic-languages_sb_sb_js":"38c74530ec2e1493c1aa","vendors-node_modules_monaco-editor_esm_vs_basic-languages_scala_scala_js":"eac39fa6313d29aa8377","node_modules_monaco-editor_esm_vs_basic-languages_scheme_scheme_js":"32e8917a54e878a1c8a2","node_modules_monaco-editor_esm_vs_basic-languages_scss_scss_js":"549d76012363d578343d","node_modules_monaco-editor_esm_vs_basic-languages_shell_shell_js":"e0fdbf8635487c19fa8b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_solidity_solidity_js":"cf39dc8df1c22730e2fb","node_modules_monaco-editor_esm_vs_basic-languages_sophia_sophia_js":"0447c04a2a879545304e","node_modules_monaco-editor_esm_vs_basic-languages_sparql_sparql_js":"c9739bc384cbfa7f747a","vendors-node_modules_monaco-editor_esm_vs_basic-languages_sql_sql_js":"d99df7fd3adb49d6246f","vendors-node_modules_monaco-editor_esm_vs_basic-languages_st_st_js":"9e291f8d5fdabc8e06f6","node_modules_monaco-editor_esm_vs_basic-languages_swift_swift_js":"2eaf5b27729cddd6d571","vendors-node_modules_monaco-editor_esm_vs_basic-languages_systemverilog_systemverilog_js":"c8689573ae36511c2947","node_modules_monaco-editor_esm_vs_basic-languages_tcl_tcl_js":"f2d5f5c76d8aaf825bda","node_modules_monaco-editor_esm_vs_basic-languages_twig_twig_js":"29029c6edbb390e58ded","node_modules_monaco-editor_esm_vs_basic-languages_typescript_typescript_js":"d369d1842b93e47b80a9","node_modules_monaco-editor_esm_vs_basic-languages_vb_vb_js":"5d1469f6125b98d52b19","node_modules_monaco-editor_esm_vs_basic-languages_xml_xml_js":"178a52c986e95473c3b2","node_modules_monaco-editor_esm_vs_basic-languages_yaml_yaml_js":"109d06f6e7817ce46ced","vendors-node_modules_monaco-editor_esm_vs_language_css_cssMode_js":"866fd27138e3d18db6cb","vendors-node_modules_monaco-editor_esm_vs_language_html_htmlMode_js":"11cb856f83cdbefcdcc7","vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js":"df09d3235c2bc37f0f69","vendors-node_modules_monaco-editor_esm_vs_language_typescript_tsMode_js":"1d43e23ea625167c03ed"}[chunkId] + ".js";
+/******/ 			return "js/" + {"vendors-node_modules_faust2webaudio_dist_index_min_js":"ae76be0ffa40166bac09","vendors-include-loader_node_modules_monaco-editor_esm_vs_editor_editor_main_js":"aa38625b9bdedaf00f57","data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5_AAAAAXNSR0IArs4c6QAAAARnQU1-ba2ffd":"948b16577e780e652668","src_monaco-faust_FaustLang_ts-data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8-ee670f":"f20f9256cf031807ad10","vendors-node_modules_monaco-editor_esm_vs_basic-languages_abap_abap_js":"f5beab8ab7123dac4bb5","node_modules_monaco-editor_esm_vs_basic-languages_apex_apex_js":"31961b7517dfe8eebe45","node_modules_monaco-editor_esm_vs_basic-languages_azcli_azcli_js":"868b29cdeefaafd5cfb7","node_modules_monaco-editor_esm_vs_basic-languages_bat_bat_js":"09f9aebd27a285656188","node_modules_monaco-editor_esm_vs_basic-languages_bicep_bicep_js":"47323f340e3fefd03d29","node_modules_monaco-editor_esm_vs_basic-languages_cameligo_cameligo_js":"42eead714a7d871c60f0","vendors-node_modules_monaco-editor_esm_vs_basic-languages_clojure_clojure_js":"0a243956b6403557db8c","node_modules_monaco-editor_esm_vs_basic-languages_coffee_coffee_js":"d7ce16f5038f6ba51e51","node_modules_monaco-editor_esm_vs_basic-languages_cpp_cpp_js":"b99b437695d4ade3ef2f","node_modules_monaco-editor_esm_vs_basic-languages_csharp_csharp_js":"8428c65fd96f8b53d382","node_modules_monaco-editor_esm_vs_basic-languages_csp_csp_js":"1a3f8415f753792ccabf","node_modules_monaco-editor_esm_vs_basic-languages_css_css_js":"6d6932de73c132e6f9b3","node_modules_monaco-editor_esm_vs_basic-languages_cypher_cypher_js":"ea5d5de5c34840f3b2d9","node_modules_monaco-editor_esm_vs_basic-languages_dart_dart_js":"cf7510aac667db950e67","node_modules_monaco-editor_esm_vs_basic-languages_dockerfile_dockerfile_js":"ec9ac55b81ff161e2cac","node_modules_monaco-editor_esm_vs_basic-languages_ecl_ecl_js":"f0d8975c9c8d80df2421","vendors-node_modules_monaco-editor_esm_vs_basic-languages_elixir_elixir_js":"c3b6c20c58eaa1fbf8ae","node_modules_monaco-editor_esm_vs_basic-languages_flow9_flow9_js":"faf57641c4bf2f103f25","node_modules_monaco-editor_esm_vs_basic-languages_fsharp_fsharp_js":"62bfcfb6d28b5a4d32c1","vendors-node_modules_monaco-editor_esm_vs_basic-languages_freemarker2_freemarker2_js":"44144b6599302e1abdd4","node_modules_monaco-editor_esm_vs_basic-languages_go_go_js":"2e3aa1eaa307e04216b3","node_modules_monaco-editor_esm_vs_basic-languages_graphql_graphql_js":"2973f5a2a77a9e2bc451","vendors-node_modules_monaco-editor_esm_vs_basic-languages_handlebars_handlebars_js":"f37fbc52e150546c80bc","node_modules_monaco-editor_esm_vs_basic-languages_hcl_hcl_js":"58598ce42c576d618d9f","node_modules_monaco-editor_esm_vs_basic-languages_html_html_js":"828d901e114cc41377b7","node_modules_monaco-editor_esm_vs_basic-languages_ini_ini_js":"1f11664695410dc3bace","node_modules_monaco-editor_esm_vs_basic-languages_java_java_js":"2e7588c460485acce4c5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_javascript_javascript_js":"8a08edc78efbcd0e14f3","vendors-node_modules_monaco-editor_esm_vs_basic-languages_julia_julia_js":"179e546e346713dff4ac","node_modules_monaco-editor_esm_vs_basic-languages_kotlin_kotlin_js":"56c2ad3d43b61670e7f9","node_modules_monaco-editor_esm_vs_basic-languages_less_less_js":"76ad40a8284c399987d0","node_modules_monaco-editor_esm_vs_basic-languages_lexon_lexon_js":"acd711ea8c6a7661e7c2","node_modules_monaco-editor_esm_vs_basic-languages_lua_lua_js":"c32f9074cb5c23c4f288","node_modules_monaco-editor_esm_vs_basic-languages_liquid_liquid_js":"a83ac5529b7d207b8b87","node_modules_monaco-editor_esm_vs_basic-languages_m3_m3_js":"62129917b8b000c9993f","node_modules_monaco-editor_esm_vs_basic-languages_markdown_markdown_js":"cb74851d935568da8659","node_modules_monaco-editor_esm_vs_basic-languages_mips_mips_js":"b3a6345e59c81bd3e172","node_modules_monaco-editor_esm_vs_basic-languages_msdax_msdax_js":"414ea5601a6953631dc2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_mysql_mysql_js":"0d755dc460249badcc85","node_modules_monaco-editor_esm_vs_basic-languages_objective-c_objective-c_js":"258ae672857550e9c4c5","node_modules_monaco-editor_esm_vs_basic-languages_pascal_pascal_js":"0574c771f6b2276906b3","node_modules_monaco-editor_esm_vs_basic-languages_pascaligo_pascaligo_js":"bd50069295e6a126395c","vendors-node_modules_monaco-editor_esm_vs_basic-languages_perl_perl_js":"39ac9e5c65f1d0cbc1d2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_pgsql_pgsql_js":"4238c2c890d73e5ffd54","vendors-node_modules_monaco-editor_esm_vs_basic-languages_php_php_js":"d13a2c721ef2c716bd86","node_modules_monaco-editor_esm_vs_basic-languages_pla_pla_js":"9475deb54982556eb44b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_postiats_postiats_js":"dd179878988c9b3080fb","vendors-node_modules_monaco-editor_esm_vs_basic-languages_powerquery_powerquery_js":"e9dbc0dc494c50b3f7a1","node_modules_monaco-editor_esm_vs_basic-languages_powershell_powershell_js":"7f9c27e7d59a4e443c23","vendors-node_modules_monaco-editor_esm_vs_basic-languages_protobuf_protobuf_js":"c2dca5715c8d79acfbc4","node_modules_monaco-editor_esm_vs_basic-languages_pug_pug_js":"f28370dcccb368d4950d","node_modules_monaco-editor_esm_vs_basic-languages_python_python_js":"02ba839479faf071c7bd","node_modules_monaco-editor_esm_vs_basic-languages_qsharp_qsharp_js":"f14bcbc0d619f3cf4fef","node_modules_monaco-editor_esm_vs_basic-languages_r_r_js":"2fd6e1eefb2c93dec258","vendors-node_modules_monaco-editor_esm_vs_basic-languages_razor_razor_js":"fee315ae8c34f1663fbc","node_modules_monaco-editor_esm_vs_basic-languages_redis_redis_js":"a43a329d9a0f2ba28e79","vendors-node_modules_monaco-editor_esm_vs_basic-languages_redshift_redshift_js":"4c659ad26fa60489e3c5","node_modules_monaco-editor_esm_vs_basic-languages_restructuredtext_restructuredtext_js":"ce850f79523f5eed6dd2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_ruby_ruby_js":"3c7289714441e09eb1e0","node_modules_monaco-editor_esm_vs_basic-languages_rust_rust_js":"9f7ea056cb967b0c8987","node_modules_monaco-editor_esm_vs_basic-languages_sb_sb_js":"38c74530ec2e1493c1aa","vendors-node_modules_monaco-editor_esm_vs_basic-languages_scala_scala_js":"eac39fa6313d29aa8377","node_modules_monaco-editor_esm_vs_basic-languages_scheme_scheme_js":"32e8917a54e878a1c8a2","node_modules_monaco-editor_esm_vs_basic-languages_scss_scss_js":"549d76012363d578343d","node_modules_monaco-editor_esm_vs_basic-languages_shell_shell_js":"e0fdbf8635487c19fa8b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_solidity_solidity_js":"cf39dc8df1c22730e2fb","node_modules_monaco-editor_esm_vs_basic-languages_sophia_sophia_js":"0447c04a2a879545304e","node_modules_monaco-editor_esm_vs_basic-languages_sparql_sparql_js":"c9739bc384cbfa7f747a","vendors-node_modules_monaco-editor_esm_vs_basic-languages_sql_sql_js":"d99df7fd3adb49d6246f","vendors-node_modules_monaco-editor_esm_vs_basic-languages_st_st_js":"9e291f8d5fdabc8e06f6","node_modules_monaco-editor_esm_vs_basic-languages_swift_swift_js":"2eaf5b27729cddd6d571","vendors-node_modules_monaco-editor_esm_vs_basic-languages_systemverilog_systemverilog_js":"c8689573ae36511c2947","node_modules_monaco-editor_esm_vs_basic-languages_tcl_tcl_js":"f2d5f5c76d8aaf825bda","node_modules_monaco-editor_esm_vs_basic-languages_twig_twig_js":"29029c6edbb390e58ded","node_modules_monaco-editor_esm_vs_basic-languages_typescript_typescript_js":"d369d1842b93e47b80a9","node_modules_monaco-editor_esm_vs_basic-languages_vb_vb_js":"5d1469f6125b98d52b19","node_modules_monaco-editor_esm_vs_basic-languages_xml_xml_js":"178a52c986e95473c3b2","node_modules_monaco-editor_esm_vs_basic-languages_yaml_yaml_js":"109d06f6e7817ce46ced","vendors-node_modules_monaco-editor_esm_vs_language_css_cssMode_js":"866fd27138e3d18db6cb","vendors-node_modules_monaco-editor_esm_vs_language_html_htmlMode_js":"11cb856f83cdbefcdcc7","vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js":"df09d3235c2bc37f0f69","vendors-node_modules_monaco-editor_esm_vs_language_typescript_tsMode_js":"1d43e23ea625167c03ed"}[chunkId] + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -31759,7 +31697,7 @@ module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.89","descri
 /******/ 				script.parentNode && script.parentNode.removeChild(script);
 /******/ 				doneFns && doneFns.forEach((fn) => (fn(event)));
 /******/ 				if(prev) return prev(event);
-/******/ 			};
+/******/ 			}
 /******/ 			var timeout = setTimeout(onScriptComplete.bind(null, undefined, { type: 'timeout', target: script }), 120000);
 /******/ 			script.onerror = onScriptComplete.bind(null, script.onerror);
 /******/ 			script.onload = onScriptComplete.bind(null, script.onload);
@@ -31785,7 +31723,7 @@ module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.89","descri
 /******/ 		var document = __webpack_require__.g.document;
 /******/ 		if (!scriptUrl && document) {
 /******/ 			if (document.currentScript)
-/******/ 				scriptUrl = document.currentScript.src
+/******/ 				scriptUrl = document.currentScript.src;
 /******/ 			if (!scriptUrl) {
 /******/ 				var scripts = document.getElementsByTagName("script");
 /******/ 				if(scripts.length) scriptUrl = scripts[scripts.length - 1].src
@@ -32434,8 +32372,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
           drawSpectrogram: false,
           enableGuiBuilder: false,
           guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
-          exportPlatform: "owl",
-          exportArch: "owl"
+          exportPlatform: "source",
+          exportArch: "cplusplus"
         }, loadEditorParams()), {}, {
           realtimeCompile: false,
           args: {

@@ -465,8 +465,8 @@ $(async () => {
         drawSpectrogram: false,
         enableGuiBuilder: false,
         guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
-        exportPlatform: "owl",
-        exportArch: "owl",
+        exportPlatform: "source",
+        exportArch: "cplusplus",
         ...loadEditorParams(),
         realtimeCompile: false,
         args: { "-I": ["libraries/", "project/"] }
