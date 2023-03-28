@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.911680009576998"
+    prefix: "1.0.911680016004354"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -136,7 +136,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "a15620f01cc62e5eb29df78d8b2b1bfe"
   }, {
     "url": "examples.json",
-    "revision": "afd6f42980efaeb9983438d993358c00"
+    "revision": "77361898837d14d423dbbe3fa0ba5f58"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "378ff3c0e46108270dd0d4a106447b38"
@@ -632,6 +632,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
   }, {
     "url": "examples/misc/capture.dsp",
     "revision": "e7acfb2d353f6efe806b8e136229aafb"
+  }, {
+    "url": "examples/misc/drumkit.dsp",
+    "revision": "b42d2a10ea415a059f2f27fa3a66fabc"
   }, {
     "url": "examples/misc/guitarix.dsp",
     "revision": "dac4fb0721902282accefa422dcdd926"
