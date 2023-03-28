@@ -1150,7 +1150,7 @@ declare version "0.4";
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log domain return-to-threshold detector
 //
@@ -1206,10 +1206,10 @@ with {
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -1266,10 +1266,10 @@ peak_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
@@ -1319,11 +1319,11 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `meter`: a gain reduction meter. It can be implemented like so:
+// * `meter`: a gain reduction meter. It can be implemented with:
 // `meter = _ <: (_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // or it can be omitted by defining `meter = _;`.
 // * `N`: the number of channels of the compressor, known at compile time
@@ -1373,11 +1373,11 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `FBFF`: fade between feed forward (0) and feed back (1) compression.
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `FBFF`: fade between feed forward (0) and feed back (1) compression
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
@@ -1431,7 +1431,7 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -1489,10 +1489,10 @@ RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -1526,7 +1526,7 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 
 //--------------------`(co.)RMS_FBFFcompressor_N_chan`-------------------
 // RMS feed forward / feed back N channels dynamic range compressor.
-// the feedback part has a much higher strength, so they end up sounding similar
+// The feedback part has a much higher strength, so they end up sounding similar.
 // `RMS_FBFFcompressor_N_chan` is a standard Faust function.
 //
 // #### Usage
@@ -1544,12 +1544,12 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `FBFF`: fade between feed forward (0) and feed back (1) compression.
-// * `meter`: a gain reduction meter. It can be implemented like so:
+// * `meter`: a gain reduction meter. It can be implemented with:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
 //
@@ -1563,7 +1563,7 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 //
 // To save CPU we cheat a bit, in a similar way as in the original libs:
 // instead of crosfading between two sets of gain calculators as above,
-// we take the abs of the audio from both the FF and FB, and crossfade between those,
+// we take the `abs` of the audio from both the FF and FB, and crossfade between those,
 // and feed that into one set of gain calculators
 // again the strength is much higher when in FB mode, but implemented differently.
 //
@@ -1614,12 +1614,12 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // the limiter uses a knee half this size
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `meter`: compressor gain reduction meter. It can be implemented like so:
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `meter`: compressor gain reduction meter. It can be implemented with:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
-// * `meterLim`: brickwall limiter gain reduction meter. It can be implemented like so:
+// * `meterLim`: brickwall limiter gain reduction meter. It can be implemented with:
 // `meterLim = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
 //
@@ -1673,7 +1673,7 @@ RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -1721,10 +1721,10 @@ peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -1773,7 +1773,7 @@ peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -1821,10 +1821,10 @@ RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -1872,10 +1872,10 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // Where:
 //
 // * `lad`: lookahead delay in seconds (nonnegative) - gets rounded to nearest sample.
-//          The effective attack time is a good setting.
+//          The effective attack time is a good setting
 // * `ratio`: compression ratio (1 = no compression, >1 means compression)
 //            Ratios: 4 is moderate compression, 8 is strong compression,
-//            12 is mild limiting, and 20 is pretty hard limiting at the threshold.
+//            12 is mild limiting, and 20 is pretty hard limiting at the threshold
 // * `thresh`: dB level threshold above which compression kicks in (0 dB = max level)
 // * `att`: attack time = time constant (sec) when level & compression are going up
 // * `rel`: release time = time constant (sec) coming out of compression
@@ -1908,7 +1908,7 @@ compressor_lad_mono(lad,ratio,thresh,att,rel,x)
 //
 // * `ratio`: compression ratio (1 = no compression, >1 means compression)
 //            Ratios: 4 is moderate compression, 8 is strong compression,
-//            12 is mild limiting, and 20 is pretty hard limiting at the threshold.
+//            12 is mild limiting, and 20 is pretty hard limiting at the threshold
 // * `thresh`: dB level threshold above which compression kicks in (0 dB = max level)
 // * `att`: attack time = time constant (sec) when level & compression are going up
 // * `rel`: release time = time constant (sec) coming out of compression
@@ -2006,19 +2006,19 @@ with {
 // to get you started using compressors as limiters, so all
 // parameters are hardwired here to nominal values.
 //
-// Ratio: 4 (moderate compression)
+// `ratio`: 4 (moderate compression).
 //        See `compressor_mono` comments for a guide to other choices.
 //        Mike Shipley likes this (lowest) setting on the 1176.
 //        (Grammy award-winning mixer for Queen, Tom Petty, etc.).
 //
-// Thresh: -6 dB, meaning 4:1 compression begins at amplitude 1/2.
+// `thresh`: -6 dB, meaning 4:1 compression begins at amplitude 1/2.
 //
-// Att: 800 MICROseconds (Note: scaled by ratio in the 1176)
+// `att`: 800 MICROseconds (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 20-800 microseconds.
 //         Faster attack gives "more bite" (e.g. on vocals),
 //         and makes hard-clipping less likely on fast overloads.
 //
-// Rel: 0.5 s (Note: scaled by ratio in the 1176)
+// `rel`: 0.5 s (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 50-1100 ms.
 //
 // The 1176 also has a "bright, clear eq effect" (use filters.lib if desired).
@@ -2040,21 +2040,22 @@ declare limiter_1176_R4_mono copyright
 declare limiter_1176_R4_mono license "MIT-style STK-4.3 license";
 limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 
+
 //-------------------`(co.)limiter_1176_R4_stereo`---------------------
 // A limiter guards against hard-clipping.  It can be
 // implemented as a compressor having a high threshold (near the
 // clipping level), fast attack and release, and high ratio.  Since
 // the ratio is so high, some knee smoothing is
 // desirable ("soft limiting").  This example is intended
-// to get you started using compressor_* as a limiter, so all
+// to get you started using `compressor_*` as a limiter, so all
 // parameters are hardwired to nominal values here.
 // 
-// Ratios: 4 (moderate compression), 8 (severe compression),
+// `ratio`: 4 (moderate compression), 8 (severe compression),
 //          12 (mild limiting), or 20 to 1 (hard limiting).
 //
-// Att: 20-800 MICROseconds (Note: scaled by ratio in the 1176).
+// `att`: 20-800 MICROseconds (Note: scaled by ratio in the 1176).
 //
-// Rel: 50-1100 ms (Note: scaled by ratio in the 1176).
+// `rel`: 50-1100 ms (Note: scaled by ratio in the 1176).
 //
 // Mike Shipley likes 4:1 (Grammy-winning mixer for Queen, Tom Petty, etc.)
 // Faster attack gives "more bite" (e.g. on vocals).
@@ -2101,10 +2102,10 @@ limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `maxHold`: the maximum hold time in samples, known at compile time
 // * `N`: the number of channels of the gain computer, known at compile time
 //
@@ -2165,10 +2166,10 @@ with {
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `maxHold`: the maximum hold time in samples, known at compile time
@@ -2204,10 +2205,10 @@ expander_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHo
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `maxHold`: the maximum hold time in samples, known at compile time
@@ -2241,9 +2242,9 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 // This version of the limiter uses a peak-holder with smoothed
 // attack and release based on tau time constant filters.
 //
-// It is also possible to use a time constant that is 2PI*tau by dividing 
-// the attack and release times by 2PI. This time constant allows for 
-// the amplitude profile to reach 1 - e^(-2PI) of the final 
+// It is also possible to use a time constant that is `2PI*tau` by dividing 
+// the attack and release times by `2PI`. This time constant allows for 
+// the amplitude profile to reach `1 - e^(-2PI)` of the final 
 // peak after the attack time. The input path can be delayed by the same 
 // amount as the attack time to synchronise input and amplitude profile, 
 // realising a system that is particularly effective as a colourless
@@ -2274,12 +2275,12 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 //
 // Where:
 //
-// * `N` is the number of channels, known at compile-time
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `N`: is the number of channels, known at compile-time
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // Example for a stereo limiter: `limiter_lad_N(2, .01, 1, .01, .1, 1);`
 //
@@ -2317,11 +2318,11 @@ limiter_lad_N(N, LD, ceiling, attack, hold, release) =
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
@@ -2345,11 +2346,11 @@ limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
@@ -2373,11 +2374,11 @@ limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
@@ -2519,7 +2520,7 @@ sec2samp(d) = d*ma.SR;
 
 
 //-------`(ba.)db2linear`----------
-// Converts a loudness in dB to a linear gain (0-1).
+// dB-to-linear value converter. It can be used to convert an amplitude in dB to a linear gain ]0-N].
 // `db2linear` is a standard Faust function.
 //
 // #### Usage
@@ -2530,13 +2531,13 @@ sec2samp(d) = d*ma.SR;
 //
 // Where:
 //
-// * `l`: loudness in dB
+// * `l`: amplitude in dB
 //-----------------------------
 db2linear(l) = pow(10.0, l/20.0);
 
 
 //-------`(ba.)linear2db`----------
-// Converts a linear gain (0-1) to a loudness in dB.
+// linea-to-dB value converter. It can be used to convert a linear gain ]0-N] to an amplitude in dB.
 // `linear2db` is a standard Faust function.
 //
 // #### Usage
@@ -3082,7 +3083,7 @@ with {
 //----------------------------`(ba.)pulse_countdown_loop`----------------------------
 // Starts counting down pulses from 0 to n included. While trig is 1 the output
 // is counting down, while trig is 0 the counter is reset to 0. At the end
-// of the countdown(n) the output value will be reset to 0.
+// of the countdown (n) the output value will be reset to 0.
 //
 // #### Usage
 //
@@ -3221,7 +3222,8 @@ subseq(head, 0, N)         = head;
 //    line(n, x0, x1) = x0 + (ba.time%n)/n * (x1-x0);
 // };
 // ```
-//
+
+
 //-------`(ba.)tabulate`----------
 // Tabulate a 1D function over the range [r0, r1] for access via nearest-value, linear, cubic interpolation.
 // In other words, the uniformly tabulated function can be evaluated using interpolation of order 0 (none), 1 (linear), or 3 (cubic).
@@ -5916,9 +5918,8 @@ declare zcr license "MIT-style STK-4.3 license";
 zcr(period, x) = ma.zc(x) : fi.lptau(period);
 
 
-//==============================================================================
-//  Adaptive Frequency Analysis
-//==============================================================================
+//==============================Adaptive Frequency Analysis===============================
+//========================================================================================
 
 //--------------------`(an.)pitchTracker`---------------------------------------
 //
@@ -5934,7 +5935,7 @@ zcr(period, x) = ma.zc(x) : fi.lptau(period);
 //
 // Where:
 //
-// * `N`: compile-time constant, sets the order of the low-pass filter, which
+// * `N`: a constant numerical expression, sets the order of the low-pass filter, which
 //  determines the sensitivity of the algorithm for signals where partials are
 //  stronger than the fundamental frequency.
 // * `tau`: response time in seconds based on exponentially-weighted averaging with tau time-constant. See <https://ccrma.stanford.edu/~jos/st/Exponentials.html>.
@@ -6000,9 +6001,9 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
                         'y = (x - s) * G + s;
                         's = 2 * (x - s) * G + s;
                     }
-                        with {
-                            G = tan(w(cf) / 2.0) / (1.0 + tan(w(cf) / 2.0));
-                        };
+                    with {
+                        G = tan(w(cf) / 2.0) / (1.0 + tan(w(cf) / 2.0));
+                    };
                 highpass(cf, x) = x - lowpass(cf, x);
                 xRMS = an.rms_envelope_tau(t, x);
                 xLRMS = an.rms_envelope_tau(t, lowpass(fb, x));
@@ -6105,7 +6106,7 @@ mth_octave_analyzer_default = mth_octave_analyzer6e; // default analyzer
 
 
 //============================Mth-Octave Spectral Level===================================
-// Spectral Level: Display (in bar graphs) the average signal level in each spectral band.
+// Spectral Level: display (in bargraphs) the average signal level in each spectral band.
 //========================================================================================
 
 
@@ -6537,9 +6538,10 @@ closed source license or any other license if you decide so.
  ************************************************************************/
 
 si = library("signals.lib");
+ma = library("maths.lib");
 
 declare name "Faust Spatialization Library";
-declare version "0.0";
+declare version "0.1";
 
 //-----------------------`(sp.)panner`------------------------
 // A simple linear stereo panner.
@@ -6558,6 +6560,33 @@ declare version "0.0";
 panner(g) = _ <: *(1-g), *(g);
 
 // TODO: need demo function for panner here
+
+
+//---------------`(sp.)constantPowerPan`----------------------
+// Apply the constant power pan rule to a stereo signal.
+// The channels are not respatialized. Their gains are simply
+// adjusted. A pan of 0 preserves the left channel and silences
+// the right channel. A pan of 1 has the opposite effect.
+// A pan value of 0.5 applies a gain of 0.5 to both channels. 
+//
+// #### Usage
+//
+// ```
+// _,_ : constantPowerPan(p) : _,_
+// ```
+//
+// Where:
+//
+// * `p`: the panning (0-1)
+//------------------------------------------------------------
+declare dryWetMixer author "David Braun";
+
+constantPowerPan(p, x, y) = x*gainLeft, y*gainRight
+with {
+    theta = ma.PI*p/2.;
+    gainLeft = cos(theta)/sqrt(2.);
+    gainRight = sin(theta)/sqrt(2.);
+};
 
 
 //-----------------------`(sp.)spat`------------------------
@@ -7114,7 +7143,7 @@ fi = library("filters.lib");
 si = library("signals.lib");
 
 declare name "Faust Oscillator Library";
-declare version "0.3";
+declare version "0.4";
 
 // This library contains platform specific constants
 pl = library("platform.lib");
@@ -7158,8 +7187,10 @@ coswaveform(tablesize) =
 
 
 // Generic phasor with `reset` and `phase` parameters to be specialised in concrete use-cases.
-// The `reset` must be 1 on first sample for the `phase` to be properly initialized.
-phasor_imp(freq, reset, phase) = (select2(reset, +(freq/ma.SR), phase) : ma.decimal) ~ _;
+phasor_imp(freq, reset, phase) = (select2(hard_reset, +(freq/ma.SR), phase) : ma.decimal) ~ _
+with {
+    hard_reset = (1-1')|reset; // To correctly start at `phase` at the first sample
+};
 
 // Version to be used with tables
 phasor_table(tablesize, freq, reset, phase) = phasor_imp(freq, reset, phase) : *(float(tablesize));
@@ -7578,8 +7609,7 @@ lf_sawpos(freq) = phasor_imp(freq, 0, 0);
 declare lf_sawpos_phase author "Bart Brouns, revised by Stéphane Letz";
 declare lf_sawpos_phase licence "STK-4.3";
 
-// Using an initial '1' to reset to `phase`
-lf_sawpos_phase(freq,phase) = phasor_imp(freq, (1-1'), phase);
+lf_sawpos_phase(freq,phase) = phasor_imp(freq, 0, phase);
 
 
 //-----------------`(os.)lf_sawpos_reset`--------------------
@@ -9407,7 +9437,7 @@ fi = library("filters.lib");
 ef = library("misceffects.lib"); // for compatible copy/paste out of this file
 
 declare name "Misc Effects Library";
-declare version "2.0"; 
+declare version "2.1"; 
 
 //########################################################################################
 /************************************************************************
@@ -9442,7 +9472,7 @@ Michon and Julius O. Smith III, and are released under the
 //
 // * `drive`: distortion amount, between 0 and 1
 // * `offset`: constant added before nonlinearity to give even harmonics. Note: offset
-// 	can introduce a nonzero mean - feed cubicnl output to dcblocker to remove this.
+//    can introduce a nonzero mean - feed cubicnl output to dcblocker to remove this.
 //
 // #### References:
 //
@@ -9567,7 +9597,7 @@ speakerbp(f1,f2) = fi.dcblockerat(f1) : fi.dcblockerat(f1) : fi.lowpass(4,f2);
 // Where:
 //
 // * `M`: number of first-order allpass sections (compile-time only)
-//  	Keep below 20. 8 is typical for medium-sized piano strings.
+//    Keep below 20. 8 is typical for medium-sized piano strings.
 // * `B`: string inharmonicity coefficient (0.0001 is typical)
 // * `f0`: fundamental frequency in Hz
 //
@@ -9786,7 +9816,7 @@ with {
 //
 // #### Description
 //
-// The effect uses N instances of reverseDelayRamped at different phases.
+// The effect uses N instances of `reverseDelayRamped` at different phases.
 //
 //------------------------------------------------------------
 reverseEchoN(N,delMax) = _<: par(i,N,ef.reverseDelayRamped(delMax,i/N));
@@ -9819,6 +9849,7 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
   del = int(startPulse : + ~ +(2)) & (delMax-1);
 };
 
+
 //-------------------`(ef.)uniformPanToStereo(nChans)`------------------
 // Pan nChans channels to the stereo field, spread uniformly left to right.
 //
@@ -9840,8 +9871,8 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
 //
 //------------------------------------------------------------
 uniformPanToStereo(N) = si.bus(N) <: par(i,2*N,_) :
-		      (par(i,N,*(i/(N-1))) :> _),
-		      (par(i,N,*(1-i/(N-1))) :> _);
+              (par(i,N,*(i/(N-1))) :> _),
+              (par(i,N,*(1-i/(N-1))) :> _);
 
 // end jos section
 /************************************************************************
@@ -9879,6 +9910,70 @@ to be LGPL or GPL. For example you are free to choose a commercial or
 closed source license or any other license if you decide so.
 ************************************************************************
 ************************************************************************/
+
+//=====================================Mixing=============================================
+//========================================================================================
+
+// Implementation to share common code
+dwmEnv(wetAmount, FX) = environment
+{
+    N = inputs(FX);
+    wet(wg) = FX : par(i, N, *(wg));
+    dry(dg) = par(i, N, *(dg));
+    out(wg, dg) = si.bus(N) <: wet(wg), dry(dg) :> si.bus(N);
+    
+    dryWetMixer = out(wetGain, dryGain) 
+    with { 
+        wetGain = wetAmount; 
+        dryGain = 1. - wetGain; 
+    };
+    
+    dryWetMixerConstantPower = out(wetGain, dryGain)  
+    with {
+        theta = ma.PI*wetAmount/2.;
+        dryGain = cos(theta)/sqrt(2.);
+        wetGain = sin(theta)/sqrt(2.);
+    };
+};
+
+
+//---------------`(ef.)dryWetMixer`-------------
+// Linear dry-wet mixer for a N inputs and N outputs effect.
+//
+// #### Usage
+//
+// ```
+// si.bus(inputs(FX)) : dryWetMixer(wetAmount, FX) : si.bus(inputs(FX))
+// ```
+//
+// Where:
+//
+// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal and 1 produces only the wet signal
+// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the input bus
+//------------------------------------------------------------
+declare dryWetMixer author "David Braun, revised by Stéphane Letz";
+
+dryWetMixer(wetAmount, FX) = dwmEnv(wetAmount, FX).dryWetMixer;
+
+
+//---------------`(ef.)dryWetMixerConstantPower`-------------
+// Constant-power dry-wet mixer for a N inputs and N outputs effect.
+//
+// #### Usage
+//
+// ```
+// si.bus(inputs(FX)) : dryWetMixerConstantPower(wetAmount, FX) :si.bus(inputs(FX))
+// ```
+//
+// Where:
+//
+// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal and 1 produces only the wet signal
+// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the input bus
+//------------------------------------------------------------
+declare dryWetMixerConstantPower author "David Braun, revised by Stéphane Letz";
+
+dryWetMixerConstantPower(wetAmount, FX) = dwmEnv(wetAmount, FX).dryWetMixerConstantPower;
+
 
 //========================================Time Based======================================
 //========================================================================================
@@ -9929,11 +10024,11 @@ with{
 // * `s`: shift (semitones)
 //-----------------------------------------
 transpose(w, x, s, sig) = de.fdelay(maxDelay,d,sig)*ma.fmin(d/x,1) +
-	de.fdelay(maxDelay,d+w,sig)*(1-ma.fmin(d/x,1))
+    de.fdelay(maxDelay,d+w,sig)*(1-ma.fmin(d/x,1))
 with {
-	maxDelay = 65536;
-	i = 1 - pow(2, s/12);
-	d = i : (+ : +(w) : fmod(_,w)) ~ _;
+    maxDelay = 65536;
+    i = 1 - pow(2, s/12);
+    d = i : (+ : +(w) : fmod(_,w)) ~ _;
 };
 
 //////////////////////////////////Deprecated Functions////////////////////////////////////
@@ -9966,7 +10061,7 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //------------------------------------------------------------
 version =   2,  // MAJOR version when we make incompatible API changes,
             15, // MINOR version when we add functionality in a backwards compatible manner,
-            0;  // PATCH version when we make backwards compatible bug fixes.
+            2;  // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################
@@ -14080,7 +14175,9 @@ gibsen(T,M,L) = tonestack(t.C1,t.C2,t.C3,t.R1,t.R2,t.R3,t.R4,T,M,L)
 // 
 // #### References
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/aanl.lib>
-// * <https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf>
+// * Reducing the Aliasing in Nonlinear Waveshaping Using Continuous-time Convolution,
+// Julian Parker, Vadim Zavalishin, Efflam Le Bivic, DAFX, 2016
+// * <http://dafx16.vutbr.cz/dafxpapers/20-DAFx-16_paper_41-PN.pdf>
 //########################################################################################
 
 ba = library("basics.lib");
@@ -25762,9 +25859,9 @@ no = library("noises.lib");
 declare name "Faust Synthesizer Library";
 declare version "0.1";
 
-//-----------------------------------`(sy.)popFilterPerc`--------------------------------------
+//-----------------------------------`(sy.)popFilterDrum`--------------------------------------
 // A simple percussion instrument based on a "popped" resonant bandpass filter.
-// `popFilterPerc` is a standard Faust function.
+// `popFilterDrum` is a standard Faust function.
 //
 // #### Usage
 //
@@ -32738,6 +32835,38 @@ frwtable(N, S, init, w_idx, x, r_idx) =
         f_idx = ma.frac(r_idx) + int(N / 2);
         i_idx = int(r_idx);
     };
+
+
+//=========================Misc functions=================================================
+//========================================================================================
+
+//---------------`(it.)remap` ---------------------------------------------
+// Linearly map from an input domain to an output range.
+//
+// #### Usage
+//
+// ```
+// _ : remap(from1, from2, to1, to2) : _
+// ```
+//
+// Where:
+//
+// * `from1`: the domain's lower bound.
+// * `from2`: the domain's upper bound.
+// * `to1`: the range's lower bound.
+// * `to2`: the range's upper bound.
+//
+// Note that having `from1` == `from2` in the mapping will cause a division by zero that has to be taken in account.
+//
+// Example: An oscillator remapped from [-1., 1.] to [100., 1000.]
+// ```
+// os.osc(440) : it.remap(-1., 1., 100., 1000.)
+// ```
+//------------------------------------------------------------
+declare remap author "David Braun";
+
+remap(from1, from2, to1, to2, x) = to1 + (x-from1)*(to2-to1)/(from2-from1);
+
 //#################################### demos.lib ##########################################
 // This library contains a set of demo functions based on examples located in the
 // `/examples` folder. Its official prefix is `dm`.
@@ -34271,7 +34400,7 @@ with{
     gain = excitGroup(vslider("[1] Gain",0.5,0,1,0.01) : si.smoo);
 };
 
-//-----------------`(no.)colored_noise`--------------------
+//-----------------`(dm.)colored_noise_demo`--------------------
 // A coloured noise signal generator.
 //
 // #### Usage
@@ -39026,7 +39155,7 @@ pl = library("platform.lib");
 ma = library("maths.lib"); // for compatible copy/paste out of this file
 
 declare name "Faust Math Library";
-declare version "2.5";
+declare version "2.6";
 declare author "GRAME";
 declare copyright "GRAME";
 declare license "LGPL with exception";
@@ -39047,7 +39176,7 @@ declare license "LGPL with exception";
 SR = pl.SR;
 
 //---------------------------------`(ma.)T`---------------------------------------
-// Current sampling rate given at init time. Constant during program execution.
+// Current sample duration in seconds computed from the sampling rate given at init time. Constant during program execution.
 //
 // #### Usage
 //
@@ -39081,6 +39210,30 @@ BS = pl.BS;
 PI = 3.14159265358979323846;
 
 
+//---------------------------------`(ma.)deg2rad`----------------------------------
+// Convert degrees to radians.
+//
+// #### Usage
+//
+// ```
+// 45. : deg2rad
+// ```
+//-----------------------------------------------------------------------------
+deg2rad = _ * PI / 180.;
+
+
+//---------------------------------`(ma.)rad2deg`----------------------------------
+// Convert radians to degrees.
+//
+// #### Usage
+//
+// ```
+// ma.PI : rad2deg
+// ```
+//-----------------------------------------------------------------------------
+rad2deg = _ * 180. / PI;
+
+
 //---------------------------------`(ma.)E`---------------------------------------
 // Constant e in double precision.
 //
@@ -39094,7 +39247,7 @@ E = 2.71828182845904523536;
 
 
 //---------------------------------`(ma.)EPSILON`---------------------------------------
-// Constant EPSILON in simple/double/quad precision.
+// Constant EPSILON available in simple/double/quad precision.
 //
 // #### Usage
 //
@@ -39109,7 +39262,7 @@ fixedpointprecision EPSILON = 2.2204460492503131e-016;
 
 
 //---------------------------------`(ma.)MIN`---------------------------------------
-// Constant MIN in simple/double/quad precision (minimal positive value).
+// Constant MIN available in simple/double/quad precision (minimal positive value).
 //
 // #### Usage
 //
@@ -39124,7 +39277,7 @@ fixedpointprecision MIN = 2.2250738585072014e-308;
 
 
 //---------------------------------`(ma.)MAX`------------------------------
-// Constant MAX in simple/double/quad precision (maximal positive value).
+// Constant MAX available in simple/double/quad precision (maximal positive value).
 //
 // #### Usage
 //

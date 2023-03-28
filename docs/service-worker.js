@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.901679136920698"
+    prefix: "1.0.911680009131432"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -136,7 +136,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "a15620f01cc62e5eb29df78d8b2b1bfe"
   }, {
     "url": "examples.json",
-    "revision": "01b91fa8ef6289746ce094e6cb438172"
+    "revision": "afd6f42980efaeb9983438d993358c00"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "378ff3c0e46108270dd0d4a106447b38"
@@ -586,13 +586,22 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "d56078a56ce09c7866219cd53449b416"
   }, {
     "url": "examples/gameaudio/bubble.dsp",
-    "revision": "6cdae531c2bbfe335d336d5beb38c238"
+    "revision": "3e5ebb8ba597fac908e44ac89fd95698"
+  }, {
+    "url": "examples/gameaudio/door.dsp",
+    "revision": "505116c6a322e7f17845fe41632c08eb"
+  }, {
+    "url": "examples/gameaudio/fire.dsp",
+    "revision": "0d98749c4bb5d36d8cc055f37cc02618"
+  }, {
+    "url": "examples/gameaudio/insects.dsp",
+    "revision": "09f5130828aa7831ad5f12f58eeb5fab"
   }, {
     "url": "examples/gameaudio/rain.dsp",
-    "revision": "91e9c6697efe368a4491bd1152b2fef4"
+    "revision": "5e997641b31d6929d80c63ae7659d516"
   }, {
     "url": "examples/gameaudio/wind.dsp",
-    "revision": "50699dbb58a8d7741bae427e36485271"
+    "revision": "a0d3d60f2fe30c985a38d4925e24c973"
   }, {
     "url": "examples/generator/filterOsc.dsp",
     "revision": "17177d2dd10d8ec116ac64a1628fcc1a"
@@ -635,6 +644,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
   }, {
     "url": "examples/misc/mixer.dsp",
     "revision": "9ace0651dfa39d392decff6d34899e42"
+  }, {
+    "url": "examples/misc/statespace.dsp",
+    "revision": "4aa15e1b9c2918b03798d4832b634691"
   }, {
     "url": "examples/misc/switcher.dsp",
     "revision": "0bc27727e0199856322977d9e511dc1e"
@@ -937,7 +949,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "731a08e01b0e1a383e229ed5dcb0a194"
+    "revision": "516c0bec7fc6ad1e66f74b28453b797c"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
@@ -1098,9 +1110,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "js/acd711ea8c6a7661e7c2.js",
     "revision": null
   }, {
-    "url": "js/ae76be0ffa40166bac09.js",
-    "revision": null
-  }, {
     "url": "js/b3a6345e59c81bd3e172.js",
     "revision": null
   }, {
@@ -1158,6 +1167,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "js/e0fdbf8635487c19fa8b.js",
     "revision": null
   }, {
+    "url": "js/e6c1242e4995f36906f6.js",
+    "revision": null
+  }, {
     "url": "js/e9dbc0dc494c50b3f7a1.js",
     "revision": null
   }, {
@@ -1198,10 +1210,10 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "fccd77576e97d66d49d26ed100fc7f0a"
+    "revision": "d22e8d171d83e2df0c7d5741b9140e8d"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "f9d83829993e442d2e2a7fed4896d4a0"
+    "revision": "974b5914a8a65f1a7d61a30e03d009c9"
   }, {
     "url": "manifest.json",
     "revision": "f3d06b397bb5cb600d762d38b076fc44"
