@@ -578,7 +578,8 @@ $(async () => {
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
-    // Save Params
+
+    // Save Code
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
         compileOptions.saveCode = e.currentTarget.checked;
         saveEditorParams();
@@ -954,7 +955,7 @@ $(async () => {
     /**
      * Right panel options
      */
-    // Keyboard as midi input
+    // Keyboard as MIDI input
     const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
     $(document).on("keydown", (e) => {
         if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;

@@ -12,18 +12,21 @@ The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco
 #### Auto-Compiling
 While the option is turning on, the diagram or the DSP UI will automatically be updated from the code. The editor will also try to tell if there is an error in your code.
 
-#### MIDI API
-MIDI Input is available for Chrome Browser, you can also use the computer keyboard to input MIDI notes. We are using key map as Ablelon Live: A-line and Q-line for keys, ZX to move octave, CV to change velocity.
+#### MIDI input
+MIDI Input is available for Chrome and Firefox browsers. You can also use the computer keyboard to input MIDI notes. We are using key map as Ablelon Live: A-line and Q-line for keys, ZX to move octave, CV to change velocity.
 
 #### Audio Input
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file.
+
+#### Polyphonic mode
+The polyphonic mode can be activated by selecting a number of voices in the "Poly Voices" menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
 
 #### Analyzer
 Both input and output have an audio analyzer. You can switch the visualization between oscilloscope and spectroscope, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
 ## Recommended Browsers
 
-The recommended browsers are the latest versions of Chrome for AudioWorklet, MIDI, but it requires an https connection to use the audio inputs.
+The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
 
 ## Building
 
@@ -98,17 +101,15 @@ npm run serve-docs
 
 Once the site is validated add (using `git add docs`) and commit the entire contents of the `docs` directory then push to git.
 
-
 ### Useful links
 
-- [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website.
+- [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website
 - [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
-
 
 ### Known problems and solutions
 
 - evaluating a heavy DSP program may hang the IDE, which will stay in this state even if you open it again, if the **Real-time Compile** checkbox was set. You can deactivate the checkbox by opening the IDE with the `https://faustide.grame.fr/?realtime_compile=0` URL
-- MIDI is only working in Chrome
-- a bug in the Safari/Webkit implementation (see https://bugs.webkit.org/show_bug.cgi?id=220038) makes the AudioWorklet mode fails. You'll have to use the old ScriptProcessor mode for now
+- MIDI is only working in Chrome and Firefox
+- a bug in the Safari/Webkit implementation (see https://bugs.webkit.org/show_bug.cgi?id=220038) makes the AudioWorklet mode fails or behaves incorrectly. You'll have to use the old ScriptProcessor mode for now
 - the **ExpressVPN** browser extension runs a background loop when "Not Connected" which causes any instantiated FaustUI element to fail after a few seconds. Disabling the extension will solve this problem (not tested on Safari)
 - some users report random problems when exporting the code, like missing labels when exporting on osx/coreaudio-qt. Clearing the browser's cache and cookies can fix the issue
