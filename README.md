@@ -24,7 +24,7 @@ The polyphonic mode can be activated by selecting a number of voices in the _Pol
 #### Audio analyzers
 Tools to display audio signals are available in the left panel:
 
-- **Mode** can be _Offline_, _Continuous_, _On Event_ (to synchronize visuaalisation with control event changes), and _Manual_ (to be triggered with the _Plot (Snapshot)_ button at the bottom
+- **Mode** can be _Offline_, _Continuous_, _On Event_ (to synchronize visuaalisation with control event changes), and _Manual_ (to be triggered with the _Plot (Snapshot)_ button at the bottom)
 
 - **Samples** changes the number of displayed samples (so corresponding to the window width) 
 
