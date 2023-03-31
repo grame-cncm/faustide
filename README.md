@@ -19,10 +19,26 @@ MIDI Input is available for Chrome and Firefox browsers. You can also use the co
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file.
 
 #### Polyphonic mode
-The polyphonic mode can be activated by selecting a number of voices in the "Poly Voices" menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
+The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
 
-#### Analyzer
-Both input and output have an audio analyzer. You can switch the visualization between oscilloscope and spectroscope, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
+#### Audio analyzers
+Tools to display audio signals are available in the left panel:
+
+- **Mode** can be _Offline_, _Continuous_, _On Event_ (to synchronize visuaalisation with control event changes), and _Manual_ (to be triggered with the _Plot (Snapshot)_ button at the bottom
+
+- **Samples** changes the number of displayed samples (so corresponding to the window width) 
+
+- **Sample Rate** displas the currently selected audio device sample rate
+
+- **FFT Size** and **FFT Overlap** value are used whent using _Oscilloscope_ and _Spectroscope_ modes
+
+In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_ and _Spectroscope_.
+
+Both input and output have an audio analyzer in the right panel. In the small audio output window at the bottom, you can switch the visualization between _Oscilloscope_ and _Spectroscope_, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
+
+#### SVG Diagrams
+
+The _Diagram_ tab allows to display the circuit SVG diagram. You can navigate inside it by clicking on the dark blue part to go down in the circuit hierarchy, or clicking on the diagram border to go up in the circuit hierarchy.
 
 ## Recommended Browsers
 
