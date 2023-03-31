@@ -792,7 +792,7 @@ $(async () => {
      * Append options to export model
      */
     // If true, the download argument will force the download of the generated target
-    const exportProgram = (download: boolean) => {
+    const exportProgram = async (download: boolean) => {
         $("#export-download").hide();
         $("#export-loading").css("display", "inline-block");
         $("#def-exp-icon").hide();
@@ -802,13 +802,15 @@ $(async () => {
         const form = new FormData();
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         try {
-            // Code exported on esp32 is not expanded since it uses the remote compilation service "platform.lib" library special version
-            const expandedCode = (compileOptions.exportPlatform === "esp32")
-                ? uiEnv.fileManager.mainCode
-                : faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
-            // eslint-disable-next-line no-console
-            console.log(expandedCode);
-            form.append("file", new File([`declare filename "${name}.dsp"; declare name "${name}"; ${expandedCode}`], `${name}.dsp`));
+            // ZIP mode
+            const zip = new JSZip();
+            // Add all .lib files in the ZIP
+            uiEnv.fileManager._fileList.forEach(n => { if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n)) });
+            // Add the currently selected .dsp file in the ZIP
+            zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
+            // Send the ZIP file
+            const b = await zip.generateAsync({ type: "blob" });
+            form.append("file", new File([b], `${name}.zip`));
         } catch (e) {
             $("#export-loading").css("display", "none");
             $("#def-exp-loading").css("display", "none");
