@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.911680016004354"
+    prefix: "1.0.921680350392002"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -952,7 +952,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "516c0bec7fc6ad1e66f74b28453b797c"
+    "revision": "de2d85ec2e34c38cf8f095cd9e8710ab"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
