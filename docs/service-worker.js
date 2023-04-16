@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.931681668223132"
+    prefix: "1.0.941681670381947"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -136,7 +136,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "a15620f01cc62e5eb29df78d8b2b1bfe"
   }, {
     "url": "examples.json",
-    "revision": "e095a25a2c5e32fc1529239271953680"
+    "revision": "ebf618e6caff81252d1863ec9f33053b"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "378ff3c0e46108270dd0d4a106447b38"
@@ -612,9 +612,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "examples/physicalModeling/faust-stk/NLFfm.dsp",
     "revision": "d1ea99193ffb60358083e2b696dd7797"
   }, {
-    "url": "examples/physicalModeling/faust-stk/bass.dsp",
-    "revision": "70f99854e2819a60a798510d5d9af96c"
-  }, {
     "url": "examples/physicalModeling/faust-stk/blowBottle.dsp",
     "revision": "d7ffd2d473e279244771f212e85095e4"
   }, {
@@ -636,15 +633,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "examples/physicalModeling/faust-stk/glassHarmonica.dsp",
     "revision": "49a803a1056961f3542ea0c91f8e452f"
   }, {
-    "url": "examples/physicalModeling/faust-stk/harpsi.dsp",
-    "revision": "a6de1a788e404903d1f825012b104ef6"
-  }, {
-    "url": "examples/physicalModeling/faust-stk/modalBar.dsp",
-    "revision": "e29ce141112ab1adbdfd141440c80e5d"
-  }, {
-    "url": "examples/physicalModeling/faust-stk/piano.dsp",
-    "revision": "86c4bf0649511cfd53567a35f76086f2"
-  }, {
     "url": "examples/physicalModeling/faust-stk/saxophony.dsp",
     "revision": "b3de4eee3c5c2981b3257d98de8d8249"
   }, {
@@ -662,27 +650,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
   }, {
     "url": "examples/physicalModeling/faust-stk/voiceForm.dsp",
     "revision": "e57f4b98947f560a641efaffe1fcb2c1"
-  }, {
-    "url": "examples/physicalModeling/fds/1dDampedWaveEquation.dsp",
-    "revision": "67980a7e58795bea946baf7b307e54fa"
-  }, {
-    "url": "examples/physicalModeling/fds/2dKirchhoffThinPlate.dsp",
-    "revision": "4a44d8aec7542606c3d18d7ecb4dd34b"
-  }, {
-    "url": "examples/physicalModeling/fds/BowedString.dsp",
-    "revision": "72a7933a41d2d1690f4a0a31be71accd"
-  }, {
-    "url": "examples/physicalModeling/fds/ControllableNonPhysicalString.dsp",
-    "revision": "1cf71502b9675a35a55da3966df1ab83"
-  }, {
-    "url": "examples/physicalModeling/fds/HammeredString.dsp",
-    "revision": "62c338f1ae766a6038dd730273355979"
-  }, {
-    "url": "examples/physicalModeling/fds/PianoHammeredString.dsp",
-    "revision": "07be031bdd72f48d1819186762532dab"
-  }, {
-    "url": "examples/physicalModeling/fds/StiffString.dsp",
-    "revision": "1f242ed86042a7a0bde2561b6cac92c7"
   }, {
     "url": "examples/physicalModeling/flute.dsp",
     "revision": "bec08ca4c3210aabfc32565f0ccb6491"
@@ -865,7 +832,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "89fbed2144972c31a7649412bad5cb92"
+    "revision": "16c5b21aa36cef91821fe5ea4c08b6b5"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
