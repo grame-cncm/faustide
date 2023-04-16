@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.921680350392002"
+    prefix: "1.0.931681668223132"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -136,7 +136,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "a15620f01cc62e5eb29df78d8b2b1bfe"
   }, {
     "url": "examples.json",
-    "revision": "77361898837d14d423dbbe3fa0ba5f58"
+    "revision": "e095a25a2c5e32fc1529239271953680"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "378ff3c0e46108270dd0d4a106447b38"
@@ -254,93 +254,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
   }, {
     "url": "examples/LIBRARIES/webaudio.lib",
     "revision": "bc74700d6e0c65d546df98c30a05980e"
-  }, {
-    "url": "examples/SAM/16_channel_volume/16_channel_volume.dsp",
-    "revision": "b23d1ecc4e0ecb0d904b1a905f79c990"
-  }, {
-    "url": "examples/SAM/16_channel_volume/layout.dsp",
-    "revision": "9573d7064cdf6a9f956ea75744c85d09"
-  }, {
-    "url": "examples/SAM/chorus/chorus.dsp",
-    "revision": "1ba8532ecbe1b1736282d4829e110d46"
-  }, {
-    "url": "examples/SAM/chorus/chorusForBrowser.dsp",
-    "revision": "6c035c3091e8474ea9bd104a2a0286e1"
-  }, {
-    "url": "examples/SAM/chorus/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/echo/echo.dsp",
-    "revision": "b777b81da4d263360a4bddb6de8dd68a"
-  }, {
-    "url": "examples/SAM/echo/echoForBrowser.dsp",
-    "revision": "12c6f48302eff01856d73ca39ddf3be7"
-  }, {
-    "url": "examples/SAM/echo/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/effects/chorus.dsp",
-    "revision": "d3ef91c592c343876b63527acad96ad6"
-  }, {
-    "url": "examples/SAM/effects/echo.dsp",
-    "revision": "f5f56f672dc3c7638bc505d58f7cfa9d"
-  }, {
-    "url": "examples/SAM/effects/effects.dsp",
-    "revision": "2c4cd40523f87a4cf431dfe783cc394c"
-  }, {
-    "url": "examples/SAM/effects/effectsForBrowser.dsp",
-    "revision": "c8944ecd65d2e467bc2e1c84bdb50a03"
-  }, {
-    "url": "examples/SAM/effects/flanger.dsp",
-    "revision": "cec246e31cca874231164b4126fa53e6"
-  }, {
-    "url": "examples/SAM/effects/freeverb.dsp",
-    "revision": "83b32c9914237dee9f5ae70fc98f74f0"
-  }, {
-    "url": "examples/SAM/effects/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/flanger/flanger.dsp",
-    "revision": "7c95b96672323f7cd0b66a3d6613512c"
-  }, {
-    "url": "examples/SAM/flanger/flangerForBrowser.dsp",
-    "revision": "b23663d2d4f5782a40b12656ec7a93cd"
-  }, {
-    "url": "examples/SAM/flanger/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/freeverb/freeverb.dsp",
-    "revision": "456a3b3b7f157e3c86cf4be980f4e7ce"
-  }, {
-    "url": "examples/SAM/freeverb/freeverbForBrowser.dsp",
-    "revision": "b55d3b2f7c0e94d3713fe1229753c355"
-  }, {
-    "url": "examples/SAM/freeverb/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/sawtooth_synth/sawtooth_synth.dsp",
-    "revision": "2078b3cb87b19fd698f843c2649166dc"
-  }, {
-    "url": "examples/SAM/sine_synth/sine_synth.dsp",
-    "revision": "6134db55a32f030f50a284d08ba8de8f"
-  }, {
-    "url": "examples/SAM/virtualAnalog/layout2.dsp",
-    "revision": "12586fadff5974927ef4422134c9486c"
-  }, {
-    "url": "examples/SAM/virtualAnalog/virtualAnalog.dsp",
-    "revision": "74cda607108ed914c9ffba7ce34319f7"
-  }, {
-    "url": "examples/SAM/virtualAnalog/virtualAnalog.touchosc",
-    "revision": "17f4e72940cb158c4418809690f3c6dc"
-  }, {
-    "url": "examples/SAM/virtualAnalog/virtualAnalogForBrowser.dsp",
-    "revision": "5a37f7bdaf1a6d0f0da75ff9554716c4"
-  }, {
-    "url": "examples/SAM/virtualAnalog/virtualAnalogWithEffectsForBrowser.dsp",
-    "revision": "cf6e91f80e6e835a9f41afbd06df869b"
-  }, {
-    "url": "examples/SAM/volume/volume.dsp",
-    "revision": "5727473d3ccfbe555034c9a5b099af92"
   }, {
     "url": "examples/ambisonics/fourSourcesToOcto.dsp",
     "revision": "c35f353d122330513b0bb3a156d22ca3"
@@ -952,7 +865,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "de2d85ec2e34c38cf8f095cd9e8710ab"
+    "revision": "89fbed2144972c31a7649412bad5cb92"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
@@ -1089,6 +1002,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "js/8a08edc78efbcd0e14f3.js",
     "revision": null
   }, {
+    "url": "js/8fe441c7f1e6fb158a59.js",
+    "revision": null
+  }, {
     "url": "js/9475deb54982556eb44b.js",
     "revision": null
   }, {
@@ -1168,9 +1084,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/e0fdbf8635487c19fa8b.js",
-    "revision": null
-  }, {
-    "url": "js/e6c1242e4995f36906f6.js",
     "revision": null
   }, {
     "url": "js/e9dbc0dc494c50b3f7a1.js",
