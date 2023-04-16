@@ -634,6 +634,8 @@ body {
 .dropright.submenu:hover > .dropdown-menu {
     display: block;
     margin-left: -1px;
+    max-height: 300px;
+    overflow-y: auto;
 }
 .btn:focus {
     box-shadow: none !important;
