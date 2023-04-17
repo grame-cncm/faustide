@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.941681670381947"
+    prefix: "1.0.951681733661401"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -832,7 +832,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "16c5b21aa36cef91821fe5ea4c08b6b5"
+    "revision": "44f50a7a2d5f7ab685171fc8c5d1d290"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
@@ -856,6 +856,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/11cb856f83cdbefcdcc7.js",
+    "revision": null
+  }, {
+    "url": "js/13961cc4ad1604019b81.js",
     "revision": null
   }, {
     "url": "js/178a52c986e95473c3b2.js",
@@ -967,9 +970,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/8a08edc78efbcd0e14f3.js",
-    "revision": null
-  }, {
-    "url": "js/8fe441c7f1e6fb158a59.js",
     "revision": null
   }, {
     "url": "js/9475deb54982556eb44b.js",
