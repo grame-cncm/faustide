@@ -21,7 +21,7 @@ You can choose your audio device or use an audio file to simulate the audio inpu
 #### Polyphonic mode
 The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
 
-A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). Note that DSP recompilation has an issue documented [here](#known-problems-and-solutions).
+A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). 
 
 #### Audio analyzers
 Tools to display audio signals are available in the left panel:
@@ -131,4 +131,3 @@ Once the site is validated add (using `git add docs`) and commit the entire cont
 - a bug in the Safari/Webkit implementation (see https://bugs.webkit.org/show_bug.cgi?id=220038) makes the AudioWorklet mode fails or behaves incorrectly. You'll have to use the old ScriptProcessor mode for now
 - the **ExpressVPN** browser extension runs a background loop when "Not Connected" which causes any instantiated FaustUI element to fail after a few seconds. Disabling the extension will solve this problem (not tested on Safari)
 - some users report random problems when exporting the code, like missing labels when exporting on osx/coreaudio-qt. Clearing the browser's cache and cookies can fix the issue
-- in polyphonic mode, changing the effect does not correctly trigger the DSP recompilation. You'll have to change the DSP process itself (like possibly using a `declare dummy "foo"` line and changing its content) to trigger full DSP recompilation. We are working on a better solution.
