@@ -21,7 +21,7 @@ You can choose your audio device or use an audio file to simulate the audio inpu
 #### Polyphonic mode
 The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
 
-A global effect can be aded using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer).
+A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). Note that DSP recompilation has an issue documented in [#known-problems-and-solutions].
 
 #### Audio analyzers
 Tools to display audio signals are available in the left panel:
