@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.951681733661401"
+    prefix: "1.0.951681748553810"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -136,7 +136,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "a15620f01cc62e5eb29df78d8b2b1bfe"
   }, {
     "url": "examples.json",
-    "revision": "ebf618e6caff81252d1863ec9f33053b"
+    "revision": "2d8bc45dd51342a59ef4a8b067f1d0d4"
   }, {
     "url": "examples/LIBRARIES/aanl.lib",
     "revision": "378ff3c0e46108270dd0d4a106447b38"
@@ -542,6 +542,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
   }, {
     "url": "examples/misc/UITester.dsp",
     "revision": "1ca60a8b2274c0ad7d27d444b3f7e8c9"
+  }, {
+    "url": "examples/misc/autopan.dsp",
+    "revision": "cfd243f2f916ef90422fb5360be32040"
   }, {
     "url": "examples/misc/capture.dsp",
     "revision": "e7acfb2d353f6efe806b8e136229aafb"
