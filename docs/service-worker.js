@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.951681748553810"
+    prefix: "1.0.961683808205878"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -835,7 +835,7 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "44f50a7a2d5f7ab685171fc8c5d1d290"
+    "revision": "375eba269e5ed74e80882ddd8dd1616f"
   }, {
     "url": "js/02ba839479faf071c7bd.js",
     "revision": null
@@ -859,9 +859,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/11cb856f83cdbefcdcc7.js",
-    "revision": null
-  }, {
-    "url": "js/13961cc4ad1604019b81.js",
     "revision": null
   }, {
     "url": "js/178a52c986e95473c3b2.js",
@@ -942,6 +939,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "js/58598ce42c576d618d9f.js",
     "revision": null
   }, {
+    "url": "js/5ba785ef61aee588d162.js",
+    "revision": null
+  }, {
     "url": "js/5d1469f6125b98d52b19.js",
     "revision": null
   }, {
@@ -988,6 +988,9 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/a43a329d9a0f2ba28e79.js",
+    "revision": null
+  }, {
+    "url": "js/a43d082ca4315be69f2c.js",
     "revision": null
   }, {
     "url": "js/a83ac5529b7d207b8b87.js",
@@ -1074,9 +1077,6 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "url": "js/f14bcbc0d619f3cf4fef.js",
     "revision": null
   }, {
-    "url": "js/f20f9256cf031807ad10.js",
-    "revision": null
-  }, {
     "url": "js/f28370dcccb368d4950d.js",
     "revision": null
   }, {
@@ -1096,10 +1096,10 @@ define(['./workbox-43d32f61'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "d22e8d171d83e2df0c7d5741b9140e8d"
+    "revision": "aa50fcff6d2f719bb37dfd5ee685a4ce"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "974b5914a8a65f1a7d61a30e03d009c9"
+    "revision": "ffa53d8b86b49231aa34a315b7409796"
   }, {
     "url": "manifest.json",
     "revision": "f3d06b397bb5cb600d762d38b076fc44"
