@@ -18,7 +18,7 @@ import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from 
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as JSZip from "jszip";
-import { FaustScriptProcessorNode, FaustAudioWorkletNode, Faust } from "faust2webaudio";
+import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator } from "@shren/faustwasm";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
@@ -44,7 +44,7 @@ declare global {
         webkitAudioContext: typeof AudioContext;
         AudioWorklet?: typeof AudioWorklet; // eslint-disable-line no-undef
         faustEnv: FaustEditorEnv;
-        faust: Faust;
+        faustCompiler: FaustCompiler;
     }
     interface HTMLMediaElement extends HTMLElement {
         setSinkId?(sinkId: string): Promise<undefined>;
@@ -58,7 +58,7 @@ type FaustEditorEnv = {
     compileOptions: FaustEditorCompileOptions;
     editor: monaco.editor.IStandaloneCodeEditor;
     jQuery: JQueryStatic;
-    faust: Faust;
+    faustCompiler: FaustCompiler;
     recorder: Recorder;
 };
 type FaustEditorAudioEnv = {
@@ -102,31 +102,30 @@ let supportMediaStreamDestination = !!(window.AudioContext
     && !!HTMLAudioElement.prototype.setSinkId;
 
 let server = "https://faustservicecloud.grame.fr";
+const PROJECT_DIR = "/usr/share/project";
 
 $(async () => {
-    /**
-     * Async Load Faust Core
-     * Use import() for webpack code splitting, needs babel-dynamic-import
-     */
-    const { Faust } = await import("faust2webaudio");
-    const faust = new Faust({ wasmLocation: "./libfaust-wasm.wasm", dataLocation: "./libfaust-wasm.data" });
-    await faust.ready;
-    const faustPrimitiveLibFile = await fetch("./primitives.lib");
+    const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
+    const libFaust = new LibFaust(faustModule);
+    const faustCompiler = new FaustCompiler(libFaust);
+    const faustSvgDiagrams = new FaustSvgDiagrams(faustCompiler);
+    const faustPrimitiveLibFile = await fetch("primitives.lib");
     const faustPrimitiveLib = await faustPrimitiveLibFile.text();
-    faust.fs.writeFile("./libraries/primitives.lib", faustPrimitiveLib);
-    window.faust = faust;
+    libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
+    // TODO(ijc): This previously set `window.faust`; what depends on that being set?
+    window.faustCompiler = faustCompiler;
     /**
      * To save dsp table to localStorage
      */
     const saveEditorDspTable = () => {
-        safeStorage.setItem("faust_editor_dsp_table", faust.stringifyDspTable());
+        safeStorage.setItem("faust_editor_dsp_table", FaustCompiler.stringifyDSPFactories());
     };
     /**
      * To load dsp table from localStorage
      */
-    const loadEditorDspTable = () => {
+    const loadEditorDspTable = async () => {
         const str = safeStorage.getItem("faust_editor_dsp_table");
-        if (str) faust.parseDspTable(str);
+        if (str) await FaustCompiler.importDSPFactories(str);
     };
     /**
      * To save editor params to localStorage
@@ -178,7 +177,7 @@ $(async () => {
      *
      */
     const loadProject = () => {
-        faust.fs.mkdir("project");
+        libFaust.fs().mkdir(PROJECT_DIR);
         let project: { [name: string]: string };
         try {
             project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
@@ -186,7 +185,7 @@ $(async () => {
             project = {};
         }
         for (const fileName in project) {
-            faust.fs.writeFile("project/" + fileName, project[fileName]);
+            libFaust.fs().writeFile(PROJECT_DIR + fileName, project[fileName]);
         }
     };
     /**
@@ -207,7 +206,7 @@ $(async () => {
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
-    const { editor, monaco } = await initEditor(faust);
+    const { editor, monaco } = await initEditor(libFaust);
     editor.layout(); // Force editor to fill div
     // Editor and Diagram
     let editorDecoration: string[] = []; // lines with error
@@ -221,7 +220,7 @@ $(async () => {
         let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
         try {
-            strSvg = faust.getDiagram(code, compileOptions.args);
+            strSvg = faustSvgDiagrams.from("main", code, compileOptions.args.join(" "))["process.svg"];
         } catch (e) {
             /**
              * Parse Faust-generated error message to locate the lines with error
@@ -267,7 +266,7 @@ $(async () => {
             initAnalysersUI(uiEnv, audioEnv);
         }
         const { useWorklet, bufferSize, voices, args } = compileOptions;
-        let node: FaustScriptProcessorNode | FaustAudioWorkletNode;
+        let node: FaustScriptProcessorNode<any> | FaustAudioWorkletNode<any>;
         // Recorder, show current recorded length without too many refreshes
         let mediaLengthRaf: number;
         let mediaLengthFrame = 0;
@@ -295,7 +294,14 @@ $(async () => {
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
-            node = await faust.getNode(code, { audioCtx, useWorklet, bufferSize, voices, args, plotHandler });
+            if (voices) {
+                const factory = await new FaustPolyDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
+                node = await factory.createNode(audioCtx, voices, "main", undefined, undefined, undefined, !useWorklet, bufferSize);
+            } else {
+                const factory = await new FaustMonoDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
+                node = await factory.createNode(audioCtx, "main", undefined, !useWorklet, bufferSize);
+            }
+            node.setPlotHandler(plotHandler);
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
@@ -472,7 +478,7 @@ $(async () => {
         exportArch: "cplusplus",
         ...loadEditorParams(),
         realtimeCompile: false,
-        args: { "-I": ["libraries/", "project/"] }
+        args: ["-I", PROJECT_DIR]
     };
     const faustEnv: FaustEditorEnv = {
         audioEnv,
@@ -481,18 +487,18 @@ $(async () => {
         compileOptions,
         jQuery,
         editor,
-        faust,
+        faustCompiler,
         recorder: new Recorder()
     };
     safeStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
-    if (compileOptions.saveCode) loadProject(); else faust.fs.mkdir("project");
+    if (compileOptions.saveCode) loadProject(); else libFaust.fs().mkdir(PROJECT_DIR);
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
-        fs: faust.fs,
-        path: "project/",
+        fs: libFaust.fs(),
+        path: PROJECT_DIR,
         $mainFile: compileOptions.mainFileIndex || 0,
         selectHandler: (fileName, content) => editor.setValue(content),
         saveHandler: (fileName: string, content: string, mainCode: string) => {
@@ -595,7 +601,7 @@ $(async () => {
     // Save DSP
     $<HTMLInputElement>("#check-save-dsp").on("change", (e) => {
         compileOptions.saveDsp = e.currentTarget.checked;
-        loadEditorDspTable();
+        saveEditorDspTable();
         saveEditorParams();
     })[0].checked = compileOptions.saveDsp;
     if (compileOptions.saveDsp) loadEditorDspTable();
@@ -633,11 +639,16 @@ $(async () => {
         else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
         saveEditorParams();
     });
-    $("#btn-plot").on("click", () => {
+    $("#btn-plot").on("click", async () => {
         if (compileOptions.plotMode === "offline") {
             const code = uiEnv.fileManager.mainCode;
             const { args, plot, plotSR } = compileOptions;
-            faustEnv.faust.plot({ code, args, size: plot, sampleRate: plotSR }).then(t => uiEnv.analyser.plotHandler(t, 0, undefined, true));
+            const generator = new FaustMonoDspGenerator();
+            await generator.compile(faustCompiler, "main", code, args.join(" "));
+            const processor = await generator.createOfflineProcessor(plotSR, 128);
+            const output = processor.render([], plot);
+            uiEnv.analyser.plotHandler(output, 0, undefined, true);
+            // TODO(ijc): should this happen immediately (before rendering is done?)
             if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
         } else { // eslint-disable-next-line no-lonely-if
             if (audioEnv.dsp) uiEnv.analyser.draw();
@@ -1441,7 +1452,7 @@ $(async () => {
             const name = uiEnv.fileManager.mainFileNameWithoutSuffix;
             const plat = data.plat || "web";
             const arch = data.arch || "wap";
-            const expandedCode = faust.expandCode(uiEnv.fileManager.mainCode, compileOptions.args);
+            const expandedCode = faustCompiler.expandDSP(uiEnv.fileManager.mainCode, compileOptions.args.join(" "));
             form.append("file", new File([`declare filename "${fileName}"; declare name "${name}"; ${expandedCode}`], `${fileName}`));
             $.ajax({
                 method: "POST",
@@ -1535,7 +1546,7 @@ $(async () => {
         // const $svg = $("#diagram-svg>svg");
         // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = e.currentTarget.href.baseVal;
-        const strSvg = faust.fs.readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" }) as string;
+        const strSvg = libFaust.fs().readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" }) as string;
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
@@ -1812,7 +1823,7 @@ const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) =
  *
  * @returns
  */
-const initEditor = async (faust: Faust) => {
+const initEditor = async (libFaust: LibFaust) => {
     const code = `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1824,7 +1835,7 @@ process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0
 };
 effect = dm.freeverb_demo;`;
     const monaco = await import("monaco-editor");
-    const { faustLang, providers } = await faustLangRegister(monaco, faust);
+    const { faustLang, providers } = await faustLangRegister(monaco, libFaust);
     let saveCode = false;
     try {
         saveCode = JSON.parse(safeStorage.getItem("faust_editor_params")).saveCode;

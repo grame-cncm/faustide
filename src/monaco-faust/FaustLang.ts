@@ -1,5 +1,5 @@
 import { languages, editor, Position, Range } from "monaco-editor";
-import { Faust } from "faust2webaudio";
+import { LibFaust } from "@shren/faustwasm";
 import { Faust2Doc, TFaustDocs, TFaustDoc } from "./Faust2Doc";
 
 import { docSections, faustDocURL } from "../documentation";
@@ -60,8 +60,8 @@ const faustFunctions = [
     "remainder", "floor", "ceil", "rint", "round",
     "seq", "par", "sum", "prod"
 ];
-const getFile = async (fileName: string, faust: Faust) => {
-    if (faust) return faust.fs.readFile("libraries/" + fileName, { encoding: "utf8" }) as string;
+const getFile = async (fileName: string, libFaust: LibFaust) => {
+    if (libFaust) return libFaust.fs().readFile("/usr/share/faust/" + fileName, { encoding: "utf8" }) as string;
     const libPath = "https://faustlibraries.grame.fr/libs/";
     const res = await fetch(libPath + fileName);
     return res.text();
@@ -105,12 +105,12 @@ export const matchDocKey = (doc: TFaustDocs, model: editor.ITextModel, position:
     }
     return null;
 };
-export const getProviders = async (faust: Faust): Promise<FaustLanguageProviders> => {
+export const getProviders = async (libFaust: LibFaust): Promise<FaustLanguageProviders> => {
     let libDocs: TFaustDocs = {};
     let primDocs: TFaustDocs = {};
     try {
-        libDocs = await Faust2Doc.parse("stdfaust.lib", async (fileName: string) => getFile(fileName, faust));
-        primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => getFile(fileName, faust));
+        libDocs = await Faust2Doc.parse("stdfaust.lib", async (fileName: string) => getFile(fileName, libFaust));
+        primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => getFile(fileName, libFaust));
     } catch (e) { console.error(e); } // eslint-disable-line no-empty, no-console
     const faustLib = Object.keys(libDocs);
 
@@ -126,7 +126,7 @@ export const getProviders = async (faust: Faust): Promise<FaustLanguageProviders
                     contents: [
                         { value: `\`\`\`\n${prefix.length ? "(" + prefix.join(".") + ".)" : ""}${name}\n\`\`\`` },
                         { value: doc.doc.replace(/#+/g, "######") },
-                        { value: prefix.length ? `[Detail...](${faustDocURL}/${docSections[prefix.slice(0, 2)]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)" }
+                        { value: prefix.length ? `[Detail...](${faustDocURL}/${docSections[prefix.slice(0, 2).join("")]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()})` : "[Detail...](https://faustdoc.grame.fr/manual/syntax/index.html#faust-syntax)" }
                     ]
                 };
             }

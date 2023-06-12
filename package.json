@@ -55,7 +55,7 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.26.0",
-    "faust2webaudio": "github:grame-cncm/faust2webaudio",
+    "@shren/faustwasm": "^0.0.24",
     "file-loader": "^6.2.0",
     "jquery": "^3.6.0",
     "jszip": "^3.10.0",

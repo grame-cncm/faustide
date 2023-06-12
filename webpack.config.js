@@ -11,7 +11,8 @@ const config = {
   resolve: {
     fallback: {
       "fs": false,
-      "path": false
+      "path": false,
+      "url": false,
     },
     extensions: ['.ts', '.js']
   },
@@ -51,12 +52,6 @@ const config = {
             filename: 'assets/[hash][ext][query]'
         }
       },
-      {
-        test: /\.js$/,
-        use: ["source-map-loader"],
-        include: /faust2webaudio/,
-        enforce: "pre"
-      }
     ]
   },
   plugins: [
@@ -65,7 +60,7 @@ const config = {
       patterns: [
         { context: './src/static', from: './', to: './', globOptions: { ignore: ['**/.DS_Store'] } },
         { from: './src/monaco-faust/primitives.lib', to: './' },
-        { from: './node_modules/faust2webaudio/dist/libfaust-wasm.*', to: './[name][ext]' },
+        { from: './node_modules/@shren/faustwasm/libfaust-wasm/libfaust-wasm.*', to: './faustwasm/[name][ext]' },
         { from: './node_modules/@shren/faust-ui/dist/index.*', to: './faust-ui/[name][ext]' }
       ]
     }),

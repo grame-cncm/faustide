@@ -82,7 +82,9 @@ export class FileManager {
         this.getChildren();
         this.getFiles();
         this.bind();
-        this.select(this._fileList[options.$mainFile]);
+        if (options.$mainFile < this._fileList.length) {
+            this.select(this._fileList[options.$mainFile]);
+        }
     }
     getChildren() {
         for (let i = 0; i < this.container.children.length; i++) {

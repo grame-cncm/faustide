@@ -2,7 +2,7 @@
 
 export const faustDocURL = "https://faustlibraries.grame.fr/libs";
 
-export const docSections = {
+export const docSections: { [key: string]: string } = {
     aa: "aanl",
     an: "analyzers",
     ba: "basics",
