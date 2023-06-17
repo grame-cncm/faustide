@@ -9,8 +9,8 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "conf": () => (/* binding */ conf),
-/* harmony export */   "language": () => (/* binding */ language)
+/* harmony export */   conf: () => (/* binding */ conf),
+/* harmony export */   language: () => (/* binding */ language)
 /* harmony export */ });
 /*!-----------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.

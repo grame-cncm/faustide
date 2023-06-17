@@ -9,7 +9,7 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Faust2Doc": () => (/* binding */ Faust2Doc)
+/* harmony export */   Faust2Doc: () => (/* binding */ Faust2Doc)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ "./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js");
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/esm/defineProperty.js");
@@ -308,7 +308,7 @@ class Faust2Doc {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "Faust2MD": () => (/* binding */ Faust2MD)
+/* harmony export */   Faust2MD: () => (/* binding */ Faust2MD)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/esm/defineProperty.js");
 
@@ -572,11 +572,11 @@ class Faust2MD {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "config": () => (/* binding */ config),
-/* harmony export */   "getProviders": () => (/* binding */ getProviders),
-/* harmony export */   "language": () => (/* binding */ language),
-/* harmony export */   "matchDocKey": () => (/* binding */ matchDocKey),
-/* harmony export */   "theme": () => (/* binding */ theme)
+/* harmony export */   config: () => (/* binding */ config),
+/* harmony export */   getProviders: () => (/* binding */ getProviders),
+/* harmony export */   language: () => (/* binding */ language),
+/* harmony export */   matchDocKey: () => (/* binding */ matchDocKey),
+/* harmony export */   theme: () => (/* binding */ theme)
 /* harmony export */ });
 /* harmony import */ var _babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @babel/runtime/helpers/defineProperty */ "./node_modules/@babel/runtime/helpers/esm/defineProperty.js");
 /* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ "./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js");
