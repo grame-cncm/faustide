@@ -1,5 +1,5 @@
 import * as monaco from "monaco-editor";
-import { LibFaust } from "@shren/faustwasm";
+import { LibFaust } from "@grame/faustwasm";
 
 export const faustLangRegister = async (monacoEditor: typeof monaco, libFaust: LibFaust) => {
     const faustLang = await import("./FaustLang");

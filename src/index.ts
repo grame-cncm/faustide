@@ -18,7 +18,7 @@ import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from 
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as JSZip from "jszip";
-import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator } from "@shren/faustwasm";
+import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator } from "@grame/faustwasm";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";

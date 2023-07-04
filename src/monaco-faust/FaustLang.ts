@@ -1,5 +1,5 @@
 import { languages, editor, Position, Range } from "monaco-editor";
-import { LibFaust } from "@shren/faustwasm";
+import { LibFaust } from "@grame/faustwasm";
 import { Faust2Doc, TFaustDocs, TFaustDoc } from "./Faust2Doc";
 
 import { docSections, faustDocURL } from "../documentation";
