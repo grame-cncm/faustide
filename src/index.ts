@@ -1546,7 +1546,7 @@ $(async () => {
         // const $svg = $("#diagram-svg>svg");
         // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = e.currentTarget.href.baseVal;
-        const strSvg = libFaust.fs().readFile("FaustDSP-svg/" + fileName, { encoding: "utf8" }) as string;
+        const strSvg = libFaust.fs().readFile("main-svg/" + fileName, { encoding: "utf8" }) as string;
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
