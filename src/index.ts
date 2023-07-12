@@ -102,7 +102,7 @@ let supportMediaStreamDestination = !!(window.AudioContext
     && !!HTMLAudioElement.prototype.setSinkId;
 
 let server = "https://faustservicecloud.grame.fr";
-const PROJECT_DIR = "/usr/share/project";
+const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
