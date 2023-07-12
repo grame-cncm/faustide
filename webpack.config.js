@@ -4,6 +4,7 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const WorkboxWebpackPlugin = require('workbox-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const VERSION = require("./src/version");
 
 const config = {
@@ -53,6 +54,13 @@ const config = {
         }
       },
     ]
+  },
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        exclude: /libfaust-wasm\.js/
+      })
+    ],
   },
   plugins: [
     new CleanWebpackPlugin(),
