@@ -2,7 +2,7 @@ import { languages, editor, Position, Range } from "monaco-editor";
 import { Faust } from "faust2webaudio";
 import { Faust2Doc, TFaustDocs, TFaustDoc } from "./Faust2Doc";
 
-import { docSections, faustDocURL } from "../documentation"; 
+import { docSections, faustDocURL } from "../documentation";
 
 export type FaustLanguageProviders = {
     hoverProvider: languages.HoverProvider;
@@ -57,7 +57,7 @@ const faustFunctions = [
     "vgroup", "hgroup", "tgroup", "vbargraph", "hbargraph", "attach",
     "acos", "asin", "atan", "atan2", "cos", "sin", "tan", "exp",
     "log", "log10", "pow", "sqrt", "abs", "min", "max", "fmod",
-    "remainder", "floor", "ceil", "rint",
+    "remainder", "floor", "ceil", "rint", "round",
     "seq", "par", "sum", "prod"
 ];
 const getFile = async (fileName: string, faust: Faust) => {

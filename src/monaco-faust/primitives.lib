@@ -637,12 +637,22 @@ closed source license or any other license if you decide so.
 //-----------------------------
 
 //-------`rint`----------
-// Closest int can be expressed as `rint` in Faust.
+// Closest int (using the current rounding mode) can be expressed as `rint` in Faust.
 //
 // **Example**
 //
 // ```
 // process = 3.6 : rint;
+// ```
+//-----------------------------
+
+//-------`round`----------
+// Nearest int value (regardless of the current rounding mode) can be expressed as `round` in Faust.
+//
+// **Example**
+//
+// ```
+// process = 3.6 : round;
 // ```
 //-----------------------------
 
