@@ -34,7 +34,7 @@ Tools to display audio signals are available in the left panel:
 
 - **FFT Size** and **FFT Overlap** value are used when using _Oscilloscope_ and _Spectroscope_ modes
 
-In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_ and _Spectroscope_.
+In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_ and _Spectroscope_. Note that when used with _On Event_ mode, values in the _Data_ visualisation mode only change at sample 128 (since _On Event_ mode plots from 128 samples before the event).
 
 Both input and output have an audio analyzer in the right panel. In the small audio output window at the bottom, you can switch the visualization between _Oscilloscope_ and _Spectroscope_, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
