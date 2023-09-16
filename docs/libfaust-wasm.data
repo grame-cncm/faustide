@@ -2480,7 +2480,7 @@ it = library("interpolators.lib");
 si = library("signals.lib");
 
 declare name "Faust Basic Element Library";
-declare version "1.11.0";
+declare version "1.11.1";
 
 //=============================Conversion Tools===========================================
 //========================================================================================
@@ -2874,7 +2874,7 @@ time = (+(1)~_) - 1;
 
 
 //-------`(ba.)ramp`----------
-// A linear ramp with a slope of '(+/-)1/n' samples to reach the next value.
+// A linear ramp with a slope of '(+/-)1/n' samples to reach the next target value.
 //
 // #### Usage
 //
@@ -2892,9 +2892,11 @@ ramp = case {
 
 
 //-------`(ba.)line`----------
-// A linear ramp to reach a next value in 'n' samples.
-// Note that the interpolation process is restarted every time
-// the desired output value changes, the interpolation time is sampled only then.
+// A ramp interpolator that generates a linear transition to reach a target value:
+//
+//  - the interpolation process restarts each time a new and distinct input value is received
+//  - it utilizes 'n' samples to achieve the transition to the target value
+//  - after reaching the target value, the output value is maintained.
 //
 // #### Usage
 //
@@ -2903,7 +2905,7 @@ ramp = case {
 // ```
 // Where:
 //
-// * `n`: number of samples to reach the next value
+// * `n`: number of samples to reach the new target received at its input
 //------------------------
 line(n, x) = state ~ (_,_) : !,_
 with {
@@ -3952,6 +3954,83 @@ declare tabulateNd license "AGPL-3.0";
 if(cond,then,else) = select2(cond,else,then);
 // TODO: perhaps it would make more sense to have an if(a,b) and an ifelse(a,b,c)?
 
+//-----------------------------`(ba.)ifNc`--------------------------------------
+// if-then-elseif-then-...elsif-then-else implemented on top of `ba.if`.
+//
+// #### Usage
+//
+// ```
+//    ifNc((cond1,then1, cond2,then2, ... condN,thenN, else)) : _
+// or
+//    ifNc(Nc, cond1,then1, cond2,then2, ... condN,thenN, else) : _
+// or
+//    cond1,then1, cond2,then2, ... condN,thenN, else : ifNc(Nc) : _
+// ```
+//
+// Where:
+//
+// * `Nc` : number of branches/conditions (constant numerical expression)
+// * `condX`: condition
+// * `thenX`: signal selected if condX is the 1st true condition
+// * `else`: signal selected if all the cond1-condN conditions are false
+//
+// #### Example test program
+//
+// ```
+//    process(x,y) = ifNc((x<y,-1, x>y,+1, 0));
+// or
+//    process(x,y) = ifNc(2, x<y,-1, x>y,+1, 0);
+// or
+//    process(x,y) = x<y,-1, x>y,+1, 0 : ifNc(2);
+// ```
+//
+// outputs `-1` if `x<y`, `+1` if `x>y`, `0` otherwise.
+//-----------------------------------------------------------------------------
+ifNc((c,r)) = c,r : ifNc(outputs(r)/2);
+ifNc(1) = if;
+ifNc(n) = _,_,ifNc(n-1) : ifNc(1);
+
+declare ifNc author "Oleg Nesterov";
+declare ifNc copyright "Copyright (C) 2023 Oleg Nesterov <oleg@redhat.com>";
+declare ifNc license "MIT-style STK-4.3 license";
+
+//-----------------------------`(ba.)ifNcNo`-------------------------------------
+// `ifNcNo(Nc,No)` is similar to `ifNc(Nc)` above but then/else branches have `No` outputs.
+//
+// #### Usage
+//
+// ```
+//    ifNcNo(Nc,No, cond1,then1, cond2,then2, ... condN,thenN, else) : sig.bus(No)
+// ```
+//
+// Where:
+//
+// * `Nc` : number of branches/conditions (constant numerical expression)
+// * `No` : number of outputs (constant numerical expression)
+// * `condX`: condition
+// * `thenX`: list of No signals selected if condX is the 1st true condition
+// * `else`: list of No signals selected if all the cond1-condN conditions are false
+//
+// #### Example test program
+//
+// ```
+//    process(x) = ifNcNo(2,3, x<0, -1,-1,-1, x>0, 1,1,1, 0,0,0);
+// ```
+//
+// outputs `-1,-1,-1` if `x<0`, `1,1,1` if `x>0`, `0,0,0` otherwise.
+//-----------------------------------------------------------------------------
+ifNcNo(Nc,No) = si.bus(Ni) <: par(no,No, slice(no) : ifNc(Nc))
+with {
+    Ni = Nc*No + Nc+No;
+    slice(no) = route(Ni,2*Nc+1, (par(nc,Nc, ct(nc,no)),else(no)));
+    ct(nc,no) = nc*(No+1)+1,    2*nc+1,    // cond[nc]
+                nc*(No+1)+2+no, 2*nc+2;    // then[nc][no]
+    else(no)  = Nc*(No+1)+1+no, 2*Nc+1;    // else[no]
+};
+
+declare ifNcNo author "Oleg Nesterov";
+declare ifNcNo copyright "Copyright (C) 2023 Oleg Nesterov <oleg@redhat.com>";
+declare ifNcNo license "MIT-style STK-4.3 license";
 
 //-----------------------------`(ba.)selector`---------------------------------
 // Selects the ith input among n at compile time.
@@ -7979,6 +8058,41 @@ with {
 //------------------------------------------------------------
 osc = oscsin;
 
+//=========================Wave-Table-Based Oscillators===================================
+// Oscillators based on mathematical functions.
+//========================================================================================
+
+//-----------------------`(os.)m_oscsin`------------------------
+// Sine wave oscillator based on the `sin` mathematical function.
+//
+// #### Usage
+//
+// ```
+// m_oscsin(freq) : _
+// ```
+//
+// Where:
+//
+// * `freq`: the frequency in Hz
+//------------------------------------------------------------
+m_oscsin(freq) = lf_sawpos(freq) : *(2*ma.PI) : sin;
+
+
+//-----------------------`(os.)m_osccos`------------------------
+// Sine wave oscillator based on the `sin` mathematical function.
+//
+// #### Usage
+//
+// ```
+// m_osccos(freq) : _
+// ```
+//
+// Where:
+//
+// * `freq`: the frequency in Hz
+//------------------------------------------------------------
+m_osccos(freq) = lf_sawpos(freq) : *(2*ma.PI) : cos;
+
 
 // end GRAME section
 //########################################################################################
@@ -10647,7 +10761,7 @@ echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0
 //------------------------------------------------------------
 version =   2,  // MAJOR version when we make incompatible API changes,
             18, // MINOR version when we add functionality in a backwards compatible manner,
-            0;  // PATCH version when we make backwards compatible bug fixes.
+            1;  // PATCH version when we make backwards compatible bug fixes.
 
             
 //#################################### webaudio.lib ########################################

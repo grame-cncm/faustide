@@ -2981,9 +2981,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @babel/runtime/regenerator */ "./node_modules/@babel/runtime/regenerator/index.js");
 /* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1__);
 
+var _ref;
 
-var faustLangRegister = /*#__PURE__*/function () {
-  var _ref = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee(monacoEditor, faust) {
+var faustLangRegister = function faustLangRegister(_x, _x2) {
+  return (_ref = _ref || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee(monacoEditor, faust) {
     var faustLang, providers;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
@@ -3011,11 +3012,8 @@ var faustLangRegister = /*#__PURE__*/function () {
           return _context.stop();
       }
     }, _callee);
-  }));
-  return function faustLangRegister(_x, _x2) {
-    return _ref.apply(this, arguments);
-  };
-}();
+  }))).apply(this, arguments);
+};
 
 /***/ }),
 
@@ -45963,7 +45961,7 @@ function _typeof(o) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.99","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.1","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.34.1","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.76.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
+module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.100","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.4","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.34.1","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.76.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
 
 /***/ })
 
@@ -46074,7 +46072,7 @@ module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.99","descri
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "js/" + {"vendors-node_modules_faust2webaudio_dist_index_min_js":"a467836a5939d6321507","vendors-include-loader_node_modules_monaco-editor_esm_vs_editor_editor_main_js":"8b6ac31212a599aafd83","data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5_AAAAAXNSR0IArs4c6QAAAARnQU1-ba2ffd":"948b16577e780e652668","src_monaco-faust_FaustLang_ts-data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8-ee670f":"9dc3256ceb84da755f90","vendors-node_modules_monaco-editor_esm_vs_basic-languages_abap_abap_js":"f5beab8ab7123dac4bb5","node_modules_monaco-editor_esm_vs_basic-languages_apex_apex_js":"31961b7517dfe8eebe45","node_modules_monaco-editor_esm_vs_basic-languages_azcli_azcli_js":"868b29cdeefaafd5cfb7","node_modules_monaco-editor_esm_vs_basic-languages_bat_bat_js":"09f9aebd27a285656188","node_modules_monaco-editor_esm_vs_basic-languages_bicep_bicep_js":"47323f340e3fefd03d29","node_modules_monaco-editor_esm_vs_basic-languages_cameligo_cameligo_js":"42eead714a7d871c60f0","vendors-node_modules_monaco-editor_esm_vs_basic-languages_clojure_clojure_js":"0a243956b6403557db8c","node_modules_monaco-editor_esm_vs_basic-languages_coffee_coffee_js":"d7ce16f5038f6ba51e51","node_modules_monaco-editor_esm_vs_basic-languages_cpp_cpp_js":"b99b437695d4ade3ef2f","node_modules_monaco-editor_esm_vs_basic-languages_csharp_csharp_js":"8428c65fd96f8b53d382","node_modules_monaco-editor_esm_vs_basic-languages_csp_csp_js":"1a3f8415f753792ccabf","node_modules_monaco-editor_esm_vs_basic-languages_css_css_js":"6d6932de73c132e6f9b3","node_modules_monaco-editor_esm_vs_basic-languages_cypher_cypher_js":"ea5d5de5c34840f3b2d9","node_modules_monaco-editor_esm_vs_basic-languages_dart_dart_js":"cf7510aac667db950e67","node_modules_monaco-editor_esm_vs_basic-languages_dockerfile_dockerfile_js":"ec9ac55b81ff161e2cac","node_modules_monaco-editor_esm_vs_basic-languages_ecl_ecl_js":"f0d8975c9c8d80df2421","vendors-node_modules_monaco-editor_esm_vs_basic-languages_elixir_elixir_js":"c3b6c20c58eaa1fbf8ae","node_modules_monaco-editor_esm_vs_basic-languages_flow9_flow9_js":"faf57641c4bf2f103f25","node_modules_monaco-editor_esm_vs_basic-languages_fsharp_fsharp_js":"62bfcfb6d28b5a4d32c1","vendors-node_modules_monaco-editor_esm_vs_basic-languages_freemarker2_freemarker2_js":"4ec14e4795cc53d386b0","node_modules_monaco-editor_esm_vs_basic-languages_go_go_js":"2e3aa1eaa307e04216b3","node_modules_monaco-editor_esm_vs_basic-languages_graphql_graphql_js":"2973f5a2a77a9e2bc451","vendors-node_modules_monaco-editor_esm_vs_basic-languages_handlebars_handlebars_js":"5e43715aa7b66e51bdfc","node_modules_monaco-editor_esm_vs_basic-languages_hcl_hcl_js":"58598ce42c576d618d9f","node_modules_monaco-editor_esm_vs_basic-languages_html_html_js":"320fd7c69f6f0c963981","node_modules_monaco-editor_esm_vs_basic-languages_ini_ini_js":"1f11664695410dc3bace","node_modules_monaco-editor_esm_vs_basic-languages_java_java_js":"2e7588c460485acce4c5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_javascript_javascript_js":"ddfbcae81b17314a59f5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_julia_julia_js":"179e546e346713dff4ac","node_modules_monaco-editor_esm_vs_basic-languages_kotlin_kotlin_js":"56c2ad3d43b61670e7f9","node_modules_monaco-editor_esm_vs_basic-languages_less_less_js":"76ad40a8284c399987d0","node_modules_monaco-editor_esm_vs_basic-languages_lexon_lexon_js":"acd711ea8c6a7661e7c2","node_modules_monaco-editor_esm_vs_basic-languages_lua_lua_js":"c32f9074cb5c23c4f288","node_modules_monaco-editor_esm_vs_basic-languages_liquid_liquid_js":"ce06a165902be7d2c203","node_modules_monaco-editor_esm_vs_basic-languages_m3_m3_js":"62129917b8b000c9993f","node_modules_monaco-editor_esm_vs_basic-languages_markdown_markdown_js":"cb74851d935568da8659","node_modules_monaco-editor_esm_vs_basic-languages_mips_mips_js":"b3a6345e59c81bd3e172","node_modules_monaco-editor_esm_vs_basic-languages_msdax_msdax_js":"414ea5601a6953631dc2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_mysql_mysql_js":"0d755dc460249badcc85","node_modules_monaco-editor_esm_vs_basic-languages_objective-c_objective-c_js":"258ae672857550e9c4c5","node_modules_monaco-editor_esm_vs_basic-languages_pascal_pascal_js":"0574c771f6b2276906b3","node_modules_monaco-editor_esm_vs_basic-languages_pascaligo_pascaligo_js":"bd50069295e6a126395c","vendors-node_modules_monaco-editor_esm_vs_basic-languages_perl_perl_js":"39ac9e5c65f1d0cbc1d2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_pgsql_pgsql_js":"4238c2c890d73e5ffd54","vendors-node_modules_monaco-editor_esm_vs_basic-languages_php_php_js":"d13a2c721ef2c716bd86","node_modules_monaco-editor_esm_vs_basic-languages_pla_pla_js":"9475deb54982556eb44b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_postiats_postiats_js":"dd179878988c9b3080fb","vendors-node_modules_monaco-editor_esm_vs_basic-languages_powerquery_powerquery_js":"e9dbc0dc494c50b3f7a1","node_modules_monaco-editor_esm_vs_basic-languages_powershell_powershell_js":"7f9c27e7d59a4e443c23","vendors-node_modules_monaco-editor_esm_vs_basic-languages_protobuf_protobuf_js":"c2dca5715c8d79acfbc4","node_modules_monaco-editor_esm_vs_basic-languages_pug_pug_js":"f28370dcccb368d4950d","node_modules_monaco-editor_esm_vs_basic-languages_python_python_js":"9a267724e1ed34e00b60","node_modules_monaco-editor_esm_vs_basic-languages_qsharp_qsharp_js":"f14bcbc0d619f3cf4fef","node_modules_monaco-editor_esm_vs_basic-languages_r_r_js":"2fd6e1eefb2c93dec258","vendors-node_modules_monaco-editor_esm_vs_basic-languages_razor_razor_js":"11395fdcf0c824378b1b","node_modules_monaco-editor_esm_vs_basic-languages_redis_redis_js":"a43a329d9a0f2ba28e79","vendors-node_modules_monaco-editor_esm_vs_basic-languages_redshift_redshift_js":"4c659ad26fa60489e3c5","node_modules_monaco-editor_esm_vs_basic-languages_restructuredtext_restructuredtext_js":"ce850f79523f5eed6dd2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_ruby_ruby_js":"3c7289714441e09eb1e0","node_modules_monaco-editor_esm_vs_basic-languages_rust_rust_js":"9f7ea056cb967b0c8987","node_modules_monaco-editor_esm_vs_basic-languages_sb_sb_js":"38c74530ec2e1493c1aa","vendors-node_modules_monaco-editor_esm_vs_basic-languages_scala_scala_js":"eac39fa6313d29aa8377","node_modules_monaco-editor_esm_vs_basic-languages_scheme_scheme_js":"32e8917a54e878a1c8a2","node_modules_monaco-editor_esm_vs_basic-languages_scss_scss_js":"549d76012363d578343d","node_modules_monaco-editor_esm_vs_basic-languages_shell_shell_js":"e0fdbf8635487c19fa8b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_solidity_solidity_js":"cf39dc8df1c22730e2fb","node_modules_monaco-editor_esm_vs_basic-languages_sophia_sophia_js":"0447c04a2a879545304e","node_modules_monaco-editor_esm_vs_basic-languages_sparql_sparql_js":"c9739bc384cbfa7f747a","vendors-node_modules_monaco-editor_esm_vs_basic-languages_sql_sql_js":"d99df7fd3adb49d6246f","vendors-node_modules_monaco-editor_esm_vs_basic-languages_st_st_js":"9e291f8d5fdabc8e06f6","node_modules_monaco-editor_esm_vs_basic-languages_swift_swift_js":"2eaf5b27729cddd6d571","vendors-node_modules_monaco-editor_esm_vs_basic-languages_systemverilog_systemverilog_js":"c8689573ae36511c2947","node_modules_monaco-editor_esm_vs_basic-languages_tcl_tcl_js":"f2d5f5c76d8aaf825bda","node_modules_monaco-editor_esm_vs_basic-languages_twig_twig_js":"29029c6edbb390e58ded","node_modules_monaco-editor_esm_vs_basic-languages_typescript_typescript_js":"ede0094b887c30966f8e","node_modules_monaco-editor_esm_vs_basic-languages_vb_vb_js":"5d1469f6125b98d52b19","node_modules_monaco-editor_esm_vs_basic-languages_xml_xml_js":"e801aec24771652c3eea","node_modules_monaco-editor_esm_vs_basic-languages_yaml_yaml_js":"181a50fbc90e05c4a7cf","vendors-node_modules_monaco-editor_esm_vs_language_css_cssMode_js":"344a92f28a4d49a67c0e","vendors-node_modules_monaco-editor_esm_vs_language_html_htmlMode_js":"73fb08de6b3e7fed6871","vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js":"353dbadf3a7ec09d6178","vendors-node_modules_monaco-editor_esm_vs_language_typescript_tsMode_js":"2760fcb9bfb07822b69c"}[chunkId] + ".js";
+/******/ 			return "js/" + {"vendors-node_modules_faust2webaudio_dist_index_min_js":"24399b574b10dc5ae595","vendors-include-loader_node_modules_monaco-editor_esm_vs_editor_editor_main_js":"8b6ac31212a599aafd83","data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5_AAAAAXNSR0IArs4c6QAAAARnQU1-ba2ffd":"948b16577e780e652668","src_monaco-faust_FaustLang_ts-data_image_png_base64_iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8-ee670f":"115e729199e5d9b108f2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_abap_abap_js":"f5beab8ab7123dac4bb5","node_modules_monaco-editor_esm_vs_basic-languages_apex_apex_js":"31961b7517dfe8eebe45","node_modules_monaco-editor_esm_vs_basic-languages_azcli_azcli_js":"868b29cdeefaafd5cfb7","node_modules_monaco-editor_esm_vs_basic-languages_bat_bat_js":"09f9aebd27a285656188","node_modules_monaco-editor_esm_vs_basic-languages_bicep_bicep_js":"47323f340e3fefd03d29","node_modules_monaco-editor_esm_vs_basic-languages_cameligo_cameligo_js":"42eead714a7d871c60f0","vendors-node_modules_monaco-editor_esm_vs_basic-languages_clojure_clojure_js":"0a243956b6403557db8c","node_modules_monaco-editor_esm_vs_basic-languages_coffee_coffee_js":"d7ce16f5038f6ba51e51","node_modules_monaco-editor_esm_vs_basic-languages_cpp_cpp_js":"b99b437695d4ade3ef2f","node_modules_monaco-editor_esm_vs_basic-languages_csharp_csharp_js":"8428c65fd96f8b53d382","node_modules_monaco-editor_esm_vs_basic-languages_csp_csp_js":"1a3f8415f753792ccabf","node_modules_monaco-editor_esm_vs_basic-languages_css_css_js":"6d6932de73c132e6f9b3","node_modules_monaco-editor_esm_vs_basic-languages_cypher_cypher_js":"ea5d5de5c34840f3b2d9","node_modules_monaco-editor_esm_vs_basic-languages_dart_dart_js":"cf7510aac667db950e67","node_modules_monaco-editor_esm_vs_basic-languages_dockerfile_dockerfile_js":"ec9ac55b81ff161e2cac","node_modules_monaco-editor_esm_vs_basic-languages_ecl_ecl_js":"f0d8975c9c8d80df2421","vendors-node_modules_monaco-editor_esm_vs_basic-languages_elixir_elixir_js":"c3b6c20c58eaa1fbf8ae","node_modules_monaco-editor_esm_vs_basic-languages_flow9_flow9_js":"faf57641c4bf2f103f25","node_modules_monaco-editor_esm_vs_basic-languages_fsharp_fsharp_js":"62bfcfb6d28b5a4d32c1","vendors-node_modules_monaco-editor_esm_vs_basic-languages_freemarker2_freemarker2_js":"4ec14e4795cc53d386b0","node_modules_monaco-editor_esm_vs_basic-languages_go_go_js":"2e3aa1eaa307e04216b3","node_modules_monaco-editor_esm_vs_basic-languages_graphql_graphql_js":"2973f5a2a77a9e2bc451","vendors-node_modules_monaco-editor_esm_vs_basic-languages_handlebars_handlebars_js":"5e43715aa7b66e51bdfc","node_modules_monaco-editor_esm_vs_basic-languages_hcl_hcl_js":"58598ce42c576d618d9f","node_modules_monaco-editor_esm_vs_basic-languages_html_html_js":"320fd7c69f6f0c963981","node_modules_monaco-editor_esm_vs_basic-languages_ini_ini_js":"1f11664695410dc3bace","node_modules_monaco-editor_esm_vs_basic-languages_java_java_js":"2e7588c460485acce4c5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_javascript_javascript_js":"ddfbcae81b17314a59f5","vendors-node_modules_monaco-editor_esm_vs_basic-languages_julia_julia_js":"179e546e346713dff4ac","node_modules_monaco-editor_esm_vs_basic-languages_kotlin_kotlin_js":"56c2ad3d43b61670e7f9","node_modules_monaco-editor_esm_vs_basic-languages_less_less_js":"76ad40a8284c399987d0","node_modules_monaco-editor_esm_vs_basic-languages_lexon_lexon_js":"acd711ea8c6a7661e7c2","node_modules_monaco-editor_esm_vs_basic-languages_lua_lua_js":"c32f9074cb5c23c4f288","node_modules_monaco-editor_esm_vs_basic-languages_liquid_liquid_js":"ce06a165902be7d2c203","node_modules_monaco-editor_esm_vs_basic-languages_m3_m3_js":"62129917b8b000c9993f","node_modules_monaco-editor_esm_vs_basic-languages_markdown_markdown_js":"cb74851d935568da8659","node_modules_monaco-editor_esm_vs_basic-languages_mips_mips_js":"b3a6345e59c81bd3e172","node_modules_monaco-editor_esm_vs_basic-languages_msdax_msdax_js":"414ea5601a6953631dc2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_mysql_mysql_js":"0d755dc460249badcc85","node_modules_monaco-editor_esm_vs_basic-languages_objective-c_objective-c_js":"258ae672857550e9c4c5","node_modules_monaco-editor_esm_vs_basic-languages_pascal_pascal_js":"0574c771f6b2276906b3","node_modules_monaco-editor_esm_vs_basic-languages_pascaligo_pascaligo_js":"bd50069295e6a126395c","vendors-node_modules_monaco-editor_esm_vs_basic-languages_perl_perl_js":"39ac9e5c65f1d0cbc1d2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_pgsql_pgsql_js":"4238c2c890d73e5ffd54","vendors-node_modules_monaco-editor_esm_vs_basic-languages_php_php_js":"d13a2c721ef2c716bd86","node_modules_monaco-editor_esm_vs_basic-languages_pla_pla_js":"9475deb54982556eb44b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_postiats_postiats_js":"dd179878988c9b3080fb","vendors-node_modules_monaco-editor_esm_vs_basic-languages_powerquery_powerquery_js":"e9dbc0dc494c50b3f7a1","node_modules_monaco-editor_esm_vs_basic-languages_powershell_powershell_js":"7f9c27e7d59a4e443c23","vendors-node_modules_monaco-editor_esm_vs_basic-languages_protobuf_protobuf_js":"c2dca5715c8d79acfbc4","node_modules_monaco-editor_esm_vs_basic-languages_pug_pug_js":"f28370dcccb368d4950d","node_modules_monaco-editor_esm_vs_basic-languages_python_python_js":"9a267724e1ed34e00b60","node_modules_monaco-editor_esm_vs_basic-languages_qsharp_qsharp_js":"f14bcbc0d619f3cf4fef","node_modules_monaco-editor_esm_vs_basic-languages_r_r_js":"2fd6e1eefb2c93dec258","vendors-node_modules_monaco-editor_esm_vs_basic-languages_razor_razor_js":"11395fdcf0c824378b1b","node_modules_monaco-editor_esm_vs_basic-languages_redis_redis_js":"a43a329d9a0f2ba28e79","vendors-node_modules_monaco-editor_esm_vs_basic-languages_redshift_redshift_js":"4c659ad26fa60489e3c5","node_modules_monaco-editor_esm_vs_basic-languages_restructuredtext_restructuredtext_js":"ce850f79523f5eed6dd2","vendors-node_modules_monaco-editor_esm_vs_basic-languages_ruby_ruby_js":"3c7289714441e09eb1e0","node_modules_monaco-editor_esm_vs_basic-languages_rust_rust_js":"9f7ea056cb967b0c8987","node_modules_monaco-editor_esm_vs_basic-languages_sb_sb_js":"38c74530ec2e1493c1aa","vendors-node_modules_monaco-editor_esm_vs_basic-languages_scala_scala_js":"eac39fa6313d29aa8377","node_modules_monaco-editor_esm_vs_basic-languages_scheme_scheme_js":"32e8917a54e878a1c8a2","node_modules_monaco-editor_esm_vs_basic-languages_scss_scss_js":"549d76012363d578343d","node_modules_monaco-editor_esm_vs_basic-languages_shell_shell_js":"e0fdbf8635487c19fa8b","vendors-node_modules_monaco-editor_esm_vs_basic-languages_solidity_solidity_js":"cf39dc8df1c22730e2fb","node_modules_monaco-editor_esm_vs_basic-languages_sophia_sophia_js":"0447c04a2a879545304e","node_modules_monaco-editor_esm_vs_basic-languages_sparql_sparql_js":"c9739bc384cbfa7f747a","vendors-node_modules_monaco-editor_esm_vs_basic-languages_sql_sql_js":"d99df7fd3adb49d6246f","vendors-node_modules_monaco-editor_esm_vs_basic-languages_st_st_js":"9e291f8d5fdabc8e06f6","node_modules_monaco-editor_esm_vs_basic-languages_swift_swift_js":"2eaf5b27729cddd6d571","vendors-node_modules_monaco-editor_esm_vs_basic-languages_systemverilog_systemverilog_js":"c8689573ae36511c2947","node_modules_monaco-editor_esm_vs_basic-languages_tcl_tcl_js":"f2d5f5c76d8aaf825bda","node_modules_monaco-editor_esm_vs_basic-languages_twig_twig_js":"29029c6edbb390e58ded","node_modules_monaco-editor_esm_vs_basic-languages_typescript_typescript_js":"ede0094b887c30966f8e","node_modules_monaco-editor_esm_vs_basic-languages_vb_vb_js":"5d1469f6125b98d52b19","node_modules_monaco-editor_esm_vs_basic-languages_xml_xml_js":"e801aec24771652c3eea","node_modules_monaco-editor_esm_vs_basic-languages_yaml_yaml_js":"181a50fbc90e05c4a7cf","vendors-node_modules_monaco-editor_esm_vs_language_css_cssMode_js":"344a92f28a4d49a67c0e","vendors-node_modules_monaco-editor_esm_vs_language_html_htmlMode_js":"73fb08de6b3e7fed6871","vendors-node_modules_monaco-editor_esm_vs_language_json_jsonMode_js":"353dbadf3a7ec09d6178","vendors-node_modules_monaco-editor_esm_vs_language_typescript_tsMode_js":"2760fcb9bfb07822b69c"}[chunkId] + ".js";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -46317,6 +46315,7 @@ __webpack_require__.r(__webpack_exports__);
 /* provided dependency */ var jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 
 
+var _ref14, _ref15;
 function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { (0,_babel_runtime_helpers_defineProperty__WEBPACK_IMPORTED_MODULE_0__["default"])(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 
@@ -46361,6 +46360,7 @@ var supportAudioWorklet = !!window.AudioWorklet;
 var supportMediaStreamDestination = !!(window.AudioContext || window.webkitAudioContext).prototype.createMediaStreamDestination && !!HTMLAudioElement.prototype.setSinkId;
 var server = "https://faustservicecloud.grame.fr";
 $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee13() {
+  var _ref2, _ref3, _ref5, _ref6, _ref7, _ref8, _ref9;
   var _yield$import, Faust, faust, faustPrimitiveLibFile, faustPrimitiveLib, saveEditorDspTable, loadEditorDspTable, saveEditorParams, loadEditorParams, loadDspParams, saveDspParams, dspParams, loadProject, showError, clearError, _yield$initEditor, editor, monaco, editorDecoration, updateDiagram, isCompilingDsp, runDsp, rtCompileTimer, audioEnv, midiEnv, uiEnv, compileOptions, faustEnv, loadURLParams, exportProgram, getTargets, makeURL, key2Midi, handleMIDIConnect, handleMIDIDisconnect, wavesurfer, handleMediaDeviceChange, devices, $selectInput, $selectOutput, svgDragged;
   return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee13$(_context13) {
     while (1) switch (_context13.prev = _context13.next) {
@@ -46539,8 +46539,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
          * @param {string} code
          * @returns {{ success: boolean; error?: Error }}
          */
-        runDsp = /*#__PURE__*/function () {
-          var _ref2 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee(codeIn) {
+        runDsp = function runDsp(_x) {
+          return (_ref2 = _ref2 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee(codeIn) {
             var code, audioCtx, gain, splitter, analyser, useWorklet, bufferSize, voices, args, node, mediaLengthRaf, mediaLengthFrame, mediaLengthSpan, mediaLengthDisplay, plotHandler, dsp, _path, channelsCount, uiWindow, bindUI, guiBuilder;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee$(_context) {
               while (1) switch (_context.prev = _context.next) {
@@ -46773,11 +46773,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context.stop();
               }
             }, _callee, null, [[17, 25]]);
-          }));
-          return function runDsp(_x) {
-            return _ref2.apply(this, arguments);
-          };
-        }();
+          }))).apply(this, arguments);
+        };
         audioEnv = {
           dspConnectedToInput: false,
           dspConnectedToOutput: false,
@@ -47059,8 +47056,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
          * @param {string} url
          * @returns
          */
-        loadURLParams = /*#__PURE__*/function () {
-          var _ref3 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee2(url) {
+        loadURLParams = function loadURLParams(_x2) {
+          return (_ref3 = _ref3 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee2(url) {
             var urlParams, voices, bufferSize, code, codeURL, _name, response, b64Code, _name2, compileResult;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee2$(_context2) {
               while (1) switch (_context2.prev = _context2.next) {
@@ -47158,11 +47155,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context2.stop();
               }
             }, _callee2, null, [[9, 18]]);
-          }));
-          return function loadURLParams(_x2) {
-            return _ref3.apply(this, arguments);
-          };
-        }(); // Upload
+          }))).apply(this, arguments);
+        }; // Upload
         $("#btn-upload").on("click", () => {
           $("#input-upload").click();
         });
@@ -47213,8 +47207,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
          * Append options to export model
          */
         // If true, the download argument will force the download of the generated target
-        exportProgram = /*#__PURE__*/function () {
-          var _ref5 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee4(download) {
+        exportProgram = function exportProgram(_x3) {
+          return (_ref5 = _ref5 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee4(download) {
             var form, name, zip, b;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee4$(_context4) {
               while (1) switch (_context4.prev = _context4.next) {
@@ -47311,13 +47305,10 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context4.stop();
               }
             }, _callee4, null, [[8, 18]]);
-          }));
-          return function exportProgram(_x3) {
-            return _ref5.apply(this, arguments);
-          };
-        }();
-        getTargets = /*#__PURE__*/function () {
-          var _ref6 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee5(server) {
+          }))).apply(this, arguments);
+        };
+        getTargets = function getTargets(_x4) {
+          return (_ref6 = _ref6 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee5(server) {
             var response, targets, plats;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee5$(_context5) {
               while (1) switch (_context5.prev = _context5.next) {
@@ -47369,11 +47360,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context5.stop();
               }
             }, _callee5);
-          }));
-          return function getTargets(_x4) {
-            return _ref6.apply(this, arguments);
-          };
-        }();
+          }))).apply(this, arguments);
+        };
         $("#export-server").val(server).on("change", e => {
           server = e.currentTarget.value;
           getTargets(e.currentTarget.value);
@@ -47495,8 +47483,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
          * Use WaveSurfer lib with MediaElement and <audio />
          */
 
-        $("#select-audio-input").on("change", /*#__PURE__*/function () {
-          var _ref7 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee6(e) {
+        $("#select-audio-input").on("change", function (_x5) {
+          return (_ref7 = _ref7 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee6(e) {
             var id, _gain, _input, gain, input;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee6$(_context6) {
               while (1) switch (_context6.prev = _context6.next) {
@@ -47573,17 +47561,14 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context6.stop();
               }
             }, _callee6);
-          }));
-          return function (_x5) {
-            return _ref7.apply(this, arguments);
-          };
-        }());
+          }))).apply(this, arguments);
+        });
         /**
          * Audio Outputs
          * Choose and audio stream <audio />
          */
-        $("#select-audio-output").on("change", /*#__PURE__*/function () {
-          var _ref8 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee7(e) {
+        $("#select-audio-output").on("change", function (_x6) {
+          return (_ref8 = _ref8 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee7(e) {
             var id, audio;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee7$(_context7) {
               while (1) switch (_context7.prev = _context7.next) {
@@ -47606,11 +47591,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context7.stop();
               }
             }, _callee7);
-          }));
-          return function (_x6) {
-            return _ref8.apply(this, arguments);
-          };
-        }()).change();
+          }))).apply(this, arguments);
+        }).change();
         // Waveform
         $("#btn-source-play").on("click", () => {
           if (!wavesurfer || !wavesurfer.isReady) return;
@@ -47674,8 +47656,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
           }
         });
         // Append connected audio devices
-        handleMediaDeviceChange = /*#__PURE__*/function () {
-          var _ref9 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee8() {
+        handleMediaDeviceChange = function handleMediaDeviceChange() {
+          return (_ref9 = _ref9 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee8() {
             var devices, $selectInput, $selectOutput;
             return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee8$(_context8) {
               while (1) switch (_context8.prev = _context8.next) {
@@ -47728,11 +47710,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                   return _context8.stop();
               }
             }, _callee8, null, [[0, 5]]);
-          }));
-          return function handleMediaDeviceChange() {
-            return _ref9.apply(this, arguments);
-          };
-        }();
+          }))).apply(this, arguments);
+        };
         if (!navigator.mediaDevices) {
           _context13.next = 127;
           break;
@@ -48323,8 +48302,8 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
  * @param {string} [deviceId]
  * @returns
  */
-var initAudioCtx = /*#__PURE__*/function () {
-  var _ref14 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee14(audioEnv, deviceId) {
+var initAudioCtx = function initAudioCtx(_x7, _x8) {
+  return (_ref14 = _ref14 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee14(audioEnv, deviceId) {
     var audioCtx, unlockAudioContext, stream;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee14$(_context14) {
       while (1) switch (_context14.prev = _context14.next) {
@@ -48409,11 +48388,8 @@ var initAudioCtx = /*#__PURE__*/function () {
           return _context14.stop();
       }
     }, _callee14);
-  }));
-  return function initAudioCtx(_x7, _x8) {
-    return _ref14.apply(this, arguments);
-  };
-}();
+  }))).apply(this, arguments);
+};
 /**
  * Init analyser scopes with audio environment
  *
@@ -48466,8 +48442,8 @@ var refreshDspUI = node => {
  *
  * @returns
  */
-var initEditor = /*#__PURE__*/function () {
-  var _ref15 = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee15(faust) {
+var initEditor = function initEditor(_x9) {
+  return (_ref15 = _ref15 || (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_1__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().mark(function _callee15(faust) {
     var code, polycode, monaco, _yield$faustLangRegis, faustLang, providers, saveCode, editor, showDoc;
     return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_2___default().wrap(function _callee15$(_context15) {
       while (1) switch (_context15.prev = _context15.next) {
@@ -48525,11 +48501,8 @@ var initEditor = /*#__PURE__*/function () {
           return _context15.stop();
       }
     }, _callee15);
-  }));
-  return function initEditor(_x9) {
-    return _ref15.apply(this, arguments);
-  };
-}();
+  }))).apply(this, arguments);
+};
 })();
 
 /******/ })()
