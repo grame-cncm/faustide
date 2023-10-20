@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.1001694873310503"
+    prefix: "1.0.1011697819401845"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -820,7 +820,7 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": "ed0bb4ef2ded005f6f0cf7351ea21406"
   }, {
     "url": "faust-ui/index.js",
-    "revision": "9d6bb39c4ffdec227698cc792a8ba88a"
+    "revision": "bfc52ee4b93064fa054a6618963d9d27"
   }, {
     "url": "favicon.png",
     "revision": "8c793ef1d04148eb48e9595e54950310"
@@ -835,7 +835,7 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "415a5401e105b49c4d7e2b55598faaac"
+    "revision": "42096fd76c3386208c66ad89b435d5fc"
   }, {
     "url": "js/0447c04a2a879545304e.js",
     "revision": null
@@ -853,9 +853,6 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/11395fdcf0c824378b1b.js",
-    "revision": null
-  }, {
-    "url": "js/115e729199e5d9b108f2.js",
     "revision": null
   }, {
     "url": "js/179e546e346713dff4ac.js",
@@ -988,6 +985,9 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/9a267724e1ed34e00b60.js",
+    "revision": null
+  }, {
+    "url": "js/9dc3256ceb84da755f90.js",
     "revision": null
   }, {
     "url": "js/9e291f8d5fdabc8e06f6.js",
