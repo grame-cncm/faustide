@@ -70,7 +70,7 @@ if (!self.define) {
 define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
 
   workbox.setCacheNameDetails({
-    prefix: "1.0.1011697819401845"
+    prefix: "1.0.1021699025087961"
   });
   self.skipWaiting();
   workbox.clientsClaim();
@@ -835,7 +835,7 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": "db07022757cf774639ee3500fb6789a6"
   }, {
     "url": "index.js",
-    "revision": "42096fd76c3386208c66ad89b435d5fc"
+    "revision": "8767cb27cc2257644f548cf289cc1166"
   }, {
     "url": "js/0447c04a2a879545304e.js",
     "revision": null
@@ -865,9 +865,6 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "js/1f11664695410dc3bace.js",
-    "revision": null
-  }, {
-    "url": "js/24399b574b10dc5ae595.js",
     "revision": null
   }, {
     "url": "js/258ae672857550e9c4c5.js",
@@ -996,6 +993,9 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "url": "js/9f7ea056cb967b0c8987.js",
     "revision": null
   }, {
+    "url": "js/a26c4a7516edfd418fae.js",
+    "revision": null
+  }, {
     "url": "js/a43a329d9a0f2ba28e79.js",
     "revision": null
   }, {
@@ -1096,10 +1096,10 @@ define(['./workbox-d7bfb2c4'], (function (workbox) { 'use strict';
     "revision": null
   }, {
     "url": "libfaust-wasm.data",
-    "revision": "0be4654c75702a235b04968c381e75ac"
+    "revision": "92132a7fd8ca97bc25b9df1a71da1f0d"
   }, {
     "url": "libfaust-wasm.wasm",
-    "revision": "aecf3ca4945a84104ed186ea99ee10da"
+    "revision": "e1258233b9a58627020bc7106ea869f1"
   }, {
     "url": "manifest.json",
     "revision": "f3d06b397bb5cb600d762d38b076fc44"
