@@ -23,6 +23,10 @@ The polyphonic mode can be activated by selecting a number of voices in the _Pol
 
 A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). 
 
+#### Remote compilation
+The currently edited DSP program can be sent to the [remote compilation service](https://github.com/grame-cncm/faustservice) which allows to export for a large number of targets, like various standalone formats, a Max/MSP external on macOS or Windows, a SuperCollider UGen.etc. Use the "Truck" button on the left to access the list of possible *Platform* and the list associated *Architecture*. Select one *Platform/Architecture* pair and wait a bit until you get the compiled result as a binary zipped file.  
+Note that some targets produce a source file (like *source/cplusplus*), or ready to be compiled projects (like *juce/plug-in* to create a [JUCE](https://juce.com) project).
+
 #### Audio analyzers
 Tools to display audio signals are available in the left panel:
 
