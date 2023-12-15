@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.0.103",
+  "version": "1.0.104",
   "description": "Faust Editor",
   "main": "src/index.ts",
   "private": true,
@@ -61,7 +61,7 @@
     "jszip": "^3.10.0",
     "kissfft-js": "^0.1.8",
     "luvi": "^5.2.0",
-    "monaco-editor": "^0.34.1",
+    "monaco-editor": "^0.45.0",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "npm-run-all": "^4.1.5",
     "popper.js": "^1.16.1",
