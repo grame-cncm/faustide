@@ -422,14 +422,16 @@ $(async () => {
             $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
             const guiBuilder = $<HTMLIFrameElement>("#iframe-gui-builder")[0];
             guiBuilder.src = "";
+            guiBuilder.onload = () => {
             guiBuilder.src = `${compileOptions.guiBuilderUrl}?name=${uiEnv.fileManager.mainFileName}`;
-            guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
-                type: "build",
-                ui: node.getUI(),
-                name: `${uiEnv.fileManager.mainFileName}`,
-                code: uiEnv.fileManager.mainCode,
-                poly: !!compileOptions.voices
-            }, "*");
+                guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
+                    type: "build",
+                    ui: node.getUI(),
+                    name: `${uiEnv.fileManager.mainFileName}`,
+                    code: uiEnv.fileManager.mainCode,
+                    poly: !!compileOptions.voices
+                }, "*");
+            };
         }
         isCompilingDsp = false;
         return { success: true };
