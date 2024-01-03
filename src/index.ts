@@ -427,7 +427,8 @@ $(async () => {
                 type: "build",
                 ui: node.getUI(),
                 name: `${uiEnv.fileManager.mainFileName}`,
-                code: uiEnv.fileManager.mainCode
+                code: uiEnv.fileManager.mainCode,
+                poly: !!compileOptions.voices
             }, "*");
         }
         isCompilingDsp = false;
