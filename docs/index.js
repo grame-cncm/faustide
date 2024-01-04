@@ -321,13 +321,13 @@ class FileManager {
     this.fs = options.fs;
     this.path = options.path;
     this.$mainFile = options.$mainFile;
-    this.getChildren();
-    this.getFiles();
-    this.bind();
     this.selectHandler = options.selectHandler;
     this.saveHandler = options.saveHandler;
     this.deleteHandler = options.deleteHandler;
     this.mainFileChangeHandler = options.mainFileChangeHandler;
+    this.getChildren();
+    this.getFiles();
+    this.bind();
     this.select(this._fileList[options.$mainFile]);
   }
   getChildren() {
@@ -404,6 +404,9 @@ class FileManager {
       this._fileList.push(fileName);
       var divFile = this.createFileDiv(fileName, true);
       this.divFiles.appendChild(divFile);
+      if (this.saveHandler) this.saveHandler(fileName, "", this.mainCode);
+      this.select(fileName);
+      if (fileName.endsWith(".dsp")) this.setMain(this._fileList.length - 1);
       var spanName = divFile.getElementsByClassName("filemanager-filename")[0];
       spanName.focus();
       var range = document.createRange();
@@ -518,6 +521,7 @@ class FileManager {
       this.fs.unlink(this.path + fileName);
       this._fileList.splice(i, 1);
       divFile.remove();
+      if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
       if (this._fileList.length === 0) {
         var _fileName = this.newFile("untitled.dsp", "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;");
         this.select(_fileName);
@@ -525,7 +529,6 @@ class FileManager {
         this.select(this._fileList[0]);
       }
       if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);else this.setMain(this.$mainFile);
-      if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
     });
     var handlePointerDown = () => this.select(fileName);
     divFile.addEventListener("mousedown", handlePointerDown);
@@ -604,8 +607,9 @@ class FileManager {
     this.rename(this.selected, newName);
   }
   newFile(fileNameIn, content) {
-    var fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
-    var extension = fileNameIn.split(".").slice(-1) || "lib";
+    var fileName;
+    if (fileNameIn) fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
+    var extension = fileNameIn ? fileNameIn.split(".").slice(-1) || "lib" : "dsp";
     if (!fileName || this._fileList.indexOf(fileName) !== -1) {
       var i = 1;
       fileName = "untitled".concat(i, ".").concat(extension);
@@ -45959,7 +45963,7 @@ function _typeof(o) {
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.104","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.5","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.45.0","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.76.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
+module.exports = JSON.parse('{"name":"fausteditorweb","version":"1.0.105","description":"Faust Editor","main":"src/index.ts","private":true,"scripts":{"prebuild":"node ./src/listEx.js","build":"webpack --mode development","serve":"luvi -p 8000 -n","serve-docs":"luvi -r docs -p 8001 -n","dist":"npm run prebuild && webpack --mode production","test-eslint":"eslint -c .eslintrc.json src","test-stylelint":"stylelint src/**/*.scss","test":"run-s -s test-eslint test-stylelint","publish":"rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs","version":"npm run build"},"repository":{"type":"git","url":"git+https://github.com/grame-cncm/faustide.git"},"keywords":["Faust","WebAudio","WebAssembly"],"author":"Grame-CNCM","license":"GPL-3.0-or-later","bugs":{"url":"https://github.com/grame-cncm/faustide/issues"},"homepage":"https://github.com/grame-cncm/faustide#readme","devDependencies":{"@babel/core":"^7.18.9","@babel/plugin-proposal-class-properties":"^7.18.6","@babel/plugin-transform-runtime":"^7.18.9","@babel/preset-env":"^7.18.9","@babel/preset-typescript":"^7.18.6","@babel/runtime":"^7.18.9","@fortawesome/fontawesome-free":"^5.15.3","@shren/faust-ui":"^1.1.5","@types/bootstrap":"^4.6.0","@types/jquery":"^3.5.5","@types/qrcode":"^1.4.0","@types/wavesurfer.js":"^3.3.2","@typescript-eslint/eslint-plugin":"^2.34.0","@typescript-eslint/parser":"^2.34.0","babel-loader":"^9.1.0","bootstrap":"^4.6.0","clean-webpack-plugin":"^4.0.0","copy-webpack-plugin":"^11.0.0","css-loader":"^6.7.3","directory-tree":"^2.2.7","eslint":"^6.8.0","eslint-config-airbnb-base":"^14.2.1","eslint-plugin-import":"^2.26.0","faust2webaudio":"github:grame-cncm/faust2webaudio","file-loader":"^6.2.0","jquery":"^3.6.0","jszip":"^3.10.0","kissfft-js":"^0.1.8","luvi":"^5.2.0","monaco-editor":"^0.45.0","monaco-editor-webpack-plugin":"^7.0.1","npm-run-all":"^4.1.5","popper.js":"^1.16.1","qrcode":"^1.5.1","sass":"^1.54.0","sass-loader":"^13.2.0","source-map-loader":"^4.0.1","style-loader":"^3.3.1","stylelint":"^13.13.1","stylelint-config-recommended":"^5.0.0","typescript":"^3.9.9","wav-encoder":"^1.3.0","wavesurfer.js":"^3.3.3","webmidi":"^2.5.2","webpack":"^5.76.0","webpack-cli":"^5.0.1","window-function":"^2.1.0","workbox-webpack-plugin":"^6.5.4"}}');
 
 /***/ })
 
@@ -46752,13 +46756,16 @@ $( /*#__PURE__*/(0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MOD
                     $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
                     guiBuilder = $("#iframe-gui-builder")[0];
                     guiBuilder.src = "";
-                    guiBuilder.src = "".concat(compileOptions.guiBuilderUrl, "?name=").concat(uiEnv.fileManager.mainFileName);
-                    guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
-                      type: "build",
-                      ui: node.getUI(),
-                      name: "".concat(uiEnv.fileManager.mainFileName),
-                      code: uiEnv.fileManager.mainCode
-                    }, "*");
+                    guiBuilder.onload = () => {
+                      guiBuilder.src = "".concat(compileOptions.guiBuilderUrl, "?name=").concat(uiEnv.fileManager.mainFileName);
+                      guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
+                        type: "build",
+                        ui: node.getUI(),
+                        name: "".concat(uiEnv.fileManager.mainFileName),
+                        code: uiEnv.fileManager.mainCode,
+                        poly: !!compileOptions.voices
+                      }, "*");
+                    };
                   }
                   isCompilingDsp = false;
                   return _context.abrupt("return", {
