@@ -10,7 +10,8 @@ The online [Faust IDE](https://faustide.grame.fr) can be used to _edit_, _compil
 The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco-editor/). It provides _syntax highlighting_, _auto completion_, _code hinting_ and direct access to the _online documentation_. The documentation command (Ctrl-D) uses the function name at the cursor position to locate the relevant information.
 
 #### Project Files
-Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DP code with `import("foo.lib");`. DSP files or libraies can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
+Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DP code with `import("foo.lib");`. 
+DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
 
 #### Auto-Compiling
 While the option is turned on, the diagram or the DSP UI will automatically be updated from the code. The editor will also try to tell if there is an error in your code.
@@ -22,7 +23,7 @@ MIDI Input is available for Chrome and Firefox browsers. You can also use the co
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file.
 
 #### Audio Output
-* Audio output can be switched on/off using the he *Output is On/Output is Off* button on the bottom-right. 
+Audio output can be switched on/off using the he *Output is On/Output is Off* button on the bottom-right. 
 
 #### Audio Recording
 The generated sound can be recorded on the fly then possibly saved using the *Record/Save* section on the bottom-right. 
