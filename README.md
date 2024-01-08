@@ -19,6 +19,11 @@ While the option is turned on, the diagram or the DSP UI will automatically be u
 #### MIDI input
 MIDI Input is available for Chrome and Firefox browsers. You can also use the computer keyboard to input MIDI notes. We are using key map as Ablelon Live: A-line and Q-line for keys, ZX to move octave, CV to change velocity.
 
+#### Polyphonic mode
+The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
+
+A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). 
+
 #### Audio Input
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file.
 
@@ -27,11 +32,6 @@ Audio output can be switched on/off using the he *Output is On/Output is Off* bu
 
 #### Audio Recording
 The generated sound can be recorded on the fly then possibly saved using the *Record/Save* section on the bottom-right. 
-
-#### Polyphonic mode
-The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
-
-A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer). 
 
 #### Remote compilation
 The currently edited DSP program can be sent to the [remote compilation service](https://github.com/grame-cncm/faustservice) which allows to export for a large number of targets, like various standalone formats, a Max/MSP external on macOS or Windows, a SuperCollider UGen.etc. Use the *Truck* button on the left column to access the list of possible *Platform* and the list of associated *Architecture*. Select one *Platform/Architecture* pair and wait a bit until you get the compiled result as a binary zipped file.  
