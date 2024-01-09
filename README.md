@@ -10,7 +10,7 @@ The online [Faust IDE](https://faustide.grame.fr) can be used to _edit_, _compil
 The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco-editor/). It provides _syntax highlighting_, _auto completion_, _code hinting_ and direct access to the _online documentation_. The documentation command (Ctrl-D) uses the function name at the cursor position to locate the relevant information.
 
 #### Project Files
-Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DP code with `import("foo.lib");`. 
+Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DSP code with `import("foo.lib");`. 
 DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
 
 #### Auto-Compiling
