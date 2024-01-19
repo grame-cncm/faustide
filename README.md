@@ -103,40 +103,12 @@ A local HTTP server has to be started with `npm run serve` (or something similar
 
 You'll have to raise the package version number in `package.json` before `npm run build` to properly work.
 
-------
-
-## Deployment
-
-Deployment remains an operation that must take place under the user control. It must be made from the master branch. The procedure consists of:
-
-1) generating the site
-2) copying the contents of the `dist` directory into the `docs` directory
-3) checking the proper functioning of the site from the `docs` directory
-
-For 1), see **Building** section above
-For 2), you can run:
-
-```bash
-npm run publish
-```
-If you run the copy manually, BE CAREFUL not to delete the files `CNAME` and `.nojekyll`.
-
-For 3), you can launch a local web server from the `docs` directory:
-
-```bash
-npm run serve-docs
-```
-
-**WARNING: the following step is mandatory for the deployed site to properly work !**
-
-Once the site is validated add (using `git add docs`) and commit the entire contents of the `docs` directory then push to git.
-
-### Useful links
+## Useful links
 
 - [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website
 - [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
 
-### Known problems and solutions
+## Known problems and solutions
 
 - evaluating a heavy DSP program may hang the IDE, which will stay in this state even if you open it again, if the **Real-time Compile** checkbox was set. You can deactivate the checkbox by opening the IDE with the `https://faustide.grame.fr/?realtime_compile=0` URL
 - MIDI is only working in Chrome and Firefox
