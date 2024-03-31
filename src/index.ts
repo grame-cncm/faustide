@@ -14,7 +14,7 @@
 // indexDB
 
 import * as monaco from "monaco-editor";
-import { initVimMode } from "monaco-vim";
+import { initVimMode, VimMode } from "monaco-vim";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
@@ -208,7 +208,7 @@ $(async () => {
    * Use import() for webpack code splitting, needs babel-dynamic-import
    */
   const { editor, monaco } = await initEditor(libFaust);
-  let vimMode: any;
+  let vimMode: VimMode;
   editor.layout(); // Force editor to fill div
   // Editor and Diagram
   let editorDecoration: string[] = []; // lines with error
