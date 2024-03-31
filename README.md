@@ -55,6 +55,9 @@ Both input and output have an audio analyzer in the right panel. In the small au
 #### SVG Diagrams
 The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate inside it by clicking on the dark blue part to go down in the circuit hierarchy, or clicking on the diagram border to go up in the circuit hierarchy.
 
+#### Vim Mode Support
+The Monaco Editor supports an optional mode for Vim users. To enable it, check the left side bar and activate the corresponding checkbox.
+
 ## Recommended Browsers
 The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
 
