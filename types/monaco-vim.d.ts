@@ -5,6 +5,7 @@ declare module 'monaco-vim' {
     attach(): void;
     on(eventName: string, callback: Function): void;
     setStatusBar(statusBar: StatusBar): void;
+    dispose(): void;
   }
 
   interface StatusBar {
