@@ -208,6 +208,7 @@ $(async () => {
    * Use import() for webpack code splitting, needs babel-dynamic-import
    */
   const { editor, monaco } = await initEditor(libFaust);
+  let vimMode: any;
   editor.layout(); // Force editor to fill div
   // Editor and Diagram
   let editorDecoration: string[] = []; // lines with error
@@ -630,14 +631,12 @@ $(async () => {
   // Editor Options
   $<HTMLInputElement>("#check-vim-mode").on("change", (e) => {
     editorOptions.vimMode = e.currentTarget.checked;
-    // NOTE: this is where the vim mode is toggled
-    console.log("Vim Mode Button pressed")
+    if (editorOptions.vimMode) {
+      vimMode = initVimMode(editor, null);
+    } else {
+      vimMode.dispose()
+    }
   })[0].checked = editorOptions.vimMode;
-  $<HTMLInputElement>("#check-line-numbers").on("change", (e) => {
-    editorOptions.vimMode = e.currentTarget.checked;
-    // NOTE: this is where line numbers are toggled on/off
-    console.log("Line Numbers Button pressed")
-  })[0].checked = editorOptions.lineNumbers;
 
   // Plot
   $<HTMLInputElement>("#select-plot-mode").on("change", (e) => {
