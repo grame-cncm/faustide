@@ -41,15 +41,9 @@ import { safeStorage } from "./utils";
 
 declare global {
     interface Window {
-        AudioContext: typeof AudioContext;
         webkitAudioContext: typeof AudioContext;
-        AudioWorklet?: typeof AudioWorklet; // eslint-disable-line no-undef
         faustEnv: FaustEditorEnv;
         faustCompiler: FaustCompiler;
-    }
-    interface HTMLMediaElement extends HTMLElement {
-        setSinkId?(sinkId: string): Promise<undefined>;
-        src: string;
     }
 }
 type FaustEditorEnv = {
@@ -208,7 +202,6 @@ $(async () => {
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
     const { editor, monaco } = await initEditor(libFaust);
-    let vimMode: VimMode;
     editor.layout(); // Force editor to fill div
     // Editor and Diagram
     let editorDecoration: string[] = []; // lines with error
@@ -460,10 +453,6 @@ $(async () => {
         analyser: new Analyser(16, "continuous"),
         fileManager: undefined
     };
-    const editorOptions = {
-        vimMode: false,
-        lineNumbers: true
-    };
     const compileOptions: FaustEditorCompileOptions = {
         useWorklet: false,
         bufferSize: 1024,
@@ -628,6 +617,7 @@ $(async () => {
         saveEditorParams();
     })[0].checked = compileOptions.popup;
 
+    /*
     // Editor Options
     $<HTMLInputElement>("#check-vim-mode").on("change", (e) => {
         editorOptions.vimMode = e.currentTarget.checked;
@@ -637,6 +627,7 @@ $(async () => {
             vimMode.dispose();
         }
     })[0].checked = editorOptions.vimMode;
+    */
 
     // Plot
     $<HTMLInputElement>("#select-plot-mode").on("change", (e) => {
@@ -837,7 +828,9 @@ $(async () => {
             // ZIP mode
             const zip = new JSZip();
             // Add all .lib files in the ZIP
-            uiEnv.fileManager._fileList.forEach(n => { if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n)) });
+            uiEnv.fileManager._fileList.forEach((n) => {
+                if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n));
+            });
             // Add the currently selected .dsp file in the ZIP
             zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
             // Send the ZIP file
@@ -1632,8 +1625,8 @@ $(async () => {
         }
         $("#iframe-faust-ui").css("pointer-events", "none");
         const $div = $(e.currentTarget).parent();
-        const x = typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
-        const y = typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
+        const x = e.pageX && typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
+        const y = e.pageY && typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
         const w = $div.width();
         const h = $div.height();
         const modes: string[] = [];
@@ -1646,8 +1639,8 @@ $(async () => {
                 e.preventDefault();
                 e.stopPropagation();
             }
-            const dX = (typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
-            const dY = (typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
+            const dX = (e.pageX && typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
+            const dY = (e.pageY && typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
             if (modes.indexOf("left") !== -1) $div.width(w - dX);
             if (modes.indexOf("right") !== -1) $div.width(w + dX);
             if (modes.indexOf("top") !== -1) $div.height(h - dY);
@@ -1864,6 +1857,26 @@ effect = dm.freeverb_demo;`;
         dragAndDrop: true,
         mouseWheelZoom: true,
         wordWrap: "on"
+    });
+    let vimMode: VimMode = null;
+    /*
+    const editorOptions = {
+        vimMode: false,
+        lineNumbers: true
+    };
+    */
+    editor.addAction({
+        id: "monaco-vim",
+        label: "Toggle Vim Mode",
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyV],
+        run: () => {
+            if (vimMode) {
+                vimMode.dispose();
+                vimMode = null;
+            } else {
+                vimMode = initVimMode(editor, null);
+            }
+        }
     });
     editor.onKeyDown((e) => {
         if (e.ctrlKey && e.browserEvent.key === "d") {
