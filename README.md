@@ -65,7 +65,7 @@ The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) pr
 
 - or by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/Baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax
 
-To acesss local audio files, a local server can be started:
+To access local audio files, a local server can be started:
 
 - install the required package with `pip install Flask Flask-CORS` (or `pip3 install Flask Flask-CORS`)
 
