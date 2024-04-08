@@ -52,6 +52,8 @@ In the _Plot_ Tab in the middle section, you can switch the visualization betwee
 
 Both input and output have an audio analyzer in the right panel. In the small audio output window at the bottom, you can switch the visualization between _Oscilloscope_ and _Spectroscope_, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
+In the display zone, zoom can be changed with *2 fingers up/down slide* on macOS from 1x up to 800x. 
+
 #### SVG Diagrams
 The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate inside it by clicking on the dark blue part to go down in the circuit hierarchy, or clicking on the diagram border to go up in the circuit hierarchy.
 
