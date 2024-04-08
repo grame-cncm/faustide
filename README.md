@@ -52,11 +52,22 @@ In the _Plot_ Tab in the middle section, you can switch the visualization betwee
 
 Both input and output have an audio analyzer in the right panel. In the small audio output window at the bottom, you can switch the visualization between _Oscilloscope_ and _Spectroscope_, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
+In the display zone, zoom can be changed with *2 fingers up/down slide* on macOS from 1x up to 800x. 
+
 #### SVG Diagrams
 The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate inside it by clicking on the dark blue part to go down in the circuit hierarchy, or clicking on the diagram border to go up in the circuit hierarchy.
 
 #### Vim Mode Support
+
 The Monaco Editor supports an optional mode for Vim users. To enable it, check the left side bar and activate the corresponding checkbox.
+
+#### Soundfiles access
+
+The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) primitive can be used in the IDE, **in ScriptProcessor only for now**. The audio files have to be accessed:
+
+- either using a full URL like https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone/Gamelan_1_1_C_gauche.flac
+
+- or by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/Baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax.
 
 ## Recommended Browsers
 The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
