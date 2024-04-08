@@ -77,84 +77,86 @@
 				</button>
 			</div>
 			<div id="ide-params">
-			<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
-				title="Poly mode will work with polyphonic-ready code">
-				<div class="input-group-prepend">
-					<span class="input-group-text">Poly Voices</span>
+				<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Poly mode will work with polyphonic-ready code">
+					<div class="input-group-prepend">
+						<span class="input-group-text">Poly Voices</span>
+					</div>
+					<select id="select-voices" class="form-control">
+						<option selected value="0">Mono</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="4">4</option>
+						<option value="8">8</option>
+						<option value="16">16</option>
+						<option value="32">32</option>
+						<option value="64">64</option>
+						<option value="128">128</option>
+					</select>
+				</form>
+				<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Will be fixed at 128 frames in AudioWorklet mode">
+					<div class="input-group-prepend">
+						<span class="input-group-text">Buffer Size</span>
+					</div>
+					<select id="select-buffer-size" class="form-control">
+						<option value="128" hidden disabled>128</option>
+						<option value="256">256</option>
+						<option value="512">512</option>
+						<option value="1024" selected>1024</option>
+						<option value="2048">2048</option>
+						<option value="4096">4096</option>
+						<option value="8192">8192</option>
+					</select>
+				</form>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
+					title="(recommended) Chrome supports AudioWorklet">
+					<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
+					<label class="form-check-label" for="check-worklet">
+						Use AudioWorklet
+					</label>
 				</div>
-				<select id="select-voices" class="form-control">
-					<option selected value="0">Mono</option>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="4">4</option>
-					<option value="8">8</option>
-					<option value="16">16</option>
-					<option value="32">32</option>
-					<option value="64">64</option>
-					<option value="128">128</option>
-				</select>
-			</form>
-			<form class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
-				title="Will be fixed at 128 frames in AudioWorklet mode">
-				<div class="input-group-prepend">
-					<span class="input-group-text">Buffer Size</span>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save DSP Code">
+					<input id="check-save-code" class="form-check-input" type="checkbox" value="" checked />
+					<label class="form-check-label" for="check-save-code">
+						Save DSP Code
+					</label>
 				</div>
-				<select id="select-buffer-size" class="form-control">
-					<option value="128" hidden disabled>128</option>
-					<option value="256">256</option>
-					<option value="512">512</option>
-					<option value="1024" selected>1024</option>
-					<option value="2048">2048</option>
-					<option value="4096">4096</option>
-					<option value="8192">8192</option>
-				</select>
-			</form>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
-				title="(recommended) Chrome supports AudioWorklet">
-				<input id="check-worklet" class="form-check-input" type="checkbox" value="" disabled />
-				<label class="form-check-label" for="check-worklet">
-					Use AudioWorklet
-				</label>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
+					title="Save locally DSP parameters">
+					<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
+					<label class="form-check-label" for="check-save-params">
+						Save Params State
+					</label>
+				</div>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
+					<input id="check-save-dsp" class="form-check-input" type="checkbox" value="" />
+					<label class="form-check-label" for="check-save-dsp">
+						Save DSP Cache
+					</label>
+				</div>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
+					title="Try to compile in real-time">
+					<input id="check-realtime-compile" class="form-check-input" type="checkbox" value="" checked />
+					<label class="form-check-label" for="check-realtime-compile">
+						Real-time Compile
+					</label>
+				</div>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Pop up a DSP UI Window">
+					<input id="check-popup" class="form-check-input" type="checkbox" value="" />
+					<label class="form-check-label" for="check-popup">
+						Popup UI
+					</label>
+				</div>
+			<!--
+			<div id="editor-settings">
+				<label>Editor</label>
+				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Enable Vim mode in the editor">
+					<input id="check-vim-mode" class="form-check-input" type="checkbox" value="" />
+					<label class="form-check-label" for="check-vim-mode">Vim Mode</label>
+				</div>
 			</div>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save DSP Code">
-				<input id="check-save-code" class="form-check-input" type="checkbox" value="" checked />
-				<label class="form-check-label" for="check-save-code">
-					Save DSP Code
-				</label>
-			</div>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
-				title="Save locally DSP parameters">
-				<input id="check-save-params" class="form-check-input" type="checkbox" value="" />
-				<label class="form-check-label" for="check-save-params">
-					Save Params State
-				</label>
-			</div>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Save locally DSP caches">
-				<input id="check-save-dsp" class="form-check-input" type="checkbox" value="" />
-				<label class="form-check-label" for="check-save-dsp">
-					Save DSP Cache
-				</label>
-			</div>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
-				title="Try to compile in real-time">
-				<input id="check-realtime-compile" class="form-check-input" type="checkbox" value="" checked />
-				<label class="form-check-label" for="check-realtime-compile">
-					Real-time Compile
-				</label>
-			</div>
-			<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Pop up a DSP UI Window">
-				<input id="check-popup" class="form-check-input" type="checkbox" value="" />
-				<label class="form-check-label" for="check-popup">
-					Popup UI
-				</label>
-			</div>
-      <div id="editor-settings">
-				  <label>Editor</label>
-          <div class="form form-check mb-2" data-toggle="tooltip" data-placement="right" title="Enable Vim mode in the editor">
-              <input id="check-vim-mode" class="form-check-input" type="checkbox" value="" />
-              <label class="form-check-label" for="check-vim-mode">Vim Mode</label>
-          </div>
-      </div>
+			-->
 			</div>
 			<div id="form-plot" class="form form-row">
 				<label>Plot</label>
