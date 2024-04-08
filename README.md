@@ -104,6 +104,9 @@ if __name__ == "__main__":
 
 Here are polyphonic [samplers examples](https://github.com/sletz/faust-sampler). 
 
+#### Vim Mode Support
+The Monaco Editor supports an optional mode for Vim users. To enable it, check the left side bar and activate the corresponding checkbox.
+
 ## Recommended Browsers
 The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
 
