@@ -65,7 +65,7 @@ The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) pr
 
 - or by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/Baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax
 
-Here is a polyphoncic [sampler example](https://github.com/sletz/faust-sampler). 
+Here are polyphonic [samplers examples](https://github.com/sletz/faust-sampler). 
 
 ## Recommended Browsers
 The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
