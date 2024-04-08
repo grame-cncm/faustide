@@ -100,7 +100,7 @@ if __name__ == "__main__":
     app.run(debug=False, port=8001)  # Disable debug mode in production
 ```
 
-- then launch the script with `python server.py`(or `python3 server.py). Note that server URL `http://127.0.0.1:8000` is actually hardcoded in the Faust IDE and does not need to be added explicitly with `declare soundfiles "http://localhost:8000";`. But additional URLs can always be declared if needed. 
+- then launch the script with `python server.py`(or `python3 server.py`). Note that server URL `http://127.0.0.1:8000` is actually hardcoded in the Faust IDE and does not need to be added explicitly with `declare soundfiles "http://localhost:8000";`, but additional URLs can always be declared if needed. 
 
 Here are polyphonic [samplers examples](https://github.com/sletz/faust-sampler). 
 
