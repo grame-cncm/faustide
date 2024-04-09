@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "Faust Editor",
   "main": "src/index.ts",
   "private": true,
@@ -55,7 +55,7 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.26.0",
-    "@grame/faustwasm": "^0.1.1",
+    "@grame/faustwasm": "^0.1.2",
     "file-loader": "^6.2.0",
     "jquery": "^3.6.0",
     "jszip": "^3.10.0",
