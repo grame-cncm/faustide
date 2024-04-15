@@ -9,6 +9,9 @@ The online [Faust IDE](https://faustide.grame.fr) can be used to _edit_, _compil
 #### Code Editing
 The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco-editor/). It provides _syntax highlighting_, _auto completion_, _code hinting_ and direct access to the _online documentation_. The documentation command (Ctrl-D) uses the function name at the cursor position to locate the relevant information.
 
+#### Vim Mode Support
+The Monaco Editor supports an optional mode for Vim users. To enable it, open the command pane (F1) and search for 'Toggle Vim Mode'. The same command is used to desactivate this functionality. Alternatively, you can right click on the editor and press 'Open Command Palette' to open the contextual menu.
+
 #### Project Files
 Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DSP code with `import("foo.lib");`. 
 DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
@@ -103,9 +106,6 @@ if __name__ == "__main__":
 - then launch the script with `python server.py`(or `python3 server.py`). Note that server URL `http://127.0.0.1:8000` is actually hardcoded in the Faust IDE and does not need to be added explicitly with `declare soundfiles "http://localhost:8000";`, but additional URLs can always be declared if needed. 
 
 Here are polyphonic [samplers examples](https://github.com/sletz/faust-sampler). 
-
-#### Vim Mode Support
-The Monaco Editor supports an optional mode for Vim users. To enable it, check the left side bar and activate the corresponding checkbox.
 
 ## Recommended Browsers
 The recommended browsers are the latest versions of Chrome and Firefox for AudioWorklet and MIDI, but it requires an https connection to use the audio inputs.
