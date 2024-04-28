@@ -1,5 +1,5 @@
 type FaustEditorCompileOptions = {
-    mainFileIndex?: number;
+    mainFile?: string;
     useWorklet: boolean;
     bufferSize: 128 | 256 | 512 | 1024 | 2048 | 4096;
     saveCode: boolean;

@@ -4,11 +4,11 @@ type TOptions = {
     container: HTMLDivElement;
     fs: TFileSystem;
     path?: string;
-    $mainFile?: number;
+    mainFile?: string;
     selectHandler?: (name: string, content: string, mainCode: string) => any;
     saveHandler?: (name: string, content: string, mainCode: string) => any;
     deleteHandler?: (name: string, mainCode: string) => any;
-    mainFileChangeHandler?: (index: number, mainCode: string) => any;
+    mainFileChangeHandler?: (name: string, mainCode: string) => any;
 };
 type TFileSystem = {
     rename: (oldName: string, newName: string) => any;
@@ -66,15 +66,14 @@ export class FileManager {
      */
     private _fs: TFileSystem;
     selectHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
-    saveHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
+    saveHandler: (name: string, content: string | Uint8Array, mainCode: string) => any = () => undefined;
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
-    mainFileChangeHandler?: (index: number, mainCode: string) => any = () => undefined;
+    mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
 
     constructor(options: TOptions) {
         this.container = options.container;
         this.fs = options.fs;
         this.path = options.path;
-        this.$mainFile = options.$mainFile;
         this.selectHandler = options.selectHandler;
         this.saveHandler = options.saveHandler;
         this.deleteHandler = options.deleteHandler;
@@ -82,9 +81,9 @@ export class FileManager {
         this.getChildren();
         this.getFiles();
         this.bind();
-        if (options.$mainFile < this._fileList.length) {
-            this.select(this._fileList[options.$mainFile]);
-        }
+        this.$mainFile = Math.max(0, this._fileList.indexOf(options.mainFile));
+        this.setMain(this.$mainFile);
+        this.select(this._fileList[this.$mainFile]);
     }
     getChildren() {
         for (let i = 0; i < this.container.children.length; i++) {
@@ -203,11 +202,13 @@ export class FileManager {
                 const file = e.dataTransfer.files[0];
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const fileName = this.newFile(file.name, reader.result.toString());
+                    const content = reader.result instanceof ArrayBuffer ? new Uint8Array(reader.result) : reader.result.toString();
+                    const fileName = this.newFile(file.name, content);
                     this.select(fileName);
                 };
                 reader.onerror = () => undefined;
-                reader.readAsText(file);
+                if (file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)) reader.readAsArrayBuffer(file);
+                else reader.readAsText(file);
             }
         };
         this.container.addEventListener("dragenter", dragenterHandler);
@@ -302,6 +303,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
      */
     setMain($: number) {
         if ($ >= this._fileList.length) return;
+        if (this._fileList[$].match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
         this.$mainFile = $;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const e = this.divFiles.children[i];
@@ -311,7 +313,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
                 else btnMain.classList.remove("active");
             }
         }
-        if (this.mainFileChangeHandler) this.mainFileChangeHandler($, this.mainCode);
+        if (this.mainFileChangeHandler) this.mainFileChangeHandler(this._fileList[$], this.mainCode);
     }
     /**
      * Get files from Emscripten Virtual File System.
@@ -367,7 +369,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     renameSelected(newName: string) {
         this.rename(this.selected, newName);
     }
-    newFile(fileNameIn?: string, content?: string) {
+    newFile(fileNameIn?: string, content?: string | Uint8Array) {
         let fileName;
         if (fileNameIn) fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
         const extension = fileNameIn ? fileNameIn.split(".").slice(-1) || "lib" : "dsp";
@@ -388,6 +390,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         return fileName;
     }
     select(fileName: string) {
+        if (fileName.match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const divFile = this.divFiles.children[i] as HTMLDivElement;
             if (divFile.dataset.filename === fileName) divFile.classList.add("selected");
@@ -397,6 +400,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     save(fileName: string, content: string) {
         if (this.getValue(fileName) === content) return;
+        this.fs.unlink(this.path + fileName);
         this.fs.writeFile(this.path + fileName, content);
         if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
     }
@@ -416,7 +420,8 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     getValue(fileNameIn?: string) {
         const fileName = fileNameIn || this.selected;
-        return this.fs.readFile(this.path + fileName, { encoding: "utf8" });
+        if (fileNameIn.match(/\.(wav|mp3|ogg|flac|aac)$/)) return this.fs.readFile(this.path + fileName) as Uint8Array;
+        return this.fs.readFile(this.path + fileName, { encoding: "utf8" }) as string;
     }
     get selected() {
         for (let i = 0; i < this.divFiles.children.length; i++) {
@@ -427,7 +432,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     get mainCode() {
         const fileName = this._fileList[this.$mainFile];
-        return fileName ? this.getValue(fileName) || "" : "";
+        return fileName ? this.getValue(fileName) as string || "" : "";
     }
     get mainFileName() {
         return this._fileList[this.$mainFile];

@@ -19,7 +19,9 @@ import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from 
 import * as QRCode from "qrcode";
 import * as WaveSurfer from "wavesurfer.js";
 import * as JSZip from "jszip";
-import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator } from "@grame/faustwasm";
+import * as BrowserFS from "browserfs";
+import { FSModule } from "browserfs/dist/node/core/FS";
+import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator, AudioData } from "@grame/faustwasm";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
@@ -55,6 +57,7 @@ type FaustEditorEnv = {
     jQuery: JQueryStatic;
     faustCompiler: FaustCompiler;
     recorder: Recorder;
+    browserFS: FSModule;
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
@@ -107,6 +110,19 @@ $(async () => {
     const faustPrimitiveLibFile = await fetch("primitives.lib");
     const faustPrimitiveLib = await faustPrimitiveLibFile.text();
     libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
+    const bfs = await new Promise<FSModule>((resolve, reject) => BrowserFS.configure({
+        fs: "IndexedDB",
+        options: { storeName: "FaustIDE" }
+    }, (e) => {
+        if (e) {
+            reject(e);
+        } else {
+            resolve(BrowserFS.BFSRequire("fs"));
+            // libFaust.fs().mkdir(PROJECT_DIR);
+            // libFaust.fs().mount(fs, { root: "/" }, PROJECT_DIR);
+            // resolve(bfs);
+        }
+    }));
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
     window.faustCompiler = faustCompiler;
     /**
@@ -171,17 +187,45 @@ $(async () => {
      * Load all files to Emscripten File System from localStorage
      *
      */
-    const loadProject = () => {
-        libFaust.fs().mkdir(PROJECT_DIR);
-        let project: { [name: string]: string };
-        try {
-            project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
-        } catch (e) {
-            project = {};
+    const loadProject = async () => {
+        const mfs = libFaust.fs();
+        mfs.mkdir(PROJECT_DIR);
+        let files = await new Promise<string[]>((resolve, reject) => bfs.readdir("/", (err, data) => {
+            if (err) reject(err);
+            else resolve(data);
+        }));
+        files = files.filter(n => n !== "." && n !== "..");
+        if (!compileOptions.saveCode) {
+            await Promise.all(files.map(async (filename) => {
+                await new Promise<void>((resolve, reject) => bfs.unlink(filename, (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                }));
+            }));
+        } else {
+            await Promise.all(files.map(async (filename) => {
+                const data = await new Promise<Buffer>((resolve, reject) => bfs.readFile(filename, (err, data) => {
+                    if (err) reject(err);
+                    else resolve(data);
+                }));
+                mfs.writeFile(PROJECT_DIR + filename, new Uint8Array(data.buffer));
+            }));
         }
-        for (const fileName in project) {
-            libFaust.fs().writeFile(PROJECT_DIR + fileName, project[fileName]);
-        }
+    };
+    const loadSoundfiles = async (audioCtx: BaseAudioContext): Promise<Record<string, AudioData>> => {
+        const map = {} as Record<string, AudioData>;
+        const files = libFaust.fs().readdir(PROJECT_DIR) as string[];
+        await Promise.all(files.filter(n => n.match(/\.(wav|mp3|ogg|flac|aac)$/)).map(async (filename) => {
+            const ui8Array = libFaust.fs().readFile(PROJECT_DIR + filename);
+            try {
+                const audioBuffer = await audioCtx.decodeAudioData(ui8Array.buffer);
+                map[filename] = { audioBuffer: new Array(audioBuffer.numberOfChannels).fill(0).map((v, i) => audioBuffer.getChannelData(i)), sampleRate: audioBuffer.sampleRate } as AudioData;
+            } catch (error) {
+                return false;
+            }
+            return true;
+        }));
+        return map;
     };
     /**
      * To show Error at bottom of center
@@ -189,6 +233,8 @@ $(async () => {
      * @param {string} e
      */
     const showError = (e: Error | string) => {
+        // eslint-disable-next-line no-console
+        console.error(e);
         $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
         $("#alert-faust-code").css("visibility", "visible");
     };
@@ -286,14 +332,17 @@ $(async () => {
             if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
             mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
         };
+        const soundfiles = await loadSoundfiles(audioCtx);
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
             if (voices) {
                 const factory = await new FaustPolyDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
+                factory.voiceFactory.soundfiles = soundfiles;
                 node = await factory.createNode(audioCtx, voices, "main", undefined, undefined, undefined, !useWorklet, bufferSize);
             } else {
                 const factory = await new FaustMonoDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
+                factory.factory.soundfiles = soundfiles;
                 node = await factory.createNode(audioCtx, "main", undefined, !useWorklet, bufferSize);
             }
             node.setPlotHandler(plotHandler);
@@ -483,20 +532,22 @@ $(async () => {
         jQuery,
         editor,
         faustCompiler,
-        recorder: new Recorder()
+        recorder: new Recorder(),
+        browserFS: bfs
     };
     safeStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
-    if (compileOptions.saveCode) loadProject(); else libFaust.fs().mkdir(PROJECT_DIR);
+    await loadProject();
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
         fs: libFaust.fs(),
         path: PROJECT_DIR,
-        $mainFile: compileOptions.mainFileIndex || 0,
+        mainFile: compileOptions.mainFile,
         selectHandler: (fileName, content) => editor.setValue(content),
-        saveHandler: (fileName: string, content: string, mainCode: string) => {
+        saveHandler: async (fileName: string, content: string, mainCode: string) => {
+            /*
             let project: { [name: string]: string };
             try {
                 project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
@@ -505,25 +556,51 @@ $(async () => {
             }
             project[fileName] = content;
             try {
-                safeStorage.setItem("faust_editor_project", JSON.stringify(project));
+                // safeStorage.setItem("faust_editor_project", JSON.stringify(project));
+            } catch (e) {
+                showError(e);
+            }
+            */
+            try {
+                const exist = await new Promise<boolean>((resolve, reject) => bfs.exists(fileName, resolve));
+                if (exist) {
+                    await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
+                        if (e) reject(e);
+                        else resolve();
+                    }));
+                }
+                await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, content, { encoding: "utf8" }, (e) => {
+                    if (e) reject(e);
+                    else resolve();
+                }));
             } catch (e) {
                 showError(e);
             }
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
         },
-        deleteHandler: (fileName) => {
+        deleteHandler: async (fileName) => {
+            /*
             let project: { [name: string]: string };
             try {
-                project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
+                // project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
             } catch (e) {
                 return;
             }
             delete project[fileName];
             safeStorage.setItem("faust_editor_project", JSON.stringify(project));
+            */
+            try {
+                await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
+                    if (e) reject(e);
+                    else resolve();
+                }));
+            } catch (e) {
+                showError(e);
+            }
         },
-        mainFileChangeHandler: (index, mainCode) => {
-            compileOptions.mainFileIndex = index;
+        mainFileChangeHandler: (filename, mainCode) => {
+            compileOptions.mainFile = filename;
             saveEditorParams();
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
@@ -651,8 +728,10 @@ $(async () => {
         if (compileOptions.plotMode === "offline") {
             const code = uiEnv.fileManager.mainCode;
             const { args, plot, plotSR } = compileOptions;
+            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 0 }));
             const generator = new FaustMonoDspGenerator();
             await generator.compile(faustCompiler, "main", code, args.join(" "));
+            generator.factory.soundfiles = soundfiles;
             const processor = await generator.createOfflineProcessor(plotSR, 128);
             const output = processor.render([], plot);
             uiEnv.analyser.plotHandler(output, 0, undefined, true);
