@@ -6,7 +6,7 @@ type TOptions = {
     path?: string;
     mainFile?: string;
     selectHandler?: (name: string, content: string, mainCode: string) => any;
-    saveHandler?: (name: string, content: string, mainCode: string) => any;
+    saveHandler?: (name: string, content: string | Uint8Array, mainCode: string) => any;
     deleteHandler?: (name: string, mainCode: string) => any;
     mainFileChangeHandler?: (name: string, mainCode: string) => any;
 };
@@ -202,7 +202,7 @@ export class FileManager {
                 const file = e.dataTransfer.files[0];
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const content = reader.result instanceof ArrayBuffer ? new Uint8Array(reader.result) : reader.result.toString();
+                    const content = typeof reader.result === "string" ? reader.result.toString() : new Uint8Array(reader.result);
                     const fileName = this.newFile(file.name, content);
                     this.select(fileName);
                 };

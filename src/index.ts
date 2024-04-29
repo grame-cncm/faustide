@@ -13,15 +13,11 @@
 // snippets
 // indexDB
 
-import * as monaco from "monaco-editor";
-import { initVimMode, VimMode } from "monaco-vim";
+import type * as monaco from "monaco-editor";
+import type { VimMode } from "monaco-vim";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
-import * as QRCode from "qrcode";
-import * as WaveSurfer from "wavesurfer.js";
-import * as JSZip from "jszip";
-import * as BrowserFS from "browserfs";
-import { FSModule } from "browserfs/dist/node/core/FS";
-import { FaustAudioWorkletNode, FaustCompiler, FaustMonoDspGenerator, FaustScriptProcessorNode, FaustSvgDiagrams, LibFaust, instantiateFaustModuleFromFile, FaustPolyDspGenerator, AudioData } from "@grame/faustwasm";
+import type { FSModule } from "browserfs/dist/node/core/FS";
+import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust, AudioData } from "@grame/faustwasm";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
@@ -103,6 +99,7 @@ let server = "https://faustservicecloud.grame.fr";
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
+    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator, FaustPolyDspGenerator } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
     const libFaust = new LibFaust(faustModule);
     const faustCompiler = new FaustCompiler(libFaust);
@@ -110,6 +107,9 @@ $(async () => {
     const faustPrimitiveLibFile = await fetch("primitives.lib");
     const faustPrimitiveLib = await faustPrimitiveLibFile.text();
     libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
+
+    const BrowserFS = await import("browserfs");
+    const { Buffer } = BrowserFS.BFSRequire("buffer");
     const bfs = await new Promise<FSModule>((resolve, reject) => BrowserFS.configure({
         fs: "IndexedDB",
         options: { storeName: "FaustIDE" }
@@ -118,11 +118,12 @@ $(async () => {
             reject(e);
         } else {
             resolve(BrowserFS.BFSRequire("fs"));
-            // libFaust.fs().mkdir(PROJECT_DIR);
-            // libFaust.fs().mount(fs, { root: "/" }, PROJECT_DIR);
-            // resolve(bfs);
         }
     }));
+
+    const JSZip = (await import("jszip") as any).default as import("jszip");
+    const WaveSurfer = (await import("wavesurfer.js") as any).default as import("wavesurfer.js");
+    const QRCode = await import("qrcode");
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
     window.faustCompiler = faustCompiler;
     /**
@@ -212,10 +213,10 @@ $(async () => {
             }));
         }
     };
-    const loadSoundfiles = async (audioCtx: BaseAudioContext): Promise<Record<string, AudioData>> => {
+    const loadSoundfiles = async (audioCtx: BaseAudioContext, soundfileList: string[]): Promise<Record<string, AudioData>> => {
         const map = {} as Record<string, AudioData>;
         const files = libFaust.fs().readdir(PROJECT_DIR) as string[];
-        await Promise.all(files.filter(n => n.match(/\.(wav|mp3|ogg|flac|aac)$/)).map(async (filename) => {
+        await Promise.all(files.filter(n => soundfileList.indexOf(n) !== -1).map(async (filename) => {
             const ui8Array = libFaust.fs().readFile(PROJECT_DIR + filename);
             try {
                 const audioBuffer = await audioCtx.decodeAudioData(ui8Array.buffer);
@@ -332,17 +333,20 @@ $(async () => {
             if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
             mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
         };
-        const soundfiles = await loadSoundfiles(audioCtx);
         try {
             // const getDiagramResult = getDiagram(code);
             // if (!getDiagramResult.success) throw getDiagramResult.error;
             if (voices) {
                 const factory = await new FaustPolyDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
-                factory.voiceFactory.soundfiles = soundfiles;
+                const soundfileList = factory.getSoundfileList();
+                const soundfiles = await loadSoundfiles(audioCtx, soundfileList);
+                factory.addSoundfiles(soundfiles);
                 node = await factory.createNode(audioCtx, voices, "main", undefined, undefined, undefined, !useWorklet, bufferSize);
             } else {
                 const factory = await new FaustMonoDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
-                factory.factory.soundfiles = soundfiles;
+                const soundfileList = factory.getSoundfileList();
+                const soundfiles = await loadSoundfiles(audioCtx, soundfileList);
+                factory.addSoundfiles(soundfiles);
                 node = await factory.createNode(audioCtx, "main", undefined, !useWorklet, bufferSize);
             }
             node.setPlotHandler(plotHandler);
@@ -546,7 +550,7 @@ $(async () => {
         path: PROJECT_DIR,
         mainFile: compileOptions.mainFile,
         selectHandler: (fileName, content) => editor.setValue(content),
-        saveHandler: async (fileName: string, content: string, mainCode: string) => {
+        saveHandler: async (fileName: string, content: string | Uint8Array, mainCode: string) => {
             /*
             let project: { [name: string]: string };
             try {
@@ -569,7 +573,7 @@ $(async () => {
                         else resolve();
                     }));
                 }
-                await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, content, { encoding: "utf8" }, (e) => {
+                await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, typeof content === "string" ? content : Buffer.from(content), typeof content === "string" ? { encoding: "utf8" } : {}, (e) => {
                     if (e) reject(e);
                     else resolve();
                 }));
@@ -728,10 +732,11 @@ $(async () => {
         if (compileOptions.plotMode === "offline") {
             const code = uiEnv.fileManager.mainCode;
             const { args, plot, plotSR } = compileOptions;
-            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 0 }));
             const generator = new FaustMonoDspGenerator();
             await generator.compile(faustCompiler, "main", code, args.join(" "));
-            generator.factory.soundfiles = soundfiles;
+            const soundfileList = generator.getSoundfileList();
+            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 0 }), soundfileList);
+            generator.addSoundfiles(soundfiles);
             const processor = await generator.createOfflineProcessor(plotSR, 128);
             const output = processor.render([], plot);
             uiEnv.analyser.plotHandler(output, 0, undefined, true);
@@ -1924,6 +1929,7 @@ process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0
 };
 effect = dm.freeverb_demo;`;
     const monaco = await import("monaco-editor");
+    const { initVimMode } = await import("monaco-vim");
     const { faustLang, providers } = await faustLangRegister(monaco, libFaust);
     let saveCode = false;
     try {
