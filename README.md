@@ -64,9 +64,9 @@ The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate in
 
 The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) primitive can be used in the IDE. The audio files have to be accessed:
 
-- simply dropping all needed soundfiles in the *Project Files* section on the left, then directly accessing them in the DSP code 
+- by dropping all needed soundfiles in the *Project Files* section on the left, then directly accessing them in the DSP code 
 
-- using a full URL like https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone/Gamelan_1_1_C_gauche.flac
+- by using a full URL like https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone/Gamelan_1_1_C_gauche.flac
 
 - by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/Baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax
 
