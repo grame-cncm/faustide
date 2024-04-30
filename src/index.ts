@@ -99,6 +99,7 @@ let server = "https://faustservicecloud.grame.fr";
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
+    const { setTimeout } = window;
     const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator, FaustPolyDspGenerator } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
     const libFaust = new LibFaust(faustModule);
@@ -490,7 +491,7 @@ $(async () => {
         isCompilingDsp = false;
         return { success: true };
     };
-    let rtCompileTimer: NodeJS.Timeout;
+    let rtCompileTimer: number;
     const audioEnv: FaustEditorAudioEnv = {
         dspConnectedToInput: false,
         dspConnectedToOutput: false,
@@ -544,6 +545,7 @@ $(async () => {
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
     await loadProject();
+    let saveTimeout: number;
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
         fs: libFaust.fs(),
@@ -565,21 +567,24 @@ $(async () => {
                 showError(e);
             }
             */
-            try {
-                const exist = await new Promise<boolean>((resolve, reject) => bfs.exists(fileName, resolve));
-                if (exist) {
-                    await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    const exist = await new Promise<boolean>((resolve, reject) => bfs.exists(fileName, resolve));
+                    if (exist) {
+                        await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
+                            if (e) reject(e);
+                            else resolve();
+                        }));
+                    }
+                    await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, typeof content === "string" ? content : Buffer.from(content), typeof content === "string" ? { encoding: "utf8" } : {}, (e) => {
                         if (e) reject(e);
                         else resolve();
                     }));
+                } catch (e) {
+                    showError(e);
                 }
-                await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, typeof content === "string" ? content : Buffer.from(content), typeof content === "string" ? { encoding: "utf8" } : {}, (e) => {
-                    if (e) reject(e);
-                    else resolve();
-                }));
-            } catch (e) {
-                showError(e);
-            }
+            }, 1000);
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
         },
@@ -735,7 +740,7 @@ $(async () => {
             const generator = new FaustMonoDspGenerator();
             await generator.compile(faustCompiler, "main", code, args.join(" "));
             const soundfileList = generator.getSoundfileList();
-            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 0 }), soundfileList);
+            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 1 }), soundfileList);
             generator.addSoundfiles(soundfiles);
             const processor = await generator.createOfflineProcessor(plotSR, 128);
             const output = processor.render([], plot);
