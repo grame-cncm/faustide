@@ -740,9 +740,10 @@ $(async () => {
             const generator = new FaustMonoDspGenerator();
             await generator.compile(faustCompiler, "main", code, args.join(" "));
             const soundfileList = generator.getSoundfileList();
-            const soundfiles = await loadSoundfiles(new OfflineAudioContext({ sampleRate: plotSR, length: 1 }), soundfileList);
+            const offlineCtx = new OfflineAudioContext({ sampleRate: plotSR, length: 1 });
+            const soundfiles = await loadSoundfiles(offlineCtx, soundfileList);
             generator.addSoundfiles(soundfiles);
-            const processor = await generator.createOfflineProcessor(plotSR, 128);
+            const processor = await generator.createOfflineProcessor(plotSR, 128, undefined, offlineCtx);
             const output = processor.render([], plot);
             uiEnv.analyser.plotHandler(output, 0, undefined, true);
             // TODO(ijc): should this happen immediately (before rendering is done?)
