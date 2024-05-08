@@ -16,7 +16,6 @@
 import type * as monaco from "monaco-editor";
 import type { VimMode } from "monaco-vim";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
-import type { FSModule } from "browserfs/dist/node/core/FS";
 import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust, AudioData } from "@grame/faustwasm";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
@@ -53,7 +52,7 @@ type FaustEditorEnv = {
     jQuery: JQueryStatic;
     faustCompiler: FaustCompiler;
     recorder: Recorder;
-    browserFS: FSModule;
+    browserFS: typeof import("@zenfs/core").promises;
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
@@ -109,18 +108,13 @@ $(async () => {
     const faustPrimitiveLib = await faustPrimitiveLibFile.text();
     libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
 
-    const BrowserFS = await import("browserfs");
-    const { Buffer } = BrowserFS.BFSRequire("buffer");
-    const bfs = await new Promise<FSModule>((resolve, reject) => BrowserFS.configure({
-        fs: "IndexedDB",
-        options: { storeName: "FaustIDE" }
-    }, (e) => {
-        if (e) {
-            reject(e);
-        } else {
-            resolve(BrowserFS.BFSRequire("fs"));
-        }
-    }));
+    const BrowserFS = await import("@zenfs/core");
+    const { IndexedDB } = await import("@zenfs/dom");
+    await BrowserFS.configure({
+        backend: IndexedDB,
+        storeName: "FaustIDE" as any
+    });
+    const bfs = BrowserFS.promises;
 
     const JSZip = (await import("jszip") as any).default as import("jszip");
     const WaveSurfer = (await import("wavesurfer.js") as any).default as import("wavesurfer.js");
@@ -192,24 +186,13 @@ $(async () => {
     const loadProject = async () => {
         const mfs = libFaust.fs();
         mfs.mkdir(PROJECT_DIR);
-        let files = await new Promise<string[]>((resolve, reject) => bfs.readdir("/", (err, data) => {
-            if (err) reject(err);
-            else resolve(data);
-        }));
+        let files = await bfs.readdir("/");
         files = files.filter(n => n !== "." && n !== "..");
         if (!compileOptions.saveCode) {
-            await Promise.all(files.map(async (filename) => {
-                await new Promise<void>((resolve, reject) => bfs.unlink(filename, (err) => {
-                    if (err) reject(err);
-                    else resolve();
-                }));
-            }));
+            await Promise.all(files.map(filename => bfs.unlink(filename)));
         } else {
             await Promise.all(files.map(async (filename) => {
-                const data = await new Promise<Buffer>((resolve, reject) => bfs.readFile(filename, (err, data) => {
-                    if (err) reject(err);
-                    else resolve(data);
-                }));
+                const data = await bfs.readFile(filename);
                 mfs.writeFile(PROJECT_DIR + filename, new Uint8Array(data.buffer));
             }));
         }
@@ -570,17 +553,11 @@ $(async () => {
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 try {
-                    const exist = await new Promise<boolean>((resolve, reject) => bfs.exists(fileName, resolve));
+                    const exist = await bfs.exists(fileName);
                     if (exist) {
-                        await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
-                            if (e) reject(e);
-                            else resolve();
-                        }));
+                        await bfs.unlink(fileName);
                     }
-                    await new Promise<void>((resolve, reject) => bfs.writeFile(fileName, typeof content === "string" ? content : Buffer.from(content), typeof content === "string" ? { encoding: "utf8" } : {}, (e) => {
-                        if (e) reject(e);
-                        else resolve();
-                    }));
+                    await bfs.writeFile(fileName, content, typeof content === "string" ? { encoding: "utf8" } : {});
                 } catch (e) {
                     showError(e);
                 }
@@ -600,10 +577,7 @@ $(async () => {
             safeStorage.setItem("faust_editor_project", JSON.stringify(project));
             */
             try {
-                await new Promise<void>((resolve, reject) => bfs.unlink(fileName, (e) => {
-                    if (e) reject(e);
-                    else resolve();
-                }));
+                await bfs.unlink(fileName);
             } catch (e) {
                 showError(e);
             }
