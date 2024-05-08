@@ -56,11 +56,14 @@ const config = {
     ]
   },
   optimization: {
+    minimize: false
+    /*
     minimizer: [
       new TerserPlugin({
         exclude: /libfaust-wasm\.js/
       })
     ],
+    */
   },
   plugins: [
     new CleanWebpackPlugin(),
