@@ -72,6 +72,8 @@ The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) pr
 
 To access local audio files, a local server can be started:
 
+- use the local server URL `http://127.0.0.1:8000` (or `http:/localhost:8000`) with `declare soundfiles "http:/localhost:8000";`). Additional URLs can always be declared if needed. 
+
 - install the required package with `pip install Flask Flask-CORS` (or `pip3 install Flask Flask-CORS`)
 
 - create a folder *my_faust_server*. Inside create a text file *server.py* with the following code and a folder *static_files*. Place your audio files inside *static_files*.
@@ -105,7 +107,7 @@ if __name__ == "__main__":
     app.run(debug=False, port=8001)  # Disable debug mode in production
 ```
 
-- then launch the script with `python server.py`(or `python3 server.py`). Note that server URL `http://127.0.0.1:8000` is actually hardcoded in the Faust IDE and does not need to be added explicitly with `declare soundfiles "http://localhost:8000";`, but additional URLs can always be declared if needed. 
+- then launch the script with `python server.py`(or `python3 server.py`). 
 
 Here are polyphonic [samplers examples](https://github.com/sletz/faust-sampler). 
 
