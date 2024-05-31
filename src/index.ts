@@ -923,9 +923,11 @@ $(async () => {
                 $.ajax({
                     method: "GET",
                     url: `${path}/precompile`
-                }).done((result) => {
+                }).done((result, status, jqXHR) => {
                     if (result === "DONE") {
-                        const href = `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
+                        // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
+                        const location = jqXHR.getResponseHeader("Location")
+                        const href = location ? `${server}/${location}` : `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
                         $("#a-export-download").attr({ href });
                         $("#export-download").show();
                         if (download === true) {
@@ -934,7 +936,7 @@ $(async () => {
                         $("#qr-code").show();
                         QRCode.toCanvas(
                             $<HTMLCanvasElement>("#qr-code")[0],
-                            `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`
+                            href
                         );
                         return;
                     }
@@ -1542,9 +1544,11 @@ $(async () => {
                     $.ajax({
                         method: "GET",
                         url: `${path}/precompile`
-                    }).done((result) => {
+                    }).done((result, status, jqXHR) => {
                         if (result === "DONE") {
-                            const href = `${path}/binary.zip`;
+                            // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
+                            const location = jqXHR.getResponseHeader("Location")
+                            const href = location ? `${server}/${location}` : `${path}/binary.zip`;
                             ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
                         }
                     }).fail((jqXHR, textStatus) => {
