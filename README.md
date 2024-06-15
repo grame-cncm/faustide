@@ -72,7 +72,7 @@ The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) pr
 
 To access local audio files, a local server can be started:
 
-- use the local server URL `http://127.0.0.1:8000` (or `http:/localhost:8000`) with `declare soundfiles "http:/localhost:8000";`). Additional URLs can always be declared if needed. 
+- use the local server URL `http://127.0.0.1:8000` (or `http://localhost:8000`) with `declare soundfiles "http://localhost:8000";`). Additional URLs can always be declared if needed. 
 
 - install the required package with `pip install Flask Flask-CORS` (or `pip3 install Flask Flask-CORS`)
 
