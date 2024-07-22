@@ -56,9 +56,12 @@ ve = library("vaeffects.lib");
 pf = library("phaflangers.lib");
 re = library("reverbs.lib");
 en = library("envelopes.lib");
+it = library("interpolators.lib");
+aa = library("aanl.lib");
+sp = library("spats.lib");
 
 declare name "Faust Demos Library";
-declare version "0.1";
+declare version "1.2.0";
 
 //########################################################################################
 /************************************************************************
@@ -323,7 +326,7 @@ with{
     cbp = meter_group(checkbox("[0] Bypass    [tooltip: When this is checked, the compressor
         has no effect]"));
     gainview = co.compression_gain_mono(ratio,threshold,attack,release) : ba.linear2db :
-    meter_group(hbargraph("[1] Compressor Gain [unit:dB] [tooltip: Current gain of
+    meter_group(hbargraph("[1] Compressor Gain Before Makeup [unit:dB] [tooltip: Current gain of
     the compressor in dB]",-50,+10));
 
     displaygain = _,_ <: _,_,(abs,abs:+) : _,_,gainview : _,attach;
@@ -556,6 +559,37 @@ with{
     mdepth = select2(vibr,depth,2); // Improve "ease of use"
 };
 
+//-------------------------`(dm.)tapeStop_demo`---------------------------
+// Stereo tape-stop effect.
+//
+// #### Usage
+//
+// ```
+// _,_ : tapeStop_demo : _,_
+// ```
+//------------------------------------------------------------
+declare tapeStop_demo author "David Braun";
+declare tapeStop_demo copyright "Copyright (C) 2024 by David Braun <braun@ccrma.stanford.edu>";
+declare tapeStop_demo license "MIT-style STK-4.3 license";
+
+tapeStop_demo = hgroup("Tape Stop", ef.tapeStop(2, LAGRANGE_ORDER, MAX_TIME_SAMP, crossfade, gainAlpha, stopAlpha, stopTime, stop))
+with {
+    LAGRANGE_ORDER = 3;
+    MAX_TIME_SEC = 4;
+    MIN_TIME_SEC = 0.01;
+    MIN_ALPHA = .01;
+    MAX_ALPHA = 2;
+
+    MAX_TIME_SAMP = MAX_TIME_SEC : ba.sec2samp;
+    msec2samp = _/1000 : ba.sec2samp;
+
+    stop = checkbox("[0] Stop");
+    stopTime = hslider("[1] Stop Time [style:knob][unit:ms]", 100, MIN_TIME_SEC*1000, MAX_TIME_SEC*1000, 1) : msec2samp;
+    stopAlpha = hslider("[2] Stop Alpha [style:knob][tooltip:Alpha==1 represents a linear deceleration (constant force). Alpha<1 represents an initially weaker, then stronger force. Alpha>1 represents an initially stronger, then weaker force.]", 1, MIN_ALPHA, MAX_ALPHA, .01);
+    gainAlpha = hslider("[3] Gain Alpha [style:knob][tooltip:During the tape-stop, lower alpha stays louder longer]", 1, MIN_ALPHA, MAX_ALPHA, .01);
+    crossfade = hslider("[4] Crossfade [style:knob][unit:ms][tooltip:Crossfade to apply when resuming normal playback.]", 3, 0, 125, 1) : msec2samp;
+};
+
 //======================================Reverbs===========================================
 //========================================================================================
 
@@ -602,13 +636,15 @@ with{
 // #### Usage
 //
 // ```
-// _ : stereo_reverb_tester : _
+// _,_ : stereo_reverb_tester(gui_group) : _,_
 // ```
+// For suppressing the `gui_group` input, pass it as `!`.
+// (See `(dm.)fdnrev0_demo` for an example of its use).
 //------------------------------------------------------------
 declare stereo_reverb_tester author "Julius O. Smith III";
 declare stereo_reverb_tester licence "MIT";
 
-stereo_reverb_tester(revin_group,x,y) = reverb_tester(_)
+stereo_reverb_tester(revin_group,x,y) = reverb_tester(_,x,y)
 with {
     reverb_tester(revin_group,x,y) = inx,iny with {
         ck_group(x) = revin_group(vgroup("[1] Input Config",x));
@@ -888,8 +924,276 @@ with{
         factor]", -20, -70, 40, 0.1)) : ba.db2linear : si.smoo;
 };
 
+
+//----------------------------------`(dm.)vital_rev_demo`------------------------------
+// Example GUI for `vital_rev` with all parameters exposed.
+//
+// #### Usage
+//
+// ```
+// _,_ : vital_rev_demo : _,_
+// ```
+//
+//------------------------------------------------------------
+vital_rev_demo = hgroup("Reverb", re.vital_rev(prelow, prehigh, lowcutoff, highcutoff, lowgain, highgain, chorus_amt, chorus_freq, predelay, time, size, mix))
+with {
+    // SMOO = _; 
+    SMOO = si.smoo; // optionally turn on smoo of hsliders
+
+    Prefilter(x) = hgroup("[0] Pre-filter", x:SMOO);
+    Filter(x) = hgroup("[1] Filter", x:SMOO);
+    Chorus(x) = hgroup("[2] Chorus", x:SMOO);
+    Space(x) = hgroup("[3] Space", x:SMOO);
+
+    prelow = Prefilter(hslider("[0] Low Cutoff [style:knob]", it.remap(16,135,0,1,16), 0, 1, .01));
+    prehigh = Prefilter(hslider("[1] High Cutoff [style:knob]", it.remap(16,135,0,1,110), 0, 1, .01));
+
+    lowcutoff = Filter(hslider("[0] Low Shelf [style:knob]", it.remap(16,135,0,1,16), 0, 1, .01));
+    highcutoff = Filter(hslider("[2] High Shelf [style:knob]", it.remap(16,135,0,1,90), 0, 1, .01));
+
+    lowgain = Filter(hslider("[1] Low Gain [style:knob]", it.remap(-6,0,0,1,0), 0, 1, .01));
+    highgain = Filter(hslider("[3] High Gain [style:knob]", it.remap(-6,0,0,1,-1), 0, 1, .01));
+
+    chorus_amt = Chorus(hslider("[0] Amount [style:knob]", .01, 0, 1, .01));
+    chorus_freq = Chorus(hslider("[1] Rate [style:knob]", 0.1, 0, 1, .01));
+
+    predelay = Space(hslider("[0] Pre-Delay [style:knob]", 0, 0, 1, .01));
+    time = Space(hslider("[1] Decay Time [style:knob]", 0.5, 0, 1, .01));
+    size = Space(hslider("[2] Size [style:knob]", .5, 0, 1, .01)) : aa.clip(0, 1);
+
+    mix = hslider("[4] Mix [style:knob]",  1, 0, 1, .01) : SMOO : aa.clip(0, 1);
+};
+declare vital_rev_demo author "David Braun";
+declare vital_rev_demo license "GPL-3.0";
+
+
+//--------------------------`(dm.)reverbTank_demo`---------------------------
+//
+// This is a stereo reverb following the "ReverbTank" example in [1],
+// although some parameter ranges and scaling have been adjusted.
+// It is an unofficial version of the Spin Semiconductor® Reverb.
+// Other relevant instructional material can be found in [2-4].
+//
+// #### Usage
+// ```
+// _,_ : reverbTank_demo : _,_
+// ```
+//
+// #### References
+// * [1] Pirkle, W. C. (2019). Designing audio effect plugins in C++ (2nd ed.). Chapter 17.14.
+//
+// * [2] Spin Semiconductor. (n.d.). Reverberation. Retrieved 2024-04-16, from <http://www.spinsemi.com/knowledge_base/effects.html#Reverberation>
+//
+// * [3] Zölzer, U. (2022). Digital audio signal processing (3rd ed.). Chapter 7, Figure 7.39.
+//
+// * [4] Valhalla DSP. (2010, August 25). RIP Keith Barr. Retrieved 2024-04-16, from <https://valhalladsp.com/2010/08/25/rip-keith-barr/>
+//-----------------------------------------------------------------------
+reverbTank_demo = hgroup("Reverb", ef.dryWetMixer(wet, 
+    (preDelay : preFilter : avg : ((si.bus(2) :> branches) ~ selectLastBranchDelay) : selectLR :> shelves)
+))
+with {
+    /*
+    All-capitalized signals are compile-time constant.
+    All other signals can be modulated in real-time, although you may not necessarily want to modulate them.
+    */
+
+    // SMOO = _; // If you don't want to smooth parameters.
+    SMOO = si.smoo;
+
+    PRE_DELAY_MAX_MSEC = 100;
+    OUTER_DELAY_MAX_MSEC = 100;
+    INNER_DELAY_MAX_MSEC = 100;
+    FIXED_DELAY_MAX_MSEC = 100;
+
+    OUTER_DELAY_MAX_SAMPS = OUTER_DELAY_MAX_MSEC : msec2samp;
+    INNER_DELAY_MAX_SAMPS = INNER_DELAY_MAX_MSEC : msec2samp;
+    FIXED_DELAY_MAX_SAMPS = FIXED_DELAY_MAX_MSEC : msec2samp;
+
+    enableLFO = 1; // set to zero if you don't want LFO, which is used for the chorus
+    LFO_MAX_MODULATION_MS = 0.3;
+
+    outerG = 0.5;
+    innerG = -outerG;
+    lfoRates = 0.15, 0.33, 0.57, 0.73; // [NUM_BRANCHES]. Measured in Hz
+
+    // Note that fixedDelayWeights and apfDelayWeights are not volume weights.
+    // They get multiplied by globalFixedMaxDelay and globalAPFMaxDelay respectively
+    // to current tap lengths (for the fixed delays) and current delays (for APF delays).
+
+    // Note that if you turn `fixedDelayWeights` into something changing in real-time,
+    // then you need to remove an optimization related to `DELAY_MAX_SAMPS` in `multiTapDelay`
+    fixedDelayWeights = 1.0, 0.873, 0.707, 0.667;  // [NUM_BRANCHES]
+
+    // Thick mode:
+    TAPS_PER_BRANCH = 2;
+    tapPctsLeft = 23, 31, 41, 47, 59, 67, 73, 83;  // [NUM_TAPS]
+    tapPctsRght = 29, 37, 43, 53, 61, 71, 79, 89;  // [NUM_TAPS]
+    apfDelayWeights = 0.317, 0.873, 0.477, 0.291, 0.993, 0.757, 0.179, 0.575;  // [NUM_TAPS]
+
+    // Sparse mode:
+    // TAPS_PER_BRANCH = 1;
+    // tapPctsLeft = (23, 41, 59, 73);  // [NUM_TAPS]
+    // tapPctsRght = (29, 43, 61, 79);  // [NUM_TAPS]
+    // apfDelayWeights = 0.317, 0.873, 0.477, 0.291;  // [NUM_TAPS]
+
+    NUM_BRANCHES = 4;
+    NUM_TAPS = NUM_BRANCHES * TAPS_PER_BRANCH;
+
+    PreUI(x) = hgroup("[0] Pre", x:SMOO);
+    DelayUI(x) = hgroup("[1] Delay", x:SMOO);
+    Filter(x) = hgroup("[2] Post-Filter", x:SMOO);
+    wet = hslider("[3] Wet [style:knob]", 1, 0, 1, .01) : SMOO;
+
+    preDelayTime = PreUI(hslider("[0] Delay [style:knob][unit:ms]", 0, 0, PRE_DELAY_MAX_MSEC, 1)) : msec2samp;
+    preFilterCutoff = PreUI(hslider("[1] LPF Cutoff [style:knob][unit:KHz]", 16, 1, 20, .1))*1000;
+
+    globalAPFMaxDelay = DelayUI(hslider("[0] APF Delay [style:knob][unit:ms]", 33*.85, 0, INNER_DELAY_MAX_MSEC, .01)) : msec2samp;
+    globalFixedMaxDelay = DelayUI(hslider("[1] Fixed Delay [style:knob][unit:ms]", 81.0, 0, OUTER_DELAY_MAX_MSEC, .01)) : msec2samp;
+    kRT = DelayUI(hslider("[2] Reverb Time [style:knob]", .5, 0, 1, .01)) : it.remap(0, 1, -72, -6) : ba.db2linear;
+    lfoDepth = DelayUI(hslider("[3] LFO Depth [style:knob][unit:ms]", LFO_MAX_MODULATION_MS*.1, 0, LFO_MAX_MODULATION_MS, .01)) : msec2samp;
+    lpfCutoff = DelayUI(hslider("[4] LPF Cutoff [style:knob][unit:KHz]", 15, 1, 20, .1))*1000;
+
+    lowCutoffFrequency = Filter(hslider("[0] Low Shelf [style:knob][unit:midi]", 16, 16, 135, .1)) : aa.clip(16, 135) : ba.midikey2hz;
+    highCutoffFrequency = Filter(hslider("[2] High Shelf [style:knob][unit:midi]", 90, 16, 135, .1)) : aa.clip(16, 135) : ba.midikey2hz;
+    lowGain = Filter(hslider("[1] Low Gain [style:knob][unit:dB]", -20, -20, 20, .1)) : aa.clip(-20, 20);
+    highGain = Filter(hslider("[3] High Gain [style:knob][unit:dB]", -6, -20, 20, .1)) : aa.clip(-20, 20);
+
+    msec2samp(ms) = ms*ma.SR/1000; 
+
+    // -------------`nestedDelayAPF`-----------------
+    // Nested Allpass Filter, as described in [1].
+    // The user can pass an `outerDelay` function whose delay length
+    // is modulated by an LFO. The user can also put an LTI filter such
+    // as a low-pass filter on the outerDelay function.
+    //
+    // #### Usage
+    // ```
+    // _ : nestedDelayAPF(outerDelay, MAXLEN, curDel, outerG, innerG) : _
+    // ```
+    // Where:
+    // * `outerDelay`: a delay function with one input and one output
+    // * `MAXLEN`: constant maximum delay in samples of the inner allpass filter
+    // * `curDel`: current delay in samples of the inner allpass filter
+    // * `outerG`: allpass minus-gain coefficient [-1..1]
+    // * `innerG`: allpass minus-gain coefficient [-1..1]
+    //
+    // #### References
+    // [1] Pirkle, W. C. (2019). Designing audio effect plugins in C++ (2nd ed.). Chapter 17.13.17.
+    //------------------------------------------------------------
+    nestedDelayAPF(outerDelay, MAXLEN, curDel, outerG, innerG) =
+    (+ <: (innerAPF:outerDelay),*(outerG)) ~ *(-outerG) : mem,_ : +
+    with {
+        innerAPF = fi.allpass_fcomb(MAXLEN, curDel, innerG);
+    };
+
+    // inputs:
+    // * `i`: the branch index
+    // * `x`: input signal (sum of pre-delay and output of previous branch)
+    //
+    // outputs:
+    // * `i`: previous branch index plus 1
+    // * `preBranchSig`: passthrough preBranchSig
+    // * Delayed value to be used for next branch
+    // * Sum of left channel tap(s)
+    // * Sum of right channel tap(s)
+    branch(i, x) = x : nestedAllpass : lpf : multiTapDelay
+    with {
+        nestedAllpass = nestedDelayAPF(outerDelay, INNER_DELAY_MAX_SAMPS, innerDelaySamps, outerG, innerG)
+        with {
+            outerDelay = lpf : de.fdelayltv(DELAY_ORDER, OUTER_DELAY_MAX_SAMPS, safeDelaySamps) // todo: is fdelayltv worth it?
+            with {
+                DELAY_ORDER = 2;
+                minDelaySamps = (DELAY_ORDER-1)/2;
+                delaySampsWithLFO = os.osc(lfoRate) : it.remap(-1, 1, outerDelaySamps, max(minDelaySamps, outerDelaySamps-lfoDepth));
+                safeDelaySamps = ba.if(enableLFO, delaySampsWithLFO, outerDelaySamps) : max(minDelaySamps);
+            };
+            outerDelaySamps = globalAPFMaxDelay*(ba.selectn(NUM_TAPS, i*2  , apfDelayWeights));
+            innerDelaySamps = globalAPFMaxDelay*(ba.selectn(NUM_TAPS, i*2+1, apfDelayWeights));
+            lfoRate = ba.selectn(NUM_BRANCHES, i, lfoRates);
+        };
+        // note that the same LPF is used in two places (inside the nested APF and outside it but in the branch)
+        lpf = fi.lowpass(1, lpfCutoff);
+
+        // Here we rely on Faust's compiler to only use one delay line!
+        multiTapDelay = _ <: delayLine(fixedDelaySamps)*kRT, getChannel(0), getChannel(1)
+        with {
+            // Note that we use fdelaylti instead of fdelayltv because we assume the delay lengths
+            // aren't being changed rapidly
+            delayLine(delaySamps) = de.fdelaylti(DELAY_ORDER, DELAY_MAX_SAMPS, safeDelaySamps)
+            with {
+                // If `fixedDelayWeights` is constant then we can use this memory optimization:
+                DELAY_MAX_SAMPS = OUTER_DELAY_MAX_SAMPS*fixedDelayWeight;
+                // Otherwise, we'd have to use this:
+                // DELAY_MAX_SAMPS = FIXED_DELAY_MAX_SAMPS;
+
+                DELAY_ORDER = 2;
+                safeDelaySamps = max(delaySamps, (DELAY_ORDER-1)/2);
+            };
+
+            fixedDelayWeight = ba.selectn(NUM_BRANCHES, i, fixedDelayWeights);
+            fixedDelaySamps = globalFixedMaxDelay*fixedDelayWeight;
+
+            getChannel(c) = sum(k, TAPS_PER_BRANCH, getTap(c, k));
+            // Note that the tap positions scale with fixedDelaySamps rather than globalFixedMaxDelay or OUTER_DELAY_MAX_SAMPS
+            getTap(c, k) = delayLine(fixedDelaySamps*delayPct) * ((-1)^(i+c))
+            with {
+                delayPct = tap_left, tap_rght : select2(c) : _/100
+                with {
+                    tap_left = ba.selectn(NUM_TAPS, i*TAPS_PER_BRANCH+k, tapPctsLeft);
+                    tap_rght = ba.selectn(NUM_TAPS, i*TAPS_PER_BRANCH+k, tapPctsRght);
+                };
+            };
+        };
+    };
+
+    repeatpar(1, FX) = FX;
+    repeatpar(n, FX) = FX <: (si.bus(iC), si.block(oC-iC):repeatpar(n-1, FX)), si.bus(oC)
+    with {
+        iC = inputs(FX);
+        oC = outputs(FX);
+    };
+
+    branches = (0, _, 0 : repeatpar(NUM_BRANCHES, fx)) : keepBranchChannels
+    with {
+        // inputs:
+        // * `i`: branch index, starting at 0
+        // * `x`: the signal before all of the branches
+        // * `y`: the delayed signal from the previous branch, if any
+        //
+        // outputs:
+        // * increment `i` so that the next fx has i+1 in the same arg slot
+        // * passthrough `x` so it stays as the signal before all of the branches
+        // * the output(s) of the next branch, by passing `x+y` as input
+        fx(i, x, y) = i+1, x, branch(i, x+y);
+
+        // For each branch, cut the integer `i` and `x` channels, but keep the remaining channels:
+        // * the local branch's "delayed" output
+        // * the left tap(s)
+        // * the right tap(s)
+        keepBranchChannels = par(b, NUM_BRANCHES, (!, !, si.bus(outputs(fx)-2)));
+    };
+
+    // use fdelaylti instead of fdelayltv because the user probably isn't changing the predelay quickly
+    preDelay = sp.stereoize(de.fdelaylti(DELAY_ORDER, preDelayMaxSamp, safeDelaySamps))
+    with {
+        DELAY_ORDER = 1;
+        safeDelaySamps = max(preDelayTime, (DELAY_ORDER-1)/2);
+        preDelayMaxSamp = PRE_DELAY_MAX_MSEC : msec2samp;
+    };
+    preFilter = sp.stereoize(fi.lowpass(1, preFilterCutoff));
+    avg = _,_:> _*.5;
+    selectLastBranchDelay = ba.selector(0, 3*NUM_BRANCHES);
+    selectLR = par(i, NUM_BRANCHES, (!, _, _)); // for each branch, cut the "delayed" output and keep the left-right outputs
+    shelves = sp.stereoize(_/NUM_TAPS:(fi.lowshelf(1, lowGain, lowCutoffFrequency) : fi.highshelf(1, highGain, highCutoffFrequency)));
+};
+
+declare reverbTank_demo author "David Braun";
+declare reverbTank_demo copyright "Copyright (C) 2024 by David Braun <braun@ccrma.stanford.edu>";
+declare reverbTank_demo license "MIT-style STK-4.3 license";
+
+
 //----------------------------------`(dm.)dattorro_rev_demo`------------------------------
-// Example GUI for `dattorro_rev` with all parameters exposed. With additional
+// Example GUI for `dattorro_rev` with all parameters exposed and additional
 // dry/wet and output gain control.
 //
 // #### Usage
@@ -946,9 +1250,9 @@ declare jprev_demo license "GPL2+";
 jprev_demo = re.jpverb(t60, damp, size, early_diff, mod_depth, mod_freq, low, mid, high, low_cutoff, high_cutoff)
 with {
     rev_group(x) = vgroup("[0] JPrev",x);
-    
+    invSqrt2 = 1/sqrt(2);
     mix_group(x) = rev_group(hgroup("[0] Mix",x));
-    early_diff = mix_group(hslider("[1]earlyDiff [style:knob]", 0.707, 0, 0.990, 0.001));
+    early_diff = mix_group(hslider("[1]earlyDiff [style:knob]", invSqrt2, 0, 0.990, 0.001));
     size = mix_group(hslider("[2]size [style:knob]", 1, 0.5, 3, 0.01));
     t60 = mix_group(hslider("[3]t60 [style:knob]", 1, 0.1, 60, 0.1));
     damp = mix_group(hslider("[4]damp [style:knob]", 0, 0, 0.999, 0.0001));
@@ -1531,7 +1835,7 @@ with{
     gain = excitGroup(vslider("[1] Gain",0.5,0,1,0.01) : si.smoo);
 };
 
-//-----------------`(no.)colored_noise`--------------------
+//-----------------`(dm.)colored_noise_demo`--------------------
 // A coloured noise signal generator.
 //
 // #### Usage

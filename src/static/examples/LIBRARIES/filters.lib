@@ -1,5 +1,5 @@
 //##################################### filters.lib ########################################
-// Faust Filters library. Its official prefix is `fi`.
+// Filters library. Its official prefix is `fi`.
 //
 // The Filters library is organized into 22 sections:
 //
@@ -46,7 +46,7 @@ si = library("signals.lib");
 fi = library("filters.lib"); // for compatible copy/paste out of this file
 
 declare name "Faust Filters Library";
-declare version "0.3";
+declare version "1.3.0";
 
 //===============================Basic Filters============================================
 //========================================================================================
@@ -759,7 +759,7 @@ bvav2nuv(bv,av) = par(m,M+1,nu(m)) with {
 };
 
 //--------------------`(fi.)iir_lat2`-----------------------
-// Two-multiply latice IIR filter of arbitrary order.
+// Two-multiply lattice IIR filter of arbitrary order.
 //
 // #### Usage
 //
@@ -864,7 +864,7 @@ with {
 };
 
 //--------------------`(fi.)iir_lat1`-----------------------
-// One-multiply latice IIR filter of arbitrary order.
+// One-multiply lattice IIR filter of arbitrary order.
 //
 // #### Usage
 //
@@ -1259,7 +1259,7 @@ with { s = ba.take(n,sv); cross = _,_ <: !,_,_,!; };
 //         s^2 + a1 s + 1
 // ```
 //
-// where `a1 = sqrt(2)`.  Therefore, a DIGITAL Butterworth lowpass
+// where `a1 = sqrt(2)`. Therefore, a DIGITAL Butterworth lowpass
 // cutting off at `SR/4` is specified as `tf2s(0,0,1,sqrt(2),1,PI*SR/2);`
 //
 // #### Method
@@ -1567,7 +1567,7 @@ with {
 //
 // Where:
 //
-// * `N`: filter order (number of poles) [nonnegative constant numerical expression]
+// * `N`: filter order (number of poles), nonnegative constant numerical expression
 // * `fc`: desired cut-off frequency (-3dB frequency) in Hz
 //
 // #### References
@@ -1581,7 +1581,7 @@ lowpass(N,fc) = lowpass0_highpass1(0,N,fc);
 
 
 //----------------`(fi.)highpass`--------------------
-// Nth-order Butterworth highpass filters.
+// Nth-order Butterworth highpass filter.
 // `highpass` is a standard Faust function.
 //
 // #### Usage
@@ -1592,7 +1592,7 @@ lowpass(N,fc) = lowpass0_highpass1(0,N,fc);
 //
 // Where:
 //
-// * `N`: filter order (number of poles) [nonnegative constant numerical expression]
+// * `N`: filter order (number of poles), nonnegative constant numerical expression
 // * `fc`: desired cut-off frequency (-3dB frequency) in Hz
 //
 // #### References

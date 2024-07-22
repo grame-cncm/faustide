@@ -45,7 +45,65 @@ ma = library("maths.lib");
 it = library("interpolators.lib");
 
 declare name "Faust Compressor Effect Library";
-declare version "0.4";
+declare version "1.6.0";
+
+//================================Conversion Tools=======================================
+// Useful conversion tools for compressors.
+//========================================================================================
+
+//--------------------`(co.)ratio2strength `-------------------
+// Most compressors have a ratio parameter to define the amount of compression.
+// A ratio of 1 means no compression, a ratio of 2 means that for every dB the input goes above the threshold,
+// the output gets turned down half a dB.
+// To use a compressor as a brick wall limiter, the ratio needs to be infinity.
+// This is hard to express in a faust UI element, and overcompression can not be expressed at all,
+// therefore most compressors in this library use a strength parameter instead, where
+// 0 means no compression, 1 means hard limiting and  bigger than 1 means over-compression.
+//
+// This utility converts a ratio to a strength.
+//
+// #### Usage
+//
+// ```
+// ratio2strength(ratio) : _
+// ```
+//
+// Where:
+//
+// * `ratio`:  compression ratio, between 1 and infinity (1=no compression, infinity means hard limiting)
+//------------------------------------------------------------
+
+declare ratio2strength author "Bart Brouns";
+declare ratio2strength license "GPLv3";
+
+ratio2strength(ratio) = 1-(1/ratio);
+
+//--------------------`(co.)strength2ratio `-------------------
+// Most compressors have a ratio parameter to define the amount of compression.
+// A ratio of 1 means no compression, a ratio of 2 means that for every dB the input goes above the threshold,
+// the output gets turned down half a dB.
+// To use a compressor as a brick wall limiter, the ratio needs to be infinity.
+// This is hard to express in a faust UI element, and overcompression can not be expressed at all,
+// therefore most compressors in this library use a strength parameter instead, where
+// 0 means no compression, 1 means hard limiting and bigger than 1 means over-compression.
+//
+// This utility converts a strength to a ratio.
+//
+// #### Usage
+//
+// ```
+// strength2ratio(strength) : _
+// ```
+//
+// Where:
+//
+// * `strength`: strength of the compression (0 = no compression, 1 means hard limiting, >1 means over-compression)
+//------------------------------------------------------------
+
+declare strength2ratio author "Bart Brouns";
+declare strength2ratio license "GPLv3";
+
+strength2ratio(strength) = 1/(1-strength);
 
 //=============================Functions Reference========================================
 //========================================================================================
@@ -69,7 +127,7 @@ declare version "0.4";
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log domain return-to-threshold detector
 //
@@ -125,10 +183,10 @@ with {
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -185,10 +243,10 @@ peak_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
@@ -238,11 +296,11 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 // * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `meter`: a gain reduction meter. It can be implemented like so:
+// * `meter`: a gain reduction meter. It can be implemented with:
 // `meter = _ <: (_,(ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // or it can be omitted by defining `meter = _;`.
 // * `N`: the number of channels of the compressor, known at compile time
@@ -292,11 +350,11 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `FBFF`: fade between feed forward (0) and feed back (1) compression.
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `FBFF`: fade between feed forward (0) and feed back (1) compression
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
@@ -350,7 +408,7 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -408,10 +466,10 @@ RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -445,7 +503,7 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 
 //--------------------`(co.)RMS_FBFFcompressor_N_chan`-------------------
 // RMS feed forward / feed back N channels dynamic range compressor.
-// the feedback part has a much higher strength, so they end up sounding similar
+// The feedback part has a much higher strength, so they end up sounding similar.
 // `RMS_FBFFcompressor_N_chan` is a standard Faust function.
 //
 // #### Usage
@@ -463,12 +521,12 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `FBFF`: fade between feed forward (0) and feed back (1) compression.
-// * `meter`: a gain reduction meter. It can be implemented like so:
+// * `meter`: a gain reduction meter. It can be implemented with:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
 //
@@ -482,7 +540,7 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 //
 // To save CPU we cheat a bit, in a similar way as in the original libs:
 // instead of crosfading between two sets of gain calculators as above,
-// we take the abs of the audio from both the FF and FB, and crossfade between those,
+// we take the `abs` of the audio from both the FF and FB, and crossfade between those,
 // and feed that into one set of gain calculators
 // again the strength is much higher when in FB mode, but implemented differently.
 //
@@ -533,12 +591,12 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // the limiter uses a knee half this size
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
-// * `meter`: compressor gain reduction meter. It can be implemented like so:
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `meter`: compressor gain reduction meter. It can be implemented with:
 // `meter = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
-// * `meterLim`: brickwall limiter gain reduction meter. It can be implemented like so:
+// * `meterLim`: brickwall limiter gain reduction meter. It can be implemented with:
 // `meterLim = _<:(_,(max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `N`: the number of channels of the compressor, known at compile time
 //
@@ -564,7 +622,7 @@ declare RMS_FBcompressor_peak_limiter_N_chan author "Bart Brouns";
 declare RMS_FBcompressor_peak_limiter_N_chan license "GPLv3";
 
 RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link,meter,meterLim,N) =
-  (((RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,0,link,N)),si.bus(N)) : ro.interleave(N,2) : par(i,N,(meter : ba.db2linear)*_) : FFcompressor_N_chan(1,threshLim,0,att:min(rel),knee*0.5,0,link,meterLim : ba.db2linear,N))
+  (((RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,0,link,N)),si.bus(N)) : ro.interleave(N,2) : par(i,N,(meter : ba.db2linear)*_) : FFcompressor_N_chan(1,threshLim,0,att:min(rel),knee*0.5,0,link,meterLim,N))
   ~ si.bus(N);
 
 
@@ -592,7 +650,7 @@ RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -640,10 +698,10 @@ peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -692,7 +750,7 @@ peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
 //
@@ -740,10 +798,10 @@ RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // below thresh-(knee/2) there is no gain reduction,
 // above thresh+(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-threshold detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `N`: the number of channels of the compressor, known at compile time
 //
 // It uses a strength parameter instead of the traditional ratio, in order to be able to
@@ -791,10 +849,10 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // Where:
 //
 // * `lad`: lookahead delay in seconds (nonnegative) - gets rounded to nearest sample.
-//          The effective attack time is a good setting.
+//          The effective attack time is a good setting
 // * `ratio`: compression ratio (1 = no compression, >1 means compression)
 //            Ratios: 4 is moderate compression, 8 is strong compression,
-//            12 is mild limiting, and 20 is pretty hard limiting at the threshold.
+//            12 is mild limiting, and 20 is pretty hard limiting at the threshold
 // * `thresh`: dB level threshold above which compression kicks in (0 dB = max level)
 // * `att`: attack time = time constant (sec) when level & compression are going up
 // * `rel`: release time = time constant (sec) coming out of compression
@@ -827,7 +885,7 @@ compressor_lad_mono(lad,ratio,thresh,att,rel,x)
 //
 // * `ratio`: compression ratio (1 = no compression, >1 means compression)
 //            Ratios: 4 is moderate compression, 8 is strong compression,
-//            12 is mild limiting, and 20 is pretty hard limiting at the threshold.
+//            12 is mild limiting, and 20 is pretty hard limiting at the threshold
 // * `thresh`: dB level threshold above which compression kicks in (0 dB = max level)
 // * `att`: attack time = time constant (sec) when level & compression are going up
 // * `rel`: release time = time constant (sec) coming out of compression
@@ -925,19 +983,19 @@ with {
 // to get you started using compressors as limiters, so all
 // parameters are hardwired here to nominal values.
 //
-// Ratio: 4 (moderate compression)
+// `ratio`: 4 (moderate compression).
 //        See `compressor_mono` comments for a guide to other choices.
 //        Mike Shipley likes this (lowest) setting on the 1176.
 //        (Grammy award-winning mixer for Queen, Tom Petty, etc.).
 //
-// Thresh: -6 dB, meaning 4:1 compression begins at amplitude 1/2.
+// `thresh`: -6 dB, meaning 4:1 compression begins at amplitude 1/2.
 //
-// Att: 800 MICROseconds (Note: scaled by ratio in the 1176)
+// `att`: 800 MICROseconds (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 20-800 microseconds.
 //         Faster attack gives "more bite" (e.g. on vocals),
 //         and makes hard-clipping less likely on fast overloads.
 //
-// Rel: 0.5 s (Note: scaled by ratio in the 1176)
+// `rel`: 0.5 s (Note: scaled by ratio in the 1176)
 //         The 1176 range is said to be 50-1100 ms.
 //
 // The 1176 also has a "bright, clear eq effect" (use filters.lib if desired).
@@ -959,21 +1017,22 @@ declare limiter_1176_R4_mono copyright
 declare limiter_1176_R4_mono license "MIT-style STK-4.3 license";
 limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 
+
 //-------------------`(co.)limiter_1176_R4_stereo`---------------------
 // A limiter guards against hard-clipping.  It can be
 // implemented as a compressor having a high threshold (near the
 // clipping level), fast attack and release, and high ratio.  Since
 // the ratio is so high, some knee smoothing is
 // desirable ("soft limiting").  This example is intended
-// to get you started using compressor_* as a limiter, so all
+// to get you started using `compressor_*` as a limiter, so all
 // parameters are hardwired to nominal values here.
 // 
-// Ratios: 4 (moderate compression), 8 (severe compression),
+// `ratio`: 4 (moderate compression), 8 (severe compression),
 //          12 (mild limiting), or 20 to 1 (hard limiting).
 //
-// Att: 20-800 MICROseconds (Note: scaled by ratio in the 1176).
+// `att`: 20-800 MICROseconds (Note: scaled by ratio in the 1176).
 //
-// Rel: 50-1100 ms (Note: scaled by ratio in the 1176).
+// `rel`: 50-1100 ms (Note: scaled by ratio in the 1176).
 //
 // Mike Shipley likes 4:1 (Grammy-winning mixer for Queen, Tom Petty, etc.)
 // Faster attack gives "more bite" (e.g. on vocals).
@@ -1020,10 +1079,10 @@ limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `maxHold`: the maximum hold time in samples, known at compile time
 // * `N`: the number of channels of the gain computer, known at compile time
 //
@@ -1084,10 +1143,10 @@ with {
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `maxHold`: the maximum hold time in samples, known at compile time
@@ -1123,10 +1182,10 @@ expander_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHo
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
 // below thresh-(knee/2) there is the same gain reduction as without a knee,
-// and in between there is a gradual increase in gain reduction.
+// and in between there is a gradual increase in gain reduction
 // * `prePost`: places the level detector either at the input or after the gain computer;
 // this turns it from a linear return-to-zero detector into a log  domain return-to-range detector
-// * `link`: the amount of linkage between the channels. 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
+// * `link`: the amount of linkage between the channels: 0 = each channel is independent, 1 = all channels have the same amount of gain reduction
 // * `meter`: a gain reduction meter. It can be implemented like so:
 // `meter = _<:(_, (ba.linear2db:max(maxGR):meter_group((hbargraph("[1][unit:dB][tooltip: gain reduction in dB]", maxGR, 0))))):attach;`
 // * `maxHold`: the maximum hold time in samples, known at compile time
@@ -1160,9 +1219,9 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 // This version of the limiter uses a peak-holder with smoothed
 // attack and release based on tau time constant filters.
 //
-// It is also possible to use a time constant that is 2PI*tau by dividing 
-// the attack and release times by 2PI. This time constant allows for 
-// the amplitude profile to reach 1 - e^(-2PI) of the final 
+// It is also possible to use a time constant that is `2PI*tau` by dividing 
+// the attack and release times by `2PI`. This time constant allows for 
+// the amplitude profile to reach `1 - e^(-2PI)` of the final 
 // peak after the attack time. The input path can be delayed by the same 
 // amount as the attack time to synchronise input and amplitude profile, 
 // realising a system that is particularly effective as a colourless
@@ -1193,12 +1252,12 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 //
 // Where:
 //
-// * `N` is the number of channels, known at compile-time
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `N`: is the number of channels, known at compile-time
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // Example for a stereo limiter: `limiter_lad_N(2, .01, 1, .01, .1, 1);`
 //
@@ -1236,11 +1295,11 @@ limiter_lad_N(N, LD, ceiling, attack, hold, release) =
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
@@ -1264,11 +1323,11 @@ limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
@@ -1292,11 +1351,11 @@ limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 //
 // Where:
 //
-// * `LD` is the lookahead delay in seconds, known at compile-time
-// * `ceiling` is the linear amplitude output limit
-// * `attack` is the attack time in seconds
-// * `hold` is the hold time in seconds
-// * `release` is the release time in seconds
+// * `LD`: is the lookahead delay in seconds, known at compile-time
+// * `ceiling`: is the linear amplitude output limit
+// * `attack`: is the attack time in seconds
+// * `hold`: is the hold time in seconds
+// * `release`: is the release time in seconds
 //
 // #### Reference:
 //
