@@ -151,6 +151,8 @@ To test, put the directory in a local server, then open page: `./dist/index.html
 
 If you need to update the editor's version using `git pull`, as the repository has other dependencies hosted on Github, you may run `npm update` to make sure everything is up to date.
 
+Note that the `src/static/examples` folder is a manually copied subset of the `faust/examples` that will have to be updated from time to time. 
+
 ## Launching the local editor
 
 A local HTTP server has to be started with `npm run serve` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
