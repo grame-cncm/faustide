@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "description": "Faust IDE",
   "main": "src/index.ts",
   "private": true,
@@ -47,8 +47,8 @@
     "@types/wavesurfer.js": "^3.3.2",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
-    "@zenfs/core": "^0.17.1",
-    "@zenfs/dom": "^0.2.15",
+    "@zenfs/core": "^0.9.7",
+    "@zenfs/dom": "^0.2.6",
     "babel-loader": "^9.1.0",
     "bootstrap": "^4.6.0",
     "clean-webpack-plugin": "^4.0.0",
