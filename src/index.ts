@@ -110,7 +110,7 @@ $(async () => {
 
     const BrowserFS = await import("@zenfs/core");
     const { IndexedDB } = await import("@zenfs/dom");
-    await BrowserFS.configure({
+    await BrowserFS.configureSingle({
         backend: IndexedDB,
         storeName: "FaustIDE" as any
     });
