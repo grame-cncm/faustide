@@ -51,6 +51,7 @@ export class Scope {
         const l = d.length;
         ctx.strokeStyle = "#FFFFFF";
         ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
         ctx.beginPath();
         // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
         let min = d[0];
