@@ -335,7 +335,7 @@ $(async () => {
             }
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
             node.setPlotHandler(plotHandler);
-            node.listenSensors();
+            node.startSensors();
         } catch (e) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
