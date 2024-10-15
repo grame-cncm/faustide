@@ -50,7 +50,7 @@
     "@zenfs/core": "^1.0.0",
     "@zenfs/dom": "^0.2.16",
     "babel-loader": "^9.1.0",
-    "bootstrap": "^4.6.0",
+    "bootstrap": "^5.0.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
