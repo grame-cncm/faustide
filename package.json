@@ -48,7 +48,7 @@
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "@zenfs/core": "^1.0.0",
-    "@zenfs/dom": "^0.2.16",
+    "@zenfs/dom": "^1.0.0",
     "babel-loader": "^9.1.0",
     "bootstrap": "^4.6.2",
     "clean-webpack-plugin": "^4.0.0",
