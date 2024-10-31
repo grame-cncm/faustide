@@ -52,7 +52,7 @@ type FaustEditorEnv = {
     jQuery: JQueryStatic;
     faustCompiler: FaustCompiler;
     recorder: Recorder;
-    browserFS: typeof import("@zenfs/core").promises;
+    zenFS: typeof import("@zenfs/core").promises;
 };
 type FaustEditorAudioEnv = {
     audioCtx?: AudioContext;
@@ -108,14 +108,12 @@ $(async () => {
     const faustPrimitiveLib = await faustPrimitiveLibFile.text();
     libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
 
-    const BrowserFS = await import("@zenfs/core");
+    const { configureSingle, promises: zenfs } = await import("@zenfs/core");
     const { IndexedDB } = await import("@zenfs/dom");
-    await BrowserFS.configureSingle({
+    await configureSingle({
         backend: IndexedDB,
         storeName: "FaustIDE" as any
     });
-    const bfs = BrowserFS.promises;
-
     const JSZip = (await import("jszip") as any).default as import("jszip");
     const WaveSurfer = (await import("wavesurfer.js") as any).default as import("wavesurfer.js");
     const QRCode = await import("qrcode");
@@ -186,13 +184,13 @@ $(async () => {
     const loadProject = async () => {
         const mfs = libFaust.fs();
         mfs.mkdir(PROJECT_DIR);
-        let files = await bfs.readdir("/");
+        let files = await zenfs.readdir("/");
         files = files.filter(n => n !== "." && n !== "..");
         if (!compileOptions.saveCode) {
-            await Promise.all(files.map(filename => bfs.unlink(filename)));
+            await Promise.all(files.map(filename => zenfs.unlink(filename)));
         } else {
             await Promise.all(files.map(async (filename) => {
-                const data = await bfs.readFile(filename);
+                const data = await zenfs.readFile(filename);
                 mfs.writeFile(PROJECT_DIR + filename, new Uint8Array(data.buffer));
             }));
         }
@@ -522,7 +520,7 @@ $(async () => {
         editor,
         faustCompiler,
         recorder: new Recorder(),
-        browserFS: bfs
+        zenFS: zenfs
     };
     safeStorage.setItem("faust_editor_version", VERSION);
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
@@ -554,11 +552,11 @@ $(async () => {
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 try {
-                    const exist = await bfs.exists(fileName);
+                    const exist = await zenfs.exists(fileName);
                     if (exist) {
-                        await bfs.unlink(fileName);
+                        await zenfs.unlink(fileName);
                     }
-                    await bfs.writeFile(fileName, content, typeof content === "string" ? { encoding: "utf8" } : {});
+                    await zenfs.writeFile(fileName, content, typeof content === "string" ? { encoding: "utf8" } : {});
                 } catch (e) {
                     showError(e);
                 }
@@ -578,7 +576,7 @@ $(async () => {
             safeStorage.setItem("faust_editor_project", JSON.stringify(project));
             */
             try {
-                await bfs.unlink(fileName);
+                await zenfs.unlink(fileName);
             } catch (e) {
                 showError(e);
             }
