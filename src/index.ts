@@ -926,7 +926,7 @@ $(async () => {
                 }).done((result, status, jqXHR) => {
                     if (result === "DONE") {
                         // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
-                        const location = jqXHR.getResponseHeader("Location")
+                        const location = jqXHR.getResponseHeader("Location");
                         const href = location ? `${server}/${location}` : `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
                         $("#a-export-download").attr({ href });
                         $("#export-download").show();
@@ -1547,7 +1547,7 @@ $(async () => {
                     }).done((result, status, jqXHR) => {
                         if (result === "DONE") {
                             // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
-                            const location = jqXHR.getResponseHeader("Location")
+                            const location = jqXHR.getResponseHeader("Location");
                             const href = location ? `${server}/${location}` : `${path}/binary.zip`;
                             ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
                         }
