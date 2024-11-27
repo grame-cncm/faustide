@@ -1,6 +1,6 @@
 {
   "name": "fausteditorweb",
-  "version": "1.5.14",
+  "version": "1.5.15",
   "description": "Faust IDE",
   "main": "src/index.ts",
   "private": true,
@@ -39,7 +39,7 @@
     "@babel/preset-typescript": "^7.18.6",
     "@babel/runtime": "^7.18.9",
     "@fortawesome/fontawesome-free": "^5.15.3",
-    "@grame/faustwasm": "^0.7.4",
+    "@grame/faustwasm": "^0.7.6",
     "@shren/faust-ui": "^1.1.13",
     "@types/bootstrap": "^4.6.0",
     "@types/jquery": "^3.5.5",
