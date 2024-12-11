@@ -291,7 +291,9 @@ $(async () => {
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         }
-        const { useWorklet, bufferSize, voices, args } = compileOptions;
+        const { useWorklet, bufferSize, voices, useDouble } = compileOptions;
+        const args = compileOptions.args.slice();
+        if (useDouble) args.push("-double");
         let node: FaustScriptProcessorNode<any> | FaustAudioWorkletNode<any>;
         // Recorder, show current recorded length without too many refreshes
         let mediaLengthRaf: number;
@@ -493,6 +495,7 @@ $(async () => {
     };
     const compileOptions: FaustEditorCompileOptions = {
         useWorklet: false,
+        useDouble: false,
         bufferSize: 1024,
         saveCode: true,
         saveParams: false,
@@ -644,6 +647,11 @@ $(async () => {
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
 
+    // Double
+    $<HTMLInputElement>("#check-double").on("change", (e) => {
+        compileOptions.useDouble = e.currentTarget.checked;
+        saveEditorParams();
+    })[0].checked = compileOptions.useDouble;
     // Save Code
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
         compileOptions.saveCode = e.currentTarget.checked;
@@ -711,7 +719,9 @@ $(async () => {
     $("#btn-plot").on("click", async () => {
         if (compileOptions.plotMode === "offline") {
             const code = uiEnv.fileManager.mainCode;
-            const { args, plot, plotSR } = compileOptions;
+            const { plot, plotSR, useDouble } = compileOptions;
+            const args = compileOptions.args.slice();
+            if (useDouble) args.push("-double");
             const generator = new FaustMonoDspGenerator();
             await generator.compile(faustCompiler, "main", code, args.join(" "));
             const soundfileList = generator.getSoundfileList();
