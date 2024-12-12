@@ -172,3 +172,4 @@ You'll have to raise the package version number in `package.json` before `npm ru
 - MIDI is only working in Chrome and Firefox
 - the **ExpressVPN** browser extension runs a background loop when "Not Connected" which causes any instantiated FaustUI element to fail after a few seconds. Disabling the extension will solve this problem (not tested on Safari)
 - some users report random problems when exporting the code, like missing labels when exporting on osx/coreaudio-qt. Clearing the browser's cache and cookies can fix the issue
+- **be sure to save the entire session state (with all opened DSP and libraries files) using the "Save As" button** before clearing the cache or reloading a new version of the code from the server.
