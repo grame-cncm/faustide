@@ -178,7 +178,7 @@ closed source license or any other license if you decide so.
 // pink = f : + ~ g 
 // with {
 //   f(x) = 0.04957526213389*x - 0.06305581334498*x' + 0.01483220320740*x'';
-// 	g(x) = 1.80116083982126*x - 0.80257737639225*x';
+// 	 g(x) = 1.80116083982126*x - 0.80257737639225*x';
 // };
 // process = pink;
 // ```
@@ -242,8 +242,8 @@ closed source license or any other license if you decide so.
 //
 // ```
 // import("filters.lib");
-//   ...
-// ...lowpass....
+//  ...
+//  ...lowpass....
 // 	...
 // };
 // ```
@@ -252,8 +252,8 @@ closed source license or any other license if you decide so.
 //
 // ```
 // fl = library("filters.lib");
-//   ...
-// ...fl.lowpass....
+//  ...
+//  ...fl.lowpass....
 // 	...
 // };
 // ```
@@ -767,7 +767,7 @@ closed source license or any other license if you decide so.
 // **Usage**
 //
 // ```
-// _,_ : select2(s) : _,_
+// _,_ : select2(s) : _
 // ```
 //
 // Where:
@@ -783,7 +783,7 @@ closed source license or any other license if you decide so.
 // **Usage**
 //
 // ```
-// _,_,_ : select3(s) : _,_,_
+// _,_,_ : select3(s) : _
 // ```
 //
 // Where:
