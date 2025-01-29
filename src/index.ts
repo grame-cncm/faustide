@@ -928,8 +928,20 @@ $(async () => {
             const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
             if (matched) {
                 const plat = $("#export-platform").val();
-                const arch = $("#export-arch").val();
+                let arch = $("#export-arch").val();
+                let target;
+                // Check the different possible targets
+                if (arch === "pwa" || arch === "pwa-poly") {
+                    target = "index.html";
+                } else if (plat === "chaos-stratus") {
+                    target = "installer.sh"
+                } else if (plat === "android") {
+                    target = "binary.apk";
+                } else {
+                    target = "binary.zip";
+                }
                 const path = `${server}/${shaKey}/${plat}/${arch}`;
+                const href = `${server}/${shaKey}/${plat}/${arch}/${target}`;
                 $.ajax({
                     method: "GET",
                     url: `${path}/precompile`
@@ -937,7 +949,6 @@ $(async () => {
                     if (result === "DONE") {
                         // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
                         const location = jqXHR.getResponseHeader("Location");
-                        const href = location ? `${server}/${location}` : `${path}/${plat === "android" ? "binary.apk" : "binary.zip"}`;
                         $("#a-export-download").attr({ href });
                         $("#export-download").show();
                         if (download === true) {
@@ -1550,7 +1561,19 @@ $(async () => {
             }).done((shaKey) => {
                 const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
                 if (matched) {
+                    let target;
+                    // Check the different possible targets
+                    if (arch === "pwa" || arch === "pwa-poly") {
+                        target = "index.html";
+                    } else if (plat === "chaos-stratus") {
+                        target = "installer.sh"
+                    } else if (plat === "android") {
+                        target = "binary.apk";
+                    } else {
+                        target = "binary.zip";
+                    }
                     const path = `${server}/${shaKey}/${plat}/${arch}`;
+                    const href = `${server}/${shaKey}/${plat}/${arch}/${target}`;
                     $.ajax({
                         method: "GET",
                         url: `${path}/precompile`
@@ -1558,7 +1581,6 @@ $(async () => {
                         if (result === "DONE") {
                             // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
                             const location = jqXHR.getResponseHeader("Location");
-                            const href = location ? `${server}/${location}` : `${path}/binary.zip`;
                             ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
                         }
                     }).fail((jqXHR, textStatus) => {
