@@ -1,6 +1,8 @@
-// Definitions related to the libraries documentation system
+// Definitions related to the libraries and syntax documentation system 
 
 export const faustDocURL = "https://faustlibraries.grame.fr/libs";
+
+export const faustSyntaxURL = "https://faustdoc.grame.fr/manual/syntax/";
 
 export const docSections: { [key: string]: string } = {
     aa: "aanl",

@@ -33,7 +33,7 @@ import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
-import { docSections, faustDocURL } from "./documentation";
+import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
 import { safeStorage } from "./utils";
 
 declare global {
@@ -1988,18 +1988,42 @@ effect = dm.freeverb_demo;`;
         }
     });
 
+    let docWindow: Window | null = null;
+    let syntaxWindow: Window | null = null;
+
     const showDoc = () => {
         const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
+        let docUrl = faustDocURL; // Default documentation URL
+        let syntaxUrl = faustSyntaxURL; // Default syntax URL
+
         if (matched) {
-            const prefix: string[] = matched.nameArray.slice();
+            const prefix = matched.nameArray.slice();
             prefix.pop();
             const doc = matched.doc;
-            $("#a-docs").attr("href", `${faustDocURL}/${docSections[prefix.toString().slice(0, 2) as keyof typeof docSections]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`)[0].click();
-            return;
+            docUrl = `${faustDocURL}/${docSections[prefix.toString().slice(0, 2) as keyof typeof docSections]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`;
         }
-        $("#a-docs").attr("href", faustDocURL)[0].click();
+
+        // Check if the syntax tab is already open, if not, open it
+        if (!syntaxWindow || syntaxWindow.closed) {
+            syntaxWindow = window.open(syntaxUrl, "_blank");
+        } else {
+            syntaxWindow.location.href = syntaxUrl; // Update the URL if already open
+            syntaxWindow.focus(); // Bring it to the front
+        }
+
+        // Check if the documentation tab is already open, if not, open it
+        if (!docWindow || docWindow.closed) {
+            docWindow = window.open(docUrl, "_blank");
+        } else {
+            docWindow.location.href = docUrl; // Update the URL if already open
+            docWindow.focus(); // Bring it to the front
+        }
     };
+
+    // Attach the event listener to the button
     $("#btn-docs").off("click").on("click", showDoc);
+
+
     $(window).on("resize", () => editor.layout());
     return { editor, monaco };
 };
