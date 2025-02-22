@@ -514,7 +514,7 @@ $(async () => {
         exportArch: "cplusplus",
         ...loadEditorParams(),
         realtimeCompile: false,
-        args: ["-I", PROJECT_DIR]
+        args: ["-f", "10", "-I", PROJECT_DIR]
     };
     const faustEnv: FaustEditorEnv = {
         audioEnv,
