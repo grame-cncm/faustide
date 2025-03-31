@@ -94,7 +94,9 @@ let supportMediaStreamDestination = !!(window.AudioContext
     || window.webkitAudioContext).prototype.createMediaStreamDestination
     && !!HTMLAudioElement.prototype.setSinkId;
 
-let server = "https://faustservicecloud.grame.fr";
+//let server = "https://faustservicecloud.grame.fr";
+let server = "https://faustservice.inria.fr";
+
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
