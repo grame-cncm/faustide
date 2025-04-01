@@ -908,6 +908,12 @@ $(async () => {
             uiEnv.fileManager._fileList.forEach((n) => {
                 if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n));
             });
+            // Add all .wav or .flac audio files in the ZIP
+            uiEnv.fileManager._fileList.forEach((n) => {
+                if (n.endsWith(".wav") || n.endsWith(".flac")) {
+                    zip.file(n, uiEnv.fileManager.getValue(n));
+                }
+            });
             // Add the currently selected .dsp file in the ZIP
             zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
             // Send the ZIP file
