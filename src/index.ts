@@ -809,7 +809,8 @@ $(async () => {
         }
         if (urlParams.has("mode")) {
             if (urlParams.get("mode") === "amstram") {
-                server = "https://amstramservice.grame.fr/";
+                //server = "https://amstramservice.grame.fr/";
+                server = "https://faustservice-old.inria.fr"
                 compileOptions.exportPlatform = "esp32";
                 compileOptions.exportArch = "gramophoneFlash";
                 $("#export-server").val(server).change();
@@ -819,7 +820,8 @@ $(async () => {
                 $("#show-right-panel").click().change();
             }
             if (urlParams.get("mode") === "amstram-pro") {
-                server = "https://amstramservice.grame.fr/";
+                //server = "https://amstramservice.grame.fr/";
+                server = "https://faustservice-old.inria.fr"
                 compileOptions.exportPlatform = "esp32";
                 compileOptions.exportArch = "gramophoneFlash";
                 $("#export-server").val(server).change();
