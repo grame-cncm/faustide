@@ -387,7 +387,7 @@ $(async () => {
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
             if (audioEnv.destination instanceof MediaStreamAudioDestinationNode) {
                 // Set the destination's channel count to match the DSP
-                audioEnv.destination.channelCount = node.getNumOutputs();
+                audioEnv.destination.channelCount = Math.min(8, node.getNumOutputs());
                 // You can also set channelInterpretation here if necessary
                 audioEnv.destination.channelInterpretation = "discrete";
             }
