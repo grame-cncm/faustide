@@ -99,54 +99,7 @@ let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
 
-let isAudioUnlocked = false; // Flag to run unlock only once
-
-async function unlockAudio() {
-    if (isAudioUnlocked || !window.faustEnv || !window.faustEnv.audioEnv.audioCtx) {
-        // Already unlocked or context not ready yet
-        return;
-    }
-
-    const { audioCtx, destination } = window.faustEnv.audioEnv;
-    console.log("Attempting to unlock audio...");
-
-    try {
-        if (audioCtx.state === 'suspended') {
-            console.log("Resuming AudioContext...");
-            await audioCtx.resume();
-            console.log(`AudioContext state after resume: ${audioCtx.state}`);
-        }
-
-        // Try playing the hidden audio element if using MediaStream destination
-        if (destination instanceof MediaStreamAudioDestinationNode) {
-            const audio = $<HTMLAudioElement>("#output-audio-stream")[0];
-            if (audio && audio.paused) {
-                console.log("Playing hidden audio element...");
-                await audio.play();
-                console.log("Hidden audio element played successfully.");
-            }
-        }
-        isAudioUnlocked = true; // Mark as unlocked (even if play() failed, resume() likely worked)
-        console.log("Audio should be unlocked.");
-
-    } catch (err) {
-        console.error("Error during audio unlock:", err);
-        // Still set unlocked to true to avoid repeated attempts on errors
-        isAudioUnlocked = true;
-    }
-
-    // Clean up the listeners after the first successful attempt or error
-    document.body.removeEventListener('click', unlockAudio);
-    document.body.removeEventListener('touchstart', unlockAudio);
-    document.body.removeEventListener('keydown', unlockAudio);
-}
-
 $(async () => {
-    console.log("Setting up audio unlock listeners...");
-    document.body.addEventListener('click', unlockAudio, { once: false }); // Use once: false here, remove inside unlockAudio
-    document.body.addEventListener('touchstart', unlockAudio, { once: false });
-    document.body.addEventListener('keydown', unlockAudio, { once: false });
-
     const { setTimeout } = window;
     const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator, FaustPolyDspGenerator } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
@@ -385,12 +338,6 @@ $(async () => {
                 node = await factory.createNode(audioCtx, "main", undefined, !useWorklet, bufferSize);
             }
             if (!node) throw new Error("Unknown Error in WebAudio Node.");
-            if (audioEnv.destination instanceof MediaStreamAudioDestinationNode) {
-                // Set the destination's channel count to match the DSP
-                audioEnv.destination.channelCount = node.getNumOutputs();
-                // You can also set channelInterpretation here if necessary
-                audioEnv.destination.channelInterpretation = "discrete";
-            }
             node.setPlotHandler(plotHandler);
             node.startSensors();
         } catch (e) { /*
@@ -1262,7 +1209,7 @@ $(async () => {
     });
     /**
      * Audio Outputs
-     * Choose an audio stream <audio />
+     * Choose and audio stream <audio />
      */
     $<HTMLSelectElement>("#select-audio-output").on("change", async (e) => {
         if (!supportMediaStreamDestination) return;
@@ -1908,6 +1855,7 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
         };
         unlockAudioContext();
     }
+    if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
     if (!audioEnv.inputs) audioEnv.inputs = {};
     if (deviceId && !audioEnv.inputs[deviceId]) {
         if (deviceId === "-1") {
@@ -1927,27 +1875,21 @@ const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) =>
     if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
     if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
     audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-
     if (!audioEnv.destination) {
+        audioEnv.destination = audioEnv.audioCtx.destination;
+        /*
         if (supportMediaStreamDestination) {
-            // Create a stream destination if supported
             audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
-            const audio = $<HTMLAudioElement>("#output-audio-stream")[0]; // Find the audio element
-            // Connect the destination's stream to the audio element
-            if ("srcObject" in audio) {
-                audio.srcObject = audioEnv.destination.stream;
-            } else {
-                // Fallback for older browsers (unlikely)
-                (audio as any).src = URL.createObjectURL(audioEnv.destination.stream);
-            }
+            const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
+            if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
+            else (audio as HTMLAudioElement).src = URL.createObjectURL(audioEnv.destination.stream);
         } else {
-            // If MediaStreamDestination is not supported, fallback to the default output
             audioEnv.destination = audioEnv.audioCtx.destination;
-            // In this case, output selection will not work.
         }
-
+        */
+        audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
+        audioEnv.destination.channelInterpretation = "discrete";
     }
-
     return audioEnv;
 };
 /**
