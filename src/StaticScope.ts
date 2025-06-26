@@ -5,13 +5,13 @@ import "./StaticScope.scss";
  * Enumeration for the different display modes of the scope.
  */
 enum EScopeMode {
-    /** * Raw numerical data view. 
-     * This mode displays the raw sample values for each channel in a tabular format. 
+    /** * Raw numerical data view.
+     * This mode displays the raw sample values for each channel in a tabular format.
      * It's useful for inspecting precise numerical data without graphical interpretation.
      */
     Data = 0,
-    /** * Interleaved multi-channel time-domain view. 
-     * This mode displays the waveform of each channel in a separate horizontal lane. 
+    /** * Interleaved multi-channel time-domain view.
+     * This mode displays the waveform of each channel in a separate horizontal lane.
      * It is ideal for comparing the timing and shape of multiple signals simultaneously while keeping them visually distinct.
      */
     Interleaved = 1,
@@ -26,7 +26,7 @@ enum EScopeMode {
      */
     Spectroscope = 3,
     /** * Time-frequency-domain view (waterfall).
-     * This mode visualizes how the frequency spectrum changes over time. The x-axis represents time, 
+     * This mode visualizes how the frequency spectrum changes over time. The x-axis represents time,
      * the y-axis represents frequency, and the color intensity represents the magnitude of the frequency component.
      */
     Spectrogram = 4
@@ -228,7 +228,7 @@ export class StaticScope {
     }
     /**
      * Draws the scope in interleaved mode.
-     * The core principle is to display each channel's waveform in its own horizontal strip. 
+     * The core principle is to display each channel's waveform in its own horizontal strip.
      * The y-axis within each strip represents amplitude, and the x-axis represents time (in samples).
      * The view can be stabilized for periodic signals by finding a consistent zero-crossing point.
      * It also includes an optimization to draw min/max values for each horizontal pixel to represent the signal envelope accurately when zoomed out.
@@ -859,7 +859,7 @@ export class StaticScope {
         const { events, bufferSize, fftSize, fftOverlap, sampleRate } = drawOptions;
         const isFrequencyDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
         const frequencyBinCount = fftSize / 2;
-        const channelCount = isFrequencyDomain ? drawOptions.freqDomainData.length : drawOptions.timeDomainData.length;
+        const channelCount = mode === EScopeMode.Oscilloscope ? 1 : isFrequencyDomain ? drawOptions.freqDomainData.length : drawOptions.timeDomainData.length;
         const unit = mode === EScopeMode.Spectrogram ? "Hz/frame" : mode === EScopeMode.Spectroscope ? "dB/Hz" : "lvl/samp";
         const eventsToDraw: [number, { type: string; data: any }[]][] = [];
 
@@ -988,7 +988,7 @@ export class StaticScope {
                             ctx.lineTo(canvasWidth, y);
                             ctx.stroke();
                             if (isMajor || isMedium) {
-                                ctx.fillText(freq >= 1000 ? `${(freq / 1000).toFixed(1)}k` : freq.toFixed(0), 45, Math.max(y, 10));
+                                ctx.fillText(freq.toFixed(0), 45, Math.max(y, 10));
                             }
                         }
                     }
@@ -1018,14 +1018,14 @@ export class StaticScope {
                 drawHLine(y, yLabel);
                 const verticalRange = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
                 for (let j = verticalGridStep; j < verticalRange; j += verticalGridStep) {
-                    const VFactor = isFrequencyDomain ? frequencyBinCount : verticalScaleFactor;
-                    positionRatio = 0.5 - j / VFactor / (isFrequencyDomain ? 1 : 2);
-                    y = (i + (isFrequencyDomain ? 1 : 0.5) - j / VFactor) * heightPerChannel;
+                    const vFactor = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
+                    positionRatio = 0.5 - j / vFactor / 2; // (isFrequencyDomain ? 1 : 2);
+                    y = (i + 0.5 + j / vFactor / 2) * heightPerChannel;
                     yLabel = getYLabel();
                     drawHLine(y, yLabel);
-                    if (isFrequencyDomain) continue;
-                    positionRatio = 0.5 + j / verticalScaleFactor / 2;
-                    y = (i + 0.5 - j / verticalScaleFactor / 2) * heightPerChannel;
+                    // if (isFrequencyDomain) continue;
+                    positionRatio = 0.5 + j / vFactor / 2;
+                    y = (i + 0.5 - j / vFactor / 2) * heightPerChannel;
                     yLabel = getYLabel();
                     drawHLine(y, yLabel);
                 }
@@ -1500,6 +1500,7 @@ export class StaticScope {
         if (this.canvas.width !== canvasWidth) this.canvas.width = canvasWidth;
         if (this.canvas.height !== canvasHeight) this.canvas.height = canvasHeight;
 
+        // eslint-disable-next-line default-case
         switch (this.mode) {
             case EScopeMode.Data:
                 StaticScope.fillDivData(this.divData, this.data);
