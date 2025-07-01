@@ -12,7 +12,7 @@ The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco
 
 #### Resetting parameters to their default value 
 
-You can double-click knobs or sliders to reset them, or on the group label to reset all its chilren. 
+You can double-click knobs or sliders to reset them, or on the group label to reset all its children. 
 
 #### Vim Mode Support
 
