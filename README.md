@@ -7,22 +7,32 @@ The online [Faust IDE](https://faustide.grame.fr) can be used to _edit_, _compil
 ## Features
 
 #### Code Editing
+
 The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco-editor/). It provides _syntax highlighting_, _auto completion_, _code hinting_ and direct access to the _online documentation_. The documentation command (Ctrl-D) uses the function name at the cursor position to locate the relevant information.
 
+#### Resetting parameters to their default value 
+
+You can double-click knobs or sliders to reset them, or on the group label to reset all its chilren. 
+
 #### Vim Mode Support
+
 The Monaco Editor supports an optional mode for Vim users. To enable it, open the command pane (F1) and search for 'Toggle Vim Mode'. The same command is used to desactivate this functionality. Alternatively, you can right click on the editor and press 'Open Command Palette' to open the contextual menu.
 
 #### Project Files
+
 Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DSP code with `import("foo.lib");`. 
 DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
 
 #### Auto-Compiling
+
 While the option is turned on, the diagram or the DSP UI will automatically be updated from the code. The editor will also try to tell if there is an error in your code.
 
 #### MIDI input
+
 MIDI Input is available for Chrome and Firefox browsers. You can also use the computer keyboard to input MIDI notes. We are using key map as Ablelon Live: A-line and Q-line for keys, ZX to move octave, CV to change velocity.
 
 #### Polyphonic mode
+
 The polyphonic mode can be activated by selecting a number of voices in the _Poly Voices_ menu on the left. [Standard Polyphony Parameters](https://faustdoc.grame.fr/manual/midi/#standard-polyphony-parameters) have to be used in the DSP voice.
 
 A global effect can be added using the `effect = foo;` [convention](https://faustdoc.grame.fr/manual/midi/#audio-effects-and-polyphonic-synthesizer), possibly adapting the voice and effect inputs/outputs to make them compatible. 
@@ -31,16 +41,20 @@ A global effect can be added using the `effect = foo;` [convention](https://faus
 You can choose your audio device or use an audio file to simulate the audio input of DSP. Drap and drop your file to the waveform below to substitute the file.
 
 #### Audio Output
+
 Audio output can be switched on/off using the he *Output is On/Output is Off* button on the bottom-right. 
 
 #### Audio Recording
+
 The generated sound can be recorded on the fly then possibly saved using the *Record/Save* section on the bottom-right. 
 
 #### Remote compilation
+
 The currently edited DSP program can be sent to the [remote compilation service](https://github.com/grame-cncm/faustservice) which allows to export for a large number of targets, like various standalone formats, a Max/MSP external on macOS or Windows, a SuperCollider UGen.etc. Use the *Truck* button on the left column to access the list of possible *Platform* and the list of associated *Architecture*. Select one *Platform/Architecture* pair and wait a bit until you get the compiled result as a binary zipped file.  
 Note that some targets produce a source file (like *source/cplusplus*), or ready to be compiled projects (like *juce/plug-in* to create a [JUCE](https://juce.com) project).
 
 #### Audio analyzers
+
 Tools to display audio signals are available in the left panel:
 
 - **Mode** can be _Offline_, _Continuous_, _On Event_ (to synchronize visualisation with control event changes), and _Manual_ (to be triggered with the _Plot (Snapshot)_ button at the bottom)
@@ -58,6 +72,7 @@ Both input and output have an audio analyzer in the right panel. In the small au
 In the display zone, zoom can be changed with *2 fingers up/down slide* on macOS from 1x up to 800x. 
 
 #### SVG Diagrams
+
 The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate inside it by clicking on the dark blue part to go down in the circuit hierarchy, or clicking on the diagram border to go up in the circuit hierarchy.
 
 #### Soundfiles access
