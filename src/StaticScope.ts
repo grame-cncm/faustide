@@ -5,30 +5,15 @@ import "./StaticScope.scss";
  * Enumeration for the different display modes of the scope.
  */
 enum EScopeMode {
-    /** * Raw numerical data view.
-     * This mode displays the raw sample values for each channel in a tabular format.
-     * It's useful for inspecting precise numerical data without graphical interpretation.
-     */
+    /** Raw numerical data view */
     Data = 0,
-    /** * Interleaved multi-channel time-domain view.
-     * This mode displays the waveform of each channel in a separate horizontal lane.
-     * It is ideal for comparing the timing and shape of multiple signals simultaneously while keeping them visually distinct.
-     */
+    /** Interleaved multi-channel time-domain view */
     Interleaved = 1,
-    /** * Overlaid multi-channel time-domain view.
-     * This mode draws all channel waveforms overlaid in the same viewport, similar to a classic oscilloscope.
-     * It is best suited for observing phase relationships and direct amplitude comparisons between signals.
-     */
+    /** Overlaid multi-channel time-domain view */
     Oscilloscope = 2,
-    /** * Frequency-domain view.
-     * This mode shows the frequency spectrum of the signal, plotting frequency against magnitude (in dB).
-     * It helps in analyzing the harmonic content and frequency components of the signal.
-     */
+    /** Frequency-domain view */
     Spectroscope = 3,
-    /** * Time-frequency-domain view (waterfall).
-     * This mode visualizes how the frequency spectrum changes over time. The x-axis represents time,
-     * the y-axis represents frequency, and the color intensity represents the magnitude of the frequency component.
-     */
+    /** Time-frequency-domain view (waterfall) */
     Spectrogram = 4
 }
 
@@ -38,7 +23,7 @@ enum EScopeMode {
 enum EFreqScaleMode {
     /** Linear frequency scale */
     Linear,
-    /** Logarithmic frequency scale */
+    /** Logarithmic frequency a scale */
     Logarithmic
 }
 
@@ -75,15 +60,15 @@ export type TDrawOptions = {
     /** The drawing mode */
     drawMode: "offline" | "continuous" | "onevent" | "manual";
     /** Start sample index in the circular buffer */
-    startSampleIndex: number;
+    $: number;
     /** Start buffer index */
-    startBufferIndex: number;
+    $buffer: number;
     /** Time domain data for each channel */
-    timeDomainData?: Float32Array[];
+    t?: Float32Array[];
     /** Frequency domain data for each channel */
-    freqDomainData?: Float32Array[];
+    f?: Float32Array[];
     /** Events associated with each buffer */
-    events?: { type: string; data: any }[][];
+    e?: { type: string; data: any }[][];
     /** The size of each data buffer */
     bufferSize: number;
     /** The size of the FFT window */
@@ -91,7 +76,7 @@ export type TDrawOptions = {
     /** The overlap factor for FFT calculations */
     fftOverlap: 1 | 2 | 4 | 8;
     /** Estimated fundamental frequency for stabilization */
-    estimatedFundamentalFrequency?: number;
+    freqEstimated?: number;
     /** The sample rate of the audio data */
     sampleRate?: number;
 }
@@ -144,11 +129,13 @@ export class StaticScope {
     /** Horizontal zoom offsets for different modes */
     private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
     /** The current data and options for drawing */
-    data: TDrawOptions = { drawMode: "manual", timeDomainData: undefined, startSampleIndex: 0, startBufferIndex: 0, bufferSize: 128, fftSize: 256, fftOverlap: 2 };
+    data: TDrawOptions = { drawMode: "manual", t: undefined, $: 0, $buffer: 0, bufferSize: 128, fftSize: 256, fftOverlap: 2 };
     /** Current cursor position on the canvas */
     cursor: { x: number; y: number };
     /** Flag indicating if the user is currently dragging the mouse */
     dragging: boolean = false;
+    /** Flag indicating if the user is currently zooming */
+    zooming: boolean = false;
     /** A temporary 2D context for rendering the spectrogram offline */
     spectTempCtx: CanvasRenderingContext2D;
     /** The last sample index drawn for the spectrogram */
@@ -160,49 +147,52 @@ export class StaticScope {
 
     /**
      * Handles mouse movement over the canvas to display cursor information.
-     * @param {MouseEvent | TouchEvent} event The mouse or touch event.
+     * @param {MouseEvent | TouchEvent} e The mouse or touch event.
      */
-    handleMouseMove = (event: MouseEvent | TouchEvent) => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
+    handleMouseMove = (e: MouseEvent | TouchEvent) => {
+        if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
-        const canvasWidth = this.container.clientWidth;
-        const canvasHeight = this.container.clientHeight;
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
         const rect = this.canvas.getBoundingClientRect();
-        let x = event instanceof MouseEvent ? event.offsetX : event.touches[0].pageX - rect.left;
-        x = Math.max(0, Math.min(canvasWidth, x));
-        let y = event instanceof MouseEvent ? event.offsetY : event.touches[0].pageY - rect.top;
-        y = Math.max(0, Math.min(canvasHeight, y));
+        let x = e instanceof MouseEvent ? e.offsetX : e.touches[0].pageX - rect.left;
+        x = Math.max(0, Math.min(w, x));
+        let y = e instanceof MouseEvent ? e.offsetY : e.touches[0].pageY - rect.top;
+        y = Math.max(0, Math.min(h, y));
         this.cursor = { x, y };
         // if (this.data.drawMode === "continuous") return;
         this.draw();
     }
     /**
      * Handles mouse down events for panning the view.
-     * @param {MouseEvent | TouchEvent} eventDown The mouse or touch event.
+     * @param {MouseEvent | TouchEvent} eDown The mouse or touch event.
      */
-    handleMouseDown = (eventDown: MouseEvent | TouchEvent) => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
+    handleMouseDown = (eDown: MouseEvent | TouchEvent) => {
+        if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
-        eventDown.preventDefault();
-        eventDown.stopPropagation();
+        eDown.preventDefault();
+        eDown.stopPropagation();
         this.dragging = true;
         this.canvas.style.cursor = "grab";
-        const originalZoom = this.zoom;
-        const originalOffset = this.zoomOffset;
-        let previousX = eventDown instanceof MouseEvent ? eventDown.pageX : eventDown.touches[0].pageX;
-        // let previousY = eventDown instanceof MouseEvent ? eventDown.pageY : eventDown.touches[0].pageY;
-        const handleMouseMove = (moveEvent: MouseEvent | TouchEvent) => {
-            const currentX = moveEvent instanceof MouseEvent ? moveEvent.pageX : moveEvent.touches[0].pageX;
-            // const currentY = moveEvent instanceof MouseEvent ? moveEvent.pageY : moveEvent.touches[0].pageY;
-            const deltaX = currentX - previousX;
-            // const deltaY = currentY - previousY;
-            previousX = currentX;
-            // previousY = currentY;
-            // const multiplier = 1 / 1.015 ** deltaY;
-            const offsetChange = -deltaX / this.zoom / this.canvas.width;
+        const origZoom = this.zoom;
+        const origOffset = this.zoomOffset;
+        let prevX = eDown instanceof MouseEvent ? eDown.pageX : eDown.touches[0].pageX;
+        // let prevY = eDown instanceof MouseEvent ? eDown.pageY : eDown.touches[0].pageY;
+        const handleMouseMove = (eMove: MouseEvent | TouchEvent) => {
+            // Don't allow panning while zooming
+            if (this.zooming) return;
+            
+            const x = eMove instanceof MouseEvent ? eMove.pageX : eMove.touches[0].pageX;
+            // const y = eMove instanceof MouseEvent ? eMove.pageY : eMove.touches[0].pageY;
+            const dX = x - prevX;
+            // const dY = y - prevY;
+            prevX = x;
+            // prevY = y;
+            // const multiplier = 1 / 1.015 ** dY;
+            const offset = -dX / this.zoom / this.canvas.width;
             // if (multiplier !== 1) this.zoom *= multiplier;
-            if (offsetChange !== 0) this.zoomOffset += offsetChange;
-            if (this.zoom !== originalZoom || this.zoomOffset !== originalOffset) this.draw();
+            if (offset !== 0) this.zoomOffset += offset;
+            if (this.zoom !== origZoom || this.zoomOffset !== origOffset) this.draw();
         };
         const handleMouseUp = () => {
             this.dragging = false;
@@ -221,650 +211,570 @@ export class StaticScope {
      * Handles the mouse leaving the canvas area.
      */
     handleMouseLeave = () => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
+        if (!this.data || !this.data.t || !this.data.t.length || !this.data.t[0].length) return;
         if (this.mode === EScopeMode.Data) return;
         this.cursor = undefined;
         this.draw();
     }
     /**
      * Draws the scope in interleaved mode.
-     * The core principle is to display each channel's waveform in its own horizontal strip.
-     * The y-axis within each strip represents amplitude, and the x-axis represents time (in samples).
-     * The view can be stabilized for periodic signals by finding a consistent zero-crossing point.
-     * It also includes an optimization to draw min/max values for each horizontal pixel to represent the signal envelope accurately when zoomed out.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
-     * @param {number} horizontalZoom The horizontal zoom level.
-     * @param {number} horizontalZoomOffset The horizontal zoom offset.
-     * @param {number} verticalZoom The vertical zoom level.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
+     * @param {TDrawOptions} d The data and options for drawing.
+     * @param {number} zoom The horizontal zoom level.
+     * @param {number} zoomOffset The horizontal zoom offset.
+     * @param {number} vzoom The vertical zoom level.
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
-    static drawInterleaved(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, timeDomainData, estimatedFundamentalFrequency, sampleRate, drawMode } = drawOptions;
-        if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-
-        const bufferLength = timeDomainData[0].length;
-        // Find the absolute maximum value for vertical scaling.
-        let minSampleValue = timeDomainData[0][0];
-        let maxSampleValue = timeDomainData[0][0];
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            for (let sampleIndex = 0; sampleIndex < bufferLength; sampleIndex++) {
-                const sampleValue = timeDomainData[channelIndex][sampleIndex];
-                if (sampleValue < minSampleValue) minSampleValue = sampleValue;
-                else if (sampleValue > maxSampleValue) maxSampleValue = sampleValue;
+    static drawInterleaved(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, vzoom: number, cursor?: { x: number; y: number }) {
+        this.drawBackground(ctx, w, h);
+        if (!d) return;
+        const { $, t, freqEstimated, sampleRate, drawMode } = d;
+        if (!t || !t.length || !t[0].length) return;
+        const l = t[0].length;
+        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
+        let min = t[0][0];
+        let max = t[0][0];
+        let i = t.length;
+        let samp: number;
+        while (i--) {
+            let j = l;
+            while (j--) {
+                samp = t[i][j];
+                if (samp < min) min = samp;
+                else if (samp > max) max = samp;
             }
         }
-
-        const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-
-        let drawStartIndex = 0;
-        let drawEndIndex = bufferLength - 1;
-        let stabilizationOffset = 0;
-
-        // Stabilize waveform view by finding a zero-crossing if possible
-        if (drawMode === "continuous" && bufferLength < sampleRate) {
-            const zeroCrossingThreshold = (minSampleValue + maxSampleValue) * 0.5 + 0.001;
-            const estimatedPeriod = sampleRate / estimatedFundamentalFrequency;
-            const periodsToDisplay = Math.floor(bufferLength / estimatedPeriod) - 1;
-
-            // Find first rising edge
-            while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] > zeroCrossingThreshold && stabilizationOffset < bufferLength);
-            if (stabilizationOffset >= bufferLength - 1) {
-                stabilizationOffset = 0;
+        const maxAbs = Math.max(Math.abs(min), Math.abs(max));
+        const yFactor = (maxAbs === 0 ? 1 : maxAbs) * vzoom;
+        let $0 = 0; // Draw start
+        let $1 = l - 1; // Draw End
+        let $zerox = 0;
+        if (drawMode === "continuous" && l < sampleRate) { // Stablize when window size < 1 sec
+            const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
+            const period = sampleRate / freqEstimated;
+            const times = Math.floor(l / period) - 1;
+            while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l);
+            if ($zerox >= l - 1) {
+                $zerox = 0;
             } else {
-                // Find next falling edge
-                while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] < zeroCrossingThreshold && stabilizationOffset < bufferLength);
-                if (stabilizationOffset >= bufferLength - 1) {
-                    stabilizationOffset = 0;
+                while (t[0][wrap($zerox++, $, l)] < thresh && $zerox < l);
+                if ($zerox >= l - 1) {
+                    $zerox = 0;
                 }
             }
-
-            const drawableLength = periodsToDisplay > 0 && isFinite(estimatedPeriod) ? Math.min(estimatedPeriod * periodsToDisplay, bufferLength - stabilizationOffset) : bufferLength - stabilizationOffset;
-            drawStartIndex = Math.round(stabilizationOffset + drawableLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(stabilizationOffset + drawableLength / horizontalZoom + drawableLength * horizontalZoomOffset);
+            const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
+            $0 = Math.round($zerox + drawL * zoomOffset);
+            $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
         } else {
-            drawStartIndex = Math.round(bufferLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(bufferLength / horizontalZoom + bufferLength * horizontalZoomOffset);
+            $0 = Math.round(l * zoomOffset);
+            $1 = Math.round(l / zoom + l * zoomOffset);
         }
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const heightPerChannel = (canvasHeight - bottomMargin) / timeDomainData.length;
-        const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, EScopeMode.Interleaved);
-
-        const pixelsPerSample = (canvasWidth - leftMargin) / (drawEndIndex - drawStartIndex - 1);
-        const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerSample)); // Optimization for drawing
-
+        const left = 50;
+        const bottom = 20;
+        const hCh = (h - bottom) / t.length; // Height per channel
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, $zerox, yFactor, d, EScopeMode.Interleaved);
+        const gridX = (w - left) / ($1 - $0 - 1);
+        const step = Math.max(1, Math.round(1 / gridX)); // horizontal draw step for optimization
         ctx.lineWidth = 2;
         ctx.lineJoin = "round";
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
+        for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
-            ctx.strokeStyle = `hsl(${channelIndex * 60}, 100%, 85%)`;
+            ctx.strokeStyle = `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep: number;
             let minInStep: number;
-
-            for (let sampleIndex = drawStartIndex; sampleIndex < drawEndIndex; sampleIndex++) {
-                const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
-                const sampleValue = timeDomainData[channelIndex][wrappedSampleIndex];
-                const stepCounter = (sampleIndex - drawStartIndex) % horizontalDrawStep;
-
-                if (stepCounter === 0) {
-                    maxInStep = sampleValue;
-                    minInStep = sampleValue;
+            let $j: number;
+            let $step: number;
+            let x: number;
+            let y: number;
+            for (let j = $0; j < $1; j++) {
+                $j = wrap(j, $, l); // True index
+                samp = t[i][$j];
+                $step = (j - $0) % step;
+                if ($step === 0) {
+                    maxInStep = samp;
+                    minInStep = samp;
                 } else {
-                    if (sampleValue > maxInStep) maxInStep = sampleValue;
-                    if (sampleValue < minInStep) minInStep = sampleValue;
+                    if (samp > maxInStep) maxInStep = samp;
+                    if (samp < minInStep) minInStep = samp;
                 }
-
-                if (stepCounter !== horizontalDrawStep - 1) continue;
-
-                const x = (sampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-                let y = heightPerChannel * (channelIndex + 0.5 - maxInStep / verticalScaleFactor * 0.5);
-
-                if (sampleIndex === drawStartIndex) ctx.moveTo(x, y);
+                if ($step !== step - 1) continue;
+                x = (j - $0) * gridX + left;
+                y = hCh * (i + 0.5 - maxInStep / yFactor * 0.5);
+                if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
-
                 if (minInStep !== maxInStep) {
-                    y = heightPerChannel * (channelIndex + 0.5 - minInStep / verticalScaleFactor * 0.5);
+                    y = hCh * (i + 0.5 - minInStep / yFactor * 0.5);
                     ctx.lineTo(x, y);
                 }
             }
             ctx.stroke();
         }
-
-        eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-
-        if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
+        if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
-            const cursorSampleIndex = Math.round(drawStartIndex + (cursor.x - leftMargin) / pixelsPerSample);
+            const $cursor = Math.round($0 + (cursor.x - left) / gridX);
             statsToDraw.values = [];
-            statsToDraw.x = (cursorSampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-            statsToDraw.xLabel = (cursorSampleIndex - stabilizationOffset).toFixed(0);
-            const wrappedCursorSampleIndex = wrap(cursorSampleIndex, startSampleIndex, bufferLength);
-            for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-                const sampleValue = timeDomainData[channelIndex][wrappedCursorSampleIndex];
-                if (typeof sampleValue === "number") statsToDraw.values.push(sampleValue);
+            statsToDraw.x = ($cursor - $0) * gridX + left;
+            statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
+            const $j = wrap($cursor, $, l);
+            for (let i = 0; i < t.length; i++) {
+                const samp = t[i][$j];
+                if (typeof samp === "number") statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
+            this.drawStats(ctx, w, h, statsToDraw);
         }
     }
     /**
      * Draws the scope in oscilloscope mode.
-     * This function overlays all channel waveforms in a single view, much like a traditional oscilloscope.
-     * The y-axis represents amplitude, and the x-axis represents time (in samples).
-     * It shares the same stabilization and min/max drawing optimization logic as the interleaved mode.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
-     * @param {number} horizontalZoom The horizontal zoom level.
-     * @param {number} horizontalZoomOffset The horizontal zoom offset.
-     * @param {number} verticalZoom The vertical zoom level.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
+     * @param {TDrawOptions} d The data and options for drawing.
+     * @param {number} zoom The horizontal zoom level.
+     * @param {number} zoomOffset The horizontal zoom offset.
+     * @param {number} vzoom The vertical zoom level.
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
-    static drawOscilloscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, timeDomainData, estimatedFundamentalFrequency, sampleRate, drawMode } = drawOptions;
-        if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-
-        const bufferLength = timeDomainData[0].length;
-        // Find the absolute maximum value for vertical scaling.
-        let minSampleValue = timeDomainData[0][0];
-        let maxSampleValue = timeDomainData[0][0];
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            for (let sampleIndex = 0; sampleIndex < bufferLength; sampleIndex++) {
-                const sampleValue = timeDomainData[channelIndex][sampleIndex];
-                if (sampleValue < minSampleValue) minSampleValue = sampleValue;
-                else if (sampleValue > maxSampleValue) maxSampleValue = sampleValue;
+    static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, vzoom: number, cursor?: { x: number; y: number }) {
+        this.drawBackground(ctx, w, h);
+        if (!d) return;
+        const { $, t, freqEstimated, sampleRate, drawMode } = d;
+        if (!t || !t.length || !t[0].length) return;
+        const l = t[0].length;
+        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
+        let min = t[0][0];
+        let max = t[0][0];
+        let i = t.length;
+        let samp: number;
+        while (i--) {
+            let j = l;
+            while (j--) {
+                samp = t[i][j];
+                if (samp < min) min = samp;
+                else if (samp > max) max = samp;
             }
         }
-        const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-
-        let drawStartIndex = 0;
-        let drawEndIndex = bufferLength - 1;
-        let stabilizationOffset = 0;
-
-        // Stabilize waveform view
-        if (drawMode === "continuous" && bufferLength < sampleRate) {
-            const zeroCrossingThreshold = (minSampleValue + maxSampleValue) * 0.5 + 0.001;
-            const estimatedPeriod = sampleRate / estimatedFundamentalFrequency;
-            const periodsToDisplay = Math.floor(bufferLength / estimatedPeriod) - 1;
-
-            while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] > zeroCrossingThreshold && stabilizationOffset < bufferLength);
-            if (stabilizationOffset >= bufferLength - 1) {
-                stabilizationOffset = 0;
+        const maxAbs = Math.max(Math.abs(min), Math.abs(max));
+        const yFactor = (maxAbs === 0 ? 1 : maxAbs) * vzoom;
+        let $0 = 0; // Draw start
+        let $1 = l - 1; // Draw End
+        let $zerox = 0;
+        if (drawMode === "continuous" && l < sampleRate) { // Stablize when window size < 1 sec
+            const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
+            const period = sampleRate / freqEstimated;
+            const times = Math.floor(l / period) - 1;
+            while (t[0][wrap($zerox++, $, l)] > thresh && $zerox < l); // Find first raise
+            if ($zerox >= l - 1) { // Found nothing, no stablization
+                $zerox = 0;
             } else {
-                while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] < zeroCrossingThreshold && stabilizationOffset < bufferLength);
-                if (stabilizationOffset >= bufferLength - 1) {
-                    stabilizationOffset = 0;
+                while (t[0][wrap($zerox++, $, l)] < thresh && $zerox < l); // Find first drop
+                if ($zerox >= l - 1) {
+                    $zerox = 0;
                 }
             }
-            const drawableLength = periodsToDisplay > 0 && isFinite(estimatedPeriod) ? Math.min(estimatedPeriod * periodsToDisplay, bufferLength - stabilizationOffset) : bufferLength - stabilizationOffset;
-            drawStartIndex = Math.round(stabilizationOffset + drawableLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(stabilizationOffset + drawableLength / horizontalZoom + drawableLength * horizontalZoomOffset);
+            const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox; // length to draw
+            $0 = Math.round($zerox + drawL * zoomOffset);
+            $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
         } else {
-            drawStartIndex = Math.round(bufferLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(bufferLength / horizontalZoom + bufferLength * horizontalZoomOffset);
+            $0 = Math.round(l * zoomOffset);
+            $1 = Math.round(l / zoom + l * zoomOffset);
         }
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, EScopeMode.Oscilloscope);
-        const pixelsPerSample = (canvasWidth - leftMargin) / (drawEndIndex - drawStartIndex - 1);
-        const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerSample));
-
+        const left = 50;
+        const bottom = 20;
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0 - $zerox, $1 - $zerox, $zerox, yFactor, d, EScopeMode.Oscilloscope);
+        const gridX = (w - left) / ($1 - $0 - 1);
+        const step = Math.max(1, Math.round(1 / gridX));
         ctx.lineWidth = 2;
         ctx.lineJoin = "round";
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
+        for (let i = 0; i < t.length; i++) {
             ctx.beginPath();
-            ctx.strokeStyle = timeDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
+            ctx.strokeStyle = t.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
             let maxInStep: number;
             let minInStep: number;
-
-            for (let sampleIndex = drawStartIndex; sampleIndex < drawEndIndex; sampleIndex++) {
-                const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
-                const sampleValue = timeDomainData[channelIndex][wrappedSampleIndex];
-                const stepCounter = (sampleIndex - drawStartIndex) % horizontalDrawStep;
-
-                if (stepCounter === 0) {
-                    maxInStep = sampleValue;
-                    minInStep = sampleValue;
+            let $j: number;
+            let $step: number;
+            let x: number;
+            let y: number;
+            for (let j = $0; j < $1; j++) {
+                $j = wrap(j, $, l);
+                samp = t[i][$j];
+                $step = (j - $0) % step;
+                if ($step === 0) {
+                    maxInStep = samp;
+                    minInStep = samp;
                 } else {
-                    if (sampleValue > maxInStep) maxInStep = sampleValue;
-                    if (sampleValue < minInStep) minInStep = sampleValue;
+                    if (samp > maxInStep) maxInStep = samp;
+                    if (samp < minInStep) minInStep = samp;
                 }
-
-                if (stepCounter !== horizontalDrawStep - 1) continue;
-
-                const x = (sampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-                let y = (canvasHeight - bottomMargin) * (0.5 - maxInStep / verticalScaleFactor * 0.5);
-
-                if (sampleIndex === drawStartIndex) ctx.moveTo(x, y);
+                if ($step !== step - 1) continue;
+                x = (j - $0) * gridX + left;
+                y = (h - bottom) * (0.5 - maxInStep / yFactor * 0.5);
+                if (j === $0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
-
                 if (minInStep !== maxInStep) {
-                    y = (canvasHeight - bottomMargin) * (0.5 - minInStep / verticalScaleFactor * 0.5);
+                    y = (h - bottom) * (0.5 - minInStep / yFactor * 0.5);
                     ctx.lineTo(x, y);
                 }
             }
             ctx.stroke();
         }
-
-        eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-
-        if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
+        if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
-            const cursorSampleIndex = Math.round(drawStartIndex + (cursor.x - leftMargin) / pixelsPerSample);
+            const $cursor = Math.round($0 + (cursor.x - left) / gridX);
             statsToDraw.values = [];
-            statsToDraw.x = (cursorSampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-            statsToDraw.xLabel = (cursorSampleIndex - stabilizationOffset).toFixed(0);
-            const wrappedCursorSampleIndex = wrap(cursorSampleIndex, startSampleIndex, bufferLength);
-            for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-                const sampleValue = timeDomainData[channelIndex][wrappedCursorSampleIndex];
-                if (typeof sampleValue === "number") statsToDraw.values.push(sampleValue);
+            statsToDraw.x = ($cursor - $0) * gridX + left;
+            statsToDraw.xLabel = ($cursor - $zerox).toFixed(0);
+            const $j = wrap($cursor, $, l);
+            for (let i = 0; i < t.length; i++) {
+                const samp = t[i][$j];
+                if (typeof samp === "number") statsToDraw.values.push(samp);
             }
-            this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
+            this.drawStats(ctx, w, h, statsToDraw);
         }
     }
     /**
      * Draws the scope in spectroscope mode.
-     * This mode displays the frequency content (spectrum) of the signal. The x-axis represents
-     * frequency (either on a linear or logarithmic scale), and the y-axis represents the magnitude
-     * of the frequency components in decibels (dB). For each channel, it draws the spectrum of the most
-     * recent FFT frame. When using a logarithmic scale, it carefully maps logarithmic frequency ranges to linear pixel space.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
-     * @param {number} horizontalZoom The horizontal zoom level.
-     * @param {number} horizontalZoomOffset The horizontal zoom offset.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
+     * @param {TDrawOptions} d The data and options for drawing.
+     * @param {number} zoom The horizontal zoom level.
+     * @param {number} zoomOffset The horizontal zoom offset.
      * @param {{ x: number; y: number }} cursor The current cursor position.
-     * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
+     * @param {EFreqScaleMode} scale The frequency scale mode (linear or log).
      */
-    static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, freqDomainData, fftSize, fftOverlap, sampleRate } = drawOptions;
-        if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
+    static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor: { x: number; y: number }, scale: EFreqScaleMode) {
+        this.drawBackground(ctx, w, h);
+        if (!d) return;
+        const { $, f, fftSize, fftOverlap, sampleRate } = d;
+        if (!f || !f.length || !f[0].length) return;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
+        const l = f[0].length;
+        const left = 50;
+        const bottom = 20;
+        const hCh = (h - bottom) / f.length;
 
-        const frequencyBinCount = fftSize / 2;
-        let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-        startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-        const freqBufferLength = freqDomainData[0].length;
+        if (scale === EFreqScaleMode.Logarithmic) {
+            const fMin = sampleRate / fftSize;
+            const fMax = sampleRate / 2;
+            if (fMin <= 0) return;
+            const fullLogRange = log(fMax) - log(fMin);
+            const viewLogRange = fullLogRange / zoom;
+            const startLog = log(fMin) + zoomOffset * fullLogRange;
+            
+            const freqToIndex = (freq: number) => freq / fMax * fftBins;
+            
+            // Invert the X-coordinate calculation to find frequency from a pixel
+            const xToLogFreq = (x: number) => startLog + (x - left) / (w - left) * viewLogRange;
+            
+            const fStart = pow(10, startLog);
+            const fEnd = pow(10, startLog + viewLogRange);
+            const eventsToDraw = this.drawGrid(ctx, w, h, fStart, fEnd, 0, 1, d, EScopeMode.Spectroscope, scale);
 
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const heightPerChannel = (canvasHeight - bottomMargin) / freqDomainData.length;
-
-        if (freqScaleMode === EFreqScaleMode.Logarithmic) {
-            const minFrequency = sampleRate / fftSize;
-            const maxFrequency = sampleRate / 2;
-            if (minFrequency <= 0) return;
-
-            // Calculate the visible frequency range based on zoom and offset
-            const fullLogRange = log(maxFrequency) - log(minFrequency);
-            const viewLogRange = fullLogRange / horizontalZoom;
-            const startLog = log(minFrequency) + horizontalZoomOffset * fullLogRange;
-            const endLog = startLog + viewLogRange;
-            const startFrequency = pow(10, startLog);
-            const endFrequency = pow(10, endLog);
-
-            // Helper functions for frequency/index conversion
-            const freqToBinIndex = (freq: number) => freq / maxFrequency * frequencyBinCount;
-            const binIndexToFreq = (idx: number) => idx / frequencyBinCount * maxFrequency;
-
-            const startBinIndex = Math.max(1, Math.floor(freqToBinIndex(startFrequency)));
-            const endBinIndex = Math.min(frequencyBinCount, Math.ceil(freqToBinIndex(endFrequency)));
-
-            const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, EScopeMode.Spectroscope, freqScaleMode);
-
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
+            for (let i = 0; i < f.length; i++) {
                 ctx.beginPath();
-                ctx.fillStyle = freqDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
+                ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
 
-                const getX = (binIdx: number) => leftMargin + (canvasWidth - leftMargin) * (log(binIndexToFreq(binIdx)) - startLog) / viewLogRange;
+                ctx.moveTo(left, hCh * (i + 1));
+                
+                // OPTIMIZATION: Instead of iterating over every data bin (slow),
+                // we iterate over every horizontal pixel on the screen (fast).
+                let j_current = Math.ceil(freqToIndex(pow(10, xToLogFreq(left))));
 
-                const startX = getX(startBinIndex);
-                ctx.moveTo(startX, heightPerChannel * (channelIndex + 1));
-
-                // Optimization: group values by pixel column and draw the max value.
-                let lastPixelX = -1;
-                let maxMagnitudeInStep = -Infinity;
-
-                for (let binIndex = startBinIndex; binIndex < endBinIndex; binIndex++) {
-                    const currentPixelX = Math.round(getX(binIndex));
-                    const wrappedBinIndex = wrap(binIndex, startFreqDataIndex, freqBufferLength);
-                    const magnitude = freqDomainData[channelIndex][wrappedBinIndex];
-
-                    if (currentPixelX === lastPixelX) { // Still on the same pixel, find the max
-                        if (magnitude > maxMagnitudeInStep) maxMagnitudeInStep = magnitude;
-                    } else { // Moved to a new pixel
-                        if (lastPixelX !== -1) { // Draw the max value of the previous pixel group
-                            const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                            ctx.lineTo(lastPixelX, y);
+                for (let x = left; x < w; x++) {
+                    // For each pixel, find the range of data bins that fall into it.
+                    const logFreq_next = xToLogFreq(x + 1);
+                    const j_next = Math.ceil(freqToIndex(pow(10, logFreq_next)));
+                    
+                    let maxInStep = -Infinity;
+                    
+                    // Now, find the maximum value ONLY within that small range of bins.
+                    if (j_current < j_next) { // More than one bin in this pixel
+                        for (let j = j_current; j < j_next; j++) {
+                            if (j >= fftBins) break;
+                            const samp = f[i][wrap(j, $f, l)];
+                            if (samp > maxInStep) maxInStep = samp;
                         }
-                        // Start a new group
-                        lastPixelX = currentPixelX;
-                        maxMagnitudeInStep = magnitude;
+                    } else { // One or zero bins in this pixel, just take the current one
+                        if (j_current < fftBins) maxInStep = f[i][wrap(j_current, $f, l)];
                     }
-                }
-                // Draw the last collected step
-                if (lastPixelX !== -1) {
-                    const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                    ctx.lineTo(lastPixelX, y);
+
+                    // Plot the single max value found for this pixel.
+                    if (isFinite(maxInStep)) {
+                        const y = hCh * (i + 1 - Math.min(1, Math.max(0, maxInStep / 100 + 1)));
+                        ctx.lineTo(x, y);
+                    }
+                    j_current = j_next;
                 }
 
-                const endX = getX(endBinIndex - 1);
-                ctx.lineTo(endX, heightPerChannel * (channelIndex + 1));
+                ctx.lineTo(w, hCh * (i + 1));
                 ctx.closePath();
                 ctx.fill();
             }
-            eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-            if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
+            eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
+            if (cursor && cursor.x > left && cursor.y < h - bottom) {
                 const statsToDraw: TStatsToDraw = { values: [] };
-                const canvasDrawableWidth = canvasWidth - leftMargin;
-                const logarithmicCursorFreq = startLog + (cursor.x - leftMargin) / canvasDrawableWidth * viewLogRange;
-                const cursorFrequency = pow(10, logarithmicCursorFreq);
-                const cursorBinIndex = Math.round(freqToBinIndex(cursorFrequency));
-                if (cursorBinIndex >= 0 && cursorBinIndex < frequencyBinCount) {
+                const logCursor = startLog + (cursor.x - left) / (w - left) * viewLogRange;
+                const fCursor = pow(10, logCursor);
+                const $cursor = Math.round(freqToIndex(fCursor));
+                if ($cursor >= 0 && $cursor < fftBins) {
                     statsToDraw.x = cursor.x;
-                    statsToDraw.xLabel = cursorFrequency.toFixed(0);
-                    const wrappedCursorBinIndex = wrap(cursorBinIndex, startFreqDataIndex, freqBufferLength);
-                    for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                        const magnitude = freqDomainData[channelIndex][wrappedCursorBinIndex];
-                        if (typeof magnitude === "number") statsToDraw.values.push(magnitude);
+                    statsToDraw.xLabel = fCursor.toFixed(0);
+                    const $j = wrap($cursor, $f, l);
+                    for (let i = 0; i < f.length; i++) {
+                        const samp = f[i][$j];
+                        if (typeof samp === "number") statsToDraw.values.push(samp);
                     }
-                    this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
+                    this.drawStats(ctx, w, h, statsToDraw);
                 }
             }
-        } else { // Linear Scale
-            const startBinIndex = freqBufferLength - frequencyBinCount + Math.round(frequencyBinCount * horizontalZoomOffset);
-            const endBinIndex = freqBufferLength - frequencyBinCount + Math.round(frequencyBinCount / horizontalZoom + frequencyBinCount * horizontalZoomOffset);
-            const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startBinIndex, endBinIndex, 0, 1, drawOptions, EScopeMode.Spectroscope, freqScaleMode);
-
-            const pixelsPerBin = (canvasWidth - leftMargin) / (endBinIndex - startBinIndex - 1);
-            const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerBin));
-
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
+        } else { // Linear Scale (remains unchanged)
+            const $0 = l - fftBins + Math.round(fftBins * zoomOffset);
+            const $1 = l - fftBins + Math.round(fftBins / zoom + fftBins * zoomOffset);
+            const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 0, 1, d, EScopeMode.Spectroscope, scale);
+            const gridX = (w - left) / ($1 - $0 - 1);
+            const step = Math.max(1, Math.round(1 / gridX));
+            for (let i = 0; i < f.length; i++) {
                 ctx.beginPath();
-                ctx.fillStyle = freqDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
-                let maxMagnitudeInStep;
-                for (let binIndex = startBinIndex; binIndex < endBinIndex; binIndex++) {
-                    const wrappedBinIndex = wrap(binIndex, startFreqDataIndex, freqBufferLength);
-                    const magnitude = freqDomainData[channelIndex][wrappedBinIndex];
-                    const stepCounter = (binIndex - startBinIndex) % horizontalDrawStep;
-
-                    if (stepCounter === 0) maxMagnitudeInStep = magnitude;
-                    if (stepCounter !== horizontalDrawStep - 1) {
-                        if (stepCounter !== 0 && magnitude > maxMagnitudeInStep) maxMagnitudeInStep = magnitude;
+                ctx.fillStyle = f.length === 1 ? "white" : `hsl(${i * 60}, 100%, 85%)`;
+                let maxInStep;
+                for (let j = $0; j < $1; j++) {
+                    const $j = wrap(j, $f, l);
+                    const samp = f[i][$j];
+                    const $step = (j - $0) % step;
+                    if ($step === 0) maxInStep = samp;
+                    if ($step !== step - 1) {
+                        if ($step !== 0 && samp > maxInStep) maxInStep = samp;
                         continue;
                     }
-
-                    const x = (binIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                    const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                    if (binIndex === startBinIndex) ctx.moveTo(x, y);
+                    const x = (j - $0) * gridX + left;
+                    const y = hCh * (i + 1 - Math.min(1, Math.max(0, maxInStep / 100 + 1)));
+                    if (j === $0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
-                ctx.lineTo(canvasWidth, heightPerChannel * (channelIndex + 1));
-                ctx.lineTo(leftMargin, heightPerChannel * (channelIndex + 1));
+                ctx.lineTo(w, hCh * (i + 1));
+                ctx.lineTo(left, hCh * (i + 1));
                 ctx.closePath();
                 ctx.fill();
             }
-            eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-            if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
+            eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
+            if (cursor && cursor.x > left && cursor.y < h - bottom) {
                 const statsToDraw: TStatsToDraw = { values: [] };
-                const cursorBinIndex = startBinIndex + Math.round((cursor.x - leftMargin) / pixelsPerBin);
-                statsToDraw.x = (cursorBinIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                statsToDraw.xLabel = indexToFreq(cursorBinIndex, frequencyBinCount, drawOptions.sampleRate).toFixed(0);
-                const wrappedCursorBinIndex = wrap(cursorBinIndex, startFreqDataIndex, freqBufferLength);
-                for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                    const magnitude = freqDomainData[channelIndex][wrappedCursorBinIndex];
-                    if (typeof magnitude === "number") statsToDraw.values.push(magnitude);
+                const $cursor = $0 + Math.round((cursor.x - left) / gridX);
+                statsToDraw.x = ($cursor - $0) * gridX + left;
+                statsToDraw.xLabel = indexToFreq($cursor, fftBins, d.sampleRate).toFixed(0);
+                const $j = wrap($cursor, $f, l);
+                for (let i = 0; i < f.length; i++) {
+                    const samp = f[i][$j];
+                    if (typeof samp === "number") statsToDraw.values.push(samp);
                 }
-                this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
+                this.drawStats(ctx, w, h, statsToDraw);
             }
         }
     }
     /**
      * Draws the scope in spectrogram mode.
-     * This creates a "waterfall" plot, showing how the frequency spectrum of a signal changes over time.
-     * The x-axis represents time (in FFT frames), the y-axis represents frequency (linear or logarithmic),
-     * and the color of each point represents the magnitude (in dB) of that frequency at that point in time.
-     * It uses a temporary canvas (`spectrogramCacheContext`) to store the entire spectrogram history, and only
-     * draws the visible portion to the main canvas, allowing for efficient panning and zooming through time.
      * @param {CanvasRenderingContext2D} ctx The main canvas rendering context.
-     * @param {CanvasRenderingContext2D} spectrogramCacheContext The temporary canvas context holding the full spectrogram.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
-     * @param {number} horizontalZoom The horizontal zoom level.
-     * @param {number} horizontalZoomOffset The horizontal zoom offset.
+     * @param {CanvasRenderingContext2D} tempCtx The temporary canvas context holding the full spectrogram.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
+     * @param {TDrawOptions} d The data and options for drawing.
+     * @param {number} zoom The horizontal zoom level.
+     * @param {number} zoomOffset The horizontal zoom offset.
      * @param {{ x: number; y: number }} cursor The current cursor position.
-     * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
+     * @param {EFreqScaleMode} scale The frequency scale mode (linear or log).
      */
-    static drawSpectrogram(ctx: CanvasRenderingContext2D, spectrogramCacheContext: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, freqDomainData, fftSize, fftOverlap, sampleRate } = drawOptions;
-        if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-
-        const frequencyBinCount = fftSize / 2;
-        let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-        startFreqDataIndex -= startFreqDataIndex % frequencyBinCount; // Align to frame start
-
-        const frameCount = freqDomainData[0].length / frequencyBinCount;
-        const startFrameIndex = Math.floor(frameCount * horizontalZoomOffset);
-        const endFrameIndex = Math.ceil(frameCount / horizontalZoom + frameCount * horizontalZoomOffset);
-
-        const startDataIndex = startFrameIndex * frequencyBinCount;
-        const endDataIndex = endFrameIndex * frequencyBinCount;
-
-        const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startDataIndex, endDataIndex, 0, 1, drawOptions, EScopeMode.Spectrogram, freqScaleMode);
+    static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, w: number, h: number, d: TDrawOptions, zoom: number, zoomOffset: number, cursor: { x: number; y: number }, scale: EFreqScaleMode) {
+        this.drawBackground(ctx, w, h);
+        if (!d) return;
+        const { $, f, fftSize, fftOverlap, sampleRate } = d;
+        if (!f || !f.length || !f[0].length) return;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
+        const l = f[0].length / fftBins;
+        const $0fft = Math.floor(l * zoomOffset);
+        const $1fft = Math.ceil(l / zoom + l * zoomOffset);
+        const $0 = $0fft * fftBins;
+        const $1 = $1fft * fftBins;
+        const eventsToDraw = this.drawGrid(ctx, w, h, $0, $1, 0, 1, d, EScopeMode.Spectrogram, scale);
         ctx.save();
         ctx.globalCompositeOperation = "lighter";
         ctx.imageSmoothingEnabled = false;
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-
-        // Calculate source region from the cache canvas, handling buffer wrap-around
-        const sourceStartX = wrap(startFrameIndex, startFreqDataIndex / frequencyBinCount, frameCount);
-        const sourceEndX = sourceStartX + (endFrameIndex - startFrameIndex);
-
-        if (sourceEndX > frameCount) { // The selection wraps around the end of the cache canvas
-            const splitPoint = frameCount - sourceStartX;
-            const destWidth1 = splitPoint / (sourceEndX - sourceStartX) * (canvasWidth - leftMargin);
-            const destWidth2 = (1 - splitPoint / (sourceEndX - sourceStartX)) * (canvasWidth - leftMargin);
-            // Draw first part (from source start to end of cache)
-            ctx.drawImage(spectrogramCacheContext.canvas, sourceStartX, 0, splitPoint, spectrogramCacheContext.canvas.height, leftMargin, 0, destWidth1, canvasHeight - bottomMargin);
-            // Draw second part (from beginning of cache)
-            ctx.drawImage(spectrogramCacheContext.canvas, 0, 0, sourceEndX - frameCount - 0.01, spectrogramCacheContext.canvas.height, destWidth1 + leftMargin, 0, destWidth2, canvasHeight - bottomMargin);
-        } else { // The selection is contiguous
-            ctx.drawImage(spectrogramCacheContext.canvas, sourceStartX, 0, sourceEndX - sourceStartX, spectrogramCacheContext.canvas.height, leftMargin, 0, canvasWidth - leftMargin, canvasHeight - bottomMargin);
+        const left = 50;
+        const bottom = 20;
+        const $0src = wrap($0fft, $f / fftBins, l);
+        const $1src = $0src + $1fft - $0fft;
+        if ($1src > l) {
+            const split$ = l - $0src;
+            ctx.drawImage(tempCtx.canvas, $0src, 0, split$, tempCtx.canvas.height, left, 0, split$ / ($1src - $0src) * (w - left), h - bottom);
+            ctx.drawImage(tempCtx.canvas, 0, 0, $1src - l - 0.01, tempCtx.canvas.height, split$ / ($1src - $0src) * (w - left) + left, 0, (1 - split$ / ($1src - $0src)) * (w - left), h - bottom);
+        } else {
+            ctx.drawImage(tempCtx.canvas, $0src, 0, $1src - $0src, tempCtx.canvas.height, left, 0, w - left, h - bottom);
         }
-
         ctx.restore();
-        eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-
-        if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
+        eventsToDraw.forEach(params => this.drawEvent(ctx, w, h, ...params));
+        if (cursor && cursor.x > left && cursor.y < h - bottom) {
             const statsToDraw: TStatsToDraw = { values: [] };
-            const pixelsPerFrame = (canvasWidth - leftMargin) / (endFrameIndex - startFrameIndex);
-            const cursorFrameIndex = startFrameIndex + Math.floor((cursor.x - leftMargin) / pixelsPerFrame);
-            const cursorChannelIndex = Math.floor(cursor.y / ((canvasHeight - bottomMargin) / freqDomainData.length));
-            let cursorBinIndex: number;
-            let cursorFrequency: number;
-
-            if (freqScaleMode === EFreqScaleMode.Logarithmic) {
-                const heightPerChannel = (canvasHeight - bottomMargin) / freqDomainData.length;
-                const yInChannel = cursor.y - cursorChannelIndex * heightPerChannel;
-                const minFrequency = sampleRate / fftSize;
-                const maxFrequency = sampleRate / 2;
-                if (minFrequency > 0) {
-                    const logMinFreq = log(minFrequency);
-                    const logMaxFreq = log(maxFrequency);
-                    const logPosition = (heightPerChannel - yInChannel) / heightPerChannel;
-                    cursorFrequency = pow(10, logMinFreq + logPosition * (logMaxFreq - logMinFreq));
-                    cursorBinIndex = Math.floor(cursorFrequency / maxFrequency * frequencyBinCount);
+            const gridX = (w - left) / ($1fft - $0fft);
+            const $fft = $0fft + Math.floor((cursor.x - left) / gridX);
+            const $ch = Math.floor(cursor.y / ((h - bottom) / f.length));
+            let $bin: number;
+            let freq: number;
+            if (scale === EFreqScaleMode.Logarithmic) {
+                const hCh = (h - bottom) / f.length;
+                const yInCh = cursor.y - $ch * hCh;
+                const fMin = sampleRate / fftSize;
+                const fMax = sampleRate / 2;
+                if (fMin > 0) {
+                    const logFMin = log(fMin);
+                    const logFMax = log(fMax);
+                    const logPos = (hCh - yInCh) / hCh;
+                    freq = pow(10, logFMin + logPos * (logFMax - logFMin));
+                    $bin = Math.floor(freq / fMax * fftBins);
                 }
-            } else { // Linear Scale
-                const pixelsPerBin = (canvasHeight - bottomMargin) / freqDomainData.length / frequencyBinCount;
-                const yInChannelView = (cursorChannelIndex + 1) * (canvasHeight - bottomMargin) / freqDomainData.length - cursor.y;
-                cursorBinIndex = Math.floor(yInChannelView / pixelsPerBin);
-                cursorFrequency = indexToFreq(cursorBinIndex, frequencyBinCount, sampleRate);
+            } else {
+                const gridY = (h - bottom) / f.length / fftBins;
+                $bin = Math.floor((($ch + 1) * (h - bottom) / f.length - cursor.y) / gridY);
+                freq = indexToFreq($bin, fftBins, sampleRate);
             }
-
-            if (typeof cursorFrequency === "number") {
-                const dataIndex = cursorFrameIndex * frequencyBinCount + cursorBinIndex;
-                const wrappedDataIndex = wrap(dataIndex, startFreqDataIndex, freqDomainData[0].length);
-                const magnitude = freqDomainData[cursorChannelIndex][wrappedDataIndex];
-                if (typeof magnitude === "number") statsToDraw.values = [magnitude];
-                statsToDraw.x = (cursorFrameIndex - startFrameIndex + 0.5) * pixelsPerFrame + leftMargin;
+            if (typeof freq === "number") {
+                const $cursor = $fft * fftBins + $bin;
+                const $j = wrap($cursor, $f, f[0].length);
+                const samp = f[$ch][$j];
+                if (typeof samp === "number") statsToDraw.values = [samp];
+                statsToDraw.x = ($fft - $0fft + 0.5) * gridX + left;
                 statsToDraw.y = cursor.y;
-                statsToDraw.xLabel = cursorFrameIndex.toFixed(0);
-                statsToDraw.yLabel = cursorFrequency.toFixed(0);
-                this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
+                statsToDraw.xLabel = $fft.toFixed(0);
+                statsToDraw.yLabel = freq.toFixed(0);
+                this.drawStats(ctx, w, h, statsToDraw);
             }
         }
     }
     /**
-     * Renders new spectrogram data to the temporary cache canvas.
-     * This is a helper function for the Spectrogram mode. It's responsible for rendering new frequency data
-     * onto the off-screen cache canvas as it arrives. It iterates through the new FFT frames and draws them
-     * as vertical lines of pixels, where each pixel's color and brightness correspond to the signal's power
-     * at a specific frequency. This process happens "offline" from the main animation loop to avoid blocking rendering.
-     * @param {CanvasRenderingContext2D} spectrogramCacheContext The temporary canvas rendering context.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
-     * @param {number} lastDrawnSampleIndex The last sample index that was drawn.
-     * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
+     * Renders new spectrogram data to the temporary canvas.
+     * @param {CanvasRenderingContext2D} ctx The temporary canvas rendering context.
+     * @param {TDrawOptions} d The data and options for drawing.
+     * @param {number} last$ The last sample index that was drawn.
+     * @param {EFreqScaleMode} scale The frequency scale mode (linear or log).
      * @returns {number} The new last sample index.
      */
-    static drawOfflineSpectrogram(spectrogramCacheContext: CanvasRenderingContext2D, drawOptions: TDrawOptions, lastDrawnSampleIndex: number, freqScaleMode: EFreqScaleMode) {
-        if (!drawOptions) return lastDrawnSampleIndex;
-        const { startSampleIndex, freqDomainData, fftSize, fftOverlap, sampleRate } = drawOptions;
-        if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return lastDrawnSampleIndex;
+    static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: TDrawOptions, last$: number, scale: EFreqScaleMode) {
+        if (!d) return last$;
+        const { $, f, fftSize, fftOverlap, sampleRate } = d;
+        if (!f || !f.length || !f[0].length) return last$;
+        const fftBins = fftSize / 2;
+        let $f = $ * fftOverlap / 2;
+        $f -= $f % fftBins;
+        const { width: canvasWidth, height: h } = ctx.canvas;
+        const l = f[0].length;
+        const $0 = wrap(last$, 0, l);
+        const $1 = $0 >= $f ? $f + l : $f;
+        if ($1 - $0 < 0) return last$;
+        const $0fft = Math.floor($0 / fftBins);
+        const $1fft = Math.ceil($1 / fftBins);
+        const hCh = h / f.length;
+        const w = l / fftBins;
+        if (canvasWidth !== w) ctx.canvas.width = w;
 
-        const frequencyBinCount = fftSize / 2;
-        let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-        startFreqDataIndex -= startFreqDataIndex % frequencyBinCount; // Align to frame boundary
+        if (scale === EFreqScaleMode.Logarithmic) {
+            const fMin = sampleRate / fftSize;
+            const fMax = sampleRate / 2;
+            if (fMin <= 0) return last$;
+            const logFMin = log(fMin);
+            const logFMax = log(fMax);
+            const logPosToFreq = (pos: number) => pow(10, logFMin + pos * (logFMax - logFMin));
+            const freqToIndex = (freq: number) => Math.floor(freq / fMax * fftBins);
 
-        const { width: canvasWidth, height: canvasHeight } = spectrogramCacheContext.canvas;
-        const freqBufferLength = freqDomainData[0].length;
-        const startDrawIndex = wrap(lastDrawnSampleIndex, 0, freqBufferLength);
-        const endDrawIndex = startDrawIndex >= startFreqDataIndex ? startFreqDataIndex + freqBufferLength : startFreqDataIndex;
-
-        if (endDrawIndex - startDrawIndex < 0) return lastDrawnSampleIndex;
-
-        const startFrameIndex = Math.floor(startDrawIndex / frequencyBinCount);
-        const endFrameIndex = Math.ceil(endDrawIndex / frequencyBinCount);
-        const heightPerChannel = canvasHeight / freqDomainData.length;
-        const spectrogramWidthInFrames = freqBufferLength / frequencyBinCount;
-
-        if (canvasWidth !== spectrogramWidthInFrames) spectrogramCacheContext.canvas.width = spectrogramWidthInFrames;
-
-        if (freqScaleMode === EFreqScaleMode.Logarithmic) {
-            const minFrequency = sampleRate / fftSize;
-            const maxFrequency = sampleRate / 2;
-            if (minFrequency <= 0) return lastDrawnSampleIndex;
-            const logMinFreq = log(minFrequency);
-            const logMaxFreq = log(maxFrequency);
-            const logPosToFreq = (pos: number) => pow(10, logMinFreq + pos * (logMaxFreq - logMinFreq));
-            const freqToBinIndex = (freq: number) => Math.floor(freq / maxFrequency * frequencyBinCount);
-
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                for (let frameIndex = startFrameIndex; frameIndex < endFrameIndex; frameIndex++) {
-                    for (let yPixel = 0; yPixel < heightPerChannel; yPixel++) {
-                        // For each vertical pixel, calculate the corresponding frequency on a log scale
-                        const logPosition = (heightPerChannel - yPixel - 1) / heightPerChannel;
-                        const frequency = logPosToFreq(logPosition);
-                        const binIndex = freqToBinIndex(frequency);
-                        if (binIndex >= frequencyBinCount || binIndex < 0) continue;
-
-                        const magnitude = freqDomainData[channelIndex][wrap(binIndex, frameIndex * frequencyBinCount, freqBufferLength)];
-                        const normalizedMagnitude = Math.min(1, Math.max(0, (magnitude + 10) / 100 + 1));
-                        if (normalizedMagnitude === 0) continue;
-
-                        // Map magnitude to a color (hue) and luminosity
-                        const hue = (normalizedMagnitude * 180 + 240) % 360;
-                        const luminosity = normalizedMagnitude * 50;
-                        spectrogramCacheContext.fillStyle = `hsl(${hue}, 100%, ${luminosity}%)`;
-                        spectrogramCacheContext.fillRect(frameIndex % spectrogramWidthInFrames, channelIndex * heightPerChannel + yPixel, 1, 1);
+            for (let i = 0; i < f.length; i++) {
+                for (let j = $0fft; j < $1fft; j++) {
+                    for (let yPixel = 0; yPixel < hCh; yPixel++) {
+                        const logPos = (hCh - yPixel - 1) / hCh;
+                        const freq = logPosToFreq(logPos);
+                        const k = freqToIndex(freq);
+                        if (k >= fftBins || k < 0) continue;
+                        const samp = f[i][wrap(k, j * fftBins, l)];
+                        const normalized = Math.min(1, Math.max(0, (samp + 10) / 100 + 1));
+                        if (normalized === 0) continue;
+                        const hue = (normalized * 180 + 240) % 360;
+                        const lum = normalized * 50;
+                        ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
+                        ctx.fillRect(j % w, i * hCh + yPixel, 1, 1);
                     }
                 }
             }
         } else { // Linear Scale
-            const pixelsPerBin = heightPerChannel / frequencyBinCount;
-            const step = Math.max(1, Math.round(frequencyBinCount / heightPerChannel));
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                for (let frameIndex = startFrameIndex; frameIndex < endFrameIndex; frameIndex++) {
-                    let maxMagnitudeInStep;
-                    spectrogramCacheContext.fillStyle = "black";
-                    spectrogramCacheContext.fillRect(frameIndex % spectrogramWidthInFrames, channelIndex * heightPerChannel, 1, heightPerChannel); // Clear column
-                    for (let binIndex = 0; binIndex < frequencyBinCount; binIndex++) {
-                        const magnitude = freqDomainData[channelIndex][wrap(binIndex, frameIndex * frequencyBinCount, freqBufferLength)];
-                        const stepCounter = binIndex % step;
-                        if (stepCounter === 0) maxMagnitudeInStep = magnitude;
-                        if (stepCounter !== step - 1) {
-                            if (stepCounter !== 0 && magnitude > maxMagnitudeInStep) maxMagnitudeInStep = magnitude;
+            const $h = hCh / fftBins;
+            const step = Math.max(1, Math.round(fftBins / hCh));
+            for (let i = 0; i < f.length; i++) {
+                for (let j = $0fft; j < $1fft; j++) {
+                    let maxInStep;
+                    ctx.fillStyle = "black";
+                    ctx.fillRect(j % w, i * hCh, 1, hCh);
+                    for (let k = 0; k < fftBins; k++) {
+                        const samp = f[i][wrap(k, j * fftBins, l)];
+                        const $step = k % step;
+                        if ($step === 0) maxInStep = samp;
+                        if ($step !== step - 1) {
+                            if ($step !== 0 && samp > maxInStep) maxInStep = samp;
                             continue;
                         }
-
-                        const normalizedMagnitude = Math.min(1, Math.max(0, (maxMagnitudeInStep + 10) / 100 + 1));
-                        if (normalizedMagnitude === 0) continue;
-
-                        const hue = (normalizedMagnitude * 180 + 240) % 360;
-                        const luminosity = normalizedMagnitude * 50;
-                        spectrogramCacheContext.fillStyle = `hsl(${hue}, 100%, ${luminosity}%)`;
-                        spectrogramCacheContext.fillRect(frameIndex % spectrogramWidthInFrames, (frequencyBinCount - binIndex - 1) * pixelsPerBin + channelIndex * heightPerChannel, 1, Math.max(1, pixelsPerBin));
+                        const normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
+                        if (normalized === 0) continue;
+                        const hue = (normalized * 180 + 240) % 360;
+                        const lum = normalized * 50;
+                        ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
+                        ctx.fillRect(j % w, (fftBins - k - 1) * $h + i * hCh, 1, Math.max(1, $h));
                     }
                 }
             }
         }
-        return wrap(endDrawIndex, 0, freqBufferLength);
+        return wrap($1, 0, l);
     }
     /**
      * Draws the background of the canvas.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
      */
-    static drawBackground(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) {
+    static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();
         ctx.fillStyle = "#181818";
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        ctx.fillRect(0, 0, w, h);
         ctx.restore();
     }
     /**
      * Draws the grid lines and labels for axes.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
-     * @param {number} drawStartValue The starting index (sample or frequency bin) for drawing.
-     * @param {number} drawEndValue The ending index for drawing.
-     * @param {number} stabilizationOffset The zero-crossing offset for stabilization.
-     * @param {number} verticalScaleFactor The vertical scaling factor.
-     * @param {TDrawOptions} drawOptions The data and options for drawing.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
+     * @param {number} $0 The starting index (sample or frequency bin) for drawing.
+     * @param {number} $1 The ending index for drawing.
+     * @param {number} $zerox The zero-crossing offset for stabilization.
+     * @param {number} yFactor The vertical scaling factor.
+     * @param {TDrawOptions} d The data and options for drawing.
      * @param {EScopeMode} mode The current scope mode.
-     * @param {EFreqScaleMode} [freqScaleMode] The frequency scale mode.
+     * @param {EFreqScaleMode} [scale] The frequency scale mode.
      * @returns {[number, { type: string; data: any }[]][]} An array of events to be drawn.
      */
-    static drawGrid(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawStartValue: number, drawEndValue: number, stabilizationOffset: number, verticalScaleFactor: number, drawOptions: TDrawOptions, mode: EScopeMode, freqScaleMode?: EFreqScaleMode) {
+    static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, $0: number, $1: number, $zerox: number, yFactor: number, d: TDrawOptions, mode: EScopeMode, scale?: EFreqScaleMode) {
         ctx.save();
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
-        const { events, bufferSize, fftSize, fftOverlap, sampleRate } = drawOptions;
-        const isFrequencyDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
-        const frequencyBinCount = fftSize / 2;
-        const channelCount = mode === EScopeMode.Oscilloscope ? 1 : isFrequencyDomain ? drawOptions.freqDomainData.length : drawOptions.timeDomainData.length;
+        const { e, bufferSize, fftSize, fftOverlap, sampleRate } = d;
+        const inFreqDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
+        const fftBins = fftSize / 2;
+        const channels = inFreqDomain ? d.f.length : d.t.length;
         const unit = mode === EScopeMode.Spectrogram ? "Hz/frame" : mode === EScopeMode.Spectroscope ? "dB/Hz" : "lvl/samp";
         const eventsToDraw: [number, { type: string; data: any }[]][] = [];
 
-        const leftMargin = 50;
-        const bottomMargin = 20;
+        const left = 50;
+        const bottom = 20;
         const eventStrokeStyle = "#ff8800";
         const bufferStrokeStyle = "#004000";
         const normalStrokeStyle = "#404040";
@@ -874,121 +784,162 @@ export class StaticScope {
         // Main axes
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
-        ctx.fillText(unit, 45, canvasHeight - 10, 40);
+        ctx.fillText(unit, 45, h - 10, 40);
         ctx.textAlign = "center";
         ctx.strokeStyle = "white";
         ctx.beginPath();
-        ctx.moveTo(leftMargin, 0);
-        ctx.lineTo(leftMargin, canvasHeight - bottomMargin);
-        ctx.lineTo(canvasWidth, canvasHeight - bottomMargin);
+        ctx.moveTo(left, 0);
+        ctx.lineTo(left, h - bottom);
+        ctx.lineTo(w, h - bottom);
         ctx.stroke();
 
         // X-Axis Grid
-        if (mode === EScopeMode.Spectroscope && freqScaleMode === EFreqScaleMode.Logarithmic) {
-            const startFreq = drawStartValue;
-            const endFreq = drawEndValue;
-            if (startFreq > 0) {
-                const logStartFreq = log(startFreq);
-                const logEndFreq = log(endFreq);
-                const magnitude = Math.floor(logStartFreq);
-                for (let powerOf10 = magnitude; powerOf10 < logEndFreq + 1; powerOf10++) {
-                    for (let multiplier = 1; multiplier < 10; multiplier++) {
-                        const freq = multiplier * pow(10, powerOf10);
-                        if (freq < startFreq) continue;
-                        if (freq > endFreq) break;
-                        const x = leftMargin + (canvasWidth - leftMargin) * (log(freq) - logStartFreq) / (logEndFreq - logStartFreq);
-                        const isMajor = multiplier === 1;
-                        ctx.strokeStyle = (isMajor || multiplier === 5) ? bufferStrokeStyle : normalStrokeStyle;
+        if (mode === EScopeMode.Spectroscope && scale === EFreqScaleMode.Logarithmic) {
+            const fStart = $0;
+            const fEnd = $1;
+            if (fStart > 0) {
+                const logFStart = log(fStart);
+                const logFEnd = log(fEnd);
+                const startMag = Math.floor(logFStart);
+                const endMag = Math.ceil(logFEnd);
+
+                for (let p = startMag; p < endMag; p++) {
+                    for (let m = 1; m < 10; m++) {
+                        const freq = m * pow(10, p);
+                        if (freq < fStart || freq > fEnd) continue;
+                        const x = left + (w - left) * (log(freq) - logFStart) / (logFEnd - logFStart);
+                        const isMajor = m === 1;
+                        ctx.strokeStyle = (isMajor || m === 5) ? bufferStrokeStyle : normalStrokeStyle;
                         ctx.beginPath();
                         ctx.moveTo(x, 0);
-                        ctx.lineTo(x, canvasHeight - bottomMargin);
+                        ctx.lineTo(x, h - bottom);
                         ctx.stroke();
-                        if (isMajor || multiplier === 5 || (logEndFreq - logStartFreq < 3 && (multiplier === 2 || multiplier === 7))) {
-                            ctx.fillText(freq >= 1000 ? `${(freq / 1000).toFixed(1)}k` : freq.toFixed(0), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+                        if (isMajor || m === 5 || (logFEnd - logFStart < 3 && (m === 2 || m === 7))) {
+                            ctx.fillText(freq >= 1000 ? `${(freq / 1000).toFixed(1)}k` : freq.toFixed(0), Math.min(x, w - 20), h - 10);
                         }
                     }
                 }
             }
         } else { // Linear X-Axis (Time-based for Osc/Spectrogram, Freq-based for linear Spectroscope)
-            let rangeStart = drawStartValue;
-            let rangeEnd = drawEndValue;
-            if (mode === EScopeMode.Spectroscope) { // linear spectroscope uses bin indices
-                rangeStart = 0;
-                rangeEnd = frequencyBinCount;
-            }
-            const samplesPerPixel = isFrequencyDomain ? fftOverlap / 2 : 1;
-            let startBuffer = rangeStart / bufferSize / samplesPerPixel;
-            let endBuffer = rangeEnd / bufferSize / samplesPerPixel;
-            const horizontalGridStep = 2 ** Math.ceil(Math.log2(endBuffer - startBuffer)) / 8;
-            startBuffer -= startBuffer % horizontalGridStep;
-            endBuffer -= endBuffer % horizontalGridStep;
-            let currentBufferIndex = (drawOptions.startBufferIndex || 0) + Math.round(stabilizationOffset / bufferSize / samplesPerPixel);
-            if (isFrequencyDomain) currentBufferIndex -= currentBufferIndex % (frequencyBinCount / bufferSize / fftOverlap / 2);
+            if (mode === EScopeMode.Spectroscope) {
+                // Correct logic for Linear Spectroscope X-Axis ticks
+                const binOffset = d.f[0].length - fftBins;
+                const binStart = $0 - binOffset;
+                const binEnd = $1 - binOffset;
 
-            for (let gridLineIndex = startBuffer; gridLineIndex < endBuffer; gridLineIndex += horizontalGridStep) {
-                const x = (gridLineIndex * bufferSize * samplesPerPixel - rangeStart) / (rangeEnd - rangeStart - 1) * (canvasWidth - leftMargin) + leftMargin;
-                if (x < leftMargin) continue;
-                ctx.strokeStyle = gridLineIndex % 1 === 0 ? bufferStrokeStyle : normalStrokeStyle;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvasHeight - bottomMargin);
-                ctx.stroke();
-                if (mode === EScopeMode.Spectrogram) {
-                    const fftFrameIndex = gridLineIndex / (frequencyBinCount / bufferSize) * fftOverlap / 2;
-                    if (fftFrameIndex % 1 === 0) ctx.fillText(fftFrameIndex.toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
-                } else if (mode === EScopeMode.Spectroscope) {
-                    const freq = indexToFreq(gridLineIndex * bufferSize, frequencyBinCount, sampleRate);
-                    ctx.fillText(freq.toFixed(0), Math.min(x, canvasWidth - 20), canvasHeight - 10);
-                } else {
-                    ctx.fillText((gridLineIndex * bufferSize).toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+                const fStart = indexToFreq(binStart, fftBins, sampleRate);
+                const fEnd = indexToFreq(binEnd, fftBins, sampleRate);
+                const fRange = fEnd - fStart;
+
+                if (fRange <= 0) {
+                    ctx.restore();
+                    return eventsToDraw;
                 }
-            }
-            if (events && mode !== EScopeMode.Spectroscope) {
-                ctx.strokeStyle = eventStrokeStyle;
-                for (let j = Math.ceil(startBuffer); j < endBuffer; j++) {
-                    if (events[currentBufferIndex + j] && events[currentBufferIndex + j].length) {
-                        const x = (j * bufferSize * samplesPerPixel - rangeStart) / (rangeEnd - rangeStart - 1) * (canvasWidth - leftMargin) + leftMargin;
-                        if (x < leftMargin) continue;
-                        eventsToDraw.push([x, events[currentBufferIndex + j]]);
+                // Aim for a reasonable number of ticks
+                const numTicks = 8;
+                const roughStep = fRange / numTicks;
+                const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+                const residual = roughStep / magnitude;
+                let fStep;
+
+                if (residual > 5) fStep = 10 * magnitude;
+                else if (residual > 2) fStep = 5 * magnitude;
+                else if (residual > 1) fStep = 2 * magnitude;
+                else fStep = magnitude;
+
+                if (fStep > 0) {
+                    const firstTick = Math.ceil(fStart / fStep) * fStep;
+                    for (let f = firstTick; f < fEnd; f += fStep) {
+                        const x = left + (w - left) * (f - fStart) / fRange;
+                        if (x < left) continue;
+
+                        ctx.strokeStyle = bufferStrokeStyle;
                         ctx.beginPath();
                         ctx.moveTo(x, 0);
-                        ctx.lineTo(x, canvasHeight - bottomMargin);
+                        ctx.lineTo(x, h - bottom);
                         ctx.stroke();
+                        const label = f >= 1000 ? `${(f / 1000).toFixed(1)}k` : f.toFixed(0);
+                        ctx.fillText(label, Math.min(x, w - 20), h - 10);
+                    }
+                }
+            } else {
+                // Original logic for Time-based plots (Oscilloscope, Interleaved, Spectrogram)
+                const $0ranged = $0;
+                const $1ranged = $1;
+                let $0buffer = $0ranged / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1);
+                let $1buffer = $1ranged / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1);
+                const hStep = ($1buffer - $0buffer <= 0) ? 0.125 : 2 ** Math.ceil(Math.log2($1buffer - $0buffer)) / 8;
+                $0buffer -= $0buffer % hStep;
+                $1buffer -= $0buffer % hStep;
+                let $buffer = (d.$buffer || 0) + Math.round($zerox / bufferSize / (inFreqDomain ? fftOverlap / 2 : 1));
+                if (inFreqDomain) $buffer -= $buffer % (fftBins / bufferSize / fftOverlap / 2);
+
+                if ($1ranged - $0ranged - 1 > 0) { // Avoid division by zero
+                    for (let j = $0buffer; j < $1buffer; j += hStep) {
+                        const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0ranged) / ($1ranged - $0ranged - 1) * (w - left) + left;
+                        if (x < left) continue;
+                        ctx.strokeStyle = j % 1 === 0 ? bufferStrokeStyle : normalStrokeStyle;
+                        ctx.beginPath();
+                        ctx.moveTo(x, 0);
+                        ctx.lineTo(x, h - bottom);
+                        ctx.stroke();
+                        if (mode === EScopeMode.Spectrogram) {
+                            const $fft = j / (fftBins / bufferSize) * fftOverlap / 2;
+                            if ($fft % 1 === 0) ctx.fillText($fft.toFixed(), Math.min(x, w - 20), h - 10);
+                        } else {
+                            ctx.fillText((j * bufferSize).toFixed(), Math.min(x, w - 20), h - 10);
+                        }
+                    }
+                }
+                if (e && mode !== EScopeMode.Spectroscope) {
+                    ctx.strokeStyle = eventStrokeStyle;
+                    if ($1ranged - $0ranged - 1 > 0) { // Avoid division by zero
+                        for (let j = Math.ceil($0buffer); j < $1buffer; j++) {
+                            if (e[$buffer + j] && e[$buffer + j].length) {
+                                const x = (j * bufferSize * (inFreqDomain ? fftOverlap / 2 : 1) - $0ranged) / ($1ranged - $0ranged - 1) * (w - left) + left;
+                                if (x < left) continue;
+                                eventsToDraw.push([x, e[$buffer + j]]);
+                                ctx.beginPath();
+                                ctx.moveTo(x, 0);
+                                ctx.lineTo(x, h - bottom);
+                                ctx.stroke();
+                            }
+                        }
                     }
                 }
             }
         }
 
         // Y-Axis Grid
-        const heightPerChannel = (canvasHeight - bottomMargin) / channelCount;
+        const hCh = (h - bottom) / channels;
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
 
-        if (mode === EScopeMode.Spectrogram && freqScaleMode === EFreqScaleMode.Logarithmic) {
-            const minFrequency = sampleRate / fftSize;
-            const maxFrequency = sampleRate / 2;
-            if (minFrequency > 0) {
-                const logMinFreq = log(minFrequency);
-                const logMaxFreq = log(maxFrequency);
-                for (let i = 0; i < channelCount; i++) {
-                    const magnitude = Math.floor(logMinFreq);
-                    for (let powerOf10 = magnitude; powerOf10 < logMaxFreq + 1; powerOf10++) {
-                        for (let multiplier = 1; multiplier < 10; multiplier++) {
-                            const freq = multiplier * pow(10, powerOf10);
-                            if (freq < minFrequency) continue;
-                            if (freq > maxFrequency) break;
-                            const logPosition = (log(freq) - logMinFreq) / (logMaxFreq - logMinFreq);
-                            const y = i * heightPerChannel + (1 - logPosition) * heightPerChannel;
-                            if (y < i * heightPerChannel || y > (i + 1) * heightPerChannel) continue;
-                            const isMajor = multiplier === 1;
-                            const isMedium = multiplier === 5;
+        if (mode === EScopeMode.Spectrogram && scale === EFreqScaleMode.Logarithmic) {
+            const fMin = sampleRate / fftSize;
+            const fMax = sampleRate / 2;
+            if (fMin > 0) {
+                const logFMin = log(fMin);
+                const logFMax = log(fMax);
+                for (let i = 0; i < channels; i++) {
+                    const mag = Math.floor(logFMin);
+                    for (let p = mag; p < logFMax + 1; p++) {
+                        for (let m = 1; m < 10; m++) {
+                            const freq = m * pow(10, p);
+                            if (freq < fMin) continue;
+                            if (freq > fMax) break;
+                            const logPos = (log(freq) - logFMin) / (logFMax - logFMin);
+                            const y = i * hCh + (1 - logPos) * hCh;
+                            if (y < i * hCh || y > (i + 1) * hCh) continue;
+                            const isMajor = m === 1;
+                            const isMedium = m === 5;
                             ctx.strokeStyle = (isMajor || isMedium) ? bufferStrokeStyle : normalStrokeStyle;
                             ctx.beginPath();
-                            ctx.moveTo(leftMargin, y);
-                            ctx.lineTo(canvasWidth, y);
+                            ctx.moveTo(left, y);
+                            ctx.lineTo(w, y);
                             ctx.stroke();
                             if (isMajor || isMedium) {
-                                ctx.fillText(freq.toFixed(0), 45, Math.max(y, 10));
+                                ctx.fillText(freq >= 1000 ? `${(freq / 1000).toFixed(1)}k` : freq.toFixed(0), 45, Math.max(y, 10));
                             }
                         }
                     }
@@ -997,49 +948,71 @@ export class StaticScope {
         } else { // Linear Y-Axis
             ctx.strokeStyle = normalStrokeStyle;
             ctx.beginPath();
-            let verticalGridStep = verticalScaleFactor === 1 && isFrequencyDomain ? frequencyBinCount / 4 : 0.25;
-            if (!isFrequencyDomain) {
-                while (verticalScaleFactor / verticalGridStep > 2) verticalGridStep *= 2;
-            }
             const drawHLine = (y: number, yLabel: string) => {
-                ctx.moveTo(leftMargin, y);
-                ctx.lineTo(canvasWidth, y);
+                ctx.moveTo(left, y);
+                ctx.lineTo(w, y);
                 ctx.fillText(yLabel, 45, Math.max(y, 10));
             };
-            for (let i = 0; i < (mode === EScopeMode.Oscilloscope ? 1 : channelCount); i++) {
-                let y = (i + 0.5) * heightPerChannel;
-                let positionRatio = 0.5;
-                const getYLabel = () => {
-                    if (mode === EScopeMode.Spectrogram) return indexToFreq(frequencyBinCount * positionRatio, frequencyBinCount, sampleRate).toFixed(0);
-                    if (mode === EScopeMode.Spectroscope) return (-100 + 100 * positionRatio).toFixed(0);
-                    return (-verticalScaleFactor + 2 * verticalScaleFactor * positionRatio).toFixed(2);
-                };
-                let yLabel = getYLabel();
-                drawHLine(y, yLabel);
-                const verticalRange = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
-                for (let j = verticalGridStep; j < verticalRange; j += verticalGridStep) {
-                    const vFactor = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
-                    positionRatio = 0.5 - j / vFactor / 2; // (isFrequencyDomain ? 1 : 2);
-                    y = (i + 0.5 + j / vFactor / 2) * heightPerChannel;
-                    yLabel = getYLabel();
-                    drawHLine(y, yLabel);
-                    // if (isFrequencyDomain) continue;
-                    positionRatio = 0.5 + j / vFactor / 2;
-                    y = (i + 0.5 - j / vFactor / 2) * heightPerChannel;
-                    yLabel = getYLabel();
-                    drawHLine(y, yLabel);
+            if (mode === EScopeMode.Spectroscope) {
+                // Draw dB ticks for Spectroscope.
+                // The plot is scaled for a 100dB range, from 0dB (top) to -100dB (bottom).
+                for (let i = 0; i < channels; i++) {
+                    const chTop = i * hCh;
+                    // Draw ticks every 20 dB from 0 down to -100.
+                    for (let db = 0; db >= -100; db -= 20) {
+                        const y = chTop + (-db / 100) * hCh;
+                        drawHLine(y, db.toFixed(0));
+                    }
+                }
+            } else {
+                for (let i = 0; i < (mode === EScopeMode.Oscilloscope ? 1 : channels); i++) {
+                    const chCenterY = mode === EScopeMode.Oscilloscope ? (h - bottom) / 2 : hCh * (i + 0.5);
+                    const chHalfHeight = mode === EScopeMode.Oscilloscope ? (h - bottom) / 2 : hCh / 2;
+                    
+                    const precision = yFactor > 0 && yFactor < 1 ? Math.ceil(-Math.log10(yFactor)) + 1 : 2;
+                    
+                    // Draw top, center, and bottom lines to define the Y-axis range
+                    drawHLine(chCenterY - chHalfHeight, yFactor.toFixed(precision));
+                    drawHLine(chCenterY, (0).toFixed(2));
+                    drawHLine(chCenterY + chHalfHeight, (-yFactor).toFixed(precision));
+
+                    // Calculate and draw intermediate grid lines for better readability
+                    if (yFactor > 0) {
+                        const numIntermediateLines = 3; // Aim for this many lines between center and top/bottom
+                        const roughStep = yFactor / (numIntermediateLines + 1);
+                        const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+                        const residual = roughStep / magnitude;
+                        let vStep;
+
+                        if (residual > 5) vStep = 10 * magnitude;
+                        else if (residual > 2) vStep = 5 * magnitude;
+                        else if (residual > 1) vStep = 2 * magnitude;
+                        else vStep = magnitude;
+
+                        if (vStep > 0) {
+                            // Use a small tolerance to avoid drawing a line that overlaps with the top/bottom boundary
+                            for (let val = vStep; val < yFactor * 0.999; val += vStep) {
+                                // Positive Ticks
+                                const yPos = chCenterY - (val / yFactor) * chHalfHeight;
+                                drawHLine(yPos, val.toFixed(precision));
+
+                                // Negative Ticks
+                                const yNeg = chCenterY + (val / yFactor) * chHalfHeight;
+                                drawHLine(yNeg, (-val).toFixed(precision));
+                            }
+                        }
+                    }
                 }
             }
             ctx.stroke();
         }
 
-        // Draw separators for interleaved channels
         ctx.beginPath();
         ctx.setLineDash([4, 2]);
         ctx.strokeStyle = "white";
-        for (let i = 1; i < channelCount; i++) {
-            ctx.moveTo(0, i * heightPerChannel);
-            ctx.lineTo(canvasWidth, i * heightPerChannel);
+        for (let i = 1; i < channels; i++) {
+            ctx.moveTo(0, i * hCh);
+            ctx.lineTo(w, i * hCh);
         }
         ctx.stroke();
         ctx.restore();
@@ -1048,155 +1021,140 @@ export class StaticScope {
     /**
      * Draws event information on the canvas.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
      * @param {number} x The x-coordinate for the event display.
-     * @param {{ type: string; data: any }[]} eventData The array of events to display.
+     * @param {{ type: string; data: any }[]} e The array of events to display.
      */
-    static drawEvent(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, x: number, eventData: { type: string; data: any }[]) {
+    static drawEvent(ctx: CanvasRenderingContext2D, w: number, h: number, x: number, e: { type: string; data: any }[]) {
         ctx.save();
         ctx.font = "bold 12px Consolas, monospace";
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        const eventStrings = eventData.map(event => (event.data.path ? `${event.data.path}: ${event.data.value}` : `${event.type}: ${event.data.join(",")}`));
-        const textWidth = Math.max(...eventStrings.map(s => ctx.measureText(s).width)) + 5;
-        if (canvasWidth - x >= textWidth) { // Draw on the right of the line
-            ctx.fillRect(x, 0, textWidth, eventData.length * 15 + 2);
+        const eStrings = e.map(event => (event.data.path ? `${event.data.path}: ${event.data.value}` : `${event.type}: ${event.data.join(",")}`));
+        const textWidth = Math.max(...eStrings.map(s => ctx.measureText(s).width)) + 5;
+        if (w - x >= textWidth) {
+            ctx.fillRect(x, 0, textWidth, e.length * 15 + 2);
             ctx.textAlign = "left";
-        } else { // Draw on the left
-            ctx.fillRect(x - textWidth, 0, textWidth, eventData.length * 15 + 2);
+        } else {
+            ctx.fillRect(x - textWidth, 0, textWidth, e.length * 15 + 2);
             ctx.textAlign = "right";
         }
         ctx.fillStyle = "#DDDD99";
-        eventStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
+        eStrings.forEach((s, i) => ctx.fillText(s, x, (i + 1) * 15, textWidth));
         ctx.restore();
     }
     /**
      * Draws statistics (cursor lines and values) on the canvas.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
-     * @param {number} canvasWidth The width of the canvas.
-     * @param {number} canvasHeight The height of the canvas.
+     * @param {number} w The width of the canvas.
+     * @param {number} h The height of the canvas.
      * @param {TStatsToDraw} statsToDraw The statistics data to draw.
      */
-    static drawStats(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, statsToDraw: TStatsToDraw) {
-        const leftMargin = 50;
-        const bottomMargin = 20;
+    static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, statsToDraw: { x?: number; y?: number; xLabel?: string; yLabel?: string; values: number[] }) {
+        const left = 50;
+        const bottom = 20;
         ctx.save();
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#b0b0b0";
         ctx.beginPath();
         const { x, y, xLabel, yLabel, values } = statsToDraw;
-        // Draw cursor lines
         if (x) {
             ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvasHeight - bottomMargin);
+            ctx.lineTo(x, h - bottom);
         }
         if (y) {
-            ctx.moveTo(leftMargin, y);
-            ctx.lineTo(canvasWidth, y);
+            ctx.moveTo(left, y);
+            ctx.lineTo(w, y);
         }
         ctx.stroke();
-
-        // Draw labels with background
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        if (xLabel) ctx.fillRect(Math.min(x - 20, canvasWidth - 40), canvasHeight - 18, 40, 16);
+        if (xLabel) ctx.fillRect(Math.min(x - 20, w - 40), h - 18, 40, 16);
         if (yLabel) ctx.fillRect(5, Math.max(0, y - 8), 45, 16);
-
         ctx.fillStyle = "#DDDD99";
         ctx.font = "bold 12px Consolas, monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        if (xLabel) ctx.fillText(xLabel, Math.min(x, canvasWidth - 20), canvasHeight - 10, 40);
-
+        if (xLabel) ctx.fillText(xLabel, Math.min(x, w - 20), h - 10, 40);
         ctx.textAlign = "right";
         if (yLabel) ctx.fillText(yLabel, 40, Math.max(10, y), 40);
-
-        // Draw values panel
         ctx.textBaseline = "bottom";
-        const valueStrings: string[] = [];
-        values.forEach(v => valueStrings.push(v.toFixed(7)));
+        const right: string[] = [];
+        values.forEach(v => right.push(v.toFixed(7)));
         ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(canvasWidth - 70, 0, 80, valueStrings.length * 15 + 5);
+        ctx.fillRect(w - 70, 0, 80, right.length * 15 + 5);
         ctx.fillStyle = "#DDDD99";
-        valueStrings.forEach((s, i) => ctx.fillText(s, canvasWidth - 2, (i + 1) * 15, 70));
+        right.forEach((s, i) => ctx.fillText(s, w - 2, (i + 1) * 15, 70));
         ctx.restore();
     }
     /**
      * Fills a div with a table-like view of the raw data.
      * @param {HTMLDivElement} container The div element to fill.
-     * @param {TDrawOptions} drawOptions The data to display.
+     * @param {TDrawOptions} d The data to display.
      */
-    static fillDivData(container: HTMLDivElement, drawOptions: TDrawOptions) {
+    static fillDivData(container: HTMLDivElement, d: TDrawOptions) {
         container.innerHTML = "";
-        if (!drawOptions) return;
-        const { startSampleIndex, timeDomainData, events, startBufferIndex, bufferSize } = drawOptions;
-        if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-        const bufferLength = timeDomainData[0].length;
-
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            const channelData = timeDomainData[channelIndex];
-            const divChannel = document.createElement("div");
-            divChannel.classList.add("static-scope-channel");
-            divChannel.style.backgroundColor = timeDomainData.length === 1 ? "#181818" : `hsl(${channelIndex * 60}, 100%, 10%)`;
-
-            for (let sampleIndex = 0; sampleIndex < Math.min(channelData.length, 2048); sampleIndex++) {
-                const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
+        if (!d) return;
+        const { $, t, e } = d;
+        if (!t || !t.length || !t[0].length) return;
+        const l = t[0].length;
+        for (let i = 0; i < t.length; i++) {
+            const ch = t[i];
+            const divCh = document.createElement("div");
+            divCh.classList.add("static-scope-channel");
+            divCh.style.backgroundColor = t.length === 1 ? "#181818" : `hsl(${i * 60}, 100%, 10%)`;
+            for (let j = 0; j < Math.min(ch.length, 2048); j++) {
+                const $j = wrap(j, $, l);
                 const divCell = document.createElement("div");
                 divCell.classList.add("static-scope-cell");
-
-                const bufferIndex = (startBufferIndex || 0) + Math.floor(sampleIndex / bufferSize);
-                if (events && events[bufferIndex] && events[bufferIndex].length && sampleIndex % bufferSize === 0) {
-                    divCell.classList.add("highlight");
-                }
-
+                const $buffer = (d.$buffer || 0) + Math.floor(j / d.bufferSize);
+                if (e && e[$buffer] && e[$buffer].length && j % d.bufferSize === 0) divCell.classList.add("highlight");
                 const spanIndex = document.createElement("span");
-                spanIndex.innerText = sampleIndex.toString();
-                const spanSample = document.createElement("span");
-                spanSample.innerText = channelData[wrappedSampleIndex].toFixed(7);
-
+                spanIndex.innerText = j.toString();
+                const spanSamp = document.createElement("span");
+                spanSamp.innerText = ch[$j].toFixed(7);
                 divCell.appendChild(spanIndex);
-                divCell.appendChild(spanSample);
-                divChannel.appendChild(divCell);
+                divCell.appendChild(spanSamp);
+                divCh.appendChild(divCell);
             }
-
-            if (channelData.length > 2048) {
+            if (ch.length > 2048) {
                 const divCell = document.createElement("div");
                 divCell.classList.add("static-scope-cell");
                 const spanIndex = document.createElement("span");
                 spanIndex.innerText = "...";
-                const spanSample = document.createElement("span");
-                spanSample.innerText = "...";
+                const spanSamp = document.createElement("span");
+                spanSamp.innerText = "...";
                 divCell.appendChild(spanIndex);
-                divCell.appendChild(spanSample);
-                divChannel.appendChild(divCell);
+                divCell.appendChild(spanSamp);
+                divCh.appendChild(divCell);
             }
-            container.appendChild(divChannel);
+            container.appendChild(divCh);
         }
     }
     /**
      * Gets the Font Awesome icon class name for a given scope mode.
-     * @param {EScopeMode} scopeMode The scope mode.
+     * @param {EScopeMode} typeIn The scope mode.
      * @returns {string} The corresponding class name.
      */
-    static getIconClassName(scopeMode: EScopeMode) {
+    static getIconClassName(typeIn: EScopeMode) {
         const prefix = "fas fa-sm ";
-        if (scopeMode === EScopeMode.Data) return prefix + "fa-table";
-        if (scopeMode === EScopeMode.Interleaved) return prefix + "fa-water";
-        if (scopeMode === EScopeMode.Oscilloscope) return prefix + "fa-wave-square";
-        if (scopeMode === EScopeMode.Spectroscope) return prefix + "fa-chart-bar";
-        if (scopeMode === EScopeMode.Spectrogram) return prefix + "fa-align-justify";
+        if (typeIn === EScopeMode.Data) return prefix + "fa-table";
+        if (typeIn === EScopeMode.Interleaved) return prefix + "fa-water";
+        if (typeIn === EScopeMode.Oscilloscope) return prefix + "fa-wave-square";
+        if (typeIn === EScopeMode.Spectroscope) return prefix + "fa-chart-bar";
+        if (typeIn === EScopeMode.Spectrogram) return prefix + "fa-align-justify";
         return prefix;
     }
     /**
      * Gets the display name for a given scope mode.
-     * @param {EScopeMode} scopeMode The scope mode.
+     * @param {EScopeMode} typeIn The scope mode.
      * @returns {string} The corresponding name.
      */
-    static getModeName(scopeMode: EScopeMode) {
-        if (scopeMode === EScopeMode.Data) return "Data";
-        if (scopeMode === EScopeMode.Interleaved) return "Interleaved";
-        if (scopeMode === EScopeMode.Oscilloscope) return "Oscilloscope";
-        if (scopeMode === EScopeMode.Spectroscope) return "Spectroscope";
-        if (scopeMode === EScopeMode.Spectrogram) return "Spectrogram";
+    static getModeName(typeIn: EScopeMode) {
+        if (typeIn === EScopeMode.Data) return "Data";
+        if (typeIn === EScopeMode.Interleaved) return "Interleaved";
+        if (typeIn === EScopeMode.Oscilloscope) return "Oscilloscope";
+        if (typeIn === EScopeMode.Spectroscope) return "Spectroscope";
+        if (typeIn === EScopeMode.Spectrogram) return "Spectrogram";
         return "";
     }
 
@@ -1217,18 +1175,18 @@ export class StaticScope {
     getChildren() {
         this.spectTempCtx = document.createElement("canvas").getContext("2d");
         this.spectTempCtx.canvas.height = 1024;
-        let controllerDiv: HTMLDivElement;
+        let ctrl: HTMLDivElement;
         for (let i = 0; i < this.container.children.length; i++) {
-            const element = this.container.children[i];
-            if (element.classList.contains("static-scope-ui-controller")) controllerDiv = element as HTMLDivElement;
-            if (element.classList.contains("static-scope-canvas")) this.canvas = element as HTMLCanvasElement;
-            if (element.classList.contains("static-scope-data")) this.divData = element as HTMLDivElement;
-            if (element.classList.contains("static-scope-default")) this.divDefault = element as HTMLDivElement;
+            const e = this.container.children[i];
+            if (e.classList.contains("static-scope-ui-controller")) ctrl = e as HTMLDivElement;
+            if (e.classList.contains("static-scope-canvas")) this.canvas = e as HTMLCanvasElement;
+            if (e.classList.contains("static-scope-data")) this.divData = e as HTMLDivElement;
+            if (e.classList.contains("static-scope-default")) this.divDefault = e as HTMLDivElement;
         }
-        if (!controllerDiv) {
-            controllerDiv = document.createElement("div");
-            controllerDiv.classList.add("static-scope-ui-controller");
-            this.container.appendChild(controllerDiv);
+        if (!ctrl) {
+            ctrl = document.createElement("div");
+            ctrl.classList.add("static-scope-ui-controller");
+            this.container.appendChild(ctrl);
         }
         if (!this.canvas) {
             const canvas = document.createElement("canvas");
@@ -1251,14 +1209,14 @@ export class StaticScope {
             this.divDefault = divDefault;
         }
         this.ctx = this.canvas.getContext("2d");
-        for (let i = 0; i < controllerDiv.children.length; i++) {
-            const element = controllerDiv.children[i];
-            if (element.classList.contains("static-scope-ui-switch")) this.btnSwitch = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoom")) this.btnZoom = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-scale")) this.btnScale = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-download")) this.btnDownload = element as HTMLButtonElement;
+        for (let i = 0; i < ctrl.children.length; i++) {
+            const e = ctrl.children[i];
+            if (e.classList.contains("static-scope-ui-switch")) this.btnSwitch = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoom")) this.btnZoom = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-scale")) this.btnScale = e as HTMLButtonElement;
+            if (e.classList.contains("static-scope-ui-download")) this.btnDownload = e as HTMLButtonElement;
         }
         if (!this.btnSwitch) {
             const btn = document.createElement("button");
@@ -1266,7 +1224,7 @@ export class StaticScope {
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Interleaved Scope / Stacked Scope / Data");
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1279,7 +1237,7 @@ export class StaticScope {
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Zoom Out");
             btn.innerHTML = '<i class="fas fa-minus"></i>';
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1292,7 +1250,7 @@ export class StaticScope {
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Reset Zoom");
             btn.innerText = "1.0x";
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1305,7 +1263,7 @@ export class StaticScope {
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Zoom In");
             btn.innerHTML = '<i class="fas fa-plus"></i>';
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1316,7 +1274,7 @@ export class StaticScope {
             btn.className = "static-scope-ui-scale btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
             btn.setAttribute("data-toggle", "tooltip");
             btn.setAttribute("data-placement", "top");
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1329,7 +1287,7 @@ export class StaticScope {
             btn.setAttribute("data-placement", "top");
             btn.setAttribute("title", "Download Data");
             btn.innerHTML = '<i class="fas fa-download"></i>';
-            controllerDiv.appendChild(btn);
+            ctrl.appendChild(btn);
             try {
                 $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
             } catch (e) { } // eslint-disable-line no-empty
@@ -1371,23 +1329,48 @@ export class StaticScope {
             let newType = (this.mode + 1) % 5;
             if (newType === EScopeMode.Spectrogram && !this.drawSpectrogram) newType = (newType + 1) % 5;
             if (newType === EScopeMode.Data && this.data.drawMode === "continuous") newType = (newType + 1) % 5;
-            if (newType === EScopeMode.Interleaved && this.data.timeDomainData && this.data.timeDomainData.length === 1) newType = (newType + 1) % 5;
+            if (newType === EScopeMode.Interleaved && this.data.t && this.data.t.length === 1) newType = (newType + 1) % 5;
             this.mode = newType;
         });
         this.canvas.addEventListener("click", () => {
         });
         this.canvas.addEventListener("wheel", (e) => {
-            const leftMargin = 50;
-            const bottomMargin = 20;
+            e.preventDefault(); // Prevent default scrolling behavior
+            
+            const left = 50;
+            const bottom = 20;
             const multiplier = 1.5 ** (e.deltaY > 0 ? -1 : 1);
-            // Vertical zoom on Y-Axis
-            if (e.offsetX < leftMargin && e.offsetY < this.canvas.height - bottomMargin) {
+            
+            if (e.offsetX < left && e.offsetY < this.canvas.height - bottom) {
+                // Vertical zoom on the Y-axis area
                 if (multiplier !== 1) this.vzoom *= 1 / multiplier;
                 this.draw();
-            } else { // Horizontal zoom elsewhere
-                if (multiplier !== 1) this.zoom *= multiplier;
-                if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
-                this.handleMouseMove(e);
+            } else {
+                // Horizontal zoom on the main canvas area
+                if (multiplier !== 1) {
+                    // Set zooming flag to prevent panning interference
+                    this.zooming = true;
+                    
+                    // Store the current cursor position for accurate zoom center
+                    const tempCursor = { x: e.offsetX, y: e.offsetY };
+                    this.cursor = tempCursor;
+                    
+                    // Apply zoom
+                    this.zoom *= multiplier;
+                    
+                    // Clear zooming flag after a short delay
+                    setTimeout(() => {
+                        this.zooming = false;
+                    }, 10);
+                }
+                
+                // Only apply horizontal scrolling if not zooming and deltaX is significant
+                if (!this.zooming && Math.abs(e.deltaX) > Math.abs(e.deltaY) && e.deltaX !== 0) {
+                    this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
+                    this.draw();
+                } else {
+                    this.handleMouseMove(e);
+                }
             }
         });
         this.btnZoomOut.addEventListener("click", () => {
@@ -1408,49 +1391,48 @@ export class StaticScope {
         this.btnDownload.addEventListener("click", () => {
             let data = "";
             if (this.mode === EScopeMode.Data || this.mode === EScopeMode.Interleaved || this.mode === EScopeMode.Oscilloscope) {
-                if (this.data.timeDomainData) {
-                    const { timeDomainData, startSampleIndex } = this.data;
-                    if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-                    const bufferLength = timeDomainData[0].length;
-                    data += new Array(timeDomainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
-                    for (let j = 0; j < bufferLength; j++) {
-                        for (let i = 0; i < timeDomainData.length; i++) {
-                            const wrappedSampleIndex = wrap(j, startSampleIndex, bufferLength);
-                            const sampleValue = timeDomainData[i][wrappedSampleIndex];
-                            data += sampleValue + (i === timeDomainData.length - 1 ? "\n" : ",");
+                if (this.data.t) {
+                    const { t, $ } = this.data;
+                    if (!t || !t.length || !t[0].length) return;
+                    const l = t[0].length;
+                    data += new Array(t.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
+                    for (let j = 0; j < l; j++) {
+                        for (let i = 0; i < t.length; i++) {
+                            const $j = wrap(j, $, l);
+                            const samp = t[i][$j];
+                            data += samp + (i === t.length - 1 ? "\n" : ",");
                         }
                     }
                 }
             } else if (this.mode === EScopeMode.Spectroscope) {
-                const { startSampleIndex, freqDomainData, fftSize, fftOverlap } = this.data;
-                if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-                const frequencyBinCount = fftSize / 2;
-                let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-                startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-                const freqBufferLength = freqDomainData[0].length;
-                data += new Array(freqDomainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
-                for (let j = freqBufferLength - frequencyBinCount; j < freqBufferLength; j++) {
-                    for (let i = 0; i < freqDomainData.length; i++) {
-                        const wrappedBinIndex = wrap(j, startFreqDataIndex, freqBufferLength);
-                        const magnitude = freqDomainData[i][wrappedBinIndex];
-                        data += magnitude + (i === freqDomainData.length - 1 ? "\n" : ",");
+                const { $, f, fftSize, fftOverlap } = this.data;
+                if (!f || !f.length || !f[0].length) return;
+                const fftBins = fftSize / 2;
+                let $f = $ * fftOverlap / 2;
+                $f -= $f % fftBins;
+                const l = f[0].length;
+                data += new Array(f.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
+                for (let j = l - fftBins; j < l; j++) {
+                    for (let i = 0; i < f.length; i++) {
+                        const $j = wrap(j, $f, l);
+                        const samp = f[i][$j];
+                        data += samp + (i === f.length - 1 ? "\n" : ",");
                     }
                 }
             } else if (this.mode === EScopeMode.Spectrogram) {
-                const { startSampleIndex, freqDomainData, fftSize, fftOverlap } = this.data;
-                if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-                const frequencyBinCount = fftSize / 2;
-                let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-                startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-                const freqBufferLength = freqDomainData[0].length;
-                const frameCount = freqBufferLength / frequencyBinCount;
-                data += new Array(frameCount).fill(null).map((v, i) => new Array(freqDomainData.length).fill(null).map((v, j) => `frame${i + 1}_channel${j + 1}`).join(",")).join(",") + "\n";
-                for (let binIndex = 0; binIndex < frequencyBinCount; binIndex++) {
-                    for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-                        for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                            const dataIndex = wrap(frameIndex * frequencyBinCount + binIndex, startFreqDataIndex, freqBufferLength);
-                            const magnitude = freqDomainData[channelIndex][dataIndex];
-                            data += magnitude + (channelIndex === freqDomainData.length - 1 && frameIndex === frameCount - 1 ? "\n" : ",");
+                const { $, f, fftSize, fftOverlap } = this.data;
+                if (!f || !f.length || !f[0].length) return;
+                const fftBins = fftSize / 2;
+                let $f = $ * fftOverlap / 2;
+                $f -= $f % fftBins;
+                const l = f[0].length;
+                data += new Array(l / fftBins).fill(null).map((v, i) => new Array(f.length).fill(null).map((v, j) => `frame${i + 1}_channel${j + 1}`).join(",")).join(",") + "\n";
+                for (let j = 0; j < fftBins; j++) {
+                    for (let h = 0; h < l / fftBins; h++) {
+                        for (let i = 0; i < f.length; i++) {
+                            const $j = wrap(h * fftBins + j, $f, l);
+                            const samp = f[i][$j];
+                            data += samp + (i === f.length - 1 && h === l / fftBins - 1 ? "\n" : ",");
                         }
                     }
                 }
@@ -1476,9 +1458,7 @@ export class StaticScope {
      */
     drawCallback = () => {
         this.raf = undefined;
-        const hasData = this.data && ((this.data.timeDomainData && this.data.timeDomainData.length) || (this.data.freqDomainData && this.data.freqDomainData.length));
-
-        if (!hasData) {
+        if (!this.data || (!this.data.t && !this.data.f) || (this.data.t && !this.data.t.length) || (this.data.f && !this.data.f.length)) {
             if (this.divDefault.style.display === "none") {
                 this.divDefault.style.display = "block";
                 this.canvas.style.display = "none";
@@ -1491,34 +1471,23 @@ export class StaticScope {
         if (this.data && this.newDataArrived && this.drawSpectrogram) {
             this.lastSpect$ = StaticScope.drawOfflineSpectrogram(this.spectTempCtx, this.data, this.lastSpect$, this.freqScaleMode);
         }
+        if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return; // not visible
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
+        if (this.canvas.width !== w) this.canvas.width = w;
+        if (this.canvas.height !== h) this.canvas.height = h;
 
-        // Don't draw if canvas is not visible and in continuous mode
-        if (this.data.drawMode === "continuous" && this.canvas.offsetParent === null) return;
-
-        const canvasWidth = this.container.clientWidth;
-        const canvasHeight = this.container.clientHeight;
-        if (this.canvas.width !== canvasWidth) this.canvas.width = canvasWidth;
-        if (this.canvas.height !== canvasHeight) this.canvas.height = canvasHeight;
-
-        // eslint-disable-next-line default-case
-        switch (this.mode) {
-            case EScopeMode.Data:
-                StaticScope.fillDivData(this.divData, this.data);
-                break;
-            case EScopeMode.Interleaved:
-                StaticScope.drawInterleaved(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
-                break;
-            case EScopeMode.Oscilloscope:
-                StaticScope.drawOscilloscope(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
-                break;
-            case EScopeMode.Spectroscope:
-                StaticScope.drawSpectroscope(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode);
-                break;
-            case EScopeMode.Spectrogram:
-                StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode);
-                break;
+        if (this.mode === EScopeMode.Data) {
+            StaticScope.fillDivData(this.divData, this.data);
+        } else if (this.mode === EScopeMode.Interleaved) {
+            StaticScope.drawInterleaved(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
+        } else if (this.mode === EScopeMode.Oscilloscope) {
+            StaticScope.drawOscilloscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor);
+        } else if (this.mode === EScopeMode.Spectroscope) {
+            StaticScope.drawSpectroscope(this.ctx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode);
+        } else if (this.mode === EScopeMode.Spectrogram) {
+            StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, w, h, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode);
         }
-
         this.newDataArrived = false;
     };
     /**
@@ -1527,13 +1496,13 @@ export class StaticScope {
      */
     draw = (data?: TDrawOptions) => {
         if (data) {
-            if (data.freqDomainData && (!this.data.freqDomainData || this.data.freqDomainData[0].length !== data.freqDomainData[0].length)) {
-                this.lastSpect$ = 0; // Reset spectrogram canvas if data structure changes
+            if (data.f && (!this.data.f || this.data.f[0].length !== data.f[0].length)) {
+                this.lastSpect$ = 0; // Reset spectrogram canvas
             }
             this.data = data;
             this.newDataArrived = true;
         }
-        if (this.raf) return; // Don't queue up multiple frames
+        if (this.raf) return;
         this.raf = requestAnimationFrame(this.drawCallback);
     }
     /**
@@ -1558,9 +1527,9 @@ export class StaticScope {
      * Sets the vertical zoom level for the active mode.
      * @type {number}
      */
-    set vzoom(newZoom: number) {
+    set vzoom(zoomIn) {
         const maxZoom = 16;
-        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, newZoom));
+        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
     }
     /**
      * Gets the current horizontal zoom level for the active mode.
@@ -1571,22 +1540,41 @@ export class StaticScope {
     }
     /**
      * Sets the horizontal zoom level, adjusting the offset to zoom towards the cursor.
+     * Improved to better maintain cursor position during zoom.
      * @type {number}
      */
-    set zoom(newZoom: number) {
-        const dataArray = this.inFreqDomain ? this.data.freqDomainData : this.data.timeDomainData;
+    set zoom(zoomIn) {
+        const dataArray = this.inFreqDomain ? this.data.f : this.data.t;
         const maxZoom = dataArray && dataArray[0] ? Math.max(16, this.mode === EScopeMode.Spectroscope ? 64 : dataArray[0].length / (this.inFreqDomain ? this.data.fftSize / 2 : this.data.bufferSize)) : 16;
-
-        const canvasWidth = this.canvas.width;
-        let cursorPositionRatio = 0.5;
-        const leftMargin = 50;
-        if (this.cursor) cursorPositionRatio = Math.max(0, this.cursor.x - leftMargin) / (canvasWidth - leftMargin);
-
-        const cursorPositionInData = this.zoomOffset + cursorPositionRatio / this.zoom;
-        this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, newZoom));
-        this.zoomOffset = cursorPositionInData - cursorPositionRatio / this.zoom;
-
-        this.btnZoom.innerHTML = this.zoom.toFixed(1) + "x";
+        const w = this.canvas.width;
+        const left = 50;
+        
+        // Calculate cursor position in normalized coordinates (0 to 1)
+        let cursorNormalized = 0.5; // Default to center if no cursor
+        if (this.cursor && this.cursor.x > left) {
+            cursorNormalized = Math.max(0, Math.min(1, (this.cursor.x - left) / (w - left)));
+        }
+        
+        // Calculate the data position under the cursor before zoom
+        const dataPositionAtCursor = this.zoomOffset + cursorNormalized / this.zoom;
+        
+        // Apply the new zoom level
+        const oldZoom = this._zoom[this.zoomType];
+        this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
+        
+        // Calculate the new offset to keep the same data position under the cursor
+        const newOffset = dataPositionAtCursor - cursorNormalized / this._zoom[this.zoomType];
+        
+        // Clamp the offset to valid range
+        this._zoomOffset[this.zoomType] = Math.max(0, Math.min(1 - 1 / this._zoom[this.zoomType], newOffset));
+        
+        // Update UI
+        this.btnZoom.innerHTML = this._zoom[this.zoomType].toFixed(1) + "x";
+        
+        // Trigger redraw if zoom actually changed
+        if (oldZoom !== this._zoom[this.zoomType]) {
+            this.draw();
+        }
     }
     /**
      * Gets the current horizontal zoom offset for the active mode.
@@ -1599,8 +1587,8 @@ export class StaticScope {
      * Sets the horizontal zoom offset, clamped between 0 and `1 - 1/zoom`.
      * @type {number}
      */
-    set zoomOffset(newZoomOffset: number) {
-        this._zoomOffset[this.zoomType] = Math.max(0, Math.min(1 - 1 / this.zoom, newZoomOffset));
+    set zoomOffset(zoomOffsetIn) {
+        this._zoomOffset[this.zoomType] = Math.max(0, Math.min(1 - 1 / this.zoom, zoomOffsetIn));
     }
     /**
      * Resets zoom and offset for all modes to their default values.
@@ -1620,21 +1608,18 @@ export class StaticScope {
      * Sets the frequency scale mode and updates the UI and drawing.
      * @type {EFreqScaleMode}
      */
-    set freqScaleMode(newMode: EFreqScaleMode) {
-        this._freqScaleMode = newMode;
-        if (newMode === EFreqScaleMode.Linear) {
+    set freqScaleMode(modeIn: EFreqScaleMode) {
+        this._freqScaleMode = modeIn;
+        if (modeIn === EFreqScaleMode.Linear) {
             this.iScale.className = "fas fa-ruler-horizontal";
             this.btnScale.setAttribute("title", "Switch to Logarithmic Scale");
         } else {
             this.iScale.className = "fas fa-chart-line";
             this.btnScale.setAttribute("title", "Switch to Linear Scale");
         }
-        // Re-initialize tooltip to update title
         try {
             $(this.btnScale).tooltip("hide").tooltip("dispose").tooltip({ trigger: "hover", boundary: "viewport" });
         } catch (e) { } // eslint-disable-line no-empty
-
-        // Reset and redraw spectrogram on scale change
         this.lastSpect$ = 0;
         this.spectTempCtx.clearRect(0, 0, this.spectTempCtx.canvas.width, this.spectTempCtx.canvas.height);
         this.draw();
@@ -1650,19 +1635,18 @@ export class StaticScope {
      * Sets the scope display mode and updates the UI accordingly.
      * @type {EScopeMode}
      */
-    set mode(newMode: EScopeMode) {
-        this.iSwitch.className = StaticScope.getIconClassName(newMode);
-        this.spanSwitch.innerText = StaticScope.getModeName(newMode);
-        this._mode = newMode;
-
-        if (newMode === EScopeMode.Data) {
+    set mode(modeIn) {
+        this.iSwitch.className = StaticScope.getIconClassName(modeIn);
+        this.spanSwitch.innerText = StaticScope.getModeName(modeIn);
+        this._mode = modeIn;
+        if (modeIn === EScopeMode.Data) {
             this.divData.style.display = "block";
             this.canvas.style.display = "none";
-            [this.btnZoom, this.btnZoomIn, this.btnZoomOut, this.btnScale].forEach(button => button.style.display = "none");
+            [this.btnZoom, this.btnZoomIn, this.btnZoomOut, this.btnScale].forEach(b => b.style.display = "none");
         } else {
             this.divData.style.display = "none";
             this.canvas.style.display = "block";
-            [this.btnZoom, this.btnZoomIn, this.btnZoomOut].forEach(button => button.style.display = "");
+            [this.btnZoom, this.btnZoomIn, this.btnZoomOut].forEach(b => b.style.display = "");
             this.btnScale.style.display = this.inFreqDomain ? "" : "none";
         }
         this.draw();
