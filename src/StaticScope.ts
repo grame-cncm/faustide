@@ -5,15 +5,30 @@ import "./StaticScope.scss";
  * Enumeration for the different display modes of the scope.
  */
 enum EScopeMode {
-    /** Raw numerical data view */
+    /** * Raw numerical data view.
+     * This mode displays the raw sample values for each channel in a tabular format.
+     * It's useful for inspecting precise numerical data without graphical interpretation.
+     */
     Data = 0,
-    /** Interleaved multi-channel time-domain view */
+    /** * Interleaved multi-channel time-domain view.
+     * This mode displays the waveform of each channel in a separate horizontal lane.
+     * It is ideal for comparing the timing and shape of multiple signals simultaneously while keeping them visually distinct.
+     */
     Interleaved = 1,
-    /** Overlaid multi-channel time-domain view */
+    /** * Overlaid multi-channel time-domain view.
+     * This mode draws all channel waveforms overlaid in the same viewport, similar to a classic oscilloscope.
+     * It is best suited for observing phase relationships and direct amplitude comparisons between signals.
+     */
     Oscilloscope = 2,
-    /** Frequency-domain view */
+    /** * Frequency-domain view.
+     * This mode shows the frequency spectrum of the signal, plotting frequency against magnitude (in dB).
+     * It helps in analyzing the harmonic content and frequency components of the signal.
+     */
     Spectroscope = 3,
-    /** Time-frequency-domain view (waterfall) */
+    /** * Time-frequency-domain view (waterfall).
+     * This mode visualizes how the frequency spectrum changes over time. The x-axis represents time,
+     * the y-axis represents frequency, and the color intensity represents the magnitude of the frequency component.
+     */
     Spectrogram = 4
 }
 
@@ -23,7 +38,7 @@ enum EScopeMode {
 enum EFreqScaleMode {
     /** Linear frequency scale */
     Linear,
-    /** Logarithmic frequency a scale */
+    /** Logarithmic frequency scale */
     Logarithmic
 }
 
@@ -218,6 +233,10 @@ export class StaticScope {
     }
     /**
      * Draws the scope in interleaved mode.
+     * The core principle is to display each channel's waveform in its own horizontal strip.
+     * The y-axis within each strip represents amplitude, and the x-axis represents time (in samples).
+     * The view can be stabilized for periodic signals by finding a consistent zero-crossing point.
+     * It also includes an optimization to draw min/max values for each horizontal pixel to represent the signal envelope accurately when zoomed out.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
      * @param {number} w The width of the canvas.
      * @param {number} h The height of the canvas.
@@ -328,6 +347,9 @@ export class StaticScope {
     }
     /**
      * Draws the scope in oscilloscope mode.
+     * This function overlays all channel waveforms in a single view, much like a traditional oscilloscope.
+     * The y-axis represents amplitude, and the x-axis represents time (in samples).
+     * It shares the same stabilization and min/max drawing optimization logic as the interleaved mode.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
      * @param {number} w The width of the canvas.
      * @param {number} h The height of the canvas.
@@ -437,6 +459,10 @@ export class StaticScope {
     }
     /**
      * Draws the scope in spectroscope mode.
+     * This mode displays the frequency content (spectrum) of the signal. The x-axis represents
+     * frequency (either on a linear or logarithmic scale), and the y-axis represents the magnitude
+     * of the frequency components in decibels (dB). For each channel, it draws the spectrum of the most
+     * recent FFT frame. When using a logarithmic scale, it carefully maps logarithmic frequency ranges to linear pixel space.
      * @param {CanvasRenderingContext2D} ctx The canvas rendering context.
      * @param {number} w The width of the canvas.
      * @param {number} h The height of the canvas.
@@ -579,6 +605,11 @@ export class StaticScope {
     }
     /**
      * Draws the scope in spectrogram mode.
+     * This creates a "waterfall" plot, showing how the frequency spectrum of a signal changes over time.
+     * The x-axis represents time (in FFT frames), the y-axis represents frequency (linear or logarithmic),
+     * and the color of each point represents the magnitude (in dB) of that frequency at that point in time.
+     * It uses a temporary canvas (`spectrogramCacheContext`) to store the entire spectrogram history, and only
+     * draws the visible portion to the main canvas, allowing for efficient panning and zooming through time.
      * @param {CanvasRenderingContext2D} ctx The main canvas rendering context.
      * @param {CanvasRenderingContext2D} tempCtx The temporary canvas context holding the full spectrogram.
      * @param {number} w The width of the canvas.
@@ -657,7 +688,11 @@ export class StaticScope {
         }
     }
     /**
-     * Renders new spectrogram data to the temporary canvas.
+     * Renders new spectrogram data to the temporary cache canvas.
+     * This is a helper function for the Spectrogram mode. It's responsible for rendering new frequency data
+     * onto the off-screen cache canvas as it arrives. It iterates through the new FFT frames and draws them
+     * as vertical lines of pixels, where each pixel's color and brightness correspond to the signal's power
+     * at a specific frequency. This process happens "offline" from the main animation loop to avoid blocking rendering.
      * @param {CanvasRenderingContext2D} ctx The temporary canvas rendering context.
      * @param {TDrawOptions} d The data and options for drawing.
      * @param {number} last$ The last sample index that was drawn.
@@ -822,13 +857,18 @@ export class StaticScope {
             }
         } else { // Linear X-Axis (Time-based for Osc/Spectrogram, Freq-based for linear Spectroscope)
             if (mode === EScopeMode.Spectroscope) {
-                // Correct logic for Linear Spectroscope X-Axis ticks
-                const binOffset = d.f[0].length - fftBins;
-                const binStart = $0 - binOffset;
-                const binEnd = $1 - binOffset;
+                // Map buffer indices to bin indices within the last FFT frame
+                // The last fftBins elements of the buffer contain indices (l-fftBins) to (l-1)
+                // which correspond to FFT bins 0 to (fftBins-1)
+                
+                const lastFFTStart = d.f[0].length - fftBins;
+                
+                // Clamp to valid range
+                const binStart = Math.max(0, Math.min(fftBins - 1, $0 - lastFFTStart));
+                const binEnd = Math.max(0, Math.min(fftBins, $1 - lastFFTStart));
 
                 const fStart = indexToFreq(binStart, fftBins, sampleRate);
-                const fEnd = indexToFreq(binEnd, fftBins, sampleRate);
+                const fEnd = indexToFreq(Math.min(binEnd, fftBins - 1), fftBins, sampleRate);
                 const fRange = fEnd - fStart;
 
                 if (fRange <= 0) {
@@ -1529,7 +1569,7 @@ export class StaticScope {
      */
     set vzoom(zoomIn) {
         const maxZoom = 16;
-        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, zoomIn));
+        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1/maxZoom, zoomIn));
     }
     /**
      * Gets the current horizontal zoom level for the active mode.
@@ -1540,7 +1580,6 @@ export class StaticScope {
     }
     /**
      * Sets the horizontal zoom level, adjusting the offset to zoom towards the cursor.
-     * Improved to better maintain cursor position during zoom.
      * @type {number}
      */
     set zoom(zoomIn) {
