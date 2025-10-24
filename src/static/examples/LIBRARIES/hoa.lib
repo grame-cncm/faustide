@@ -1,7 +1,20 @@
-//################################### hoa.lib ############################################
-// Faust library for high order ambisonic. Its official prefix is `ho`.
+//################################ hoa.lib ##########################################
+// Higher-Order Ambisonics (HOA) library. Its official prefix is `ho`.
 //
+// The HOA library provides functions and components for spatial audio rendering
+// and analysis using Higher-Order Ambisonics. It includes encoders, decoders,
+// rotators, and utilities for spherical harmonics and spatial transformations.
+// The library supports both 2D and 3D HOA processing workflows for immersive audio.
+//
+// The HOA library is organized into 4 sections:
+//
+// * [Encoding/decoding Functions](#encodingdecoding-functions)
+// * [Optimization Functions](#optimization-functions)
+// * [Spatial Sound Processes](#spatial-sound-processes)
+// * [3D Functions](#3d-functions)
+// 
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/hoa.lib>
 //########################################################################################
 
@@ -74,6 +87,13 @@ declare copyright "2012-2013 Guillot, Paris, Colafrancesco, CICM labex art H2H, 
 // * `N`: the ambisonic order (constant numerical expression)
 // * `x`: the signal
 // * `a`: the angle
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// encoder_test = ho.encoder(1, os.osc(440), 0.0);
+// ```
 //----------------------------------------------------------------
 encoder(0, x, a) = x;
 encoder(N, x, a) = encoder(N-1, x, a), x*sin(N*a), x*cos(N*a);
@@ -95,6 +115,13 @@ encoder(N, x, a) = encoder(N-1, x, a), x*sin(N*a), x*cos(N*a);
 // * `sp`: the azimuth speed expressed as angular speed (2PI/sec), positive or negative
 // * `a`: the fixed azimuth when the rotation stops (sp = 0) in radians
 // * `it` : interpolation time (in milliseconds) between the rotation and the fixed modes
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// rEncoder_test = os.osc(440) : ho.rEncoder(1, 0.5, 0.0, 0.05);
+// ```
 //-----------------------------
 rEncoder(N, sp, a, it) = thisEncoder
 with {
@@ -124,6 +151,13 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `a` : opening angle in radians, left channel at a/2 angle, right channel at -a/2 angle
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// stereoEncoder_test = os.osc(440), os.osc(660) : ho.stereoEncoder(1, 1.0);
+// ```
 //-----------------------------
 stereoEncoder(N, a) = (leftEncoder, rightEncoder) :> si.bus(2*N+1)
 with {
@@ -148,6 +182,13 @@ with {
 // * `lspeed` : a list of P speeds in turns by second (one speed per input signal, positive or negative)
 // * `langle` : a list of P angles in radians on the unit circle to localize the sources (one angle per input signal)
 // * `it` : interpolation time (in milliseconds) between the rotation and the fixed modes.
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// multiEncoder_test = os.osc(440), os.osc(660) : ho.multiEncoder(1, (0.0, 0.0), (0.0, 1.57), 0.05);
+// ```
 //-----------------------------
 multiEncoder(N, lspeed, langle, it) = par(i, P, thisEncoder(ba.take(i+1, lspeed), ba.take(i+1, langle), it)) :> si.bus(2*N+1)
 with {
@@ -179,6 +220,14 @@ with {
 // * `N`: the ambisonic order (constant numerical expression)
 // * `P`: the number of speakers (constant numerical expression)
 //
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// decoder_test = ambi : ho.decoder(1, 4);
+// ```
+//
 // #### Note
 //
 // The number of loudspeakers must be greater or equal to 2n+1.
@@ -204,6 +253,14 @@ with {
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// decoderStereo_test = ambi : ho.decoderStereo(1);
+// ```
 //--------------------------------------------------------------
 decoderStereo(N) = decoder(N, P) <: (par(i, 2*N+2, gainLeft(360 * i / P)) :> _),
     (par(i, 2*N+2, gainRight(360 * i / P)) :> _)
@@ -241,6 +298,14 @@ with {
 // * `la` : the list of P angles in degrees, for instance (0, 85, 182, 263) for four loudspeakers
 // * `direct`: 1 for direct mode, -1 for the indirect mode (changes the rotation direction)
 // * `shift` : angular shift in degrees to easily adjust angles
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// iBasicDecoder_test = ambi : ho.iBasicDecoder(1, (0, 120, 240), 1, 0);
+// ```
 //-----------------------------
 iBasicDecoder(N, la, direct, shift) = (par(i, 2*N+1, _) <: par(i, P, speaker(N, ang(i))))
 with {
@@ -263,6 +328,13 @@ with {
 //
 // * `l` : the list of angles of the loudspeakers in degrees, for instance (0, 85, 182, 263) for four loudspeakers
 // * `t` : the current angle of the virtual source in degrees
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// circularScaledVBAP_test = os.osc(440) : ho.circularScaledVBAP((0, 120, 240), 60);
+// ```
 //-----------------------------
 circularScaledVBAP(l, t) = thisCircularVbap
 with {
@@ -315,6 +387,14 @@ with {
 // * `la` : the list of P angles in degrees, for instance (0, 85, 182, 263) for four loudspeakers
 // * `direct`: 1 for direct mode, -1 for the indirect mode (changes the rotation direction)
 // * `shift` : angular shift in degrees to easily adjust angles
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// imlsDecoder_test = ambi : ho.imlsDecoder(1, (0, 90, 180, 270), 1, 0);
+// ```
 //-----------------------------
 imlsDecoder(N, la, direct, shift) = si.bus(2*N+1) : iVBAPDecoder
 with {
@@ -343,6 +423,14 @@ with {
 // * `shift` : angular shift in degrees to easily adjust angles
 // * `st`: 1 for stereo, 0 for multi-loudspeaker configuration. When 1, stereo sounds goes through the first two channels
 // * `g` : gain between 0 and 1
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// iDecoder_test = (ambi, 0.0) : ho.iDecoder(1, (0, 120, 240), 1, 0, 0.8);
+// ```
 //-----------------------------
 iDecoder(N, la, direct, shift, st, g) = thisDecoder
 with {
@@ -383,6 +471,14 @@ with {
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// optimBasic_test = ambi : ho.optimBasic(1);
+// ```
 //-----------------------------------------------------
 optimBasic(N) = par(i, 2*N+1, _);
 
@@ -400,6 +496,14 @@ optimBasic(N) = par(i, 2*N+1, _);
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// optimMaxRe_test = ambi : ho.optimMaxRe(1);
+// ```
 //-----------------------------------------------------
 optimMaxRe(N) = par(i, 2*N+1, optim(i, N, _))
 with {
@@ -424,6 +528,14 @@ with {
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// optimInPhase_test = ambi : ho.optimInPhase(1);
+// ```
 //-----------------------------------------------------
 optimInPhase(N) = par(i, 2*N+1, optim(i, N, _))
 with {
@@ -450,6 +562,14 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `ot` : optimization type (0 for `optimBasic`, 1 for `optimMaxRe`, 2 for `optimInPhase`)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// optim_test = ambi : ho.optim(1, 1);
+// ```
 //-----------------------------
 optim(N, ot) = thisOptimizer
 with {
@@ -475,6 +595,14 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `w`: the width value between 0 - 1
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// wider_test = ambi : ho.wider(1, 0.5);
+// ```
 //-----------------------------------------------------
 wider(N, w) = par(i, 2*N+1, perform(N, w, i, _))
 with {
@@ -505,6 +633,14 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `fa` : mirroring type (1 = original sound field, 0 = original+mirrored sound field, -1 = mirrored sound field)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi = ho.encoder(1, os.osc(440), 0.0);
+// mirror_test = ambi : ho.mirror(1, -1);
+// ```
 //-----------------------------
 mirror(N, fa) = (*(1), par(i, N, (*(fa), *(1))));
 
@@ -525,6 +661,13 @@ mirror(N, fa) = (*(1), par(i, N, (*(fa), *(1))));
 // * `x`: the signal
 // * `r`: the radius
 // * `a`: the angle in radian
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// map_test = ho.map(1, os.osc(440), 0.5, 0.0);
+// ```
 //-----------------------------------------------------
 map(N, x, r, a) = encoder(N, x * volume(r), a) : wider(N, ouverture(r))
 with {
@@ -546,6 +689,13 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `a`: the angle in radian
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// rotate_test = ho.encoder(1, os.osc(440), 0.0) : ho.rotate(1, 0.78);
+// ```
 //-----------------------------------------------------
 rotate(N, a) = par(i, 2*N+1, _) <: par(i, 2*N+1, rotation(i, a))
 with {
@@ -572,6 +722,13 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `rt` : refreshment time in milliseconds
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// scope_test = ho.encoder(1, os.osc(440), 0.0) : ho.scope(1, 0.1);
+// ```
 //-----------------------------
 scope(N, rt) = thisScope
 with {
@@ -642,6 +799,13 @@ with {
 // * `fa`: decorrelation factor (between 0 and 1)
 // * `fd`: feedback / level of reinjection (between 0 and 1)
 // * `tf`: type of function of delay distribution (integer, between 0 and 21)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// fxDecorrelation_test = ho.encoder(1, os.osc(440), 0.0) : ho.fxDecorrelation(1, 64, 5, 0.5, 0.2, 0);
+// ```
 //-----------------------------
 fxDecorrelation(N, d, wf, fa, fd, tf) = par(i, 2*N+1, gate(d, i, 2*N+1, fa, tf, wf, fd))
 with {
@@ -706,6 +870,13 @@ with {
 // * `fa`: decorrelation factor (between 0 and 1)
 // * `fd`: feedback / level of reinjection (between 0 and 1)
 // * `tf`: type of function of delay distribution (integer, between 0 and 21)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// synDecorrelation_test = os.osc(440) : ho.synDecorrelation(1, 64, 5, 0.5, 0.2, 0);
+// ```
 //-----------------------------
 synDecorrelation(N, d, wf, fa, fd, tf) =  _ <: par(i, 2*N+1, crossFade(d, i, 2*N+1, fa, tf, wf, fd))
 with {
@@ -765,6 +936,13 @@ with {
 // * `f0`: the maximum delay applied (in samples)
 // * `fa`: decorrelation factor (between 0 and 1)
 // * `tf`: type of function of delay distribution (integer, between 0 and 21)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// fxRingMod_test = ho.encoder(1, os.osc(440), 0.0) : ho.fxRingMod(1, 200, 0.5, 0);
+// ```
 //-----------------------------
 fxRingMod(N, f0, fa, tf) = par(i, 2*N+1, gate_ringmod(f0, i, 2*N+1, fa, tf))
 with {
@@ -824,6 +1002,13 @@ with {
 // * `f0`: the maximum delay applied (in samples)
 // * `fa`: decorrelation factor (between 0 and 1)
 // * `tf`: type of function of delay distribution (integer, between 0 and 21)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// synRingMod_test = os.osc(440) : ho.synRingMod(1, 200, 0.5, 0);
+// ```
 //-----------------------------
 synRingMod(N, f0, fa, tf) = _ <: par(i, 2*N+1, crossfade_ringmod(f0, i, 2*N+1, fa, tf))
 with {
@@ -892,6 +1077,13 @@ th(21, i, p) = sqrt(1 - ((i+1) / p - 1)^2);
 // * `x`: the signal
 // * `a`: the angle
 // * `e`: the elevation
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// encoder3D_test = ho.encoder3D(1, os.osc(440), 0.0, 0.0);
+// ```
 //----------------------------------------------------------------
 encoder3D(N, x, theta, phi) = par(i, (N+1) * (N+1), x * y(degree(i), order(i), theta, phi))
 with {
@@ -974,6 +1166,13 @@ with {
 // * `az`: the fixed azimuth when the azimuth rotation stops (azsp = 0) in radians
 // * `el`: the fixed elevation when the elevation rotation stops (elsp = 0) in radians
 // * `it` : interpolation time (in milliseconds) between the rotation and the fixed modes
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// rEncoder3D_test = os.osc(440) : ho.rEncoder3D(1, 0.5, 0.3, 0.0, 0.0, 0.05);
+// ```
 //-----------------------------
 rEncoder3D(N, azsp, elsp, az, el, it) = this3DEncoder
 with {
@@ -1004,6 +1203,14 @@ with {
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi3D = ho.encoder3D(1, os.osc(440), 0.0, 0.0);
+// optimBasic3D_test = ambi3D : ho.optimBasic3D(1);
+// ```
 //-----------------------------------------------------
 optimBasic3D(N) = par(i, (N+1) * (N+1), _);
 
@@ -1021,6 +1228,14 @@ optimBasic3D(N) = par(i, (N+1) * (N+1), _);
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi3D = ho.encoder3D(1, os.osc(440), 0.0, 0.0);
+// optimMaxRe3D_test = ambi3D : ho.optimMaxRe3D(1);
+// ```
 //-----------------------------------------------------
 optimMaxRe3D(N) = par(i, (N+1) * (N+1), MaxRe(N, degree(i), _))
 with {
@@ -1043,6 +1258,14 @@ with {
 // Where:
 //
 // * `N`: the ambisonic order (constant numerical expression)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi3D = ho.encoder3D(1, os.osc(440), 0.0, 0.0);
+// optimInPhase3D_test = ambi3D : ho.optimInPhase3D(1);
+// ```
 //-----------------------------------------------------
 optimInPhase3D(N) = par(i, (N+1) * (N+1), InPhase(N, degree(i), _))
 with {
@@ -1070,6 +1293,14 @@ with {
 //
 // * `N`: the ambisonic order (constant numerical expression)
 // * `ot` : optimization type (0 for optimBasic, 1 for optimMaxRe, 2 for optimInPhase)
+//
+// #### Test
+// ```
+// ho = library("hoa.lib");
+// os = library("oscillators.lib");
+// ambi3D = ho.encoder3D(1, os.osc(440), 0.0, 0.0);
+// optim3D_test = ambi3D : ho.optim3D(1, 2);
+// ```
 //-----------------------------
 optim3D(N, ot) = thisOptimizer
 with {

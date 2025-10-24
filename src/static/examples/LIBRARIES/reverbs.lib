@@ -1,7 +1,21 @@
-//#################################### reverbs.lib ########################################
-// A library of reverb effects. Its official prefix is `re`.
+//################################ reverbs.lib ##########################################
+// Reverbs library. Its official prefix is `re`.
 //
+// This library provides a collection of artificial reverberation algorithms in Faust.
+// It includes Schroeder, Moorer, Freeverb, and FDN-based designs. These modules can be used
+// for room simulation, spatialization, and creative ambience design in both mono and multichannel contexts.
+//
+// The Reverbs library is organized into 6 sections:
+//
+// * [Schroeder Reverberators](#schroeder-reverberators)
+// * [Feedback Delay Network (FDN) Reverberators](#feedback-delay-network-fdn-reverberators)
+// * [Freeverb](#freeverb)
+// * [Dattorro Reverb](#dattorro-reverb)
+// * [JPverb and Greyhole Reverbs](#jpverb-and-greyhole-reverbs)
+// * [Keith Barr Allpass Loop Reverb](#keith-barr-allpass-loop-reverb)
+// 
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/reverbs.lib>
 //########################################################################################
 
@@ -18,7 +32,7 @@ sp = library("spats.lib");
 aa = library("aanl.lib");
 
 declare name "Faust Reverb Library";
-declare version "1.3.0";
+declare version "1.4.0";
 
 //########################################################################################
 /************************************************************************
@@ -57,6 +71,13 @@ Michon and Julius O. Smith III, and are released under the
 //
 // ```
 // _ : jcrev : _,_,_,_
+// ```
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// jcrev_test = os.osc(440) : re.jcrev;
 // ```
 //------------------------------------------------------------
 jcrev = *(0.06) : allpass_chain <: comb_bank : mix_mtx with {
@@ -97,6 +118,13 @@ jcrev = *(0.06) : allpass_chain <: comb_bank : mix_mtx with {
 //
 // ```
 // _ : satrev : _,_
+// ```
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// satrev_test = os.osc(330) : re.satrev;
 // ```
 //------------------------------------------------------------
 satrev = *(0.2) <: comb_bank :> allpass_chain <: _,*(-1) with {
@@ -141,9 +169,17 @@ satrev = *(0.2) <: comb_bank :> allpass_chain <: _,*(-1) with {
 // * `loopgainmax`: scalar gain between 0 and 1 used to "squelch" the reverb
 // * `nonl`: nonlinearity (0 to 0.999..., 0 being linear)
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// fdnrev0_test = (os.osc(220), os.osc(330), os.osc(440), os.osc(550))
+//   <: re.fdnrev0(4096, (149, 211, 263, 293), 1, (800, 4000), (2.5, 2.0, 1.5), 0.8, 0.0);
+// ```
 //
-// <https://ccrma.stanford.edu/~jos/pasp/FDN_Reverberation.html>
+// #### References
+//
+// * <https://ccrma.stanford.edu/~jos/pasp/FDN_Reverberation.html>
 //------------------------------------------------------------
 fdnrev0(MAXDELAY, delays, BBSO, freqs, durs, loopgainmax, nonl)
   = (si.bus(2*N) :> si.bus(N) : delaylines(N)) ~
@@ -202,7 +238,15 @@ with {
 // * `t60m`: desired decay time (t60) at midrange frequencies (sec)
 // * `fsmax`: maximum sampling rate to be used (Hz)
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// zita_rev_fdn_test = par(i, 8, os.osc(110 * (i + 1)))
+//   <: re.zita_rev_fdn(200, 2000, 3.0, 2.0, 48000);
+// ```
+//
+// #### References
 //
 // * <http://www.kokkinizita.net/linuxaudio/zita-rev1-doc/quickguide.html>
 // * <https://ccrma.stanford.edu/~jos/pasp/Zita_Rev1.html>
@@ -287,6 +331,14 @@ zita_distrib2(N) = _,_ <: fanflip(N) with {
 //
 // `rdel`  = delay (in ms) before reverberation begins (e.g., 0 to ~100 ms)
 // (remaining args and refs as for `zita_rev_fdn` above)
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// zita_rev1_stereo_test = (os.osc(440), os.osc(550))
+//   : re.zita_rev1_stereo(20, 200, 2000, 3.0, 2.0, 48000);
+// ```
 //------------------------------------------------------------
 zita_rev1_stereo(rdel,f1,f2,t60dc,t60m,fsmax) =
    zita_in_delay(rdel)
@@ -316,6 +368,14 @@ with {
 //
 // `rgxyz` = relative gain of lanes 1,4,2 to lane 0 in output (e.g., -9 to 9)
 //   (remaining args and references as for zita_rev1_stereo above)
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// zita_rev1_ambi_test = (os.osc(330), os.osc(550))
+//   : re.zita_rev1_ambi(0.0, 25, 200, 2000, 3.0, 2.0, 48000);
+// ```
 //------------------------------------------------------------
 zita_rev1_ambi(rgxyz,rdel,f1,f2,t60dc,t60m,fsmax) =
    zita_in_delay(rdel)
@@ -380,18 +440,26 @@ closed source license or any other license if you decide so.
 //
 // Where:
 //
-// * `prelow`: In the pre-filter, this is the cutoff frequency of a high-pass filter (hence a low value).
-// * `prehigh`: In the pre-filter, this is the cutoff frequency of a low-pass filter (hence a high value).
-// * `lowcutoff`: In the feedback filter stage, this is the cutoff frequency of a low-shelf filter.
-// * `highcutoff`: In the feedback filter stage, this is the cutoff frequency of a high-shelf filter.
-// * `lowgain`: In the feedback filter stage, this is the gain of a low-shelf filter.
-// * `highgain`: In the feedback filter stage, this is the gain of a high-shelf filter.
-// * `chorus_amt`: The amount of chorus modulation in the main delay lines.
-// * `chorus_freq`: The LFO rate of chorus modulation in the main delay lines.
-// * `predelay`: The amount of pre-delay time.
-// * `time`: The decay time of the reverb.
-// * `size`: The size of the room.
-// * `mix`: A wetness value to use in a final dry/wet mixer.
+// * `prelow`: In the pre-filter, this is the cutoff frequency of a high-pass filter (hence a low value)
+// * `prehigh`: In the pre-filter, this is the cutoff frequency of a low-pass filter (hence a high value)
+// * `lowcutoff`: In the feedback filter stage, this is the cutoff frequency of a low-shelf filter
+// * `highcutoff`: In the feedback filter stage, this is the cutoff frequency of a high-shelf filter
+// * `lowgain`: In the feedback filter stage, this is the gain of a low-shelf filter
+// * `highgain`: In the feedback filter stage, this is the gain of a high-shelf filter
+// * `chorus_amt`: The amount of chorus modulation in the main delay lines
+// * `chorus_freq`: The LFO rate of chorus modulation in the main delay lines
+// * `predelay`: The amount of pre-delay time
+// * `time`: The decay time of the reverb
+// * `size`: The size of the room
+// * `mix`: A wetness value to use in a final dry/wet mixer
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// vital_rev_test = (os.osc(330), os.osc(440))
+//   : re.vital_rev(0.2, 0.8, 0.5, 0.7, 0.4, 0.6, 0.3, 0.2, 0.1, 0.7, 0.5, 0.4);
+// ```
 //-----------------------------------------------------------------------------
 vital_rev(_prelow, _prehigh, _lowcutoff, _highcutoff, _lowgain, _highgain, _chorus_amt, _chorus_freq, _predelay, _time, _size, _mix) = ef.dryWetMixerConstantPower(wetAmount, reverb) : gainMakeup
 with {
@@ -488,11 +556,11 @@ with {
 
     kPreDelayMaxSec = 0.3; // seconds
 
-    kNetworkContainers = 4; // the number of rdtables used for allpassDelay
+    kNetworkContainers = 4; // the number of delay lines used for allpassDelay
     kContainerSize = 4; // how long the allpassDelay waveforms below are
 
     kMinSizePower = -3;
-    kMaxSizePower = 1;
+    kMaxSizePower = 1; // decrease this to shorten the delay lines and reduce memory cost.
 
     clampremap(from1, from2, to1, to2) = aa.clip(from1, from2) : it.remap(from1, from2, to1, to2);
 
@@ -524,20 +592,21 @@ with {
 
     sample_rate_ratio = ma.SR/kBaseSampleRate;
 
-    kAllpassMaxDelay = 1001; // manually inspect rdtables below and take max value
+    kAllpassMaxDelay = 1001; // manually inspect values below and take max value
     // allpassDelay(i) where `i` corresponds to 0 to (kNetworkContainers-1)
-    allpassDelay(0) = rdtable(waveform{1001, 799, 933, 876});
-    allpassDelay(1) = rdtable(waveform{895, 807, 907, 853});
-    allpassDelay(2) = rdtable(waveform{957, 1019, 711, 567});
-    allpassDelay(3) = rdtable(waveform{833, 779, 663, 997});
+    allpassDelay(0, i) = ba.take(i+1, (1001, 799, 933, 876));
+    allpassDelay(1, i) = ba.take(i+1, (895, 807, 907, 853));
+    allpassDelay(2, i) = ba.take(i+1, (957, 1019, 711, 567));
+    allpassDelay(3, i) = ba.take(i+1, (833, 779, 663, 997));
 
     kFeedbackMaxDelay = (11329 + kMaxChorusDrift)*sample_rate_ratio*pow(2, kMaxSizePower); // pow(2, kMaxSizePower) is the max size_mult
     // feedbackDelayHelp(i) where `i` corresponds to 0 to (kNetworkContainers-1)
-    feedbackDelayHelp(0) = rdtable(waveform{6753.2, 9278.4, 7704.5, 11328.5});
-    feedbackDelayHelp(1) = rdtable(waveform{9701.12, 5512.5, 8480.45, 5638.65});
-    feedbackDelayHelp(2) = rdtable(waveform{3120.73, 3429.5, 3626.37, 7713.52});
-    feedbackDelayHelp(3) = rdtable(waveform{4521.54, 6518.97, 5265.56, 5630.25});
-    feedbackDelay(i) = feedbackDelayHelp(i) : _ * size_mult * sample_rate_ratio;
+    feedbackDelayHelp(0, i) = ba.take(i+1, (6753.2, 9278.4, 7704.5, 11328.5));
+    feedbackDelayHelp(1, i) = ba.take(i+1, (9701.12, 5512.5, 8480.45, 5638.65));
+    feedbackDelayHelp(2, i) = ba.take(i+1, (3120.73, 3429.5, 3626.37, 7713.52));
+    feedbackDelayHelp(3, i) = ba.take(i+1, (4521.54, 6518.97, 5265.56, 5630.25));
+
+    feedbackDelay(i, j) = feedbackDelayHelp(i, j) : _ * size_mult * sample_rate_ratio;
 
     getDecay(i, j) = pow(kT60Amplitude, feedbackDelay(i, j) / (decay_samples*sample_rate_ratio));
 
@@ -642,6 +711,13 @@ declare vital_rev license "GPL-3.0";
 // * `damp`: damping of the lowpass comb filter (0-1)
 // * `spread`: spatial spread in number of samples (for stereo)
 //
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// mono_freeverb_test = os.osc(440) : re.mono_freeverb(0.7, 0.5, 0.3, 30);
+// ```
+//
 // #### License
 // While this version is licensed LGPL (with exception) along with other GRAME
 // library functions, the file freeverb.dsp in the examples directory of older
@@ -651,7 +727,7 @@ declare vital_rev license "GPL-3.0";
 declare mono_freeverb author "Romain Michon";
 
 mono_freeverb(fb1, fb2, damp, spread) = _ <: par(i,8,lbcf(combtuningL(i)+spread,fb1,damp))
-	:> seq(i,4,fi.allpass_comb(1024, allpasstuningL(i)+spread, -fb2))
+    :> seq(i,4,fi.allpass_comb(1024, allpasstuningL(i)+spread, -fb2))
 with {
  
     // Filters parameters
@@ -671,7 +747,7 @@ with {
     
     // Lowpass Feedback Combfilter:
     // <https://ccrma.stanford.edu/~jos/pasp/Lowpass_Feedback_Comb_Filter.html>
-    lbcf(dt, fb, damp) = (+:@(dt)) ~ (*(1-damp) : (+ ~ *(damp)) : *(fb));
+    lbcf(dt, fb, damp) = (+ : @ (max(0, (dt - 1)))) ~ (*(1-damp) : (+ ~ *(damp)) : *(fb)) : mem;
      
     origSR = 44100;
     adaptSR(val) = val*ma.SR/origSR : int;
@@ -697,6 +773,14 @@ with {
 // * `fb2`: coefficient of the allpass comb filters (0-1)
 // * `damp`: damping of the lowpass comb filter (0-1)
 // * `spread`: spatial spread in number of samples (for stereo)
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// stereo_freeverb_test = (os.osc(330), os.osc(550))
+//   : re.stereo_freeverb(0.7, 0.5, 0.3, 30);
+// ```
 //------------------------------------------------------------
 declare stereo_freeverb author "Romain Michon";
 
@@ -738,9 +822,17 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 // * `d_diff2`: decay diffusion factor 2;
 // * `damping`: high-frequency damping; no damping = 0.0
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// dattorro_rev_test = (os.osc(330), os.osc(550))
+//   : re.dattorro_rev(200, 0.5, 0.7, 0.6, 0.5, 0.7, 0.5, 0.2);
+// ```
 //
-// <https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf>
+// #### References
+//
+// * <https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf>
 //------------------------------------------------------------
 declare dattorro_rev author "Jakob Zerbian";
 declare dattorro_rev licence "MIT-style STK-4.3 license";
@@ -780,9 +872,17 @@ with {
 // _,_ : dattorro_rev_default : _,_
 // ```
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// dattorro_rev_default_test = (os.osc(330), os.osc(550))
+//   : re.dattorro_rev_default;
+// ```
 //
-// <https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf>
+// #### References
+//
+// * <https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf>
 //------------------------------------------------------------
 declare dattorro_rev_default author "Jakob Zerbian";
 declare dattorro_rev_default license "MIT-style STK-4.3 license";
@@ -890,17 +990,25 @@ jp_gh_rev = environment {
 // * `low_cutoff`: frequency (100..6000 Hz) at which the crossover between the low and mid bands of the reverb occurs
 // * `high_cutoff`: frequency (1000..10000 Hz) at which the crossover between the mid and high bands of the reverb occurs
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// jpverb_test = (os.osc(330), os.osc(440))
+//   : re.jpverb(3.0, 0.2, 1.0, 0.8, 0.3, 0.4, 0.9, 0.8, 0.7, 500, 4000);
+// ```
 //
-// <https://doc.sccode.org/Overviews/DEIND.html>
+// #### References
+//
+// * <https://doc.sccode.org/Overviews/DEIND.html>
 //------------------------------------------------------------
 declare jpverb author "Julian Parker, bug fixes and minor interface changes by Till Bovermann";
-declare jpverb license "GPL2+";
+declare jpverb license "MIT license";
 
 jpverb(t60, damp, size, early_diff, 
-		mod_depth, mod_freq, 
-		low, mid, high, 
-		low_cutoff, high_cutoff)
+        mod_depth, mod_freq, 
+        low, mid, high, 
+        low_cutoff, high_cutoff)
     = jp_gh_rev.jpverb(t60, damp, size, early_diff, mod_depth, mod_freq, low, mid, high, low_cutoff, high_cutoff);
 
 
@@ -926,14 +1034,107 @@ jpverb(t60, damp, size, early_diff,
 // * `mod_depth`: depth ([0..1]) of delay-line modulation. Use in combination with `mod_freq` to produce chorus and pitch-variations in the echoes
 // * `mod_freq`: frequency ([0..10] Hz) of delay-line modulation. Use in combination with `mod_depth` to produce chorus and pitch-variations in the echoes
 //
-// #### Reference
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// greyhole_test = (os.osc(220), os.osc(440))
+//   : re.greyhole(2.0, 0.3, 1.0, 0.6, 0.5, 0.4, 0.2);
+// ```
 //
-// <https://doc.sccode.org/Overviews/DEIND.html>
+// #### References
+//
+// * <https://doc.sccode.org/Overviews/DEIND.html>
 //------------------------------------------------------------
 declare greyhole author "Julian Parker, bug fixes and minor interface changes by Till Bovermann";
-declare greyhole license "GPL2+";
+declare greyhole license "MIT license";
 
 greyhole(dt, damp, size, early_diff, feedback, mod_depth, mod_freq) 
-	= jp_gh_rev.greyhole(dt, damp, size, early_diff, feedback, mod_depth, mod_freq);
+    = jp_gh_rev.greyhole(dt, damp, size, early_diff, feedback, mod_depth, mod_freq);
+
+//===============================Keith Barr Allpass Loop Reverb=======================
+//======================================================================================
+
+//----------------------------`(re.)kb_rom_rev1`---------------------------
+// Reverberator based on Keith Barr's all-pass single feedback loop reverb topology. Originally designed for the Spin Semiconductor FV-1 chip, this code is an adaptation of the rom_rev1.spn file, part of the Spin Semiconductor Free DSP Programs available on the Spin Semiconductor website.  
+// It was submitted by Keith Barr himself and written in Spin Semiconductor Assembly, a dedicated assembly language for programming the FV-1 chip.  
+//
+// In this topology, when multiple delays and all-pass filters are placed in a loop, sound injected into the loop will recirculate, increasing the density of any impulse as the signal successively passes through the all-pass filters. 
+// The result, after a short period of time, is a wash of sound, completely diffused into a natural reverb tail.  
+//
+// The reverb typically has a mono input (as from a single source) but benefits from a stereo output, providing the listener with a fuller, more immersive reverberant image.
+//
+// #### Usage
+//
+// ```
+// _,_ : kb_rom_rev1(rt, damp) : _,_
+// ```
+//
+// Where:
+//
+// * `rt`: coefficent of the decay of the reverb (0-1)
+// * `damp`: coefficient of the lowpass filters (0-1)
+//
+// #### Test
+// ```
+// re = library("reverbs.lib");
+// os = library("oscillators.lib");
+// kb_rom_rev1_test = (os.osc(330), os.osc(660))
+//   : re.kb_rom_rev1(0.7, 0.3);
+// ```
+//
+// #### References
+//
+// * <https://www.spinsemi.com/programs.php#:~:text=Keith%20Barr-,rom_rev1.spn,-ROM%20reverb%202>
+// * <https://www.spinsemi.com/knowledge_base/effects.html#Reverberation>
+// * <https://www.spinsemi.com/knowledge_base/inst_syntax.html>
+//------------------------------------------------------------
+declare kb_rom_rev1 author "Luca Spanedda";
+declare kb_rom_rev1 license "GPL-3.0";
+
+kb_rom_rev1(rt, damp) = aploop
+with {
+    // Allpass
+    // (t,g) = give: delay in samples, feedback gain 0-1
+    apf(t, g) = _ : (+ : _ <: @ (t  - 1), * (- g)) ~ * (g) : mem, _ : + : _; 
+
+    // modulated Allpass filter
+    apfMod(mod, t, tMod, g) = _ : (+ : _ <: delaymod(mod, t - 1, tMod), * (- g)) ~ * (g) : mem, _ : + : _;
+
+    // from Original Sample Rate (origSR), (samples) to current Sample Rate
+    adaptSR(origSR, samples) = (samples * ma.SR / origSR) : max(ma.EPSILON, int); 
+
+    // delay modulated : mod = mod source +/- 1, t = del in samps, tMod = mod in samps
+    delaymod(mod, t, tMod) = de.fdelay(tMax, modIndx)
+    with{
+        tMax = t + tMod;
+        modIndx = t + mod * tMod;
+    };
+
+    // Onepole, g = give amplitude 0 to +/- 1 (open - close) to the delayed signal 
+    op(b1) = _ * (1 - abs(b1)) : + ~ * (b1);
+
+    // complete allpass loop
+    aploop(l, r) = (_ : loopSec(0) <: ((loopSec(1) <: ((_ : loopSec(2) <: loopSec(3), _), _)), _)) ~ _ : ro.cross(4) <: outTaps
+    with {
+        // input allpass sections
+        apSec(0) = apf(adaptSR(32768, 156), 0.5) : apf(adaptSR(32768, 223), 0.5) : apf(adaptSR(32768, 332), 0.5) : apf(adaptSR(32768, 548), 0.5);
+        apSec(1) = apf(adaptSR(32768, 186), 0.5) : apf(adaptSR(32768, 253), 0.5) : apf(adaptSR(32768, 302), 0.5) : apf(adaptSR(32768, 498), 0.5);
+
+        // allpass loop sections
+        loopSec(0) = _ @ (adaptSR(32768, 4568) - 1) : _ * rt : _ + (l : apSec(0)) : apfMod(os.osc(0.5), adaptSR(32768, 1251), adaptSR(32768, 20), 0.6) : 
+        apf(adaptSR(32768, 1751), 0.6) : op(damp) : op(- 0.05);
+        loopSec(1) = _ @ adaptSR(32768, 5859) : _ * rt : apf(adaptSR(32768, 1443), 0.6) : apf(adaptSR(32768, 1343), 0.6) : op(damp) : op(- 0.05);
+        loopSec(2) = _ @ adaptSR(32768, 4145) : _ * rt : _ + (r : apSec(1)) : apfMod(os.osc(0.5), adaptSR(32768, 1582), adaptSR(32768, 20), 0.6) : 
+        apf(adaptSR(32768, 1981), 0.6) : op(damp) : op(- 0.05);
+        loopSec(3) = _ @ adaptSR(32768, 3476) : _ * rt : apf(adaptSR(32768, 1274), 0.6) : apf(adaptSR(32768, 1382), 0.6) : op(damp) : op(- 0.05);
+
+        // output delay taps
+        outTaps = ((_ * 1.5 @ adaptSR(32768, 2630), _ * 1.2 @ adaptSR(32768, 1943), _ * 1.0 @ adaptSR(32768, 3200), 
+        _ * 0.8 @ adaptSR(32768, 4016)) :> +),
+        ((_ * 1.0 @ adaptSR(32768, 2420), _ * 0.8 @ adaptSR(32768, 2631), _ * 1.5 @ adaptSR(32768, 1163), 
+        _ * 1.2 @ adaptSR(32768, 3330)) :> +);
+    };
+};
 
 // end further further contributions section

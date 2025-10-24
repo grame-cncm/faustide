@@ -1,5 +1,10 @@
 //############################## oscillators.lib ######################################
-// This library contains a collection of sound generators. Its official prefix is `os`.
+// Oscillators library. Its official prefix is `os`.
+//
+// This library provides a wide range of oscillator designs for sound synthesis.
+// It includes classic waveforms (sine, sawtooth, square, triangle), band-limited and anti-aliased
+// oscillators, phase and frequency modulation units, as well as noise-based and physical-model
+// driven oscillators for advanced synthesis techniques in Faust.
 //
 // The oscillators library is organized into 9 sections:
 //
@@ -14,6 +19,7 @@
 // * [PolyBLEP-Based Oscillators](#polyblep-based-oscillators)
 //
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/oscillators.lib>
 //########################################################################################
 
@@ -59,7 +65,7 @@ fi = library("filters.lib");
 si = library("signals.lib");
 
 declare name "Faust Oscillator Library";
-declare version "1.5.1";
+declare version "1.6.0";
 
 // This library contains platform specific constants
 pl = library("platform.lib");
@@ -110,6 +116,12 @@ SAFE = 0; // 0: use the faster version, 1: use the safer version
 // Where:
 //
 // * `tablesize`: the table size
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sinwaveform_test = os.sinwaveform(1024);
+// ```
 //------------------------------------------------------------
 sinwaveform(tablesize) =
     sin(float(ba.period(tablesize)) * (2.0 * ma.PI) / float(tablesize));
@@ -127,6 +139,12 @@ sinwaveform(tablesize) =
 // Where:
 //
 // * `tablesize`: the table size
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// coswaveform_test = os.coswaveform(1024);
+// ```
 //------------------------------------------------------------
 coswaveform(tablesize) =
     cos(float(ba.period(tablesize)) * (2.0 * ma.PI) / float(tablesize));
@@ -196,6 +214,12 @@ phasor_table(tablesize, freq, reset, phase) = phasor_imp(freq, reset, phase) : *
 //
 // Note that `tablesize` is just a multiplier for the output of a unit-amp phasor
 // so `phasor(1.0, freq)` can be used to generate a phasor output in the range [0, 1[.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// phasor_test = os.phasor(1024, 440);
+// ```
 //------------------------------------------------------------
 phasor(tablesize, freq) = phasor_table(tablesize, freq, 0, 0);
 
@@ -214,6 +238,12 @@ phasor(tablesize, freq) = phasor_table(tablesize, freq, 0, 0);
 // * `tablesize`: the table size
 // * `freq`: the frequency in Hz
 // * `reset`: a reset signal, reset phase to 0 when equal to 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// hs_phasor_test = os.hs_phasor(1024, 330, button("reset"));
+// ```
 //---------------------------------------------------------
 declare hs_phasor author "Mike Olsen, revised by Stéphane Letz";
 
@@ -235,6 +265,12 @@ hs_phasor(tablesize, freq, reset) = phasor_table(tablesize, freq, reset, 0);
 // * `freq`: the frequency in Hz
 // * `reset`: reset the oscillator to phase when equal to 1
 // * `phase`: phase between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// hsp_phasor_test = os.hsp_phasor(1024, 330, button("reset"), 0.25);
+// ```
 //---------------------------------------------------------
 declare hsp_phasor author "Christophe Lebreton, revised by Stéphane Letz";
 
@@ -254,6 +290,12 @@ hsp_phasor(tablesize, freq, reset, phase) = phasor_table(tablesize, freq, reset,
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscsin_test = os.oscsin(440);
+// ```
 //------------------------------------------------------------
 oscsin(freq) = rdtable(tablesize, sinwaveform(tablesize), int(phasor(tablesize,freq)))
 with {
@@ -274,6 +316,12 @@ with {
 //
 // * `freq`: the frequency in Hz
 // * `reset`: reset the oscillator to 0 when equal to 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// hs_oscsin_test = os.hs_oscsin(440, button("reset"));
+// ```
 //---------------------------------------------------------
 declare hs_oscsin author "Mike Olsen";
 
@@ -295,6 +343,12 @@ with {
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// osccos_test = os.osccos(440);
+// ```
 //------------------------------------------------------------
 osccos(freq) = rdtable(tablesize, coswaveform(tablesize), int(phasor(tablesize,freq)))
 with {
@@ -315,6 +369,12 @@ with {
 //
 // * `freq`: the frequency in Hz
 // * `reset`: reset the oscillator to 0 when equal to 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// hs_osccos_test = os.hs_osccos(440, button("reset"));
+// ```
 //---------------------------------------------------------
 declare hs_osccos author "Stéphane Letz";
 
@@ -337,6 +397,13 @@ with {
 //
 // * `freq`: the frequency in Hz
 // * `phase`: the phase in radian
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// ma = library("maths.lib");
+// oscp_test = os.oscp(440, ma.PI/3);
+// ```
 //------------------------------------------------------------
 oscp(freq,phase) = oscsin(freq) * cos(phase) + osccos(freq) * sin(phase);
 
@@ -353,6 +420,12 @@ oscp(freq,phase) = oscsin(freq) * cos(phase) + osccos(freq) * sin(phase);
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// osci_test = os.osci(440);
+// ```
 //------------------------------------------------------------
 osci(freq) = s1 + d * (s2 - s1)
 with {
@@ -377,6 +450,12 @@ with {
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// osc_test = os.osc(440);
+// ```
 //------------------------------------------------------------
 osc = oscsin;
 
@@ -393,6 +472,12 @@ osc = oscsin;
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// m_oscsin_test = os.m_oscsin(440);
+// ```
 //------------------------------------------------------------
 m_oscsin(freq) = lf_sawpos(freq) : *(2*ma.PI) : sin;
 
@@ -409,6 +494,12 @@ m_oscsin(freq) = lf_sawpos(freq) : *(2*ma.PI) : sin;
 // Where:
 //
 // * `freq`: the frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// m_osccos_test = os.m_osccos(440);
+// ```
 //------------------------------------------------------------
 m_osccos(freq) = lf_sawpos(freq) : *(2*ma.PI) : cos;
 
@@ -444,10 +535,16 @@ Michon and Julius O. Smith III, and are released under the
 // ```
 // lf_imptrain(freq) : _
 // ```
-
+//
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_imptrain_test = os.lf_imptrain(3);
+// ```
 //------------------------------------------------------------
 lf_imptrain(freq) = lf_sawpos(freq)<:-(mem)<0; // definition below
 
@@ -466,6 +563,12 @@ lf_imptrain(freq) = lf_sawpos(freq)<:-(mem)<0; // definition below
 //
 // * `freq`: frequency in Hz
 // * `duty`: duty cycle between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_pulsetrainpos_test = os.lf_pulsetrainpos(3, 0.35);
+// ```
 //------------------------------------------------------------
 lf_pulsetrainpos(freq,duty) = float(lf_sawpos(freq) <= duty);
 
@@ -485,6 +588,12 @@ lf_pulsetrainpos(freq,duty) = float(lf_sawpos(freq) <= duty);
 //
 // * `freq`: frequency in Hz
 // * `duty`: duty cycle between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_pulsetrain_test = os.lf_pulsetrain(3, 0.35);
+// ```
 //------------------------------------------------------------
 lf_pulsetrain(freq,duty) = 2.0*lf_pulsetrainpos(freq,duty) - 1.0;
 
@@ -501,6 +610,12 @@ lf_pulsetrain(freq,duty) = 2.0*lf_pulsetrainpos(freq,duty) - 1.0;
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_squarewavepos_test = os.lf_squarewavepos(3);
+// ```
 //------------------------------------------------------------
 lf_squarewavepos(freq) = lf_pulsetrainpos(freq,0.5);
 // squarewavepos = lf_squarewavepos; // for backward compatibility
@@ -519,6 +634,12 @@ lf_squarewavepos(freq) = lf_pulsetrainpos(freq,0.5);
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_squarewave_test = os.lf_squarewave(3);
+// ```
 //------------------------------------------------------------
 lf_squarewave(freq) = 2.0*lf_squarewavepos(freq) - 1.0;
 // squarewave = lf_squarewave; // for backward compatibility
@@ -536,12 +657,18 @@ lf_squarewave(freq) = 2.0*lf_squarewavepos(freq) - 1.0;
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_trianglepos_test = os.lf_trianglepos(3);
+// ```
 //------------------------------------------------------------
 lf_trianglepos(freq) = 1.0-abs(saw1(freq)); // saw1 defined below
 
 
 //----------`(os.)lf_triangle`----------
-// Positive unit-amplitude LF triangle wave.
+// Zero-mean unit-amplitude LF triangle wave.
 // `lf_triangle` is a standard Faust function.
 //
 // #### Usage
@@ -553,6 +680,12 @@ lf_trianglepos(freq) = 1.0-abs(saw1(freq)); // saw1 defined below
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_triangle_test = os.lf_triangle(3);
+// ```
 //------------------------------------------------------------
 declare lf_triangle author "Bart Brouns";
 declare lf_triangle licence "STK-4.3";
@@ -586,6 +719,12 @@ lf_triangle(freq) = 2.0*lf_trianglepos(freq) - 1.0;
 // Where:
 //
 // * `periodsamps`: number of periods per samples
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_rawsaw_test = os.lf_rawsaw(128);
+// ```
 //---------------------------------------------------------
 lf_rawsaw(periodsamps) = (_,periodsamps : fmod) ~ +(1.0);
 
@@ -603,6 +742,11 @@ lf_rawsaw(periodsamps) = (_,periodsamps : fmod) ~ +(1.0);
 //
 // * `freq`: frequency in Hz
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_sawpos_test = os.lf_sawpos(3);
+// ```
 //---------------------------------------------------------
 declare lf_sawpos author "Bart Brouns, revised by Stéphane Letz";
 declare lf_sawpos licence "STK-4.3";
@@ -624,6 +768,12 @@ lf_sawpos(freq) = phasor_imp(freq, 0, 0);
 //
 // * `freq`: frequency in Hz
 // * `phase`: phase between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_sawpos_phase_test = os.lf_sawpos_phase(3, 0.25);
+// ```
 //---------------------------------------------------------
 declare lf_sawpos_phase author "Bart Brouns, revised by Stéphane Letz";
 declare lf_sawpos_phase licence "STK-4.3";
@@ -646,6 +796,11 @@ lf_sawpos_phase(freq,phase) = phasor_imp(freq, 0, phase);
 // * `freq`: frequency in Hz
 // * `reset`: reset the oscillator to 0 when equal to 1
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_sawpos_reset_test = os.lf_sawpos_reset(3, button("reset"));
+// ```
 //---------------------------------------------------------
 declare lf_sawpos_reset author "Bart Brouns, revised by Stéphane Letz";
 declare lf_sawpos_reset licence "STK-4.3";
@@ -669,6 +824,11 @@ lf_sawpos_reset(freq,reset) = phasor_imp(freq, reset, 0);
 // * `phase`: phase between 0 and 1
 // * `reset`: reset the oscillator to phase when equal to 1
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_sawpos_phase_reset_test = os.lf_sawpos_phase_reset(3, 0.75, button("reset"));
+// ```
 //---------------------------------------------------------
 declare lf_sawpos_phase_reset author "Bart Brouns, revised by Stéphane Letz";
 declare lf_sawpos_phase_reset licence "STK-4.3";
@@ -689,6 +849,12 @@ lf_sawpos_phase_reset(freq,phase,reset) = phasor_imp(freq, reset, phase);
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// lf_saw_test = os.lf_saw(3);
+// ```
 //---------------------------------------------------------
 declare saw1 author "Bart Brouns";
 declare saw1 licence "STK-4.3";
@@ -725,6 +891,11 @@ lf_saw(freq) = saw1(freq);
 // * `freq`: frequency in Hz
 // * `phase`: phase between 0 and 1
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sawN_test = os.sawN(3, 440);
+// ```
 // #### Method
 // Differentiated Polynomial Wave (DPW).
 //
@@ -782,6 +953,11 @@ with {
 // * `freq`: frequency in Hz
 // * `phase`: waveform phase as a fraction of one period (rounded to nearest sample)
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sawNp_test = os.sawNp(3, 330, 0.5);
+// ```
 // #### Implementation Notes
 //
 // The phase offset is implemented by delaying `sawN(N,freq)` by
@@ -812,14 +988,22 @@ sawNp(N,freq,phase) = sawN(N,freq) : @(max(0,min(8191,int(0.5+phase*ma.SR/freq))
 //
 // * `freq`: frequency in Hz
 //
-// ##### References
-// See `sawN` above.
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// saw2_test = os.saw2(220);
+// saw3_test = os.saw3(220);
+// saw4_test = os.saw4(220);
+// ```
 //
 // #### Implementation Notes
 //
 // Presently, only `saw2` uses the PTR method, while `saw3` and `saw4` use DPW.
 // This is because PTR has been implemented and tested for the 2nd-order case only.
 //
+// #### References
+//
+// * See `sawN` above.
 //------------------------------------------------------------------
 saw2 = saw2ptr; // "faustlibraries choice"
 saw3 = sawN(3); // only choice available right now
@@ -839,17 +1023,14 @@ saw4 = sawN(4); // only choice available right now
 //
 // * `freq`: frequency in Hz
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// saw2ptr_test = os.saw2ptr(220);
+// ```
 // ##### Implementation
 //
 // Polynomial Transition Regions (PTR) method for aliasing suppression.
-//
-// ##### References
-//
-// * Kleimola, J.; Valimaki, V., "Reducing Aliasing from Synthetic Audio
-//     Signals Using Polynomial Transition Regions," in Signal Processing
-//     Letters, IEEE , vol.19, no.2, pp.67-70, Feb. 2012
-// * <https://aaltodoc.aalto.fi/bitstream/handle/123456789/7747/publication6.pdf?sequence=9>
-// * <http://research.spa.aalto.fi/publications/papers/spl-ptr/>
 //
 // ##### Notes
 //
@@ -858,6 +1039,11 @@ saw4 = sawN(4); // only choice available right now
 // can be modulated arbitrarily fast over time without filtering
 // artifacts.  For this reason, `saw2` is presently defined as `saw2ptr`.
 //
+// #### References
+//
+// * Kleimola, J.; Valimaki, V., "Reducing Aliasing from Synthetic Audio Signals Using Polynomial Transition Regions," Signal Processing Letters, IEEE, vol.19, no.2, pp.67-70, Feb. 2012
+// * <https://aaltodoc.aalto.fi/bitstream/handle/123456789/7747/publication6.pdf?sequence=9>
+// * <http://research.spa.aalto.fi/publications/papers/spl-ptr/>
 //--------------------------------------------------------
 declare saw2ptr author "Julius O. Smith III";
 declare saw2ptr license "STK-4.3";
@@ -888,6 +1074,12 @@ saw2ptr(freq) = y with { // newer PTR version (stateless - freq can vary at any 
 // This is the original Faust `saw2` function using the DPW method.
 // Since `saw2` is now defined as `saw2ptr`, the DPW version
 // is now available as `saw2dwp`.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// saw2dpw_test = os.saw2dpw(220);
+// ```
 //--------------------------------------------------------
 declare saw2dpw author "Julius O. Smith III";
 declare saw2dpw license "STK-4.3";
@@ -906,6 +1098,12 @@ saw2dpw(freq) = saw1(freq) <: * <: -(mem) : *(0.25'*ma.SR/freq);
 // with
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sawtooth_test = os.sawtooth(220);
+// ```
 //--------------------------------------------------------
 sawtooth = saw2; // default choice for sawtooth signal - see also sawN
 
@@ -928,6 +1126,13 @@ sawtooth = saw2; // default choice for sawtooth signal - see also sawN
 // The boost filter is second-order for `saw2f2` and fourth-order for `saw2f4`, and both are designed
 // for the DWP case and therefore use `saw2dpw`.
 // See Figure 4(b) in the DPW reference for a plot of the slight droop in the DPW case.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// saw2f2_test = os.saw2f2(220);
+// saw2f4_test = os.saw2f4(220);
+// ```
 //--------------------------------------------------------
 declare saw2f2 author "Julius O. Smith III";
 declare saw2f2 license "STK-4.3";
@@ -974,6 +1179,28 @@ saw2f4 = saw2dpw : cf4 with {
 //
 // * `N`: polynomial order, a constant numerical expression
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sawNp_test = os.sawNp(3, 330, 0.5);
+// saw2_test = os.saw2(220);
+// saw3_test = os.saw3(220);
+// saw4_test = os.saw4(220);
+// saw2ptr_test = os.saw2ptr(220);
+// saw2dpw_test = os.saw2dpw(220);
+// sawtooth_test = os.sawtooth(220);
+// saw2f2_test = os.saw2f2(220);
+// saw2f4_test = os.saw2f4(220);
+// pulsetrainN_test = os.pulsetrainN(3, 220, 0.25);
+// pulsetrain_test = os.pulsetrain(220, 0.25);
+// squareN_test = os.squareN(3, 220);
+// square_test = os.square(220);
+// imptrainN_test = os.imptrainN(3, 220);
+// imptrain_test = os.imptrain(220);
+// triangleN_test = os.triangleN(3, 220);
+// triangle_test = os.triangle(220);
+// ```
 //====================================================================
 
 
@@ -985,6 +1212,12 @@ saw2f4 = saw2dpw : cf4 with {
 //
 // ```
 // impulse : _
+// ```
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// impulse_test = os.impulse;
 // ```
 //--------------------------------------------------------
 impulse = 1-1';
@@ -1004,6 +1237,12 @@ impulse = 1-1';
 // * `N`: order, as a constant numerical expression
 // * `freq`: frequency in Hz
 // * `duty`: duty cycle between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// pulsetrainN_test = os.pulsetrainN(3, 220, 0.25);
+// ```
 
 //--------------------------------------------------------
 pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
@@ -1037,6 +1276,12 @@ pulsetrainN(N,freq,duty) = diffdel(sawN(N,freqC),del) with {
 //
 // * `freq`: frequency in Hz
 // * `duty`: duty cycle between 0 and 1
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// pulsetrain_test = os.pulsetrain(220, 0.25);
+// ```
 //--------------------------------------------------------
 pulsetrain = pulsetrainN(2);
 
@@ -1054,6 +1299,12 @@ pulsetrain = pulsetrainN(2);
 //
 // * `N`: order, as a constant numerical expression
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// squareN_test = os.squareN(3, 220);
+// ```
 //--------------------------------------------------------
 squareN(N,freq) = pulsetrainN(N,freq,0.5);
 
@@ -1071,6 +1322,12 @@ squareN(N,freq) = pulsetrainN(N,freq,0.5);
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// square_test = os.square(220);
+// ```
 //--------------------------------------------------------
 square = squareN(2);
 
@@ -1088,6 +1345,12 @@ square = squareN(2);
 //
 // * `N`: order, as a constant numerical expression
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// imptrainN_test = os.imptrainN(4, 220);
+// ```
 //--------------------------------------------------------
 imptrainN(N,freq) = impulse + 0.5*ma.diffn(sawN(N,freq));
 
@@ -1105,6 +1368,12 @@ imptrainN(N,freq) = impulse + 0.5*ma.diffn(sawN(N,freq));
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// imptrain_test = os.imptrain(220);
+// ```
 //--------------------------------------------------------
 imptrain = imptrainN(2); // default based on saw2
 
@@ -1122,6 +1391,12 @@ imptrain = imptrainN(2); // default based on saw2
 //
 // * `N`: order, as a constant numerical expression
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// triangleN_test = os.triangleN(3, 220);
+// ```
 //--------------------------------------------------------
 triangleN(N,freq) = squareN(N,freq) : fi.pole(p) : *(gain) with {
   gain = 4.0*freq/ma.SR; // for aproximate unit peak amplitude
@@ -1142,6 +1417,12 @@ triangleN(N,freq) = squareN(N,freq) : fi.pole(p) : *(gain) with {
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// triangle_test = os.triangle(220);
+// ```
 //--------------------------------------------------------
 triangle = triangleN(2); // default based on saw2
 
@@ -1155,6 +1436,15 @@ triangle = triangleN(2); // default based on saw2
 // osc[b|rq|rs|rc|s](freq), where freq = frequency in Hz.
 // ```
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscb_test = os.oscb(440);
+// oscrq_test = os.oscrq(440);
+// oscrs_test = os.oscrs(440);
+// oscrc_test = os.oscrc(440);
+// oscs_test = os.oscs(440);
+// ```
 // #### References
 //
 // * <http://lac.linuxaudio.org/2012/download/lac12-slides-jos.pdf>
@@ -1173,6 +1463,16 @@ triangle = triangleN(2); // default based on saw2
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscb_test = os.oscb(440);
+// oscrq_test = os.oscrq(440);
+// oscrs_test = os.oscrs(440);
+// oscrc_test = os.oscrc(440);
+// oscs_test = os.oscs(440);
+// ```
 //------------------------------------------------------------
 oscb(f) = impulse : fi.tf2(1,0,0,a1,1)
 with {
@@ -1195,7 +1495,13 @@ with {
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscrq_test = os.oscrq(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Normalized_Scattering_Junctions.html>
 //------------------------------------------------------------
@@ -1216,7 +1522,12 @@ oscrq(f) = impulse : fi.nlf2(f,1); // sine and cosine outputs
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscrs_test = os.oscrs(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Normalized_Scattering_Junctions.html>
 //------------------------------------------------------------
@@ -1237,7 +1548,12 @@ oscrs(f) = impulse : fi.nlf2(f,1) : _,!; // sine
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscrc_test = os.oscrc(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Normalized_Scattering_Junctions.html>
 //------------------------------------------------------------
@@ -1261,6 +1577,12 @@ oscr = oscrs; // default = sine (starts without a pop)
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscs_test = os.oscs(440);
+// ```
 //------------------------------------------------------------
 oscs(f) = (*(-1) : sint(wn) : sintp(wn,impulse)) ~ _
 with {
@@ -1283,12 +1605,18 @@ with {
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// quadosc_test = os.quadosc(440);
+// ```
+// #### References
+//
 // * <https://vicanek.de/articles/QuadOsc.pdf>
 //------------------------------------------------------------
 // Authors:
 // Dario Sanfilippo <sanfilippo.dario@gmail.com>
-// and Oleg Nesterov (jos ed.)
+// and Oleg Nesterov (JOS ed.)
 quadosc(f) = tick ~ (_,_)
 with {
     k1 = tan(f * ma.PI / ma.SR);
@@ -1314,8 +1642,12 @@ with {
 //
 // * `vs` : list of amplitudes
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sidebands_test = os.quadosc(110) : os.sidebands((1, 0.5, 0.25));
+// ```
 // #### Example test program
-//
 // ```
 //    cos(x),sin(x) : sidebands((10,20,30))
 // ```
@@ -1364,19 +1696,18 @@ with {
 // and the compiler will discard the half of the calculations.
 //-----------------------------------------------------------------------------
 sidebands(vs, c0,s0)
-	= c0*vn(0),s0*vn(0), 1,c0, 0,s0
-	: seq(n, outputs(vs)-1, add(vn(n+1)))
-	: _,_, !,!, !,!
+    = c0*vn(0),s0*vn(0), 1,c0, 0,s0
+    : seq(n, outputs(vs)-1, add(vn(n+1)))
+    : _,_, !,!, !,!
 with {
-	// ba.take(n+1, vs)
-	vn(n) = vs : route(outputs(vs),1, n+1,1);
+    vn = ba.pick(vs);
 
-	add(vn, co,so, cn_2,cn_1, sn_2,sn_1) =
-		co+cn*vn, so+sn*vn, cn_1,cn, sn_1,sn
-	with {
-		cn = 2*c0*cn_1 - cn_2;
-		sn = 2*c0*sn_1 - sn_2;
-	};
+    add(vn, co,so, cn_2,cn_1, sn_2,sn_1) =
+        co+cn*vn, so+sn*vn, cn_1,cn, sn_1,sn
+    with {
+        cn = 2*c0*cn_1 - cn_2;
+        sn = 2*c0*sn_1 - sn_2;
+    };
 };
 
 //-----------------------------`(os.)sidebands_list`--------------------------------------
@@ -1395,8 +1726,13 @@ with {
 //
 // * `N` : number of harmonics, compile time constant > 1
 //
-// #### Example test program
 //
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// sidebands_list_test = os.quadosc(110) : os.sidebands_list(3);
+// ```
+// #### Example test program
 // ```
 //    cos(x),sin(x) : sidebands_list(3)
 // ```
@@ -1422,16 +1758,102 @@ with {
 // but much more efficient.
 //-----------------------------------------------------------------------------
 sidebands_list(N, c0,s0)
-	= c0,s0, 1,c0, 0,s0
-	: seq(n, N-1, si.bus(2*(n+1)), add)
-	: si.bus(2*N), !,!, !,!
+    = c0,s0, 1,c0, 0,s0
+    : seq(n, N-1, si.bus(2*(n+1)), add)
+    : si.bus(2*N), !,!, !,!
 with {
-	add(cn_2,cn_1, sn_2,sn_1) =
-		cn,sn, cn_1,cn, sn_1,sn
-	with {
-		cn = 2*c0*cn_1 - cn_2;
-		sn = 2*c0*sn_1 - sn_2;
-	};
+    add(cn_2,cn_1, sn_2,sn_1) =
+        cn,sn, cn_1,cn, sn_1,sn
+    with {
+        cn = 2*c0*cn_1 - cn_2;
+        sn = 2*c0*sn_1 - sn_2;
+    };
+};
+
+//------------------------------`(os.)dsf`--------------------------------
+// An environment with sine/cosine oscsillators with exponentially decaying
+// harmonics based on direct summation formula.
+//
+// #### Usage
+//
+// ```
+// dsf.xxx(f0, df, a, [n]) : _
+// ```
+//
+// Where:
+//
+// * `f0`: base frequency
+// * `df`: step frequency
+// * `a`: decaying factor != 1
+// * `n`: total number of harmonics (`osccN/oscsN` only)
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// dsf_oscc_test = os.dsf.oscc(220, 110, 0.6);
+// dsf_oscs_test = os.dsf.oscs(220, 110, 0.6);
+// dsf_osccN_test = os.dsf.osccN(220, 110, 0.6, 4);
+// dsf_oscsN_test = os.dsf.oscsN(220, 110, 0.6, 4);
+// dsf_osccNq_test = os.dsf.osccNq(220, 110, 0.6);
+// dsf_oscsNq_test = os.dsf.oscsNq(220, 110, 0.6);
+// ```
+// #### Variants
+//
+// - infinite number of harmonics, implies aliasing
+// ```
+// oscc(f0,df,a) : _;
+// oscs(f0,df,a) : _;
+// ```
+//
+// - n harmonics, f0, f0 + df, f0 + 2\*df, ..., f0 + (n-1)\*df
+// ```
+// osccN(f0,df,a,n) : _;
+// oscsN(f0,df,a,n) : _;
+// ```
+//
+// - finite number of harmonics, from f0 to Nyquist
+// ```
+// osccNq(f0,df,a) : _;
+// oscsNq(f0,df,a) : _;
+// ```
+// 
+// #### Example test program
+// ```
+// process = dsf.osccN(F0,DF,A,N),
+//           dsf.oscsN(F0,DF,A,N);
+// ```
+// if `N` is an integer constant, the same (modulo fp issues) as:
+// ```
+// c = os.quadosc : _,!;
+// s = os.quadosc : !,_;
+// process = sum(k,N, A^k * c(F0 + k*DF)),
+//           sum(k,N, A^k * s(F0 + k*DF));
+// ```
+// but much more efficient.
+//
+// #### References
+//
+// * <https://ccrma.stanford.edu/STANM/stanms/stanm5/stanm5.pdf>
+//----------------------------------------------------------------
+declare dsf author "Oleg Nesterov";
+dsf = environment {
+    qo = quadosc;
+    co = qo : _,!;
+    so = qo : !,_;
+
+    Nq(f0,df) = (ma.SR/2 - f0) / df : int;
+
+    // infinite number of harmonics, implies aliasing
+    oscc(f0,df,a) = (co(f0) - a*co(f0-df)) / (1 + a^2 - 2*a*co(df));
+    oscs(f0,df,a) = (so(f0) - a*so(f0-df)) / (1 + a^2 - 2*a*co(df));
+
+    // n harmonics, f0, f0 + df, f0 + 2*df, ..., f0 + (n-1)*df
+    osccN(f0,df,a,n) = oscc(f0,df,a) - a^n * oscc(f0 + n*df, df,a);
+    oscsN(f0,df,a,n) = oscs(f0,df,a) - a^n * oscs(f0 + n*df, df,a);
+
+    // finite number of harmonics, from f0 to Nyquist
+    osccNq(f0,df,a) = osccN(f0,df,a, Nq(f0,df));
+    oscsNq(f0,df,a) = oscsN(f0,df,a, Nq(f0,df));
 };
 
 //================ Waveguide-Resonator-Based Oscillators ================
@@ -1452,7 +1874,12 @@ with {
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscwc_test = os.oscwc(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Digital_Waveguide_Oscillator.html>
 //------------------------------------------------------------
@@ -1472,7 +1899,12 @@ oscwc(fr) = impulse : fi.wgr(fr,1) : _,!; // cosine (cheapest at 1 mpy/sample)
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscws_test = os.oscws(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Digital_Waveguide_Oscillator.html>
 //------------------------------------------------------------
@@ -1492,7 +1924,12 @@ oscws(fr) = impulse : fi.wgr(fr,1) : !,_; // sine (needs a 2nd scaling mpy)
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscq_test = os.oscq(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Digital_Waveguide_Oscillator.html>
 //------------------------------------------------------------
@@ -1512,7 +1949,12 @@ oscq(fr) = impulse : fi.wgr(fr,1);       // phase quadrature outputs
 //
 // * `freq`: frequency in Hz
 //
-// #### Reference
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// oscw_test = os.oscw(440);
+// ```
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Digital_Waveguide_Oscillator.html>
 //------------------------------------------------------------
@@ -1567,6 +2009,12 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 to 1. 0 = sine-wave, 1 = saw-wave
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsaw_test = os.CZsaw(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsaw author "Bart Brouns";
 declare CZsaw licence "STK-4.3";
@@ -1592,6 +2040,12 @@ CZsaw(fund, index) = CZ.sawChooseP(fund, index, 0);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 to 1. 0 = sine-wave, 1 = saw-wave
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsawP_test = os.CZsawP(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsawP author "Bart Brouns";
 declare CZsawP licence "STK-4.3";
@@ -1616,6 +2070,12 @@ CZsawP(fund, index) = CZ.sawChooseP(fund, index, 1);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 to 1. 0 = sine-wave, 1 = square-wave
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsquare_test = os.CZsquare(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsquare author "Bart Brouns";
 declare CZsquare licence "STK-4.3";
@@ -1641,6 +2101,12 @@ CZsquare(fund, index) = CZ.squareChooseP(fund, index, 0);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 to 1. 0 = sine-wave, 1 = square-wave
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsquareP_test = os.CZsquareP(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsquareP author "Bart Brouns";
 declare CZsquareP licence "STK-4.3";
@@ -1665,6 +2131,12 @@ CZsquareP(fund, index) = CZ.squareChooseP(fund, index, 1);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is closer to a pulse
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZpulse_test = os.CZpulse(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZpulse author "Bart Brouns";
 declare CZpulse licence "STK-4.3";
@@ -1690,6 +2162,12 @@ CZpulse(fund, index) = CZ.pulseChooseP(fund, index, 0);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is closer to a pulse
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZpulseP_test = os.CZpulseP(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZpulseP author "Bart Brouns";
 declare CZpulseP licence "STK-4.3";
@@ -1714,6 +2192,12 @@ CZpulseP(fund, index) = CZ.pulseChooseP(fund, index, 1);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is a sine minus a pulse
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsinePulse_test = os.CZsinePulse(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsinePulse author "Bart Brouns";
 declare CZsinePulse licence "STK-4.3";
@@ -1739,6 +2223,12 @@ CZsinePulse(fund, index) = CZ.sinePulseChooseP(fund, index, 0);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is a sine minus a pulse
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZsinePulseP_test = os.CZsinePulseP(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZsinePulseP author "Bart Brouns";
 declare CZsinePulseP licence "STK-4.3";
@@ -1763,6 +2253,12 @@ CZsinePulseP(fund, index) = CZ.sinePulseChooseP(fund, index, 1);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is somewhere between a saw and a square
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZhalfSine_test = os.CZhalfSine(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZhalfSine author "Bart Brouns";
 declare CZhalfSine licence "STK-4.3";
@@ -1788,6 +2284,12 @@ CZhalfSine(fund, index) = CZ.halfSineChooseP(fund, index, 0);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `index`: the brightness of the oscillator, 0 gives a sine-wave, 1 is somewhere between a saw and a square
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZhalfSineP_test = os.CZhalfSineP(os.lf_sawpos(110), 0.5);
+// ```
 //------------------------------------------------------------
 declare CZhalfSineP author "Bart Brouns";
 declare CZhalfSineP licence "STK-4.3";
@@ -1812,6 +2314,12 @@ CZhalfSineP(fund, index) = CZ.halfSineChooseP(fund, index, 1);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `res`: the frequency of resonance as a factor of the fundamental pitch.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZresSaw_test = os.CZresSaw(os.lf_sawpos(110), 2.5);
+// ```
 //------------------------------------------------------------
 declare CZresSaw author "Bart Brouns";
 declare CZresSaw licence "STK-4.3";
@@ -1836,6 +2344,12 @@ CZresSaw(fund,res) = CZ.resSaw(fund,res);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `res`: the frequency of resonance as a factor of the fundamental pitch.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZresTriangle_test = os.CZresTriangle(os.lf_sawpos(110), 2.5);
+// ```
 //------------------------------------------------------------
 declare CZresTriangle author "Bart Brouns";
 declare CZresTriangle licence "STK-4.3";
@@ -1860,6 +2374,12 @@ CZresTriangle(fund,res) = CZ.resTriangle(fund,res);
 //
 // * `fund`: a saw-tooth waveform between 0 and 1 that the oscillator slaves to
 // * `res`: the frequency of resonance as a factor of the fundamental pitch.
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// CZresTrap_test = os.CZresTrap(os.lf_sawpos(110), 2.5);
+// ```
 //------------------------------------------------------------
 declare CZresTrap author "Bart Brouns";
 declare CZresTrap licence "STK-4.3";
@@ -1941,6 +2461,12 @@ CZ = environment {
 //
 // * `Q`: smoothing factor between 0 and 0.5. Determines how far from the ends of the phase interval the quadratic function is used.
 // * `phase`: normalised phase (between 0 and 1)
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// polyblep_test = os.polyblep(0.2, os.lf_sawpos(220));
+// ```
 //------------------------------------------------------------
 declare polyblep author "Jacek Wieczorek";
 
@@ -1963,6 +2489,12 @@ with {
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// polyblep_saw_test = os.polyblep_saw(220);
+// ```
 //------------------------------------------------------------
 declare polyblep_saw author "Jacek Wieczorek";
 
@@ -1985,6 +2517,12 @@ with {
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// polyblep_square_test = os.polyblep_square(220);
+// ```
 //------------------------------------------------------------
 declare polyblep_square author "Jacek Wieczorek";
 
@@ -2007,6 +2545,12 @@ with {
 // Where:
 //
 // * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// os = library("oscillators.lib");
+// polyblep_triangle_test = os.polyblep_triangle(220);
+// ```
 //------------------------------------------------------------
 declare polyblep_triangle author "Jacek Wieczorek";
 

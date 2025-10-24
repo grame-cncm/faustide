@@ -10,10 +10,9 @@
 // recommended to use a scripting tool (such as MIMS) to generate the FAUST
 // signal routing for a given physical network. Its official prefix is `mi`.
 //
-// <https://github.com/rmichon/mi_faust>
-// <http://mi-creative.eu/tool_miFaust.html>
-// <http://mi-creative.eu/paper_lac19.html>
+// [Video introduction to Mass Interaction](https://faust.grame.fr/community/events/#an-introduction-to-mass-interaction-modelling-in-faust-james-leonard-and-jerome-villeneuve)
 //
+// [LAC 2019 Paper](https://hal.science/hal-02270654)
 //
 // ## Sources
 //
@@ -43,8 +42,16 @@
 // of Multisensory Virtual Musical Instruments. In Proceedings of the New
 // Interfaces for Musical Expression (NIME-15) Conference, Baton Rouge, USA, 2015.
 //
+// The MI library is organized into 3 sections:
+//
+// * [Utility Functions](#utility-functions)
+// * [Mass Algorithms](#mass-algorithms)
+// * [Interaction Algorithms](#interaction-algorithms)
+//
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/mi.lib>
+
 //##############################################################################
 
 ma = library("maths.lib");
@@ -79,6 +86,12 @@ declare copyright "2018-2020 GRAME / GIPSA-Lab";
 //
 // * `x`: position value signal
 // * `x0`: initial value for position
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// initState_test = button("impulse") : mi.initState(1.0);
+// ```
 //---------------------------------------------------------
 initState(init) = R(0,init)
 with{
@@ -110,6 +123,12 @@ with{
 // * `grav`: gravity force value
 // * `x0`: initial position
 // * `xr0`: initial delayed position (inferred from initial velocity)
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// mass_test = 0 : mi.mass(1.0, 0.0, 0.0, 0.0);
+// ```
 //---------------------------------------------------------
 mass(m, grav, x0, x1) = equation
 with{
@@ -117,9 +136,9 @@ with{
   B = -1;
   C = 1/m;
   equation = x 
-	letrec{
+    letrec{
     'x = A*(x : initState(x0)) + B*(x' : initState((x1,x0))) + (_-grav)*(C);
-	};
+    };
 };
 
 
@@ -141,6 +160,12 @@ with{
 // * `grav`: gravity force value
 // * `x0`: initial position
 // * `xr0`: initial delayed position (inferred from initial velocity)
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// oscil_test = 0 : mi.oscil(1.0, 0.5, 0.1, 0.0, 0.0, 0.0);
+// ```
 //---------------------------------------------------------
 oscil(m, k, z, grav, x0, x1) = equation
 with{
@@ -148,9 +173,9 @@ with{
   B = z/m - 1;
   C = 1/m;
   equation = x
-	letrec{
+    letrec{
     'x = A*(x : initState(x0)) + B*(x' : initState((x1, x0))) + (_-grav)*(C);
-	};
+    };
 };
 
 
@@ -169,15 +194,21 @@ with{
 // Where:
 //
 // * `x0`: initial position
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// ground_test = 0 : mi.ground(0.0);
+// ```
 //---------------------------------------------------------
 ground(x0) = equation
 with{
   // could this term be removed or simlified? Need "unused" input force signal for the routing scheme to work
   C = 0;
   equation = x 
-	letrec{
-		'x = (x : initState(x0)) + *(C);
-	};
+    letrec{
+        'x = (x : initState(x0)) + *(C);
+    };
 };
 
 
@@ -195,6 +226,13 @@ with{
 // Where:
 //
 // * `x0`: initial position
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// os = library("oscillators.lib");
+// posInput_test = 0, os.osc(1) : mi.posInput(0.0);
+// ```
 //---------------------------------------------------------
 posInput(init) = _,_ : !,_ : initState(init);
 
@@ -222,6 +260,12 @@ posInput(init) = _,_ : !,_ : initState(init);
 // * `k`: stiffness value
 // * `x1r`: initial delayed position of mass 1 (unused here)
 // * `x2r`: initial delayed position of mass 2 (unused here)
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// spring_test = mi.spring(10.0, 0.0, 0.0, 0.1, -0.1);
+// ```
 //---------------------------------------------------------
 spring(k, x1r0, x2r0, x1, x2) = 
   k*deltapos <: *(-1),_
@@ -246,6 +290,12 @@ with{
 // * `z`: damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// damper_test = mi.damper(0.5, 0.0, 0.0, 0.2, -0.2);
+// ```
 //---------------------------------------------------------
 damper(z, x1r0, x2r0, x1, x2) = 
   z*deltavel <: *(-1),_
@@ -270,6 +320,12 @@ with{
 // * `z`: damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// springDamper_test = mi.springDamper(5.0, 0.3, 0.0, 0.0, 0.1, -0.1);
+// ```
 //---------------------------------------------------------
 springDamper(k, z, x1r0, x2r0, x1, x2) = 
   k*deltapos + 
@@ -299,6 +355,12 @@ with{
 // * `z`: damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlSpringDamper2_test = mi.nlSpringDamper2(5.0, 1.0, 0.2, 0.0, 0.0, 0.1, -0.1);
+// ```
 //---------------------------------------------------------
 nlSpringDamper2(k, q, z, x1r0, x2r0, x1, x2) =
   k*deltapos + q * ma.signum(deltapos) * pow(deltapos, 2) +
@@ -328,6 +390,12 @@ with{
 // * `z`: damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlSpringDamper3_test = mi.nlSpringDamper3(5.0, 0.5, 0.2, 0.0, 0.0, 0.1, -0.1);
+// ```
 //---------------------------------------------------------
 nlSpringDamper3(k, q, z, x1r0, x2r0, x1, x2) =
   k*deltapos + q * pow(deltapos, 3) +
@@ -365,6 +433,12 @@ with{
 // * `z`: (linear) damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlSpringDamperClipped_test = mi.nlSpringDamperClipped(5.0, 0.5, 8.0, 0.2, 0.0, 0.0, 0.1, -0.1);
+// ```
 //---------------------------------------------------------
 nlSpringDamperClipped(s, c, k, z, x1r0, x2r0, x1, x2) =
     select2(c == 0,
@@ -408,16 +482,22 @@ with{
 // * `z`: (linear) damping value
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlPluck_test = mi.nlPluck(5.0, 0.1, 0.2, 0.0, 0.0, 0.05, -0.05);
+// ```
 //---------------------------------------------------------
 nlPluck(k, scale, z, x1r0, x2r0, x1, x2) = 
   select2(absdeltapos < tipdist,
     select2(absdeltapos < scale,
-	  		0,
-	  		ma.signum(deltapos)* -tipdist * k + Kend * deltapos + 
+            0,
+            ma.signum(deltapos)* -tipdist * k + Kend * deltapos + 
               z* deltavel
-	  		),
-	(k - Kend) * -deltapos + z* deltavel
-	) <:  *(-1),_
+           ),
+    (k - Kend) * -deltapos + z* deltavel
+    ) <:  *(-1),_
 with{
   deltapos = x1 - x2;
   deltavel = (x1 - x1' : initState(x1r0)) - (x2 - x2' : initState(x2r0));
@@ -450,16 +530,22 @@ with{
 // * `type`: interaction profile (0 = piecewise linear, 1 = smooth function)
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlBow_test = mi.nlBow(0.5, 0.1, 1.0, 0.0, 0.0, 0.05, -0.05);
+// ```
 //---------------------------------------------------------
 nlBow(z, scale, type, x1r0, x2r0, x1, x2) =
   select2(type > 0,
     select2(absdeltavel < tipvel,
         select2(absdeltavel < scale,
-	  		0,
-	  		ma.signum(deltavel)* tipvel * z - Zend * deltavel
-	  		),
-	    (z - Zend) * deltavel
-	),
+           0,
+           ma.signum(deltavel)* tipvel * z - Zend * deltavel
+           ),
+        (z - Zend) * deltavel
+    ),
     0.63 * z * deltavel *exp(-4*pow(deltavel/scale, 2) + 1/2)
   )
    <:  *(-1),_
@@ -490,6 +576,12 @@ with{
 // * `thres`: threshold distance for the contact between elements
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// collision_test = mi.collision(5.0, 0.2, 0.01, 0.0, 0.0, 0.0, -0.02);
+// ```
 //---------------------------------------------------------
 collision(k,z,thres,x1r0,x2r0,x1,x2) = 
   springDamper(k,z,x1r0,x2r0,x1+thres,x2) : (select2(comp,0,_),select2(comp,0,_))
@@ -520,6 +612,12 @@ with{
 // * `thres`: threshold distance for the contact between elements
 // * `x1r`: initial delayed position of mass 1
 // * `x2r`: initial delayed position of mass 2
+//
+// #### Test
+// ```
+// mi = library("mi.lib");
+// nlCollisionClipped_test = mi.nlCollisionClipped(3.0, 0.5, 6.0, 0.2, 0.01, 0.0, 0.0, 0.0, -0.02);
+// ```
 //---------------------------------------------------------
 nlCollisionClipped(s, c, k, z, thres, x1r0, x2r0, x1, x2) = 
   nlSpringDamperClipped(s,c,k,z,x1r0,x2r0,x1+thres,x2) : (select2(comp,0,_),select2(comp,0,_))

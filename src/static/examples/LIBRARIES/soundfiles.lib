@@ -1,7 +1,16 @@
-//#################################### soundfiles.lib ########################################
-// A library to handle soundfiles in Faust. Its official prefix is `so`.
+//################################ soundfiles.lib ##########################################
+// Soundfiles library. Its official prefix is `so`.
 //
+// This library provides functions and abstractions to read, write, and manage
+// audio files in Faust. It supports interpolation and looping controls for integration 
+// of recorded or pre-rendered audio in synthesis, effects, and compositional contexts.
+//
+// The Soundfiles library is organized into 1 section:
+//
+// * [Functions Reference](#functions-reference)
+// 
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/soundfiles.lib>
 //########################################################################################
 
@@ -108,6 +117,12 @@ super = environment {
 // * `sf`: the soundfile
 // * `part`: the part in the soundfile list of sounds
 //
+// #### Test
+// ```
+// so = library("soundfiles.lib");
+// sf = soundfile("sound[url:{'tests/assets/silence.wav'}]", 1);
+// loop_test = so.loop(sf, 0);
+// ```
 //-----------------------------------------------------------------------------
 
 loop(sf, part) = super.loop(sf, part);
@@ -128,6 +143,12 @@ loop(sf, part) = super.loop(sf, part);
 // * `part`: the part in the soundfile list of sounds
 // * `speed`: the speed between 0 and n
 //
+// #### Test
+// ```
+// so = library("soundfiles.lib");
+// sf = soundfile("sound[url:{'tests/assets/silence.wav'}]", 1);
+// loop_speed_test = so.loop_speed(sf, 0, hslider("loop_speed:speed", 1, 0, 2, 0.01));
+// ```
 //-----------------------------------------------------------------------------
 
 loop_speed(sf, part, speed) = super.loop_speed(sf, part, speed);
@@ -149,6 +170,17 @@ loop_speed(sf, part, speed) = super.loop_speed(sf, part, speed);
 // * `speed`: the speed between 0 and n
 // * `level`: the volume between 0 and n
 //
+// #### Test
+// ```
+// so = library("soundfiles.lib");
+// sf = soundfile("sound[url:{'tests/assets/silence.wav'}]", 1);
+// loop_speed_level_test = so.loop_speed_level(
+//     sf,
+//     0,
+//     hslider("loop_speed_level:speed", 1, 0, 2, 0.01),
+//     hslider("loop_speed_level:level", 0.5, 0, 1, 0.01)
+// );
+// ```
 //-----------------------------------------------------------------------------
 
 loop_speed_level(sf, part, speed, level) = super.loop_speed_level(sf, part, speed, level);
@@ -184,12 +216,12 @@ sound(sf, part) = environment {
     play_alt(level, gate, ctrl) = super.player(sf, part, altN(lramp, ctrl), level)
     with {
         // High-order function which alternate between 2 'readers' depending of the 'ctrl' signal
-       	alt2(r1, r2, ctrl) = \(sf, part).(ba.selectmulti(ma.SR/100, lr, ctrl) with { lr = r1(sf, part), r2(sf, part); });
+        alt2(r1, r2, ctrl) = \(sf, part).(ba.selectmulti(ma.SR/100, lr, ctrl) with { lr = r1(sf, part), r2(sf, part); });
         
         altN(lrs, ctrl) = \(sf, part).(ba.selectmulti(ma.SR/100, mapper(lrs), ctrl) 
         with { 
-        	mapper((xs, xxs)) = xs(sf, part), mapper(xxs); 
-        	mapper(xs) = xs(sf, part); 
+            mapper((xs, xxs)) = xs(sf, part), mapper(xxs); 
+            mapper(xs) = xs(sf, part); 
         });
         
         step = super.srate(sf, part)/ma.SR;
@@ -201,7 +233,7 @@ sound(sf, part) = environment {
     };
 
 }; // End of environment
-							  
+                              
 /*
 // Using the `sound` environment allocated with a given `sf` and `part`
 

@@ -1,7 +1,15 @@
-//#################################### phaflangers.lib ########################################
-// A library of phasor and flanger effects. Its official prefix is `pf`.
+//################################ phaflangers.lib ##########################################
+// Phasers and Flangers library. Its official prefix is `pf`.
 //
+// This library provides a set of phaser and flanger effects based on delay-line
+// modulation. 
+//
+// The Phaflangers library is organized into 1 section:
+//
+// * [Functions Reference](#functions-reference)
+// 
 // #### References
+//
 // * <https://github.com/grame-cncm/faustlibraries/blob/master/phaflangers.lib>
 //########################################################################################
 
@@ -49,9 +57,16 @@ Michon and Julius O. Smith III, and are released under the
 // * `fb`: feedback gain between 0 and 1 (0 typical)
 // * `invert`: 0 for normal, 1 to invert sign of flanging sum
 //
-// #### Reference
+// #### Test
+// ```
+// pf = library("phaflangers.lib");
+// os = library("oscillators.lib");
+// flanger_mono_test = os.osc(440) : pf.flanger_mono(4096, 1024, 0.7, 0.25, 0);
+// ```
 //
-// <https://ccrma.stanford.edu/~jos/pasp/Flanging.html>
+// #### References
+//
+// * <https://ccrma.stanford.edu/~jos/pasp/Flanging.html>
 //------------------------------------------------------------
 flanger_mono(dmax,curdel,depth,fb,invert)
   = _ <: _, (- : de.fdelay(dmax,curdel)) ~ *(fb) : _,
@@ -77,9 +92,16 @@ flanger_mono(dmax,curdel,depth,fb,invert)
 // * `fb`: feedback gain between 0 and 1 (0 typical)
 // * `invert`: 0 for normal, 1 to invert sign of flanging sum
 //
-// #### Reference
+// #### Test
+// ```
+// pf = library("phaflangers.lib");
+// os = library("oscillators.lib");
+// flanger_stereo_test = os.osc(440), os.osc(660) : pf.flanger_stereo(4096, 1024, 1536, 0.7, 0.25, 0);
+// ```
 //
-// <https://ccrma.stanford.edu/~jos/pasp/Flanging.html>
+// #### References      
+//
+// * <https://ccrma.stanford.edu/~jos/pasp/Flanging.html>
 //------------------------------------------------------------
 flanger_stereo(dmax,curdel1,curdel2,depth,fb,invert)
   =  flanger_mono(dmax,curdel1,depth,fb,invert),
@@ -131,12 +153,19 @@ with {
 // * `fb`: feedback gain between -1 and 1 (0 typical)
 // * `invert`: 0 for normal, 1 to invert sign of flanging sum
 //
-// Reference:
+// #### Test
+// ```
+// pf = library("phaflangers.lib");
+// os = library("oscillators.lib");
+// phaser2_mono_test = os.osc(330) : pf.phaser2_mono(4, 0.0, 50, 200, 1.5, 4000, 0.5, 0.8, 0.2, 0);
+// ```
+//
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Phasing.html>
 // * <http://www.geofex.com/Article_Folders/phasers/phase.html>
 // * 'An Allpass Approach to Digital Phasing and Flanging', Julius O. Smith III,
-//		Proc. Int. Computer Music Conf. (ICMC-84), pp. 103-109, Paris, 1984.
+//   Proc. Int. Computer Music Conf. (ICMC-84), pp. 103-109, Paris, 1984.
 // * CCRMA Tech. Report STAN-M-21: <https://ccrma.stanford.edu/STANM/stanms/stanm21/>
 //------------------------------------------------------------
 phaser2_mono(Notches,phase01,width,frqmin,fratio,frqmax,speed,depth,fb,invert) =
@@ -171,12 +200,19 @@ with {               // depth=0 => direct-signal only
 // * `fb`: feedback gain between -1 and 1 (0 typical)
 // * `invert`: 0 for normal, 1 to invert sign of flanging sum
 //
-// Reference:
+// #### Test
+// ```
+// pf = library("phaflangers.lib");
+// os = library("oscillators.lib");
+// phaser2_stereo_test = os.osc(220), os.osc(330) : pf.phaser2_stereo(4, 50, 200, 1.5, 4000, 0.5, 0.8, 0.2, 0);
+// ```
+//
+// #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/Phasing.html>
 // * <http://www.geofex.com/Article_Folders/phasers/phase.html>
 // * 'An Allpass Approach to Digital Phasing and Flanging', Julius O. Smith III,
-//		Proc. Int. Computer Music Conf. (ICMC-84), pp. 103-109, Paris, 1984.
+//    Proc. Int. Computer Music Conf. (ICMC-84), pp. 103-109, Paris, 1984.
 // * CCRMA Tech. Report STAN-M-21: <https://ccrma.stanford.edu/STANM/stanms/stanm21/>
 //------------------------------------------------------------
 phaser2_stereo(Notches,width,frqmin,fratio,frqmax,speed,depth,fb,invert)
