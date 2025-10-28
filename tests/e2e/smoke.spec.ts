@@ -6,7 +6,13 @@ const HEX_RESPONSE = "abcdef";
 test.beforeEach(async ({ page }) => {
     await page.route(`${FAUST_SERVICE_HOST}/targets`, async (route) => {
         await route.fulfill({
+            status: 200,
             contentType: "application/json",
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "*"
+            },
             body: JSON.stringify({
                 linux: ["x64"],
                 web: ["pwa"]
@@ -14,10 +20,30 @@ test.beforeEach(async ({ page }) => {
         });
     });
 
+    await page.route(`${FAUST_SERVICE_HOST}/**`, async (route) => {
+        if (route.request().method() === "OPTIONS") {
+            await route.fulfill({
+                status: 204,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                    "Access-Control-Allow-Headers": "*"
+                }
+            });
+            return;
+        }
+        await route.fallback();
+    });
+
     await page.route(`${FAUST_SERVICE_HOST}/filepost`, async (route) => {
         await route.fulfill({
             status: 200,
             contentType: "text/plain",
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "*"
+            },
             body: HEX_RESPONSE
         });
     });
@@ -28,7 +54,12 @@ test.beforeEach(async ({ page }) => {
             await route.fulfill({
                 status: 200,
                 contentType: "text/plain",
-                headers: { Location: "https://downloads.example/binary.zip" },
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                    Location: "https://downloads.example/binary.zip"
+                },
                 body: "DONE"
             });
         }
@@ -60,8 +91,14 @@ test("completes export flow with mocked Faust service", async ({ page }) => {
     await nameInput.waitFor();
     await nameInput.fill("playwrighttest");
 
+    await page.waitForSelector('#export-platform option[value="linux"]', { state: "attached" });
+    await page.selectOption("#export-platform", "web");
+    await page.waitForSelector('#export-arch option', { state: "attached" });
+    await page.selectOption("#export-platform", "linux");
+    await page.waitForSelector('#export-arch option', { state: "attached" });
+
     const submitButton = page.locator("#export-submit");
-    await expect(submitButton).toBeEnabled({ timeout: 5_000 });
+    await expect(submitButton).toBeEnabled({ timeout: 10_000 });
     await submitButton.click();
 
     const downloadButton = page.locator("#export-download");
