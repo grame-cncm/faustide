@@ -131,3 +131,38 @@ test("opens and closes the Share modal", async ({ page }) => {
     await closeBtn.click();
     await expect(shareModal).toBeHidden();
 });
+
+test("toggles left and right panels", async ({ page }) => {
+    await page.goto("/");
+
+    const leftPanel = page.locator("#left");
+    const rightPanel = page.locator("#right");
+
+    const toggleLeft = page.locator(".btn-show-left");
+    const toggleRight = page.locator(".btn-show-right");
+
+    await toggleLeft.click();
+    await expect(leftPanel).toBeHidden();
+    await toggleLeft.click();
+    await expect(leftPanel).toBeVisible();
+
+    await toggleRight.click();
+    await expect(rightPanel).toBeHidden();
+    await toggleRight.click();
+    await expect(rightPanel).toBeVisible();
+});
+
+test("renames the main DSP file", async ({ page }) => {
+    await page.goto("/");
+
+    const firstFile = page.locator("#filemanager .filemanager-file").first();
+    await firstFile.locator(".filemanager-btn-rename").click();
+
+    const nameSpan = firstFile.locator(".filemanager-filename");
+    await nameSpan.click();
+    await nameSpan.fill("testrename.dsp");
+    await page.keyboard.press("Enter");
+
+    await expect(firstFile).toContainText("testrename.dsp");
+    await expect(firstFile).toHaveClass(/selected/);
+});
