@@ -35,6 +35,7 @@ import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
 import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
 import { safeStorage } from "./utils";
+import { submitFaustExport } from "./runtime/exportService";
 
 declare global {
     interface Window {
@@ -901,8 +902,9 @@ $(async () => {
         $("#def-exp-loading").css("display", "inline-block");
         $("#qr-code").hide();
         $("#export-error").hide();
-        const form = new FormData();
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
+        const platform = $("#export-platform").val() as string;
+        const arch = $("#export-arch").val() as string;
         try {
             // ZIP mode
             const zip = new JSZip();
@@ -919,81 +921,30 @@ $(async () => {
             // Add the currently selected .dsp file in the ZIP
             zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
             // Send the ZIP file
-            const b = await zip.generateAsync({ type: "blob" });
-            form.append("file", new File([b], `${name}.zip`));
+            const zipBlob = await zip.generateAsync({ type: "blob" });
+            const result = await submitFaustExport({
+                server,
+                fileName: name,
+                platform,
+                arch,
+                zipBlob
+            });
+            $("#a-export-download").attr({ href: result.href });
+            $("#export-download").show();
+            if (download === true) $("#export-download").click();
+            $("#qr-code").show();
+            QRCode.toCanvas($<HTMLCanvasElement>("#qr-code")[0], result.href);
         } catch (e) {
             $("#export-loading").css("display", "none");
             $("#def-exp-loading").css("display", "none");
             $("#def-exp-icon").show();
-            $("#export-error").html(e).show();
+            const message = e instanceof Error ? e.message : typeof e === "string" ? e : "Export failed";
+            $("#export-error").html(message).show();
             return;
         }
-        $.ajax({
-            method: "POST",
-            url: `${server}/filepost`,
-            data: form,
-            contentType: false,
-            processData: false
-        }).done((shaKey) => {
-            const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-            if (matched) {
-                const plat = $("#export-platform").val();
-                let arch = $("#export-arch").val();
-                let target;
-                // Check the different possible targets
-                if (arch === "pwa" || arch === "pwa-poly") {
-                    target = "index.html";
-                } else if (plat === "chaos-stratus" && arch === "effect-installer") {
-                    target = "installer.sh"
-                } else if (plat === "android") {
-                    target = "binary.apk";
-                } else {
-                    target = "binary.zip";
-                }
-                const path = `${server}/${shaKey}/${plat}/${arch}`;
-                const href = `${server}/${shaKey}/${plat}/${arch}/${target}`;
-                $.ajax({
-                    method: "GET",
-                    url: `${path}/precompile`
-                }).done((result, status, jqXHR) => {
-                    if (result === "DONE") {
-                        // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
-                        const location = jqXHR.getResponseHeader("Location");
-                        $("#a-export-download").attr({ href });
-                        $("#export-download").show();
-                        if (download === true) {
-                            $("#export-download").click();
-                        }
-                        $("#qr-code").show();
-                        QRCode.toCanvas(
-                            $<HTMLCanvasElement>("#qr-code")[0],
-                            href
-                        );
-                        return;
-                    }
-                    $("#export-loading").css("display", "none");
-                    $("#def-exp-loading").css("display", "none");
-                    $("#def-exp-icon").show();
-                    $("#export-error").html(result).show();
-                }).fail((jqXHR, textStatus) => {
-                    $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                }).always(() => {
-                    $("#export-loading").css("display", "none");
-                    $("#def-exp-loading").css("display", "none");
-                    $("#def-exp-icon").show();
-                });
-                return;
-            }
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
-            $("#export-error").html(shaKey).show();
-        }).fail((jqXHR, textStatus) => {
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
-            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-        });
+        $("#export-loading").css("display", "none");
+        $("#def-exp-loading").css("display", "none");
+        $("#def-exp-icon").show();
     };
     const getTargets = async (server: string) => {
         $("#export-platform").add("#export-arch").empty();
