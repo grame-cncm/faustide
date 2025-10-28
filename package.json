@@ -13,6 +13,9 @@
     "test-eslint": "eslint -c .eslintrc.json src",
     "test-stylelint": "stylelint src/**/*.scss",
     "test": "run-s -s test-eslint test-stylelint",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "publish": "rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs",
     "version": "npm run build"
   },
