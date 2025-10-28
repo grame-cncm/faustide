@@ -135,31 +135,53 @@ test("opens and closes the Share modal", async ({ page }) => {
 test("toggles left and right panels", async ({ page }) => {
     await page.goto("/");
 
+    await page.waitForFunction(() => Boolean((window as any).faustEnv));
+
     const leftPanel = page.locator("#left");
     const rightPanel = page.locator("#right");
 
-    const toggleLeft = page.locator(".btn-show-left");
-    const toggleRight = page.locator(".btn-show-right");
+    const toggleLeft = page.locator(".btn-show-left").first();
+    const toggleRight = page.locator(".btn-show-right").first();
 
+    await expect(toggleLeft).toHaveClass(/active/);
     await toggleLeft.click();
-    await expect(leftPanel).toBeHidden();
+    await page.waitForFunction(() => {
+        const el = document.getElementById("left");
+        return el ? getComputedStyle(el).display === "none" : false;
+    });
     await toggleLeft.click();
-    await expect(leftPanel).toBeVisible();
+    await page.waitForFunction(() => {
+        const el = document.getElementById("left");
+        return el ? getComputedStyle(el).display !== "none" : false;
+    });
 
+    await expect(toggleRight).toHaveClass(/active/);
     await toggleRight.click();
-    await expect(rightPanel).toBeHidden();
+    await page.waitForFunction(() => {
+        const el = document.getElementById("right");
+        return el ? getComputedStyle(el).display === "none" : false;
+    });
     await toggleRight.click();
-    await expect(rightPanel).toBeVisible();
+    await page.waitForFunction(() => {
+        const el = document.getElementById("right");
+        return el ? getComputedStyle(el).display !== "none" : false;
+    });
 });
 
 test("renames the main DSP file", async ({ page }) => {
     await page.goto("/");
 
+    await page.waitForFunction(() => Boolean((window as any).faustEnv?.uiEnv?.fileManager));
+
     const firstFile = page.locator("#filemanager .filemanager-file").first();
-    await firstFile.locator(".filemanager-btn-rename").click();
+    await firstFile.hover();
+
+    const renameButton = firstFile.locator(".filemanager-btn-rename");
+    await renameButton.waitFor({ state: "visible" });
+    await renameButton.click();
 
     const nameSpan = firstFile.locator(".filemanager-filename");
-    await nameSpan.click();
+    await expect(nameSpan).toHaveAttribute("contenteditable", "true");
     await nameSpan.fill("testrename.dsp");
     await page.keyboard.press("Enter");
 
