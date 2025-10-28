@@ -66,6 +66,7 @@ Each test mounts minimal HTML snippets and uses Testing Library queries, keeping
      ```
      pnpm add -D vitest @vitest/coverage-v8 jsdom @testing-library/dom @testing-library/user-event @testing-library/jest-dom @types/testing-library__jest-dom web-audio-test-api fake-indexeddb msw whatwg-fetch @playwright/test playwright
      ```
+   - When using npm with the current TypeScript 3.9 baseline, append `--legacy-peer-deps` so MSW’s optional TypeScript ≥4.8 peer dependency does not block installation.
 3. **Create configuration scaffold**
    - Add `vitest.config.ts` with:
      - `environment: "jsdom"`.
