@@ -16,6 +16,7 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:e2e": "npx playwright test",
     "publish": "rm -rf docs/* && git checkout docs/CNAME && cp -r dist/* docs",
     "version": "npm run build"
   },
