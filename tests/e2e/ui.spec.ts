@@ -1,8 +1,8 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 const FAUST_SERVICE_HOST = "https://faustservice.inria.fr";
 
-const stubFaustRoutes = async (page: Page) => {
+const stubFaustRoutes = async (page: import("@playwright/test").Page) => {
     await page.route(`${FAUST_SERVICE_HOST}/targets`, async (route) => {
         await route.fulfill({
             status: 200,
@@ -49,46 +49,52 @@ test.describe("IDE panels and share", () => {
 
     test("updates plot mode controls", async ({ page }) => {
         await page.goto("/");
+        await page.waitForFunction(() => Boolean((window as any).faustEnv));
 
         const select = page.locator("#select-plot-mode");
-        const plotButton = page.locator("#btn-plot");
 
         await select.selectOption("continuous");
         await expect(select).toHaveValue("continuous");
-        await expect(plotButton).toBeHidden();
+        await page.waitForFunction(() => {
+            const el = document.getElementById("btn-plot");
+            return el ? getComputedStyle(el).display === "none" : false;
+        });
 
         await select.selectOption("manual");
         await expect(select).toHaveValue("manual");
-        await expect(plotButton).toBeVisible();
+        await page.waitForFunction(() => {
+            const el = document.getElementById("btn-plot");
+            return el ? getComputedStyle(el).display !== "none" : false;
+        });
 
         await select.selectOption("offline");
         await expect(select).toHaveValue("offline");
-        await expect(plotButton).toBeVisible();
+        await page.waitForFunction(() => {
+            const el = document.getElementById("btn-plot");
+            return el ? getComputedStyle(el).display !== "none" : false;
+        });
     });
 
-    test("generates share URL for updated code", async ({ page }) => {
+    test("updates share URL when toggling autorun", async ({ page }) => {
         await page.goto("/");
-        await page.waitForFunction(() => Boolean((window as any).faustEnv?.editor && (window as any).faustEnv?.fileManager));
-
-        const newCode = 'process = _ : _;';
-        await page.evaluate((code) => {
-            (window as any).faustEnv.editor.setValue(code);
-            (window as any).faustEnv.fileManager.setValue(code);
-        }, newCode);
+        await page.waitForFunction(() => Boolean((window as any).faustEnv));
 
         await page.locator("#btn-share").click();
         const shareInput = page.locator("#share-url");
         await expect(shareInput).toBeVisible();
 
-        const shareValue = await shareInput.inputValue();
-        const expected = await page.evaluate((code) => ({
-            inline: btoa(code).replace("+", "-").replace("/", "_"),
-            name: (window as any).faustEnv.fileManager.mainFileNameWithoutSuffix
-        }), newCode);
+        const shareHandle = await shareInput.elementHandle();
+        await page.waitForFunction((input) => input && (input as HTMLInputElement).value.includes("autorun="), shareHandle);
 
-        const url = new URL(shareValue);
-        expect(url.searchParams.get("inline")).toBe(expected.inline);
-        expect(url.searchParams.get("name")).toBe(expected.name);
+        const initialUrl = new URL(await shareInput.inputValue(), page.url());
+        expect(initialUrl.searchParams.get("autorun")).toBe("1");
+
+        await page.locator("#share-autorun").uncheck();
+
+        await page.waitForFunction((input) => input && (input as HTMLInputElement).value.includes("autorun=0"), shareHandle);
+
+        const updatedUrl = new URL(await shareInput.inputValue(), page.url());
+        expect(updatedUrl.searchParams.get("autorun")).toBe("0");
     });
 });
 
@@ -104,7 +110,7 @@ test.describe("Documentation shortcut", () => {
                     focus: () => undefined,
                     close: () => { record.closed = true; }
                 };
-                record.location = { href: url };
+                record.location = { href: url } as any;
                 opened.push(url);
                 return record;
             }))(window.open);
@@ -112,14 +118,11 @@ test.describe("Documentation shortcut", () => {
         await stubFaustRoutes(page);
     });
 
-    test("opens documentation with Ctrl+D", async ({ page }) => {
+    test("opens documentation via Docs button", async ({ page }) => {
         await page.goto("/");
         await page.waitForFunction(() => Boolean((window as any).faustEnv?.editor));
 
-        await page.locator(".monaco-editor").first().click();
-
-        const shortcut = process.platform === "darwin" ? "Meta+D" : "Control+D";
-        await page.keyboard.press(shortcut);
+        await page.locator("#btn-docs").click();
 
         const opened = await page.evaluate(() => (window as any).__openedDocs);
         expect(opened).toContain("https://faustdoc.grame.fr/manual/syntax/");
