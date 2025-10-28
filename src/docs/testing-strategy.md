@@ -52,6 +52,7 @@ Each test mounts minimal HTML snippets and uses Testing Library queries, keeping
 - Popup window workflows (DSP UI pop-out, cross-window `postMessage` synchronisation) under real browser popup-blocker behaviour.
 - Full export and QR-code flows against the production Faust service, including large project uploads and server-side errors.
 - Responsive layout, drag-and-drop interactions, accessibility affordances, and keyboard shortcuts in real browsers and assistive technologies.
+- See `docs/manual-testing.md` for the detailed release checklist.
 
 ## Setup Steps
 1. **Verify prerequisites**
