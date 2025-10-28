@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 const FAUST_SERVICE_HOST = "https://faustservice.inria.fr";
+const HEX_RESPONSE = "abcdef";
 
 test.beforeEach(async ({ page }) => {
     await page.route(`${FAUST_SERVICE_HOST}/targets`, async (route) => {
@@ -13,14 +14,25 @@ test.beforeEach(async ({ page }) => {
         });
     });
 
-    await page.route(new RegExp(`${FAUST_SERVICE_HOST.replace(/\./g, "\\.")}/.*`), async (route) => {
-        const url = route.request().url();
-        if (url.endsWith("/precompile")) {
-            await route.fulfill({ status: 200, body: "DONE" });
-            return;
-        }
-        await route.fulfill({ status: 200, body: "OK" });
+    await page.route(`${FAUST_SERVICE_HOST}/filepost`, async (route) => {
+        await route.fulfill({
+            status: 200,
+            contentType: "text/plain",
+            body: HEX_RESPONSE
+        });
     });
+
+    await page.route(
+        new RegExp(`${FAUST_SERVICE_HOST.replace(/\./g, "\\.")}/${HEX_RESPONSE}/[^/]+/[^/]+/precompile$`),
+        async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "text/plain",
+                headers: { Location: "https://downloads.example/binary.zip" },
+                body: "DONE"
+            });
+        }
+    );
 });
 
 test("renders core IDE panels", async ({ page }) => {
@@ -35,4 +47,26 @@ test("renders core IDE panels", async ({ page }) => {
 
     await expect(page.locator("#btn-export")).toBeVisible();
     await expect(page.locator("#btn-share")).toBeVisible();
+});
+
+test("completes export flow with mocked Faust service", async ({ page }) => {
+    await page.goto("/");
+
+    await page.locator("#btn-export").click();
+    const modal = page.locator("#modal-export.show");
+    await expect(modal).toBeVisible();
+
+    const nameInput = page.locator("#export-name");
+    await nameInput.waitFor();
+    await nameInput.fill("playwrighttest");
+
+    const submitButton = page.locator("#export-submit");
+    await expect(submitButton).toBeEnabled({ timeout: 5_000 });
+    await submitButton.click();
+
+    const downloadButton = page.locator("#export-download");
+    await expect(downloadButton).toBeVisible();
+    await expect(downloadButton.locator("a, #a-export-download")).toHaveAttribute("href", new RegExp(HEX_RESPONSE));
+
+    await expect(page.locator("#qr-code")).toBeVisible();
 });
