@@ -2,7 +2,9 @@ import { test, expect } from "@playwright/test";
 
 const FAUST_SERVICE_HOST = "https://faustservice.inria.fr";
 
-const stubFaustRoutes = async (page: import("@playwright/test").Page) => {
+type Page = import("@playwright/test").Page;
+
+const stubFaustRoutes = async (page: Page) => {
     await page.route(`${FAUST_SERVICE_HOST}/targets`, async (route) => {
         await route.fulfill({
             status: 200,
@@ -10,21 +12,7 @@ const stubFaustRoutes = async (page: import("@playwright/test").Page) => {
             body: JSON.stringify({ linux: ["x64"], web: ["pwa"] })
         });
     });
-
-    await page.route(`${FAUST_SERVICE_HOST}/**`, async (route) => {
-        if (route.request().method() === "OPTIONS") {
-            await route.fulfill({
-                status: 204,
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-                    "Access-Control-Allow-Headers": "*"
-                }
-            });
-            return;
-        }
-        await route.fallback();
-    });
+    await page.route(`${FAUST_SERVICE_HOST}/**`, route => route.fallback());
 };
 
 test.describe("IDE panels and share", () => {
@@ -90,11 +78,31 @@ test.describe("IDE panels and share", () => {
         expect(initialUrl.searchParams.get("autorun")).toBe("1");
 
         await page.locator("#share-autorun").uncheck();
-
         await page.waitForFunction((input) => input && (input as HTMLInputElement).value.includes("autorun=0"), shareHandle);
 
         const updatedUrl = new URL(await shareInput.inputValue(), page.url());
         expect(updatedUrl.searchParams.get("autorun")).toBe("0");
+    });
+
+    test("encodes updated code in share URL", async ({ page }) => {
+        await page.goto("/");
+        await page.waitForFunction(() => Boolean((window as any).faustEnv?.editor && (window as any).faustEnv?.uiEnv?.fileManager));
+
+        const code = "process = _ : _;";
+        await page.evaluate((newCode) => {
+            const env = (window as any).faustEnv;
+            env.editor.setValue(newCode);
+            env.uiEnv.fileManager.setValue(newCode);
+        }, code);
+
+        await page.locator("#btn-share").click();
+        const shareInput = page.locator("#share-url");
+        const handle = await shareInput.elementHandle();
+        await page.waitForFunction((input) => input && (input as HTMLInputElement).value.includes("inline="), handle);
+
+        const shareUrl = new URL(await shareInput.inputValue(), page.url());
+        const expectedInline = btoa(code).replace(/\+/g, "-").replace(/\//g, "_");
+        expect(shareUrl.searchParams.get("inline")).toBe(expectedInline);
     });
 });
 

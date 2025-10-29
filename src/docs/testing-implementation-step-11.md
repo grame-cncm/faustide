@@ -9,7 +9,7 @@ Broaden Playwright coverage with low-effort IDE scenarios (tabs, plot options, s
 - Added `tests/e2e/ui.spec.ts` containing:
   - Diagram/plot tab switching assertions.
   - Plot-mode selector checks that the plot button hides/shows appropriately via computed styles.
-  - Share modal autorun toggle verification (updates query parameters).
+  - Share modal tests covering autorun toggles and inline code encoding.
   - A documentation button test that stubs `window.open` and asserts both docs URLs open when clicking `Docs`.
 - Shared helper routine to stub Faust service responses in the new spec.
 
