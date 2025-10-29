@@ -1,6 +1,6 @@
 # Testing Implementation – Step 02
 
-Date: 2024-05-15
+Date: 2025-10-29
 
 ## Goal
 Install the core unit-testing toolchain and align TypeScript configuration so upcoming suites compile with Vitest.

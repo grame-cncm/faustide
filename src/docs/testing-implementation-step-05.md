@@ -1,6 +1,6 @@
 # Testing Implementation – Step 05
 
-Date: 2024-05-15
+Date: 2025-10-29
 
 ## Goal
 Decouple Faust service network logic from the jQuery-heavy runtime and make it testable with MSW-powered suites.

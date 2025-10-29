@@ -1,6 +1,6 @@
 # Testing Implementation – Step 09
 
-Date: 2024-05-15
+Date: 2025-10-29
 
 ## Goal
 Extend Playwright coverage to verify the export modal wiring against mocked Faust service responses.

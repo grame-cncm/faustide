@@ -1,6 +1,6 @@
 # Testing Implementation – Step 06
 
-Date: 2024-05-15
+Date: 2025-10-29
 
 ## Goal
 Resolve the MSW ↔︎ TypeScript compatibility gap so dependency installs remain predictable without upgrading the compiler yet.

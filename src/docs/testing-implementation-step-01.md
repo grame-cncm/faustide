@@ -1,6 +1,6 @@
 # Testing Implementation – Step 01
 
-Date: 2024-05-15
+Date: 2025-10-29
 
 ## Goal
 Introduce the baseline Vitest scaffolding so future suites share a consistent environment and mocks.
