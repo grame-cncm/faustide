@@ -245,11 +245,19 @@ $(async () => {
      * @param {string} code
      * @returns {{ success: boolean; error?: Error }}
      */
+    /**
+     * Generate the SVG diagram for the current DSP code.
+     *
+     * Mirrors the DSP compilation path so options such as `-double`
+     * stay consistent between audio rendering and the visual graph.
+     */
     const updateDiagram = (code: string): { success: boolean; error?: Error } => {
         let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
+        const args = compileOptions.args.slice();
+        if (compileOptions.useDouble) args.push("-double");
         try {
-            strSvg = faustSvgDiagrams.from("main", code, compileOptions.args.join(" "))["process.svg"];
+            strSvg = faustSvgDiagrams.from("main", code, args.join(" "))["process.svg"];
         } catch (e) {
             /**
              * Parse Faust-generated error message to locate the lines with error
@@ -669,6 +677,10 @@ $(async () => {
     $<HTMLInputElement>("#check-double").on("change", (e) => {
         compileOptions.useDouble = e.currentTarget.checked;
         saveEditorParams();
+        if (compileOptions.realtimeCompile) {
+            if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+            else updateDiagram(uiEnv.fileManager.mainCode);
+        }
     })[0].checked = compileOptions.useDouble;
     // Save Code
     $<HTMLInputElement>("#check-save-code").on("change", (e) => {
