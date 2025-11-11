@@ -98,6 +98,7 @@ let supportMediaStreamDestination = !!(window.AudioContext
 let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
+const BUFFER_SIZE_VALUES = [128, 256, 512, 1024, 2048, 4096] as const;
 
 $(async () => {
     const { setTimeout } = window;
@@ -496,7 +497,7 @@ $(async () => {
         fileManager: undefined
     };
     const compileOptions: FaustEditorCompileOptions = {
-        useWorklet: false,
+        useWorklet: supportAudioWorklet,
         useDouble: false,
         bufferSize: 1024,
         saveCode: true,
@@ -598,6 +599,34 @@ $(async () => {
     if (compileOptions.saveDsp) loadEditorDspTable();
 
     /**
+     * Toggle between AudioWorklet and ScriptProcessor execution.
+     *
+     * The checkbox used to control this, but the DSP badge on the right panel
+     * now serves as the sole toggle. This helper keeps the buffer-size UI,
+     * stored preferences, plotting window, and optional recompilation in sync.
+     *
+     * @param nextValue preferred worklet state as requested by the UI
+     * @param rerun when true (default) recompiles immediately if realtime mode
+     */
+    const applyUseWorkletMode = (nextValue: boolean, rerun = true) => {
+        const desired = supportAudioWorklet && nextValue;
+        const previous = compileOptions.useWorklet;
+        compileOptions.useWorklet = desired;
+        const $bufferSelect = $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
+        const $options = $bufferSelect.children("option");
+        $options.eq(0).prop("disabled", !compileOptions.useWorklet);
+        if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);
+        else {
+            const index = BUFFER_SIZE_VALUES.indexOf(compileOptions.bufferSize);
+            if (index !== -1) $options.eq(index).prop("selected", true);
+        }
+        if (desired !== previous) {
+            $("#input-plot-samps").change();
+            saveEditorParams();
+            if (rerun && compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
+        }
+    };
+    /**
      * Bind DOM events
      */
     // Alerts
@@ -636,19 +665,6 @@ $(async () => {
         saveEditorParams();
         if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
     });
-    // AudioWorklet
-    $<HTMLInputElement>("#check-worklet").on("change", (e) => {
-        compileOptions.useWorklet = e.currentTarget.checked;
-        const $options = $("#select-buffer-size").prop("disabled", true).children("option");
-        $options.eq(0).prop("disabled", !compileOptions.useWorklet);
-        $("#select-buffer-size").prop("disabled", !!compileOptions.useWorklet);
-        if (compileOptions.useWorklet) $options.eq(0).prop("selected", true);
-        else $options.eq([128, 256, 512, 1024, 2048, 4096].indexOf(compileOptions.bufferSize)).prop("selected", true);
-        $("#input-plot-samps").change();
-        saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-    });
-
     // Double
     $<HTMLInputElement>("#check-double").on("change", (e) => {
         compileOptions.useDouble = e.currentTarget.checked;
@@ -1349,8 +1365,7 @@ $(async () => {
     if (supportAudioWorklet) { // Switch between AW / SP nodes
         $("#dsp-ui-default").on("click", (e) => {
             if (!$(e.currentTarget).hasClass("switch")) return;
-            $<HTMLInputElement>("#check-worklet")[0].checked = !compileOptions.useWorklet;
-            $("#check-worklet").change();
+            applyUseWorkletMode(!compileOptions.useWorklet);
             if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
         });
     } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
@@ -1815,7 +1830,7 @@ $(async () => {
     await loadURLParams(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
-    if (supportAudioWorklet) $("#check-worklet").prop({ disabled: false, checked: true }).change();
+    applyUseWorkletMode(compileOptions.useWorklet, false);
     $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
     $("#select-plot-fftsize").children(`option[value=${compileOptions.plotFFT}]`).prop("selected", true).change();
     $("#select-plot-fftoverlap").children(`option[value=${compileOptions.plotFFTOverlap}]`).prop("selected", true).change();
