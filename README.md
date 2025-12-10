@@ -77,13 +77,17 @@ The _Diagram_ tab allows displaying the circuit SVG diagram. You can navigate in
 
 #### Soundfiles access
 
-The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) primitive can be used in the IDE. The audio files have to be accessed:
+The [soundfile](https://faustdoc.grame.fr/manual/syntax/#soundfile-primitive) primitive can be used in the IDE. Note that soundfile access may have to deal with the [CORS issue](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing). 
+
+The audio files have to be accessed:
 
 - by dropping all needed soundfiles in the *Project Files* section on the left, then directly accessing them in the DSP code 
 
 - by using a full URL like https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone/Gamelan_1_1_C_gauche.flac
 
 - by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax
+
+- Soundfiles hosted on GitHub can also be accessed through the jsDelivr CDN, which provides CORS-enabled URLs, starting with https://cdn.jsdelivr.net/gh/. Therefore, the previous files can also be delivered using the following base URL: declare soundfiles "https://cdn.jsdelivr.net/gh/grame-cncm/GameLAN/baliphone";"
 
 To access local audio files, a local server can be started:
 
