@@ -87,7 +87,7 @@ The audio files have to be accessed:
 
 - by defining the soundfile base URL folder with the `declare soundfiles "https://raw.githubusercontent.com/grame-cncm/GameLAN/master/baliphone";` metadata, then the actual audio file name in the code. See this [example](https://github.com/grame-cncm/GameLAN/blob/master/baliphone/baliphone.dsp). Several base URL can be listed with the `declare soundfiles "https://url1;https://url2;https://url3";` kind of syntax
 
-- Soundfiles hosted on GitHub can also be accessed through the jsDelivr CDN, which provides CORS-enabled URLs, starting with https://cdn.jsdelivr.net/gh/. Therefore, the previous files can also be delivered using the following base URL: declare soundfiles "https://cdn.jsdelivr.net/gh/grame-cncm/GameLAN/baliphone";"
+- Soundfiles hosted on GitHub can also be accessed through the jsDelivr CDN, which provides CORS-enabled URLs, starting with https://cdn.jsdelivr.net/gh/. Therefore, the previous files can also be delivered using the following base URL: `declare soundfiles "https://cdn.jsdelivr.net/gh/grame-cncm/GameLAN/baliphone";`.
 
 To access local audio files, a local server can be started:
 
