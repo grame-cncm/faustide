@@ -1,0 +1,578 @@
+//############################### debug.lib ############################################
+// Debug library. Its official prefix is `db`.
+//
+// This library provides UI-based debug probes for metering and diagnostics.
+// It includes RMS/Peak meters, dynamics probes, signal quality probes, and
+// simple band-energy meters.
+//
+// Debug probes can be compiled out by setting the `DEBUG` global to 0 via
+// explicit substitution (e.g. `db[DEBUG=0;].probe_rms_db(...)`).
+// CNE means constant numerical expression (known at compile time).
+//
+// The Debug library is organized into 6 sections:
+//
+// * [Level Probes](#level-probes)
+// * [Dynamics Probes](#dynamics-probes)
+// * [Signal Quality Probes](#signal-quality-probes)
+// * [Control Signal Probes](#control-signal-probes)
+// * [Spectral Probes](#spectral-probes)
+// * [Tap Utilities](#tap-utilities)
+//
+// #### References
+//
+// * <https://github.com/grame-cncm/faustlibraries/blob/master/debug.lib>
+//########################################################################################
+
+ma = library("maths.lib");
+ba = library("basics.lib");
+fi = library("filters.lib");
+an = library("analyzers.lib");
+si = library("signals.lib");
+
+db = library("debug.lib"); // for compatible copy/paste out of this file
+
+declare name "Faust Debug Library";
+declare version "0.2.0";
+
+// Global parameter to enable/disable debug probes.
+DEBUG = 1; // 0: bypass probes (identity), 1: enable probes
+
+//==============================Level Probes===============================================
+//========================================================================================
+
+//------------------`(db.)probe_rms_db`----------------------------------------
+// RMS level probe (dB). Bargraph includes `[unit:dB]`.
+//
+// #### Usage
+//
+// ```
+// _ : probe_rms_db(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_rms_db_test = db.probe_rms_db(0, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_rms_db_impl(0, id, hide, x) = x;
+probe_rms_db_impl(1, id, hide, x) = attach(x, an.rms_envelope_rect(0.1, x)
+  : max(0.00001) : ba.linear2db
+  : hbargraph("Probe RMS dB%2id[probe:%id][unit:dB][hidden:%hide]", -60, 0));
+probe_rms_db(id, hide, x) = probe_rms_db_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_rms_lin`---------------------------------------
+// RMS level probe (linear).
+//
+// #### Usage
+//
+// ```
+// _ : probe_rms_lin(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_rms_lin_test = db.probe_rms_lin(1, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_rms_lin_impl(0, id, hide, x) = x;
+probe_rms_lin_impl(1, id, hide, x) = attach(x, an.rms_envelope_rect(0.1, x)
+  : hbargraph("Probe RMS%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_rms_lin(id, hide, x) = probe_rms_lin_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_peak_db`---------------------------------------
+// Peak level probe (dB). Bargraph includes `[unit:dB]`.
+//
+// #### Usage
+//
+// ```
+// _ : probe_peak_db(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_peak_db_test = db.probe_peak_db(2, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_peak_db_impl(0, id, hide, x) = x;
+probe_peak_db_impl(1, id, hide, x) = attach(x, an.peak_envelope(0.1, x)
+  : max(0.00001) : ba.linear2db
+  : hbargraph("Probe Peak dB%2id[probe:%id][unit:dB][hidden:%hide]", -60, 0));
+probe_peak_db(id, hide, x) = probe_peak_db_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_peak_lin`--------------------------------------
+// Peak level probe (linear).
+//
+// #### Usage
+//
+// ```
+// _ : probe_peak_lin(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_peak_lin_test = db.probe_peak_lin(3, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_peak_lin_impl(0, id, hide, x) = x;
+probe_peak_lin_impl(1, id, hide, x) = attach(x, an.peak_envelope(0.1, x)
+  : hbargraph("Probe Peak%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_peak_lin(id, hide, x) = probe_peak_lin_impl(DEBUG, id, hide, x);
+
+//=============================Dynamics Probes============================================
+//========================================================================================
+
+//------------------`(db.)probe_crest_db`--------------------------------------
+// Crest factor probe (peak/rms ratio in dB).
+//
+// #### Usage
+//
+// ```
+// _ : probe_crest_db(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_crest_db_test = db.probe_crest_db(4, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_crest_db_impl(0, id, hide, x) = x;
+probe_crest_db_impl(1, id, hide, x) = attach(x,
+  (an.peak_envelope(0.1, x) / max(0.00001, an.rms_envelope_rect(0.1, x)))
+  : ba.linear2db
+  : hbargraph("Probe Crest%2id[probe:%id][unit:dB][hidden:%hide]", 0, 20));
+probe_crest_db(id, hide, x) = probe_crest_db_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_env`-------------------------------------------
+// Envelope follower probe (attack/release).
+//
+// #### Usage
+//
+// ```
+// _ : probe_env(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_env_test = db.probe_env(5, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_env_impl(0, id, hide, x) = x;
+probe_env_impl(1, id, hide, x) = attach(x,
+  an.amp_follower_ar(0.05, 0.2, x)
+  : hbargraph("Probe Env%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_env(id, hide, x) = probe_env_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_min`-------------------------------------------
+// Minimum-hold probe (inverted peak envelope).
+//
+// #### Usage
+//
+// ```
+// _ : probe_min(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_min_test = db.probe_min(6, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_min_impl(0, id, hide, x) = x;
+probe_min_impl(1, id, hide, x) = attach(x,
+  (x * -1) : an.peak_envelope(0.5) : (_ * -1)
+  : hbargraph("Probe Min%2id[probe:%id][hidden:%hide]", -2, 2));
+probe_min(id, hide, x) = probe_min_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_max`-------------------------------------------
+// Maximum-hold probe (slow peak envelope).
+//
+// #### Usage
+//
+// ```
+// _ : probe_max(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_max_test = db.probe_max(7, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_max_impl(0, id, hide, x) = x;
+probe_max_impl(1, id, hide, x) = attach(x,
+  an.peak_envelope(0.5, x)
+  : hbargraph("Probe Max%2id[probe:%id][hidden:%hide]", -2, 2));
+probe_max(id, hide, x) = probe_max_impl(DEBUG, id, hide, x);
+
+//===========================Signal Quality Probes========================================
+//========================================================================================
+
+//------------------`(db.)probe_dc`--------------------------------------------
+// DC offset probe (very lowpass).
+//
+// #### Usage
+//
+// ```
+// _ : probe_dc(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_dc_test = db.probe_dc(8, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_dc_impl(0, id, hide, x) = x;
+probe_dc_impl(1, id, hide, x) = attach(x,
+  fi.lowpass(1, 5, x)
+  : hbargraph("Probe DC%2id[probe:%id][hidden:%hide]", -1, 1));
+probe_dc(id, hide, x) = probe_dc_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_slew`------------------------------------------
+// Slew rate probe (RMS of signal derivative).
+//
+// #### Usage
+//
+// ```
+// _ : probe_slew(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_slew_test = db.probe_slew(9, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_slew_impl(0, id, hide, x) = x;
+probe_slew_impl(1, id, hide, x) = attach(x,
+  (x - x') : abs : an.rms_envelope_rect(0.05)
+  : hbargraph("Probe Slew%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_slew(id, hide, x) = probe_slew_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_zcr`-------------------------------------------
+// Zero-crossing rate probe (lowpassed).
+//
+// #### Usage
+//
+// ```
+// _ : probe_zcr(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_zcr_test = db.probe_zcr(10, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_zcr_impl(0, id, hide, x) = x;
+probe_zcr_impl(1, id, hide, x) = attach(x,
+  an.zcr(0.1, x)
+  : hbargraph("Probe ZCR%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_zcr(id, hide, x) = probe_zcr_impl(DEBUG, id, hide, x);
+
+//===========================Control Signal Probes========================================
+//========================================================================================
+
+//------------------`(db.)probe_value`-----------------------------------------
+// Raw value probe (no smoothing).
+//
+// #### Usage
+//
+// ```
+// _ : probe_value(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_value_test = db.probe_value(11, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_value_impl(0, id, hide, x) = x;
+probe_value_impl(1, id, hide, x) = attach(x,
+  x : hbargraph("Probe Val%2id[probe:%id][hidden:%hide]", -1, 1));
+probe_value(id, hide, x) = probe_value_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_bool`------------------------------------------
+// Boolean probe (gate/trigger state).
+//
+// #### Usage
+//
+// ```
+// _ : probe_bool(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_bool_test = db.probe_bool(12, 1, os.osc(220) > 0);
+// ```
+//-----------------------------------------------------------------------------
+probe_bool_impl(0, id, hide, x) = x;
+probe_bool_impl(1, id, hide, x) = attach(x,
+  x : hbargraph("Probe Bool%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_bool(id, hide, x) = probe_bool_impl(DEBUG, id, hide, x);
+
+//==============================Spectral Probes===========================================
+//========================================================================================
+
+//------------------`(db.)probe_band_lo`---------------------------------------
+// Low-band energy probe (<300 Hz).
+//
+// #### Usage
+//
+// ```
+// _ : probe_band_lo(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_band_lo_test = db.probe_band_lo(13, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_band_lo_impl(0, id, hide, x) = x;
+probe_band_lo_impl(1, id, hide, x) = attach(x,
+  fi.lowpass(2, 300, x) : an.rms_envelope_rect(0.1)
+  : hbargraph("Probe Lo%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_band_lo(id, hide, x) = probe_band_lo_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_band_mid`--------------------------------------
+// Mid-band energy probe (300 Hz - 3 kHz).
+//
+// #### Usage
+//
+// ```
+// _ : probe_band_mid(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_band_mid_test = db.probe_band_mid(14, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_band_mid_impl(0, id, hide, x) = x;
+probe_band_mid_impl(1, id, hide, x) = attach(x,
+  fi.bandpass(2, 300, 3000, x) : an.rms_envelope_rect(0.1)
+  : hbargraph("Probe Mid%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_band_mid(id, hide, x) = probe_band_mid_impl(DEBUG, id, hide, x);
+
+//------------------`(db.)probe_band_hi`---------------------------------------
+// High-band energy probe (>3 kHz).
+//
+// #### Usage
+//
+// ```
+// _ : probe_band_hi(ID, HIDE) : _
+// ```
+//
+// Where:
+//
+// * `ID`: (CNE) probe id integer used in `[probe:ID]`
+// * `HIDE`: (CNE) 0 to show, 1 to hide in UI
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// probe_band_hi_test = db.probe_band_hi(15, 1, os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_band_hi_impl(0, id, hide, x) = x;
+probe_band_hi_impl(1, id, hide, x) = attach(x,
+  fi.highpass(2, 3000, x) : an.rms_envelope_rect(0.1)
+  : hbargraph("Probe Hi%2id[probe:%id][hidden:%hide]", 0, 1));
+probe_band_hi(id, hide, x) = probe_band_hi_impl(DEBUG, id, hide, x);
+
+//==============================Tap Utilities===============================================
+//==========================================================================================
+
+//------------------`(db.)probe_tap`--------------------------------------------- -----------------
+// Tap a signal for side-effect analysis without changing output arity.
+//
+// #### Usage
+//
+// ```
+// _ : probe_tap(F) : _
+// ```
+//
+// Where:
+//
+// * `F`: signal processor for the tap (e.g., meter, analyser)
+//
+// #### Example test program
+//
+// Tap a pre-filter signal without changing arity:
+//
+// - The probe taps the signal before the filter.
+// - The main signal path remains 1-in/1-out, so the lowpass still sees a mono input.
+// - The RMS probe runs in parallel and is exposed through the UI/metrics.
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// fi = library("filters.lib");
+// process = os.osc(220)
+//   : db.probe_tap(db.probe_rms_db(0, 1))
+//   : fi.lowpass(4, 2000);
+// ```
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// tap_test = db.probe_tap(db.probe_rms_db(0, 1), os.osc(220));
+// ```
+//-----------------------------------------------------------------------------
+probe_tap_impl(0, f, x) = x;
+probe_tap_impl(1, f, x) = x <: attach(x, f);
+probe_tap(f, x) = probe_tap_impl(DEBUG, f, x);
+
+//------------------`(db.)probe_tap_n`-------------------------------------------- -----------------
+// Tap an N-channel signal with a processor that takes N inputs and produces 1 output.
+// The original N-channel signal passes through unchanged.
+//
+// #### Usage
+//
+// ```
+// probe_tap_n(N, F)
+// ```
+//
+// Where:
+//
+// * `N`: (CNE) number of channels
+// * `F`: processor with N inputs and 1 output (e.g., sum or mix meter)
+//
+// #### Example test program
+//
+// Tap a stereo signal with a mixdown probe:
+//
+// - Two oscillators build a stereo pair with different filters per channel.
+// - After a stereo EQ stage, `probe_tap_n` mixes both channels for a single probe.
+// - The stereo signal continues unchanged after the tap (2-in/2-out).
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// fi = library("filters.lib");
+// left = os.osc(220) : fi.lowpass(2, 1200);
+// right = os.osc(330) : fi.highpass(2, 400);
+// stereo = (left, right)
+//   : (fi.lowpass(2, 2000), fi.highpass(2, 700));
+// process = stereo
+//   : db.probe_tap_n(2,  + : db.probe_rms_db(100, 1))
+//   : (fi.lowpass(2, 8000), fi.lowpass(2, 8000));
+// ```
+//
+// #### Test
+// ```
+// db = library("debug.lib");
+// os = library("oscillators.lib");
+// tap_n_test = (os.osc(220), os.osc(330)) : db.probe_tap_n(2, +);
+// ```
+//-----------------------------------------------------------------------------
+probe_tap_n_impl(0, n, f) = si.bus(n);
+probe_tap_n_impl(1, 1, f) = probe_tap(f);
+probe_tap_n_reorder(n) = route(n+1, n+1,
+  (1, 1),
+  (n+1, 2),
+  par(i, n-1, (i+1, i+2)));
+probe_tap_n_impl(1, n, f) = si.bus(n) <: (si.bus(n), f)
+  : probe_tap_n_reorder(n)
+  : (attach, si.bus(n-1));
+probe_tap_n(n, f) = probe_tap_n_impl(DEBUG, n, f);
