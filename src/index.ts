@@ -906,14 +906,14 @@ $(async () => {
         reader.onerror = () => undefined;
         reader.readAsText(file);
     }).on("click", e => e.stopPropagation());
-    // Save as //TODO zip
+    // Save as zip
     $("#btn-save").on("click", async () => {
         const zip = new JSZip();
         uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
         const b = await zip.generateAsync({ type: "blob" });
         const uri = URL.createObjectURL(b);
         $("#a-save").attr({ href: uri, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.zip` })[0].click();
-        setTimeout(() => URL.revokeObjectURL(uri), 1000);
+        setTimeout(() => URL.revokeObjectURL(uri), 5000);
     });
     $("#a-save").on("click", e => e.stopPropagation());
     // Docs
@@ -1399,7 +1399,7 @@ $(async () => {
         const b = new Blob([await recorder.encode()], { type: "audio/wav" });
         const url = URL.createObjectURL(b);
         $("#a-recorder-save").attr({ href: url, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.wav` })[0].click();
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
     });
     $("#a-recorder-save").on("click", e => e.stopPropagation());
     // Output switch to connect / disconnect dsp from destination
