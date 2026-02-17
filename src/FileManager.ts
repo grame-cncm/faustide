@@ -81,7 +81,7 @@ export class FileManager {
         this.saveHandler = options.saveHandler;
         this.deleteHandler = options.deleteHandler;
         this.mainFileChangeHandler = options.mainFileChangeHandler;
-        this.errorHandler = options.errorHandler;
+        this.errorHandler = options.errorHandler || (() => undefined);
         this.getChildren();
         this.getFiles();
         this.bind();
