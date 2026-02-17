@@ -1,4 +1,5 @@
 import "./FileManager.scss";
+import { isAudioFile, readFileContent } from "./audioFileUtils";
 
 type TOptions = {
     container: HTMLDivElement;
@@ -9,6 +10,7 @@ type TOptions = {
     saveHandler?: (name: string, content: string | Uint8Array, mainCode: string) => any;
     deleteHandler?: (name: string, mainCode: string) => any;
     mainFileChangeHandler?: (name: string, mainCode: string) => any;
+    errorHandler?: (message: string) => any;
 };
 type TFileSystem = {
     rename: (oldName: string, newName: string) => any;
@@ -69,6 +71,7 @@ export class FileManager {
     saveHandler: (name: string, content: string | Uint8Array, mainCode: string) => any = () => undefined;
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
+    errorHandler?: (message: string) => any = () => undefined;
 
     constructor(options: TOptions) {
         this.container = options.container;
@@ -78,6 +81,7 @@ export class FileManager {
         this.saveHandler = options.saveHandler;
         this.deleteHandler = options.deleteHandler;
         this.mainFileChangeHandler = options.mainFileChangeHandler;
+        this.errorHandler = options.errorHandler;
         this.getChildren();
         this.getFiles();
         this.bind();
@@ -200,15 +204,10 @@ export class FileManager {
                 e.preventDefault();
                 e.stopPropagation();
                 const file = e.dataTransfer.files[0];
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const content = typeof reader.result === "string" ? reader.result.toString() : new Uint8Array(reader.result);
+                readFileContent(file).then((content) => {
                     const fileName = this.newFile(file.name, content);
                     this.select(fileName);
-                };
-                reader.onerror = () => undefined;
-                if (file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)) reader.readAsArrayBuffer(file);
-                else reader.readAsText(file);
+                }).catch((err) => this.errorHandler(err.message));
             }
         };
         this.container.addEventListener("dragenter", dragenterHandler);
@@ -303,7 +302,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
      */
     setMain($: number) {
         if ($ >= this._fileList.length) return;
-        if (this._fileList[$].match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
+        if (isAudioFile(this._fileList[$])) return;
         this.$mainFile = $;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const e = this.divFiles.children[i];
@@ -390,7 +389,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         return fileName;
     }
     select(fileName: string) {
-        if (fileName.match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
+        if (isAudioFile(fileName)) return;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const divFile = this.divFiles.children[i] as HTMLDivElement;
             if (divFile.dataset.filename === fileName) divFile.classList.add("selected");
@@ -420,7 +419,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     getValue(fileNameIn?: string) {
         const fileName = fileNameIn || this.selected;
-        if (fileNameIn.match(/\.(wav|mp3|ogg|flac|aac)$/)) return this.fs.readFile(this.path + fileName) as Uint8Array;
+        if (isAudioFile(fileName)) return this.fs.readFile(this.path + fileName) as Uint8Array;
         return this.fs.readFile(this.path + fileName, { encoding: "utf8" }) as string;
     }
     get selected() {

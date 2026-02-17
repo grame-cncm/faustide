@@ -35,6 +35,7 @@ import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
 import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
 import { safeStorage } from "./utils";
+import { isAudioFile, readFileContent } from "./audioFileUtils";
 
 declare global {
     interface Window {
@@ -602,7 +603,8 @@ $(async () => {
             saveEditorParams();
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
-        }
+        },
+        errorHandler: (message) => showError(message)
     });
     if (compileOptions.saveDsp) loadEditorDspTable();
 
@@ -893,18 +895,15 @@ $(async () => {
     });
     $<HTMLInputElement>("#input-upload").on("input", (e) => {
         const file = e.currentTarget.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
+        if (!file) return;  // if upload cancelled
+        readFileContent(file).then((content) => {
             const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-            const code = reader.result.toString();
-            uiEnv.fileManager.newFile(fileName, code);
-            if (compileOptions.realtimeCompile) {
+            uiEnv.fileManager.newFile(fileName, content);
+            if (compileOptions.realtimeCompile && !isAudioFile(file.name)) {
                 if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
                 else updateDiagram(uiEnv.fileManager.mainCode);
             }
-        };
-        reader.onerror = () => undefined;
-        reader.readAsText(file);
+        }).catch((err) => showError(`Could not read file "${file.name}": ${err.message}`));
     }).on("click", e => e.stopPropagation());
     // Save as zip
     $("#btn-save").on("click", async () => {
@@ -939,11 +938,9 @@ $(async () => {
             uiEnv.fileManager._fileList.forEach((n) => {
                 if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n));
             });
-            // Add all .wav or .flac audio files in the ZIP
+            // Add all audio files in the ZIP
             uiEnv.fileManager._fileList.forEach((n) => {
-                if (n.endsWith(".wav") || n.endsWith(".flac")) {
-                    zip.file(n, uiEnv.fileManager.getValue(n));
-                }
+                if (isAudioFile(n)) zip.file(n, uiEnv.fileManager.getValue(n));
             });
             // Add the currently selected .dsp file in the ZIP
             zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
@@ -1471,20 +1468,16 @@ $(async () => {
             e.preventDefault();
             e.stopPropagation();
             const file = event.dataTransfer.files[0];
-            const reader = new FileReader();
-            reader.onload = () => {
+            readFileContent(file).then((content) => {
                 // Update filename
                 const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-                const code = reader.result.toString();
-                uiEnv.fileManager.newFile(fileName, code);
+                uiEnv.fileManager.newFile(fileName, content);
                 // compile diagram or dsp if necessary
-                if (compileOptions.realtimeCompile) {
+                if (compileOptions.realtimeCompile && !isAudioFile(file.name)) {   // skip compile for audio files
                     if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
                     else updateDiagram(uiEnv.fileManager.mainCode);
                 }
-            };
-            reader.onerror = () => undefined;
-            reader.readAsText(file);
+            }).catch((err) => showError(`Could not read file "${file.name}": ${err.message}`));
         }
     });
     // Examples
