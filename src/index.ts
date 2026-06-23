@@ -66,6 +66,7 @@ import { DspControlsController } from "./ui/DspControlsController";
 import { FaustUiController } from "./ui/FaustUiController";
 import { UrlParamsController } from "./ui/UrlParamsController";
 import { AlertController } from "./ui/AlertController";
+import { DspCompileController } from "./ui/DspCompileController";
 
 declare global {
     interface Window {
@@ -216,98 +217,9 @@ $(async () => {
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
-    let isCompilingDsp = false;
-    /**
-     * Generate both diagram and dsp
-     *
-     * @param {string} code
-     * @returns {{ success: boolean; error?: Error }}
-     */
-    const runDsp = async (codeIn: string): Promise<{ success: boolean; error?: Error }> => {
-        if (isCompilingDsp) return { success: false, error: new Error("Another DSP is compiling") };
-        isCompilingDsp = true;
-        const code = `declare filename "${uiEnv.fileManager.mainFileName}"; declare name "${uiEnv.fileManager.mainFileNameWithoutSuffix}"; ${codeIn}`;
-        if (!audioEnv.audioCtx) { // If audioCtx not init yet
-            await initAudioCtx(audioEnv);
-            initAnalysersUI(uiEnv, audioEnv);
-        }
-        // Recorder, show current recorded length without too many refreshes
-        let mediaLengthRaf: number;
-        let mediaLengthFrame = 0;
-        const mediaLengthSpan = $<HTMLSpanElement>("#recorder-time")[0];
-        const mediaLengthDisplay = (t: number) => {
-            mediaLengthFrame++;
-            if (mediaLengthFrame % 3 !== 0) {
-                if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
-                mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
-            }
-            const d = new Date(t * 1000);
-            const min = d.getMinutes();
-            const sec = `0${d.getSeconds()}`.slice(-2);
-            const ms = `00${d.getMilliseconds()}`.slice(-3);
-            mediaLengthSpan.innerText = `${min}:${sec}.${ms}`;
-        };
-        // Receives buffer from DSP, send it to analyzer for scopes, and recorder
-        const plotHandler = (plotted: Float32Array[], index: number, events?: { type: string; data: any }[]) => {
-            uiEnv.analyser.plotHandler(plotted, index, events);
-            if (!faustEnv.recorder.enabled) return;
-            const t = faustEnv.recorder.append(plotted, index);
-            if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
-            mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
-        };
-        const compileResult = await dspRunner.run({
-            code,
-            compilerArgs: compileOptions.args,
-            useDouble: compileOptions.useDouble,
-            useWorklet: compileOptions.useWorklet,
-            bufferSize: compileOptions.bufferSize,
-            voices: compileOptions.voices,
-            saveParams: compileOptions.saveParams,
-            dspParams,
-            plotHandler,
-            onOutputSplitterChanged: (splitter, channelsCount) => {
-                uiEnv.outputScope.splitter = splitter;
-                uiEnv.outputScope.channels = channelsCount;
-                uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
-                splitter.connect(audioEnv.analyserOutput, uiEnv.outputScope.channel);
-            }
-        });
-        if (!compileResult.success || !compileResult.node) {
-            alertController.show(compileResult.error);
-            isCompilingDsp = false;
-            return { success: false, error: compileResult.error };
-        }
-        const node = compileResult.node;
-        /**
-         * Push get diagram to end of scheduler
-         * generate diagram only when the tab is active
-         */
-        if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
-        $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-        alertController.clear(); // Supress error shown
-        faustUiController.showCompiledDsp(node);
-        saveEditorDspTable(); // Save the new DSP table to localStorage
-        if (compileOptions.enableGuiBuilder) {
-            $("#gui-builder-default").hide(); // Hide "No DSP yet" info
-            $("#nav-item-gui-builder").show(); // Show GUI Builder tab
-            $("#iframe-gui-builder").css("visibility", "visible"); // Show iframe
-            const guiBuilder = $<HTMLIFrameElement>("#iframe-gui-builder")[0];
-            guiBuilder.src = "";
-            guiBuilder.onload = () => {
-                guiBuilder.src = `${compileOptions.guiBuilderUrl}?name=${uiEnv.fileManager.mainFileName}`;
-                guiBuilder.onload = () => guiBuilder.contentWindow.postMessage({
-                    type: "build",
-                    ui: node.getUI(),
-                    name: `${uiEnv.fileManager.mainFileName}`,
-                    code: uiEnv.fileManager.mainCode,
-                    poly: !!compileOptions.voices
-                }, "*");
-            };
-        }
-        isCompilingDsp = false;
-        return { success: true };
-    };
     let rtCompileTimer: number;
+    let dspCompileController: DspCompileController;
+    const runDsp = (code: string) => dspCompileController.run(code);
     const audioEnv: FaustEditorAudioEnv = {
         dspConnectedToInput: false,
         dspConnectedToOutput: false,
@@ -440,6 +352,20 @@ $(async () => {
         getServer: () => server,
         getMidiController: () => midiController,
         saveDspParams
+    });
+    dspCompileController = new DspCompileController({
+        audioEnv,
+        uiEnv,
+        compileOptions,
+        dspParams,
+        recorder: faustEnv.recorder,
+        dspRunner,
+        faustUiController,
+        alertController,
+        initAudioCtx: () => initAudioCtx(audioEnv),
+        initAnalysersUI: () => initAnalysersUI(uiEnv, audioEnv),
+        updateDiagram,
+        saveEditorDspTable
     });
     /**
      * Bind DOM events
