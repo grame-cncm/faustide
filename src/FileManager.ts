@@ -1,4 +1,6 @@
 import "./FileManager.scss";
+import { DEFAULT_DSP_CODE, ProjectModel } from "./model/ProjectModel";
+import type { TFileSystem } from "./model/ProjectModel";
 
 type TOptions = {
     container: HTMLDivElement;
@@ -10,18 +12,6 @@ type TOptions = {
     deleteHandler?: (name: string, mainCode: string) => any;
     mainFileChangeHandler?: (name: string, mainCode: string) => any;
 };
-type TFileSystem = {
-    rename: (oldName: string, newName: string) => any;
-    unlink: (name: string) => any;
-    readdir: (path: string) => string[];
-    mkdir: (path: string, mode?: number) => any;
-    isDir: (mode: number) => boolean;
-    isFile: (mode: number) => boolean;
-    stat: (path: string) => { mode: number; [key: string]: any };
-    writeFile: (path: string, data: string | ArrayBufferView, opt?: { flags: string }) => any;
-    readFile: (path: string, opt?: { encoding?: string; flags?: string }) => any;
-};
-
 /**
  * FileManager UI, interactive with Emscripten Virtual File System
  *
@@ -44,20 +34,6 @@ export class FileManager {
      */
     path: string = "./";
     /**
-     * Index of main DSP to execute
-     *
-     * @type {number}
-     * @memberof FileManager
-     */
-    $mainFile: number = 0;
-    /**
-     * Project files list
-     *
-     * @type {string[]}
-     * @memberof FileManager
-     */
-    _fileList: string[];
-    /**
      * File System reference
      *
      * @private
@@ -65,6 +41,7 @@ export class FileManager {
      * @memberof FileManager
      */
     private _fs: TFileSystem;
+    private project: ProjectModel;
     selectHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
     saveHandler: (name: string, content: string | Uint8Array, mainCode: string) => any = () => undefined;
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
@@ -72,8 +49,9 @@ export class FileManager {
 
     constructor(options: TOptions) {
         this.container = options.container;
-        this.fs = options.fs;
-        this.path = options.path;
+        this.project = new ProjectModel({ fs: options.fs, path: options.path });
+        this._fs = options.fs;
+        this.path = this.project.path;
         this.selectHandler = options.selectHandler;
         this.saveHandler = options.saveHandler;
         this.deleteHandler = options.deleteHandler;
@@ -150,13 +128,8 @@ export class FileManager {
         const newFileHandler: (this: HTMLButtonElement, ev: MouseEvent) => any = (e: MouseEvent) => {
             e.stopPropagation();
             e.preventDefault();
-            let i = 1;
-            let fileName = `untitled${i}.dsp`;
-            while (this._fileList.indexOf(fileName) !== -1) {
-                fileName = `untitled${++i}.dsp`;
-            }
-            this.fs.writeFile(this.path + fileName, "");
-            this._fileList.push(fileName);
+            const fileName = this.project.uniqueUntitledName("dsp");
+            this.project.createFile(fileName, "");
             const divFile = this.createFileDiv(fileName, true);
             this.divFiles.appendChild(divFile);
             if (this.saveHandler) this.saveHandler(fileName, "", this.mainCode);
@@ -260,7 +233,7 @@ export class FileManager {
             sel.addRange(range);
         });
         spanName.addEventListener("blur", (e) => {
-            const newName = (e.currentTarget as HTMLSpanElement).innerText.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
+            const newName = ProjectModel.sanitizeFileName((e.currentTarget as HTMLSpanElement).innerText);
             (e.currentTarget as HTMLSpanElement).innerText = newName;
             if (this.rename(fileName, newName)) fileName = newName;
             (e.currentTarget as HTMLSpanElement).contentEditable = "false";
@@ -275,13 +248,11 @@ export class FileManager {
         btnDelete.addEventListener("click", (e) => {
             e.stopPropagation();
             const i = this._fileList.indexOf(fileName);
-            this.fs.unlink(this.path + fileName);
-            this._fileList.splice(i, 1);
+            this.project.deleteFile(fileName);
             divFile.remove();
             if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
             if (this._fileList.length === 0) {
-                const fileName = this.newFile("untitled.dsp", `import("stdfaust.lib");
-process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`);
+                const fileName = this.newFile("untitled.dsp", DEFAULT_DSP_CODE);
                 this.select(fileName);
             } else {
                 this.select(this._fileList[0]);
@@ -302,9 +273,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
      * @memberof FileManager
      */
     setMain($: number) {
-        if ($ >= this._fileList.length) return;
-        if (this._fileList[$].match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
-        this.$mainFile = $;
+        if (!this.project.setMainFile($)) return;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const e = this.divFiles.children[i];
             const btnMain = e.querySelector(".filemanager-btn-main");
@@ -322,14 +291,13 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
      */
     getFiles() {
         this.divFiles.innerHTML = "";
-        this._fileList = this.fs.readdir(this.path).filter(fileName => fileName !== "." && fileName !== ".." && this.fs.isFile(this.fs.stat(this.path + fileName).mode));
+        this.project.listFiles();
         this._fileList.forEach((fileName) => {
             const divFile = this.createFileDiv(fileName, false);
             this.divFiles.appendChild(divFile);
         });
         if (this._fileList.length === 0) {
-            const fileName = this.newFile("untitled.dsp", `import("stdfaust.lib");
-process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`);
+            const fileName = this.newFile("untitled.dsp", DEFAULT_DSP_CODE);
             this.select(fileName);
         } else {
             this.select(this._fileList[0]);
@@ -337,7 +305,8 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
     }
-    rename(oldName: string, newName: string) {
+    rename(oldName: string, newNameIn: string) {
+        const newName = ProjectModel.sanitizeFileName(newNameIn);
         if (oldName === newName) return false;
         const i = this._fileList.indexOf(oldName);
         let spanName: HTMLSpanElement;
@@ -351,18 +320,19 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
             }
         }
         if (!divFile || !spanName) return false;
+        let renamedName: string;
         try {
-            this.fs.rename(this.path + oldName, this.path + newName);
+            renamedName = this.project.renameFile(oldName, newName);
         } catch (e) {
             spanName.focus();
             return false;
         }
-        this._fileList[i] = newName;
-        spanName.innerText = newName;
+        if (!renamedName) return false;
+        spanName.innerText = renamedName;
         spanName.contentEditable = "false";
-        divFile.dataset.filename = newName;
-        if (this.saveHandler) this.saveHandler(newName, this.getValue(newName), this.mainCode);
-        this.select(newName);
+        divFile.dataset.filename = renamedName;
+        if (this.saveHandler) this.saveHandler(renamedName, this.getValue(renamedName), this.mainCode);
+        this.select(renamedName);
         this.deleteHandler(oldName, this.mainCode);
         return true;
     }
@@ -370,18 +340,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         this.rename(this.selected, newName);
     }
     newFile(fileNameIn?: string, content?: string | Uint8Array) {
-        let fileName;
-        if (fileNameIn) fileName = fileNameIn.replace(/[^a-zA-Z0-9_.]/g, "");
-        const extension = fileNameIn ? fileNameIn.split(".").slice(-1) || "lib" : "dsp";
-        if (!fileName || this._fileList.indexOf(fileName) !== -1) {
-            let i = 1;
-            fileName = `untitled${i}.${extension}`;
-            while (this._fileList.indexOf(fileName) !== -1) {
-                fileName = `untitled${++i}.${extension}`;
-            }
-        }
-        this.fs.writeFile(this.path + fileName, content || "");
-        this._fileList.push(fileName);
+        const fileName = this.project.createFile(fileNameIn, content);
         const divFile = this.createFileDiv(fileName, false);
         this.divFiles.appendChild(divFile);
         if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
@@ -390,7 +349,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         return fileName;
     }
     select(fileName: string) {
-        if (fileName.match(/\.(wav|mp3|ogg|flac|aac)$/)) return;
+        if (!this.project.selectFile(fileName)) return;
         for (let i = 0; i < this.divFiles.children.length; i++) {
             const divFile = this.divFiles.children[i] as HTMLDivElement;
             if (divFile.dataset.filename === fileName) divFile.classList.add("selected");
@@ -399,9 +358,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
         if (this.selectHandler) this.selectHandler(fileName, this.fs.readFile(this.path + fileName, { encoding: "utf8" }), this.mainCode);
     }
     save(fileName: string, content: string) {
-        if (this.getValue(fileName) === content) return;
-        this.fs.unlink(this.path + fileName);
-        this.fs.writeFile(this.path + fileName, content);
+        if (!this.project.saveFile(fileName, content)) return;
         if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
     }
     saveAll() {
@@ -420,8 +377,7 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     getValue(fileNameIn?: string) {
         const fileName = fileNameIn || this.selected;
-        if (fileNameIn.match(/\.(wav|mp3|ogg|flac|aac)$/)) return this.fs.readFile(this.path + fileName) as Uint8Array;
-        return this.fs.readFile(this.path + fileName, { encoding: "utf8" }) as string;
+        return this.project.getValue(fileName);
     }
     get selected() {
         for (let i = 0; i < this.divFiles.children.length; i++) {
@@ -432,23 +388,19 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     }
     get mainCode() {
         const fileName = this._fileList[this.$mainFile];
-        return fileName ? this.getValue(fileName) as string || "" : "";
+        return fileName ? this.project.mainCode : "";
     }
     get mainFileName() {
-        return this._fileList[this.$mainFile];
+        return this.project.mainFileName;
     }
     get mainFileNameWithoutSuffix() {
-        return this._fileList[this.$mainFile].split(".").slice(0, -1).join(".");
+        return this.project.mainFileNameWithoutSuffix;
     }
     get allCodes() {
-        let codes = "";
-        this._fileList.forEach(fileName => codes += (this.getValue(fileName) || "") + "\n");
-        return codes;
+        return this.project.allCodes;
     }
     get selectedCode() {
-        const selected = this.selected;
-        if (selected) return this.getValue(selected);
-        return this.mainCode;
+        return this.project.selectedCode;
     }
     set expanded(expanded: boolean) {
         if (expanded) {
@@ -464,10 +416,23 @@ process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`
     get expanded() {
         return this.btnExpand.classList.contains("expanded");
     }
+    get $mainFile() {
+        return this.project.mainFileIndex;
+    }
+    set $mainFile($: number) {
+        this.project.mainFileIndex = $;
+    }
+    get _fileList() {
+        return this.project.fileList;
+    }
+    set _fileList(fileList: string[]) {
+        this.project.fileList = fileList;
+    }
     get fs() {
         return this._fs;
     }
     set fs(fsIn) {
         this._fs = fsIn;
+        if (this.project) this.project.fs = fsIn;
     }
 }
