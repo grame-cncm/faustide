@@ -53,6 +53,7 @@ import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
 import { DiagramView } from "./ui/DiagramView";
 import { MidiController } from "./ui/MidiController";
+import { RecorderController } from "./ui/RecorderController";
 
 declare global {
     interface Window {
@@ -1137,26 +1138,10 @@ $(async () => {
             if (!compileOptions.realtimeCompile) runDsp(uiEnv.fileManager.mainCode);
         });
     } else $("#dsp-ui-default").tooltip("disable").css("pointer-events", "none");
-    // Record
-    $("#recorder-aim").on("click", (e) => {
-        const recorder = faustEnv.recorder;
-        if ($(e.currentTarget).hasClass("btn-light")) {
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-danger");
-            recorder.enabled = true;
-        } else {
-            $(e.currentTarget).addClass("btn-light").removeClass("btn-danger");
-            recorder.enabled = false;
-        }
-    });
-    $("#recorder-save").on("click", async () => {
-        const recorder = faustEnv.recorder;
-        if (recorder.totalSec === 0) return;
-        const b = new Blob([await recorder.encode()], { type: "audio/wav" });
-        const url = URL.createObjectURL(b);
-        $("#a-recorder-save").attr({ href: url, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.wav` })[0].click();
-        setTimeout(() => URL.revokeObjectURL(url), 5000);
-    });
-    $("#a-recorder-save").on("click", e => e.stopPropagation());
+    new RecorderController({
+        recorder: faustEnv.recorder,
+        fileNameProvider: () => uiEnv.fileManager.mainFileNameWithoutSuffix
+    }).bind();
     // Output switch to connect / disconnect dsp from destination
     $(".btn-dac").on("click", async () => {
         /*
