@@ -16,7 +16,7 @@
 import type * as monaco from "monaco-editor";
 import type { VimMode } from "monaco-vim";
 import webmidi from "webmidi";
-import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust } from "@grame/faustwasm";
+import type { FaustCompiler, LibFaust } from "@grame/faustwasm";
 import type {
     FaustEditorAudioEnv,
     FaustEditorCompileOptions,
@@ -63,6 +63,7 @@ import { ExamplesController } from "./ui/ExamplesController";
 import { ShareModalController } from "./ui/ShareModalController";
 import { ExportController } from "./ui/ExportController";
 import { DspControlsController } from "./ui/DspControlsController";
+import { FaustUiController } from "./ui/FaustUiController";
 
 declare global {
     interface Window {
@@ -83,6 +84,7 @@ let server = "https://faustservice.inria.fr";
 const PROJECT_DIR = "/usr/share/project/";
 let audioEngine: AudioEngine;
 let midiController: MidiController;
+let faustUiController: FaustUiController;
 
 $(async () => {
     const { setTimeout } = window;
@@ -283,13 +285,7 @@ $(async () => {
                 splitter.connect(audioEnv.analyserOutput, uiEnv.outputScope.channel);
             }
         });
-        if (!compileResult.success || !compileResult.node) { /*
-            const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-            uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
-            $("#faust-ui-default").show();
-            $("#iframe-faust-ui").css("visibility", "hidden");
-            $("#output-analyser-ui").hide();
-            refreshDspUI(); */
+        if (!compileResult.success || !compileResult.node) {
             showError(compileResult.error);
             isCompilingDsp = false;
             return { success: false, error: compileResult.error };
@@ -301,61 +297,8 @@ $(async () => {
          */
         if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
         $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-        const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
-        /**
-         * set handler for param changed of dsp
-         * send current value to window
-         */
-        node.setOutputParamHandler((path: string, value: number) => {
-            const msg = { path, value, type: "param" };
-            if (uiWindow) uiWindow.postMessage(msg, "*");
-            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-        });
-        /**
-         * Bind dsp params to ui interface
-         * as UI is in an iframe and a popup window,
-         * send a message with params into the window
-         * bind events on param change
-         */
-        const bindUI = () => {
-            const callback = () => {
-                const msg = { type: "ui", ui: node.getUI() };
-                /**
-                 * Post param list json
-                 */
-                uiWindow.postMessage(msg, "*");
-                if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                /**
-                 * Post current param values
-                 */
-                if (compileOptions.saveParams) {
-                    const params = node.getParams();
-                    for (const path in dspParams) {
-                        if (params.indexOf(path) !== -1) {
-                            const msg = { path, value: dspParams[path], type: "param" };
-                            uiWindow.postMessage(msg, "*");
-                            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                        }
-                    }
-                }
-            };
-            /**
-             * if window is opened, bind directly, else bind when window is loaded.
-             */
-            if (!compileOptions.popup || (uiEnv.uiPopup && !uiEnv.uiPopup.closed)) callback();
-            else {
-                uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
-                uiEnv.uiPopup.onload = callback;
-            }
-        };
-        bindUI();
         clearError(); // Supress error shown
-        $("#faust-ui-default").hide(); // Hide "No DSP yet" info
-        $("#nav-item-faust-ui").show(); // Show DSP UI tab
-        $("#iframe-faust-ui").css("visibility", "visible"); // Show iframe
-        $("#output-analyser-ui").show(); // Show dsp info on right panel
-        if (uiEnv.outputScope) uiEnv.outputScope.disabled = false;
-        refreshDspUI(node); // update dsp info
+        faustUiController.showCompiledDsp(node);
         saveEditorDspTable(); // Save the new DSP table to localStorage
         if (compileOptions.enableGuiBuilder) {
             $("#gui-builder-default").hide(); // Hide "No DSP yet" info
@@ -523,6 +466,18 @@ $(async () => {
         saveEditorParams,
         runDsp
     });
+    faustUiController = new FaustUiController({
+        audioEnv,
+        uiEnv,
+        compileOptions,
+        fileManager: uiEnv.fileManager,
+        dspParams,
+        faustCompiler,
+        exportService,
+        getServer: () => server,
+        getMidiController: () => midiController,
+        saveDspParams
+    });
     /**
      * Bind DOM events
      */
@@ -667,7 +622,7 @@ $(async () => {
         getSupportMediaStreamDestination: () => supportMediaStreamDestination,
         setSupportMediaStreamDestination: supported => { supportMediaStreamDestination = supported; }
     }).bind();
-    refreshDspUI();
+    faustUiController.refreshDspUI();
     dspControlsController.bind();
     new RecorderController({
         recorder: faustEnv.recorder,
@@ -688,104 +643,7 @@ $(async () => {
         const code = editor.getValue();
         uiEnv.fileManager.setValue(code, false);
     });
-    /**
-     * Bind message event for changing dsp params on receiving msg from ui window
-     */
-    $(window).on("message", (e) => {
-        const $e = (e.originalEvent as MessageEvent);
-        if (!$e.data) return;
-        const { data, source } = $e;
-        if (!data.type) return;
-        if (data.type === "param") {
-            if (audioEnv.dsp) audioEnv.dsp.setParamValue(data.path, +data.value);
-            dspParams[data.path] = +data.value;
-            if (compileOptions.saveParams) saveDspParams();
-            const uiWindow = $<HTMLIFrameElement>("#iframe-faust-ui")[0].contentWindow;
-            const msg = { path: data.path, value: +data.value, type: "param" };
-            if (uiWindow !== source) uiWindow.postMessage(msg, "*");
-            if (uiEnv.uiPopup && uiEnv.uiPopup !== source) uiEnv.uiPopup.postMessage(msg, "*");
-            return;
-        }
-        // Pass keyboard midi messages even inner window is focused
-        if (data.type === "keydown") midiController.handleKeyDown(data.key);
-        else if (data.type === "keyup") midiController.handleKeyUp(data.key);
-        // From GUI Builder
-        else if (data.type === "export") {
-            void (async () => {
-                const fileName = uiEnv.fileManager.mainFileName;
-                const name = uiEnv.fileManager.mainFileNameWithoutSuffix;
-                const plat = data.plat || "web";
-                const arch = data.arch || "wap";
-                const expandedCode = faustCompiler.expandDSP(uiEnv.fileManager.mainCode, compileOptions.args.join(" "));
-                const file = exportService.buildSourceFile({ fileName, name, code: expandedCode });
-                const { href } = await exportService.uploadAndPrecompile({
-                    server,
-                    file,
-                    platform: plat,
-                    arch,
-                    chaosStratusInstallerForAnyArch: true
-                });
-                ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
-            })();
-        }
-    });
-    // Close DSP UI Popup when main window is closed
-    $(window).on("beforeunload", () => (uiEnv.uiPopup ? uiEnv.uiPopup.close() : undefined));
-    $("#nav-item-faust-ui .btn-popup").on("click", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const node = audioEnv.dsp;
-        if (!node) return;
-        const callback = () => {
-            const msg = { type: "ui", ui: node.getUI() };
-            /**
-             * Post param list json
-             */
-            if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-            /**
-             * Post current param values
-             */
-            const params = node.getParams();
-            for (const path in dspParams) {
-                if (params.indexOf(path) !== -1) {
-                    const msg = { path, value: dspParams[path], type: "param" };
-                    if (uiEnv.uiPopup) uiEnv.uiPopup.postMessage(msg, "*");
-                }
-            }
-        };
-        /**
-         * if window is opened, bind directly, else bind when window is loaded.
-         */
-        if (uiEnv.uiPopup && !uiEnv.uiPopup.closed) callback();
-        else {
-            uiEnv.uiPopup = window.open("faust-ui/index.html", "Faust DSP", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=800,height=600");
-            uiEnv.uiPopup.onload = callback;
-        }
-    });
-    $("#nav-item-faust-ui .btn-close-tab").on("click", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (audioEnv.dsp) { // Disconnect current
-            const gain = audioEnv.gainInput;
-            const dsp = audioEnv.dsp;
-            if (audioEnv.dspConnectedToInput) {
-                gain.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
-            }
-            dsp.disconnect();
-            audioEnv.dspConnectedToOutput = false;
-            dsp.destroy();
-            delete audioEnv.dsp;
-        }
-        if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
-        $("#nav-item-faust-ui").hide();
-        if (uiEnv.uiPopup) uiEnv.uiPopup.close();
-        $("#faust-ui-default").show();
-        $("#iframe-faust-ui").css("visibility", "hidden");
-        $("#output-analyser-ui").hide();
-        if (uiEnv.outputScope) uiEnv.outputScope.disabled = true;
-        refreshDspUI();
-    });
+    faustUiController.bind();
     new DiagramView(diagramService).bind();
     new GlobalShortcutsController({
         docs: () => $("#btn-docs")[0].click(),
@@ -849,28 +707,6 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         container: $<HTMLDivElement>("#output-analyser-ui")[0]
     });
     uiEnv.analysersInited = true;
-};
-/**
- * Update dsp inputs, outputs, params info
- *
- * @param {(FaustAudioWorkletNode | FaustScriptProcessorNode)} [node]
- * @returns
- */
-const refreshDspUI = (node?: FaustAudioWorkletNode | FaustScriptProcessorNode) => {
-    if (!node) {
-        $("#dsp-ui-detail").hide();
-        $("#dsp-ui-default").removeClass(["badge-success", "switch"]).addClass("badge-warning").html("no DSP yet");
-        return;
-    }
-    $("#dsp-ui-detail").show();
-    if (node instanceof ScriptProcessorNode) {
-        $("#dsp-ui-default").removeClass("badge-success").addClass(["badge-warning", "switch"]).html("ScriptProcessor");
-    } else {
-        $("#dsp-ui-default").removeClass("badge-warning").addClass(["badge-success", "switch"]).html("AudioWorklet");
-    }
-    $("#dsp-ui-detail-inputs").html(node.getNumInputs().toString());
-    $("#dsp-ui-detail-outputs").html(node.getNumOutputs().toString());
-    $("#dsp-ui-detail-params").html(node.getParams().length.toString());
 };
 /**
  * Init editor, register faust language and code hint
