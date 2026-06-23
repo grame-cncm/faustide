@@ -60,6 +60,7 @@ import { AudioDeviceController } from "./ui/AudioDeviceController";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
 import { ExamplesController } from "./ui/ExamplesController";
+import { ShareModalController } from "./ui/ShareModalController";
 
 declare global {
     interface Window {
@@ -723,39 +724,11 @@ $(async () => {
     } catch (e) {
         console.error(e as Error); // eslint-disable-line no-console
     }
-    // Share
-    /**
-     * Make share URL with options
-     *
-     * @returns
-     */
-    const makeURL = () => {
-        return shareUrlService.build({
-            origin: window.location.origin,
-            pathname: window.location.pathname,
-            autorun: $("#share-autorun").prop("checked"),
-            voices: compileOptions.voices,
-            name: uiEnv.fileManager.mainFileNameWithoutSuffix,
-            code: uiEnv.fileManager.mainCode
-        });
-    };
-    $("#modal-share").on("shown.bs.modal", () => {
-        $("#share-btn-copy").html("Copy");
-        $("#share-url").val(makeURL());
-    });
-    $("#share-autorun").on("change", () => {
-        $("#share-btn-copy").html("Copy");
-        $("#share-url").val(makeURL());
-    });
-    $("#share-btn-copy").on("click", (e) => {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText($("#share-url").val() as string);
-        } else {
-            $("#share-url").focus().select();
-            document.execCommand("copy");
-        }
-        $(e.currentTarget).html('<i class="fas fa-check"></i>');
-    });
+    new ShareModalController({
+        compileOptions,
+        fileManager: uiEnv.fileManager,
+        shareUrlService
+    }).bind();
     /**
      * Right panel options
      */
