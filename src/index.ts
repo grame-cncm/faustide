@@ -46,6 +46,7 @@ import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
 import { safeStorage } from "./utils";
 import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
 import { ProjectPersistence } from "./runtime/ProjectPersistence";
+import { DiagramService } from "./runtime/DiagramService";
 
 declare global {
     interface Window {
@@ -96,6 +97,7 @@ $(async () => {
         faustFS: libFaust.fs(),
         projectDir: PROJECT_DIR
     });
+    const diagramService = new DiagramService(faustSvgDiagrams, libFaust.fs());
     /**
      * To save dsp table to localStorage
      */
@@ -196,30 +198,24 @@ $(async () => {
      * stay consistent between audio rendering and the visual graph.
      */
     const updateDiagram = (code: string): { success: boolean; error?: Error } => {
-        let strSvg: string; // Diagram SVG as string
         editorDecoration = editor.deltaDecorations(editorDecoration, []);
-        const args = compileOptions.args.slice();
-        if (compileOptions.useDouble) args.push("-double");
-        try {
-            strSvg = faustSvgDiagrams.from("main", code, args.join(" "))["process.svg"];
-        } catch (e) {
+        const result = diagramService.generateProcessSvg(code, compileOptions.args, compileOptions.useDouble);
+        if (!result.success) {
             /**
              * Parse Faust-generated error message to locate the lines with error
              */
-            const matchLine = e.message.match(/FaustDSP : (\d+)/);
-            if (matchLine) {
-                const line = matchLine[1];
+            if (result.errorLine) {
                 editorDecoration = editor.deltaDecorations(editorDecoration, [{
-                    range: new monaco.Range(line, 1, line, 1),
+                    range: new monaco.Range(result.errorLine, 1, result.errorLine, 1),
                     options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
                 }]);
             }
-            showError(e);
-            return { error: e, success: false };
+            showError(result.error);
+            return { error: result.error, success: false };
         }
         // const $svg = $("#diagram-svg>svg");
         // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-        const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
+        const svg = $<SVGSVGElement>(result.svg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
         $("#diagram-default").hide(); // hide "No Diagram" info
@@ -1636,7 +1632,7 @@ $(async () => {
         // const $svg = $("#diagram-svg>svg");
         // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
         const fileName = e.currentTarget.href.baseVal;
-        const strSvg = libFaust.fs().readFile("main-svg/" + fileName, { encoding: "utf8" }) as string;
+        const strSvg = diagramService.readGeneratedSvg(fileName);
         const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
