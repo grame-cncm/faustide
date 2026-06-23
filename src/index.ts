@@ -38,7 +38,6 @@ import "./index.scss";
 import { StaticScope } from "./StaticScope";
 import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
-import { GainUI, createMeterNode, MeterNode } from "./MeterNode";
 import { Recorder } from "./Recorder";
 import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
@@ -47,6 +46,7 @@ import { safeStorage } from "./utils";
 import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
 import { ProjectPersistence } from "./runtime/ProjectPersistence";
 import { DiagramService } from "./runtime/DiagramService";
+import { AudioEngine } from "./runtime/AudioEngine";
 
 declare global {
     interface Window {
@@ -66,6 +66,7 @@ let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
 const BUFFER_SIZE_VALUES = [128, 256, 512, 1024, 2048, 4096] as const;
+let audioEngine: AudioEngine;
 
 $(async () => {
     const { setTimeout } = window;
@@ -435,6 +436,24 @@ $(async () => {
         inputEnabled: false,
         outputEnabled: false
     };
+    audioEngine = new AudioEngine({
+        env: audioEnv,
+        gainContainer: $<HTMLDivElement>("#input-gain")[0],
+        mediaElementProvider: () => $<HTMLAudioElement>("#source-waveform audio")[0] || null,
+        unlockTarget: {
+            add: handler => $("body").on("touchstart touchend mousedown keydown", handler),
+            remove: handler => $("body").off("touchstart touchend mousedown keydown", handler)
+        },
+        onStateChange: (state) => {
+            if (state === "running") {
+                $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
+                    .children("span").html("Output is On");
+            } else {
+                $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
+                    .children("span").html("Output is Off");
+            }
+        }
+    });
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = {
         analysersInited: false,
@@ -1798,64 +1817,8 @@ $(async () => {
  * @returns
  */
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
-    if (!audioEnv.audioCtx) {
-        const audioCtx = new (window.webkitAudioContext || window.AudioContext)({ latencyHint: 0.00001 });
-        audioEnv.audioCtx = audioCtx;
-        audioEnv.outputEnabled = true;
-        audioCtx.addEventListener("statechange", () => {
-            if (audioCtx.state === "running") {
-                $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
-                    .children("span").html("Output is On");
-            } else {
-                $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
-                    .children("span").html("Output is Off");
-            }
-        });
-        const unlockAudioContext = () => {
-            if (audioCtx.state !== "suspended") return;
-            const unlock = (): any => audioCtx.resume().then(clean);
-            // const unlock = (): any => audioCtx.resume().then(() => $<HTMLAudioElement>("#output-audio-stream")[0].play()).then(clean);
-            const clean = () => $("body").off("touchstart touchend mousedown keydown", unlock);
-            $("body").on("touchstart touchend mousedown keydown", unlock);
-        };
-        unlockAudioContext();
-    }
-    if (audioEnv.audioCtx.state !== "running") audioEnv.audioCtx.resume();
-    if (!audioEnv.inputs) audioEnv.inputs = {};
-    if (deviceId && !audioEnv.inputs[deviceId]) {
-        if (deviceId === "-1") {
-            if ($("#source-waveform audio").length) audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
-        } else {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId, echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-            audioEnv.inputs[deviceId] = audioEnv.audioCtx.createMediaStreamSource(stream);
-        }
-    }
-    if (!audioEnv.meterInput) audioEnv.meterInput = createMeterNode(audioEnv.audioCtx);
-    if (!audioEnv.gainInput) audioEnv.gainInput = audioEnv.audioCtx.createGain();
-    audioEnv.gainInput.connect(audioEnv.meterInput, 0, 0);
-    if (!audioEnv.gainUIInput) audioEnv.gainUIInput = new GainUI($<HTMLDivElement>("#input-gain")[0], audioEnv.meterInput, audioEnv.gainInput);
-    audioEnv.gainUIInput.value = 0;
-    if (!audioEnv.splitterInput) audioEnv.splitterInput = audioEnv.audioCtx.createChannelSplitter(2);
-    audioEnv.meterInput.connect(audioEnv.splitterInput, 0, 0);
-    if (!audioEnv.analyserInput) audioEnv.analyserInput = audioEnv.audioCtx.createAnalyser();
-    if (!audioEnv.analyserOutput) audioEnv.analyserOutput = audioEnv.audioCtx.createAnalyser();
-    audioEnv.splitterInput.connect(audioEnv.analyserInput, 0);
-    if (!audioEnv.destination) {
-        audioEnv.destination = audioEnv.audioCtx.destination;
-        /*
-        if (supportMediaStreamDestination) {
-            audioEnv.destination = audioEnv.audioCtx.createMediaStreamDestination();
-            const audio = $("#output-audio-stream")[0] as HTMLAudioElement;
-            if ("srcObject" in audio) audio.srcObject = audioEnv.destination.stream;
-            else (audio as HTMLAudioElement).src = URL.createObjectURL(audioEnv.destination.stream);
-        } else {
-            audioEnv.destination = audioEnv.audioCtx.destination;
-        }
-        */
-        audioEnv.destination.channelCount = audioEnv.destination.maxChannelCount;
-        audioEnv.destination.channelInterpretation = "discrete";
-    }
-    return audioEnv;
+    if (!audioEngine) throw new Error("Audio engine is not ready");
+    return audioEngine.initialize(deviceId);
 };
 /**
  * Init analyser scopes with audio environment
