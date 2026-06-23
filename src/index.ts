@@ -54,6 +54,7 @@ import { ResizablePanelsController } from "./ui/ResizablePanelsController";
 import { DiagramView } from "./ui/DiagramView";
 import { MidiController } from "./ui/MidiController";
 import { RecorderController } from "./ui/RecorderController";
+import { PlotController } from "./ui/PlotController";
 
 declare global {
     interface Window {
@@ -78,7 +79,7 @@ let midiController: MidiController;
 
 $(async () => {
     const { setTimeout } = window;
-    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator } = await import("@grame/faustwasm");
+    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
     const libFaust = new LibFaust(faustModule);
     const faustCompiler = new FaustCompiler(libFaust);
@@ -629,82 +630,16 @@ $(async () => {
     })[0].checked = editorOptions.vimMode;
     */
 
-    // Plot
-    $<HTMLInputElement>("#select-plot-mode").on("change", (e) => {
-        compileOptions.plotMode = e.currentTarget.value as "offline" | "continuous" | "onevent" | "manual";
-        uiEnv.analyser.drawMode = compileOptions.plotMode;
-        const $span = $("#btn-plot").children("span");
-        if (compileOptions.plotMode === "offline") {
-            $("#btn-plot").show();
-            $span.text("Plot First Samples");
-        } else if (compileOptions.plotMode === "manual") {
-            $("#btn-plot").show();
-            $span.text("Plot (Snapshot)");
-        } else $("#btn-plot").hide();
-        if (compileOptions.plotMode === "continuous") uiEnv.plotScope.mode = 2;
-        const $plotSR = $<HTMLInputElement>("#input-plot-sr");
-        if (compileOptions.plotMode === "offline") $plotSR.prop("disabled", false)[0].value = compileOptions.plotSR.toString();
-        else $plotSR.prop("disabled", true)[0].value = audioEnv.audioCtx ? audioEnv.audioCtx.sampleRate.toString() : "48000";
-        saveEditorParams();
-    });
-    $("#btn-plot").on("click", async () => {
-        if (compileOptions.plotMode === "offline") {
-            const code = uiEnv.fileManager.mainCode;
-            const { plot, plotSR, useDouble } = compileOptions;
-            const args = compileOptions.args.slice();
-            if (useDouble) args.push("-double");
-            const generator = new FaustMonoDspGenerator();
-            await generator.compile(faustCompiler, "main", code, args.join(" "));
-            const soundfileList = generator.getSoundfileList();
-            const offlineCtx = new OfflineAudioContext({ sampleRate: plotSR, length: 1 });
-            const soundfiles = await dspRunner.loadSoundfiles(offlineCtx, soundfileList);
-            generator.addSoundfiles(soundfiles);
-            const processor = await generator.createOfflineProcessor(plotSR, 128, undefined, offlineCtx);
-            const output = processor.render([], plot);
-            uiEnv.analyser.plotHandler(output, 0, undefined, true);
-            // TODO(ijc): should this happen immediately (before rendering is done?)
-            if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
-        } else { // eslint-disable-next-line no-lonely-if
-            if (audioEnv.dsp) uiEnv.analyser.draw();
-            else runDsp(uiEnv.fileManager.mainCode);
-        }
-    });
-    $("#tab-plot-ui").on("shown.bs.tab", () => uiEnv.plotScope.draw());
-    $<HTMLInputElement>("#input-plot-samps").on("change", (e) => {
-        const v = +e.currentTarget.value;
-        const bufferSize = (compileOptions.useWorklet ? 128 : compileOptions.bufferSize);
-        const fftSize = compileOptions.plotFFT || 256;
-        const step = Math.max(bufferSize, fftSize);
-        const v1 = Math.max((v === compileOptions.plot - +e.currentTarget.step ? Math.floor(v / step) : Math.ceil(v / step)) * step, step); // Spinner
-        compileOptions.plot = v1;
-        uiEnv.analyser.buffers = v1 / bufferSize;
-        e.currentTarget.step = step.toString();
-        e.currentTarget.value = v1.toString();
-        saveEditorParams();
-    })[0].value = compileOptions.plot.toString();
-    $<HTMLInputElement>("#input-plot-sr").on("change", (e) => {
-        compileOptions.plotSR = +e.currentTarget.value;
-        saveEditorParams();
-    })[0].value = compileOptions.plotSR.toString();
-    $<HTMLInputElement>("#check-draw-spectrogram").on("change", (e) => {
-        compileOptions.drawSpectrogram = e.currentTarget.checked;
-        uiEnv.plotScope.drawSpectrogram = compileOptions.drawSpectrogram;
-        uiEnv.inputScope.drawSpectrogram = compileOptions.drawSpectrogram;
-        uiEnv.outputScope.drawSpectrogram = compileOptions.drawSpectrogram;
-        saveEditorParams();
-    })[0].checked = compileOptions.drawSpectrogram;
-    // Plot
-    $<HTMLInputElement>("#select-plot-fftsize").on("change", (e) => {
-        compileOptions.plotFFT = +e.currentTarget.value as 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 | 65536;
-        uiEnv.analyser.fftSize = compileOptions.plotFFT;
-        $("#input-plot-samps").change();
-        saveEditorParams();
-    });
-    $<HTMLInputElement>("#select-plot-fftoverlap").on("change", (e) => {
-        compileOptions.plotFFTOverlap = +e.currentTarget.value as 1 | 2 | 4 | 8;
-        uiEnv.analyser.fftOverlap = compileOptions.plotFFTOverlap;
-        saveEditorParams();
-    });
+    new PlotController({
+        compileOptions,
+        audioEnv,
+        uiEnv,
+        faustCompiler,
+        dspRunner,
+        getMainCode: () => uiEnv.fileManager.mainCode,
+        runDsp,
+        saveEditorParams
+    }).bind();
     /**
      * Load options from URL, override current
      * Available params:
