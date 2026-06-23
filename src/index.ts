@@ -17,6 +17,15 @@ import type * as monaco from "monaco-editor";
 import type { VimMode } from "monaco-vim";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
 import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust, AudioData } from "@grame/faustwasm";
+import type {
+    FaustEditorAudioEnv,
+    FaustEditorCompileOptions,
+    FaustEditorEnv,
+    FaustEditorMIDIEnv,
+    FaustEditorUIEnv,
+    FaustExportTargets,
+    LegacyWaveSurferBackend
+} from "./runtime/types";
 import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
@@ -42,51 +51,6 @@ declare global {
         faustEnv: FaustEditorEnv;
         faustCompiler: FaustCompiler;
     }
-}
-type FaustEditorEnv = {
-    audioEnv: FaustEditorAudioEnv;
-    midiEnv: FaustEditorMIDIEnv;
-    uiEnv: FaustEditorUIEnv;
-    compileOptions: FaustEditorCompileOptions;
-    editor: monaco.editor.IStandaloneCodeEditor;
-    jQuery: JQueryStatic;
-    faustCompiler: FaustCompiler;
-    recorder: Recorder;
-    browserFS: typeof import("@zenfs/core").promises;
-};
-type FaustEditorAudioEnv = {
-    audioCtx?: AudioContext;
-    meterInput?: MeterNode;
-    gainInput?: GainNode;
-    gainUIInput?: GainUI;
-    splitterInput?: ChannelSplitterNode;
-    analyserInput?: AnalyserNode;
-    splitterOutput?: ChannelSplitterNode;
-    analyserOutput?: AnalyserNode;
-    inputs?: { [deviceId: string]: MediaStreamAudioSourceNode | MediaElementAudioSourceNode };
-    currentInput?: string;
-    destination?: MediaStreamAudioDestinationNode | AudioDestinationNode;
-    dsp?: FaustScriptProcessorNode | FaustAudioWorkletNode;
-    dspConnectedToOutput: boolean;
-    dspConnectedToInput: boolean;
-    inputEnabled: boolean;
-    outputEnabled: boolean;
-};
-type FaustEditorMIDIEnv = {
-    input: Input;
-};
-type FaustEditorUIEnv = {
-    analysersInited: boolean;
-    inputScope: Scope;
-    outputScope: Scope;
-    plotScope: StaticScope;
-    uiPopup?: Window;
-    analyser: Analyser;
-    fileManager: FileManager;
-};
-type FaustExportTargets = { [platform: string]: string[] };
-interface LegacyWaveSurferBackend extends WaveSurfer.WaveSurferBackend {
-    buffer: AudioBuffer;
 }
 
 const supportAudioWorklet = !!window.AudioWorklet;
