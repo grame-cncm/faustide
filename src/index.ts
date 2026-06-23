@@ -65,6 +65,7 @@ import { ExportController } from "./ui/ExportController";
 import { DspControlsController } from "./ui/DspControlsController";
 import { FaustUiController } from "./ui/FaustUiController";
 import { UrlParamsController } from "./ui/UrlParamsController";
+import { AlertController } from "./ui/AlertController";
 
 declare global {
     interface Window {
@@ -120,6 +121,7 @@ $(async () => {
     const diagramService = new DiagramService(faustSvgDiagrams, libFaust.fs());
     const exportService = new ExportService();
     const shareUrlService = new ShareUrlService();
+    const alertController = new AlertController();
     /**
      * To save dsp table to localStorage
      */
@@ -169,22 +171,6 @@ $(async () => {
         await projectPersistence.loadProject(compileOptions.saveCode);
     };
     /**
-     * To show Error at bottom of center
-     *
-     * @param {string} e
-     */
-    const showError = (e: Error | string) => {
-        // eslint-disable-next-line no-console
-        console.error(e);
-        $(".alert-faust-code>span").text(e instanceof Error ? e.message : e);
-        $("#alert-faust-code").css("visibility", "visible");
-    };
-    /**
-     * Hide error display
-     *
-     */
-    const clearError = () => $("#alert-faust-code").css("visibility", "hidden");
-    /**
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
@@ -217,7 +203,7 @@ $(async () => {
                     options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
                 }]);
             }
-            showError(result.error);
+            alertController.show(result.error);
             return { error: result.error, success: false };
         }
         // const $svg = $("#diagram-svg>svg");
@@ -226,7 +212,7 @@ $(async () => {
         const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
         $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
         $("#diagram-default").hide(); // hide "No Diagram" info
-        clearError(); // Supress error shown
+        alertController.clear(); // Supress error shown
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
@@ -287,7 +273,7 @@ $(async () => {
             }
         });
         if (!compileResult.success || !compileResult.node) {
-            showError(compileResult.error);
+            alertController.show(compileResult.error);
             isCompilingDsp = false;
             return { success: false, error: compileResult.error };
         }
@@ -298,7 +284,7 @@ $(async () => {
          */
         if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
         $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-        clearError(); // Supress error shown
+        alertController.clear(); // Supress error shown
         faustUiController.showCompiledDsp(node);
         saveEditorDspTable(); // Save the new DSP table to localStorage
         if (compileOptions.enableGuiBuilder) {
@@ -408,46 +394,22 @@ $(async () => {
         mainFile: compileOptions.mainFile,
         selectHandler: (fileName, content) => editor.setValue(content),
         saveHandler: async (fileName: string, content: string | Uint8Array, mainCode: string) => {
-            /*
-            let project: { [name: string]: string };
-            try {
-                project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
-            } catch (e) {
-                project = {};
-            }
-            project[fileName] = content;
-            try {
-                // safeStorage.setItem("faust_editor_project", JSON.stringify(project));
-            } catch (e) {
-                showError(e);
-            }
-            */
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 try {
                     await projectPersistence.saveFile(fileName, content);
                 } catch (e) {
-                    showError(e);
+                    alertController.show(e instanceof Error ? e : String(e));
                 }
             }, 1000);
             clearTimeout(rtCompileTimer);
             if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
         },
         deleteHandler: async (fileName) => {
-            /*
-            let project: { [name: string]: string };
-            try {
-                // project = JSON.parse(safeStorage.getItem("faust_editor_project")) || {};
-            } catch (e) {
-                return;
-            }
-            delete project[fileName];
-            safeStorage.setItem("faust_editor_project", JSON.stringify(project));
-            */
             try {
                 await projectPersistence.deleteFile(fileName);
             } catch (e) {
-                showError(e);
+                alertController.show(e instanceof Error ? e : String(e));
             }
         },
         mainFileChangeHandler: (filename, mainCode) => {
@@ -482,9 +444,7 @@ $(async () => {
     /**
      * Bind DOM events
      */
-    // Alerts
-    $(".alert>.close").on("click", e => $(e.currentTarget).parent().css("visibility", "hidden"));
-    $(".a-alert-faust-code-detail").on("click", e => $("#modal-alert-faust-code-detail .modal-body").text($(e.currentTarget).siblings("span").text()));
+    alertController.bind();
     // Tooltips
     $('[data-toggle="tooltip"]').tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
@@ -560,7 +520,7 @@ $(async () => {
         uiEnv,
         waveSurferFactory: WaveSurfer,
         initAudioCtx: deviceId => initAudioCtx(audioEnv, deviceId),
-        showError,
+        showError: error => alertController.show(error),
         onWaveSurferCreated: value => { wavesurfer = value; }
     }).bind();
     new AudioOutputController({
