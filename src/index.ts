@@ -23,7 +23,6 @@ import type {
     FaustEditorEnv,
     FaustEditorMIDIEnv,
     FaustEditorUIEnv,
-    FaustExportTargets,
     LegacyWaveSurferBackend
 } from "./runtime/types";
 import { Key2Midi } from "./Key2Midi";
@@ -48,6 +47,7 @@ import { ProjectPersistence } from "./runtime/ProjectPersistence";
 import { DiagramService } from "./runtime/DiagramService";
 import { AudioEngine } from "./runtime/AudioEngine";
 import { DspRunner } from "./runtime/DspRunner";
+import { ExportService } from "./runtime/ExportService";
 
 declare global {
     interface Window {
@@ -100,6 +100,7 @@ $(async () => {
         projectDir: PROJECT_DIR
     });
     const diagramService = new DiagramService(faustSvgDiagrams, libFaust.fs());
+    const exportService = new ExportService();
     /**
      * To save dsp table to localStorage
      */
@@ -822,99 +823,35 @@ $(async () => {
         $("#def-exp-loading").css("display", "inline-block");
         $("#qr-code").hide();
         $("#export-error").hide();
-        const form = new FormData();
         const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
         try {
-            // ZIP mode
-            const zip = new JSZip();
-            // Add all .lib files in the ZIP
-            uiEnv.fileManager._fileList.forEach((n) => {
-                if (n.endsWith(".lib")) zip.file(n, uiEnv.fileManager.getValue(n));
+            const file = await exportService.buildProjectZip({
+                name,
+                fileNames: uiEnv.fileManager._fileList,
+                getValue: fileName => uiEnv.fileManager.getValue(fileName),
+                mainCode: uiEnv.fileManager.mainCode
             });
-            // Add all .wav or .flac audio files in the ZIP
-            uiEnv.fileManager._fileList.forEach((n) => {
-                if (n.endsWith(".wav") || n.endsWith(".flac")) {
-                    zip.file(n, uiEnv.fileManager.getValue(n));
-                }
+            const { href } = await exportService.uploadAndPrecompile({
+                server,
+                file,
+                platform: $("#export-platform").val() as string,
+                arch: $("#export-arch").val() as string
             });
-            // Add the currently selected .dsp file in the ZIP
-            zip.file(`${name}.dsp`, `declare filename "${name}.dsp";\ndeclare name "${name}";\n${uiEnv.fileManager.mainCode}`);
-            // Send the ZIP file
-            const b = await zip.generateAsync({ type: "blob" });
-            form.append("file", new File([b], `${name}.zip`));
+            $("#a-export-download").attr({ href });
+            $("#export-download").show();
+            if (download === true) $("#export-download").click();
+            $("#qr-code").show();
+            QRCode.toCanvas(
+                $<HTMLCanvasElement>("#qr-code")[0],
+                href
+            );
         } catch (e) {
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
             $("#export-error").html(e).show();
-            return;
+        } finally {
+            $("#export-loading").css("display", "none");
+            $("#def-exp-loading").css("display", "none");
+            $("#def-exp-icon").show();
         }
-        $.ajax({
-            method: "POST",
-            url: `${server}/filepost`,
-            data: form,
-            contentType: false,
-            processData: false
-        }).done((shaKey) => {
-            const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-            if (matched) {
-                const plat = $("#export-platform").val();
-                let arch = $("#export-arch").val();
-                let target;
-                // Check the different possible targets
-                if (arch === "pwa" || arch === "pwa-poly") {
-                    target = "index.html";
-                } else if (plat === "chaos-stratus" && arch === "effect-installer") {
-                    target = "installer.sh"
-                } else if (plat === "android") {
-                    target = "binary.apk";
-                } else {
-                    target = "binary.zip";
-                }
-                const path = `${server}/${shaKey}/${plat}/${arch}`;
-                const href = `${server}/${shaKey}/${plat}/${arch}/${target}`;
-                $.ajax({
-                    method: "GET",
-                    url: `${path}/precompile`
-                }).done((result, status, jqXHR) => {
-                    if (result === "DONE") {
-                        // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
-                        const location = jqXHR.getResponseHeader("Location");
-                        $("#a-export-download").attr({ href });
-                        $("#export-download").show();
-                        if (download === true) {
-                            $("#export-download").click();
-                        }
-                        $("#qr-code").show();
-                        QRCode.toCanvas(
-                            $<HTMLCanvasElement>("#qr-code")[0],
-                            href
-                        );
-                        return;
-                    }
-                    $("#export-loading").css("display", "none");
-                    $("#def-exp-loading").css("display", "none");
-                    $("#def-exp-icon").show();
-                    $("#export-error").html(result).show();
-                }).fail((jqXHR, textStatus) => {
-                    $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-                }).always(() => {
-                    $("#export-loading").css("display", "none");
-                    $("#def-exp-loading").css("display", "none");
-                    $("#def-exp-icon").show();
-                });
-                return;
-            }
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
-            $("#export-error").html(shaKey).show();
-        }).fail((jqXHR, textStatus) => {
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
-            $("#export-error").html(textStatus + ": " + jqXHR.responseText).show();
-        });
     };
     const getTargets = async (server: string) => {
         $("#export-platform").add("#export-arch").empty();
@@ -922,8 +859,7 @@ $(async () => {
         $("#export-download").off("click");
         $("#a-export-download").off("click");
         $("#export-submit").prop("disabled", true).off("click");
-        const response = await fetch(`${server}/targets`);
-        const targets: FaustExportTargets = await response.json();
+        const targets = await exportService.fetchTargets(server);
         const plats = Object.keys(targets);
         plats.sort(); // sort platform names in alphabetic order
         if (plats.length) {
@@ -1476,51 +1412,22 @@ $(async () => {
         else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
         // From GUI Builder
         else if (data.type === "export") {
-            const form = new FormData();
-            const fileName = uiEnv.fileManager.mainFileName;
-            const name = uiEnv.fileManager.mainFileNameWithoutSuffix;
-            const plat = data.plat || "web";
-            const arch = data.arch || "wap";
-            const expandedCode = faustCompiler.expandDSP(uiEnv.fileManager.mainCode, compileOptions.args.join(" "));
-            form.append("file", new File([`declare filename "${fileName}"; declare name "${name}"; ${expandedCode}`], `${fileName}`));
-            $.ajax({
-                method: "POST",
-                url: `${server}/filepost`,
-                data: form,
-                contentType: false,
-                processData: false
-            }).done((shaKey) => {
-                const matched = shaKey.match(/^[0-9A-Fa-f]+$/);
-                if (matched) {
-                    let target;
-                    // Check the different possible targets
-                    if (arch === "pwa" || arch === "pwa-poly") {
-                        target = "index.html";
-                    } else if (plat === "chaos-stratus") {
-                        target = "installer.sh"
-                    } else if (plat === "android") {
-                        target = "binary.apk";
-                    } else {
-                        target = "binary.zip";
-                    }
-                    const path = `${server}/${shaKey}/${plat}/${arch}`;
-                    const href = `${server}/${shaKey}/${plat}/${arch}/${target}`;
-                    $.ajax({
-                        method: "GET",
-                        url: `${path}/precompile`
-                    }).done((result, status, jqXHR) => {
-                        if (result === "DONE") {
-                            // faustservice MAY return Location : https://github.com/grame-cncm/faustservice/pull/10
-                            const location = jqXHR.getResponseHeader("Location");
-                            ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
-                        }
-                    }).fail((jqXHR, textStatus) => {
-                        throw new Error(textStatus + ": " + jqXHR.responseText);
-                    });
-                }
-            }).fail((jqXHR, textStatus) => {
-                throw new Error(textStatus + ": " + jqXHR.responseText);
-            });
+            void (async () => {
+                const fileName = uiEnv.fileManager.mainFileName;
+                const name = uiEnv.fileManager.mainFileNameWithoutSuffix;
+                const plat = data.plat || "web";
+                const arch = data.arch || "wap";
+                const expandedCode = faustCompiler.expandDSP(uiEnv.fileManager.mainCode, compileOptions.args.join(" "));
+                const file = exportService.buildSourceFile({ fileName, name, code: expandedCode });
+                const { href } = await exportService.uploadAndPrecompile({
+                    server,
+                    file,
+                    platform: plat,
+                    arch,
+                    chaosStratusInstallerForAnyArch: true
+                });
+                ((e.originalEvent as MessageEvent).source as WindowProxy).postMessage({ type: "exported", href }, "*");
+            })();
         }
     });
     // Close DSP UI Popup when main window is closed
