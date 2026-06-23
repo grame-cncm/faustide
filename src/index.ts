@@ -22,8 +22,7 @@ import type {
     FaustEditorCompileOptions,
     FaustEditorEnv,
     FaustEditorMIDIEnv,
-    FaustEditorUIEnv,
-    LegacyWaveSurferBackend
+    FaustEditorUIEnv
 } from "./runtime/types";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
@@ -56,6 +55,7 @@ import { MidiController } from "./ui/MidiController";
 import { RecorderController } from "./ui/RecorderController";
 import { PlotController } from "./ui/PlotController";
 import { AudioOutputController } from "./ui/AudioOutputController";
+import { AudioInputController } from "./ui/AudioInputController";
 
 declare global {
     interface Window {
@@ -861,73 +861,15 @@ $(async () => {
         }
     });
     midiController.bind();
-    /**
-     * Audio Inputs
-     * Use WaveSurfer lib with MediaElement and <audio />
-     */
     let wavesurfer: WaveSurfer;
-    $<HTMLSelectElement>("#select-audio-input").on("change", async (e) => {
-        const id = e.currentTarget.value;
-        if (audioEnv.currentInput === id) return;
-        if (audioEnv.audioCtx && audioEnv.currentInput) {
-            const gain = audioEnv.gainInput;
-            const input = audioEnv.inputs[audioEnv.currentInput];
-            if (gain) input.disconnect(gain); // Disconnect
-        }
-        if (!wavesurfer) {
-            wavesurfer = WaveSurfer.create({
-                container: $("#source-waveform")[0],
-                audioContext: audioEnv.audioCtx,
-                backend: "MediaElement",
-                cursorColor: "#EEE",
-                progressColor: "#888",
-                waveColor: "#BBB",
-                height: 60,
-                splitChannels: true
-            });
-            wavesurfer.on("play", () => {
-                $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
-                $("#input-analyser-ui").show();
-                if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
-            });
-            wavesurfer.on("pause", () => {
-                $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
-                $("#input-analyser-ui").hide();
-                if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-            });
-            wavesurfer.on("finish", () => {
-                if ($("#btn-source-loop").hasClass("active")) wavesurfer.play();
-                else {
-                    $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
-                    $("#input-analyser-ui").hide();
-                    if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-                }
-            });
-            wavesurfer.on("waveform-ready", () => {
-                audioEnv.gainUIInput.channels = (wavesurfer.backend as LegacyWaveSurferBackend).buffer.numberOfChannels;
-            });
-            wavesurfer.load("./02-XYLO1.mp3");
-        }
-        // MediaElementSource, Waveform
-        if (id === "-1") {
-            $("#source-ui").show();
-            $("#input-analyser-ui").hide();
-            if (uiEnv.inputScope) uiEnv.inputScope.disabled = true;
-            audioEnv.gainUIInput.channels = (wavesurfer.backend as LegacyWaveSurferBackend).buffer ? (wavesurfer.backend as LegacyWaveSurferBackend).buffer.numberOfChannels : 2;
-        } else {
-            $("#source-ui").hide();
-            $("#input-analyser-ui").show();
-            if (uiEnv.inputScope) uiEnv.inputScope.disabled = false;
-            audioEnv.gainUIInput.channels = 2;
-        }
-        // init audio environment
-        await initAudioCtx(audioEnv, id);
-        const gain = audioEnv.gainInput;
-        const input = audioEnv.inputs[id];
-        audioEnv.currentInput = id;
-        audioEnv.inputEnabled = true;
-        if (gain) input.connect(gain);
-    });
+    new AudioInputController({
+        audioEnv,
+        uiEnv,
+        waveSurferFactory: WaveSurfer,
+        initAudioCtx: deviceId => initAudioCtx(audioEnv, deviceId),
+        showError,
+        onWaveSurferCreated: value => { wavesurfer = value; }
+    }).bind();
     new AudioOutputController({
         audioEnv,
         getSupportMediaStreamDestination: () => supportMediaStreamDestination,
@@ -935,69 +877,6 @@ $(async () => {
         initAnalysersUI: () => initAnalysersUI(uiEnv, audioEnv),
         setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
     }).bind();
-    // Waveform
-    $("#btn-source-play").on("click", () => {
-        if (!wavesurfer || !wavesurfer.isReady) return;
-        if (wavesurfer.isPlaying()) {
-            wavesurfer.pause();
-        } else {
-            wavesurfer.play();
-        }
-    });
-    $("#btn-source-rewind").on("click", () => {
-        if (!wavesurfer.isReady) return;
-        wavesurfer.seekTo(0);
-    });
-    $("#btn-source-loop").on("click", (e) => {
-        $(e.currentTarget).toggleClass("active");
-    });
-    // Waveform drag'n'drop
-    $("#source-waveform").on("dragenter dragover", (e) => {
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#source-overlay").show();
-        }
-    });
-    $("#source-overlay").on("dragleave dragend", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        $(e.currentTarget).hide();
-    });
-    $("#source-overlay").on("dragenter dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#source-overlay").on("drop", (e) => {
-        $(e.currentTarget).hide();
-        if (!wavesurfer.isReady) return;
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.files.length) {
-            // Stop the propagation of the event
-            e.preventDefault();
-            e.stopPropagation();
-            const gain = audioEnv.gainInput;
-            let input = audioEnv.inputs[-1];
-            if (gain) input.disconnect(gain); // Disconnect
-            audioEnv.inputEnabled = false;
-
-            const file = event.dataTransfer.files[0];
-            try {
-                wavesurfer.load(URL.createObjectURL(file));
-            } catch (e) {
-                console.error(e); // eslint-disable-line no-console
-                showError("Cannot load sound file: " + e.message);
-                return;
-            }
-            if ($("#source-waveform audio").length) {
-                audioEnv.inputs[-1] = audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
-                input = audioEnv.inputs[-1];
-            }
-            audioEnv.inputEnabled = true;
-            if (gain) input.connect(gain);
-        }
-    });
     // Append connected audio devices
     const handleMediaDeviceChange = async () => {
         try {
