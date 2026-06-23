@@ -67,6 +67,7 @@ import { FaustUiController } from "./ui/FaustUiController";
 import { UrlParamsController } from "./ui/UrlParamsController";
 import { AlertController } from "./ui/AlertController";
 import { DspCompileController } from "./ui/DspCompileController";
+import { StartupControlsController } from "./ui/StartupControlsController";
 
 declare global {
     interface Window {
@@ -500,16 +501,13 @@ $(async () => {
     uiEnv.outputScope.disabled = true;
     $<HTMLSelectElement>("#select-audio-input").change();
     await urlParamsController.load(window.location.search);
-    $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
-    $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
-    dspControlsController.applyUseWorkletMode(compileOptions.useWorklet, false);
-    $("#select-plot-mode").children(`option[value=${compileOptions.plotMode}]`).prop("selected", true).change();
-    $("#select-plot-fftsize").children(`option[value=${compileOptions.plotFFT}]`).prop("selected", true).change();
-    $("#select-plot-fftoverlap").children(`option[value=${compileOptions.plotFFTOverlap}]`).prop("selected", true).change();
-    $("#input-plot-samps").change();
-    $("#check-draw-spectrogram").change();
-    $<HTMLInputElement>("#check-realtime-compile")[0].checked = compileOptions.realtimeCompile;
-    if (compileOptions.realtimeCompile && !audioEnv.dsp) setTimeout(updateDiagram, 0, uiEnv.fileManager.mainCode);
+    new StartupControlsController({
+        compileOptions,
+        audioEnv,
+        fileManager: uiEnv.fileManager,
+        dspControlsController,
+        updateDiagram
+    }).apply();
     window.faustEnv = faustEnv;
 });
 /**
