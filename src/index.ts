@@ -61,6 +61,7 @@ import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
 import { ExamplesController } from "./ui/ExamplesController";
 import { ShareModalController } from "./ui/ShareModalController";
+import { ExportController } from "./ui/ExportController";
 
 declare global {
     interface Window {
@@ -636,94 +637,16 @@ $(async () => {
         runDsp,
         updateDiagram
     }).bind();
-    /**
-     * Export
-     * Append options to export model
-     */
-    // If true, the download argument will force the download of the generated target
-    const exportProgram = async (download: boolean) => {
-        $("#export-download").hide();
-        $("#export-loading").css("display", "inline-block");
-        $("#def-exp-icon").hide();
-        $("#def-exp-loading").css("display", "inline-block");
-        $("#qr-code").hide();
-        $("#export-error").hide();
-        const name = ($("#export-name").val() as string).replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-        try {
-            const file = await exportService.buildProjectZip({
-                name,
-                fileNames: uiEnv.fileManager._fileList,
-                getValue: fileName => uiEnv.fileManager.getValue(fileName),
-                mainCode: uiEnv.fileManager.mainCode
-            });
-            const { href } = await exportService.uploadAndPrecompile({
-                server,
-                file,
-                platform: $("#export-platform").val() as string,
-                arch: $("#export-arch").val() as string
-            });
-            $("#a-export-download").attr({ href });
-            $("#export-download").show();
-            if (download === true) $("#export-download").click();
-            $("#qr-code").show();
-            QRCode.toCanvas(
-                $<HTMLCanvasElement>("#qr-code")[0],
-                href
-            );
-        } catch (e) {
-            $("#export-error").html(e).show();
-        } finally {
-            $("#export-loading").css("display", "none");
-            $("#def-exp-loading").css("display", "none");
-            $("#def-exp-icon").show();
-        }
-    };
-    const getTargets = async (server: string) => {
-        $("#export-platform").add("#export-arch").empty();
-        $("#export-platform").off("change");
-        $("#export-download").off("click");
-        $("#a-export-download").off("click");
-        $("#export-submit").prop("disabled", true).off("click");
-        const targets = await exportService.fetchTargets(server);
-        const plats = Object.keys(targets);
-        plats.sort(); // sort platform names in alphabetic order
-        if (plats.length) {
-            plats.forEach((plat, i) => $("#export-platform").append(new Option(plat, plat, i === 0)));
-            $("#export-platform").val(compileOptions.exportPlatform);
-            targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-            $("#export-arch").val(compileOptions.exportArch).change();
-        }
-        $("#modal-export").on("shown.bs.modal", () => $("#export-name").val(uiEnv.fileManager.mainFileNameWithoutSuffix));
-        $("#export-name").on("keydown", (e) => {
-            if (e.key.match(/[^a-zA-Z0-9_]/)) e.preventDefault();
-        });
-        $<HTMLSelectElement>("#export-platform").on("change", (e) => {
-            compileOptions.exportPlatform = e.currentTarget.value;
-            saveEditorParams();
-            $("#export-arch").empty();
-            targets[compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
-        });
-        $<HTMLSelectElement>("#export-arch").on("change", (e) => {
-            compileOptions.exportArch = e.currentTarget.value;
-            saveEditorParams();
-            // eslint-disable-next-line no-console
-            console.log(compileOptions);
-        });
-        $("#export-download").on("click", () => $("#a-export-download")[0].click());
-        $("#a-export-download").on("click", e => e.stopPropagation());
-        $("#export-submit").prop("disabled", false).on("click", () => {
-            exportProgram(false);
-        });
-    };
-    $<HTMLInputElement>("#export-server").val(server).on("change", (e) => {
-        server = e.currentTarget.value;
-        getTargets(e.currentTarget.value);
-    });
-    try {
-        await getTargets(server);
-    } catch (e) {
-        console.error(e as Error); // eslint-disable-line no-console
-    }
+    await new ExportController({
+        compileOptions,
+        fileManager: uiEnv.fileManager,
+        exportService,
+        qrCode: QRCode,
+        getServer: () => server,
+        setServer: value => { server = value; },
+        saveEditorParams,
+        onError: error => console.error(error) // eslint-disable-line no-console
+    }).bind();
     new ShareModalController({
         compileOptions,
         fileManager: uiEnv.fileManager,
@@ -799,10 +722,6 @@ $(async () => {
         if ($("#tab-diagram").hasClass("active") || compileOptions.plotMode === "offline") $("#tab-faust-ui").tab("show");
         // const dspOutputHandler = FaustUI.main(node.getJSON(), $("#faust-ui"), (path: string, val: number) => node.setParamValue(path, val));
         // node.setOutputParamHandler(dspOutputHandler);
-    });
-    // Default export button
-    $(".btn-def-exp").prop("disabled", false).on("click", async () => {
-        exportProgram(true);
     });
     /**
      * Bind message event for changing dsp params on receiving msg from ui window
