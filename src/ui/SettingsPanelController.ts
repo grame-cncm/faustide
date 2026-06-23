@@ -39,6 +39,9 @@ export class SettingsPanelController {
         this.updateDiagram = options.updateDiagram;
     }
 
+    /**
+     * Initializes form state from compileOptions and binds setting changes.
+     */
     bind() {
         $<HTMLInputElement>("#enable-gui-editor").on("change", e => this.applyGuiBuilderEnabled(e.currentTarget.checked))[0].checked = this.compileOptions.enableGuiBuilder;
         $<HTMLInputElement>("#gui-builder-url")
@@ -55,6 +58,9 @@ export class SettingsPanelController {
         $<HTMLInputElement>("#check-popup").on("change", e => this.applyPopup(e.currentTarget.checked))[0].checked = this.compileOptions.popup;
     }
 
+    /**
+     * Enables or hides GUI Builder integration.
+     */
     private applyGuiBuilderEnabled(checked: boolean) {
         if (!checked) {
             $("#nav-item-gui-builder").hide();
@@ -64,23 +70,35 @@ export class SettingsPanelController {
         this.saveEditorParams();
     }
 
+    /**
+     * Stores a custom GUI Builder URL or restores the legacy default.
+     */
     private applyGuiBuilderUrl(value: string) {
         this.compileOptions.guiBuilderUrl = value || "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/";
         this.saveEditorParams();
     }
 
+    /**
+     * Updates polyphony and recompiles when realtime DSP is active.
+     */
     private applyVoices(voices: number) {
         this.compileOptions.voices = voices;
         this.saveEditorParams();
         if (this.compileOptions.realtimeCompile && this.audioEnv.dsp) this.runDsp(this.uiEnv.fileManager.mainCode);
     }
 
+    /**
+     * Updates ScriptProcessor buffer size and recompiles when needed.
+     */
     private applyBufferSize(bufferSize: number) {
         this.compileOptions.bufferSize = bufferSize as FaustEditorCompileOptions["bufferSize"];
         this.saveEditorParams();
         if (this.compileOptions.realtimeCompile && this.audioEnv.dsp) this.runDsp(this.uiEnv.fileManager.mainCode);
     }
 
+    /**
+     * Toggles double precision and refreshes the current DSP or diagram.
+     */
     private applyDouble(checked: boolean) {
         this.compileOptions.useDouble = checked;
         this.saveEditorParams();
@@ -90,22 +108,34 @@ export class SettingsPanelController {
         }
     }
 
+    /**
+     * Persists whether project source files should be stored locally.
+     */
     private applySaveCode(checked: boolean) {
         this.compileOptions.saveCode = checked;
         this.saveEditorParams();
     }
 
+    /**
+     * Persists whether DSP parameter values should be restored.
+     */
     private applySaveParams(checked: boolean) {
         this.compileOptions.saveParams = checked;
         this.saveEditorParams();
     }
 
+    /**
+     * Persists DSP factory cache preference and writes the current cache.
+     */
     private applySaveDsp(checked: boolean) {
         this.compileOptions.saveDsp = checked;
         this.saveEditorDspTable();
         this.saveEditorParams();
     }
 
+    /**
+     * Toggles realtime compile and immediately refreshes the current output.
+     */
     private applyRealtimeCompile(checked: boolean) {
         this.compileOptions.realtimeCompile = checked;
         this.saveEditorParams();
@@ -115,6 +145,9 @@ export class SettingsPanelController {
         else this.updateDiagram(code);
     }
 
+    /**
+     * Persists whether Faust UI should open in an external popup.
+     */
     private applyPopup(checked: boolean) {
         this.compileOptions.popup = checked;
         this.saveEditorParams();

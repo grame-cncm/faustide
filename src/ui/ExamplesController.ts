@@ -43,11 +43,17 @@ export class ExamplesController {
         this.updateDiagram = options.updateDiagram;
     }
 
+    /**
+     * Starts loading the examples tree and binds delegated clicks for examples.
+     */
     bind() {
         this.loadExamplesMenu();
         $("#tab-examples").on("click", ".faust-example", e => this.loadExample(e));
     }
 
+    /**
+     * Fetches the static examples index and renders it into the dropdown.
+     */
     private loadExamplesMenu() {
         this.fetchResource("./examples.json")
             .then(response => response.json())
@@ -57,6 +63,9 @@ export class ExamplesController {
             }).catch(() => undefined);
     }
 
+    /**
+     * Recursively appends files and submenus using the legacy Bootstrap markup.
+     */
     private appendTreeItem(tree: DirectoryTree, $menu: JQuery<HTMLElement>) {
         if (tree.type === "file") {
             const $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(tree.name).data("path", tree.path);
@@ -76,6 +85,9 @@ export class ExamplesController {
         $a.dropdown();
     }
 
+    /**
+     * Fetches a selected example file and imports it into the current project.
+     */
     private loadExample(e: JQuery.ClickEvent) {
         e.preventDefault();
         e.stopPropagation();
@@ -92,12 +104,18 @@ export class ExamplesController {
         $("#tab-examples").dropdown("toggle");
     }
 
+    /**
+     * Preserves realtime compile behavior after importing an example.
+     */
     private recompileIfNeeded() {
         if (!this.compileOptions.realtimeCompile) return;
         if (this.audioEnv.dsp) this.runDsp(this.fileManager.mainCode);
         else this.updateDiagram(this.fileManager.mainCode);
     }
 
+    /**
+     * Applies the historical example filename sanitization.
+     */
     private sanitizeFileName(fileName: string) {
         return fileName.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
     }

@@ -38,10 +38,16 @@ export class AudioInputController {
         this.onWaveSurferCreated = options.onWaveSurferCreated;
     }
 
+    /**
+     * Returns the lazily-created WaveSurfer instance for layout integrations.
+     */
     getWaveSurfer() {
         return this.wavesurfer;
     }
 
+    /**
+     * Binds input selector, waveform controls, loop toggle, and drag-and-drop.
+     */
     bind() {
         $<HTMLSelectElement>("#select-audio-input").on("change", e => this.selectInput(e.currentTarget.value));
         $("#btn-source-play").on("click", () => this.toggleSourcePlayback());
@@ -50,6 +56,9 @@ export class AudioInputController {
         this.bindWaveformDrop();
     }
 
+    /**
+     * Switches between file-backed source input and hardware audio inputs.
+     */
     private async selectInput(id: string) {
         if (this.audioEnv.currentInput === id) return;
         this.disconnectCurrentInput();
@@ -63,6 +72,9 @@ export class AudioInputController {
         if (gain) input.connect(gain);
     }
 
+    /**
+     * Disconnects the previous input from the shared input gain node.
+     */
     private disconnectCurrentInput() {
         if (!this.audioEnv.audioCtx || !this.audioEnv.currentInput) return;
         const gain = this.audioEnv.gainInput;
@@ -70,6 +82,9 @@ export class AudioInputController {
         if (gain) input.disconnect(gain);
     }
 
+    /**
+     * Lazily creates WaveSurfer once its source UI is first needed.
+     */
     private ensureWaveSurfer() {
         if (this.wavesurfer) return this.wavesurfer;
         this.wavesurfer = this.waveSurferFactory.create({
@@ -88,6 +103,9 @@ export class AudioInputController {
         return this.wavesurfer;
     }
 
+    /**
+     * Mirrors WaveSurfer playback events into analyser and play-button state.
+     */
     private bindWaveSurferEvents(wavesurfer: WaveSurfer) {
         wavesurfer.on("play", () => {
             $("#btn-source-play .fa-play").removeClass("fa-play").addClass("fa-pause");
@@ -106,6 +124,9 @@ export class AudioInputController {
         });
     }
 
+    /**
+     * Shows source-file UI or hardware analyser UI for the selected input.
+     */
     private applyInputUi(id: string, wavesurfer: WaveSurfer) {
         if (id === "-1") {
             $("#source-ui").show();
@@ -121,12 +142,18 @@ export class AudioInputController {
         }
     }
 
+    /**
+     * Resets play-button and input analyser state after playback stops.
+     */
     private hideInputAnalyser() {
         $("#btn-source-play .fa-pause").removeClass("fa-pause").addClass("fa-play");
         $("#input-analyser-ui").hide();
         if (this.uiEnv.inputScope) this.uiEnv.inputScope.disabled = true;
     }
 
+    /**
+     * Toggles WaveSurfer playback from the source play button.
+     */
     private toggleSourcePlayback() {
         const wavesurfer = this.wavesurfer;
         if (!wavesurfer || !wavesurfer.isReady) return;
@@ -134,12 +161,18 @@ export class AudioInputController {
         else wavesurfer.play();
     }
 
+    /**
+     * Seeks the source waveform back to the beginning.
+     */
     private rewindSource() {
         const wavesurfer = this.wavesurfer;
         if (!wavesurfer || !wavesurfer.isReady) return;
         wavesurfer.seekTo(0);
     }
 
+    /**
+     * Binds drag-and-drop for replacing the file-backed source waveform.
+     */
     private bindWaveformDrop() {
         $("#source-waveform").on("dragenter dragover", (e) => {
             const event = e.originalEvent as DragEvent;
@@ -161,6 +194,9 @@ export class AudioInputController {
         $("#source-overlay").on("drop", e => this.dropSourceFile(e));
     }
 
+    /**
+     * Loads a dropped audio file into WaveSurfer and reconnects its media node.
+     */
     private dropSourceFile(e: JQuery.DropEvent) {
         $(e.currentTarget).hide();
         const wavesurfer = this.wavesurfer;

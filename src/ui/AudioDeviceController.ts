@@ -27,6 +27,10 @@ export class AudioDeviceController {
         this.setSupportMediaStreamDestination = options.setSupportMediaStreamDestination;
     }
 
+    /**
+     * Requests device permission, populates selectors, and subscribes to
+     * browser devicechange notifications.
+     */
     async bind() {
         if (!this.mediaDevices) return;
         await this.requestAudioPermission();
@@ -47,6 +51,9 @@ export class AudioDeviceController {
         this.appendDevices(devices, $selectInput, $selectOutput);
     }
 
+    /**
+     * Synchronizes selector options after devices are added or removed.
+     */
     private async handleMediaDeviceChange() {
         await this.requestAudioPermission();
         const devices = await this.mediaDevices.enumerateDevices();
@@ -57,12 +64,18 @@ export class AudioDeviceController {
         this.appendDevices(devices, $selectInput, $selectOutput);
     }
 
+    /**
+     * Best-effort permission request so device labels and lists are available.
+     */
     private async requestAudioPermission() {
         try {
             await this.mediaDevices.getUserMedia({ audio: true });
         } catch (e) { } // eslint-disable-line no-empty
     }
 
+    /**
+     * Removes stale device options and falls back to the default option.
+     */
     private removeMissingOptions($select: JQuery<HTMLElement>, devices: MediaDeviceInfo[], kind: MediaDeviceKind) {
         $select.children("option").each((i, e: HTMLOptionElement) => {
             if (e.value === "-1") return;
@@ -73,6 +86,9 @@ export class AudioDeviceController {
         });
     }
 
+    /**
+     * Adds newly discovered input/output devices without duplicating options.
+     */
     private appendDevices(devices: MediaDeviceInfo[], $selectInput: JQuery<HTMLElement>, $selectOutput?: JQuery<HTMLElement>) {
         devices.forEach((device) => {
             if (!device.deviceId) return;

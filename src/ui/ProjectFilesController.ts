@@ -38,6 +38,10 @@ export class ProjectFilesController {
         this.updateDiagram = options.updateDiagram;
     }
 
+    /**
+     * Connects toolbar buttons, hidden file input, download link behavior, and
+     * editor drag-and-drop listeners.
+     */
     bind() {
         $("#btn-upload").on("click", () => {
             $("#input-upload").click();
@@ -51,6 +55,9 @@ export class ProjectFilesController {
         this.bindEditorDrop();
     }
 
+    /**
+     * Reads a browser File and creates a sanitized project file from it.
+     */
     private async importFile(file?: File) {
         if (!file) return;
         const code = await this.readFileAsText(file);
@@ -58,6 +65,9 @@ export class ProjectFilesController {
         this.recompileIfNeeded();
     }
 
+    /**
+     * Serializes all FileManager entries into a downloadable project ZIP.
+     */
     private async saveZip() {
         const zip = this.createZip();
         this.fileManager._fileList.forEach(n => zip.file(n, this.fileManager.getValue(n)));
@@ -67,6 +77,9 @@ export class ProjectFilesController {
         setTimeout(() => URL.revokeObjectURL(uri), 5000);
     }
 
+    /**
+     * Binds the central editor drop target and overlay visibility behavior.
+     */
     private bindEditorDrop() {
         $("#top").on("dragenter dragover", (e) => {
             const event = e.originalEvent as DragEvent;
@@ -88,6 +101,9 @@ export class ProjectFilesController {
         $("#editor-overlay").on("drop", e => this.dropFile(e));
     }
 
+    /**
+     * Handles a file dropped onto the editor overlay.
+     */
     private async dropFile(e: JQuery.DropEvent) {
         $(e.currentTarget).hide();
         const event = e.originalEvent as DragEvent;
@@ -97,16 +113,25 @@ export class ProjectFilesController {
         await this.importFile(event.dataTransfer.files[0]);
     }
 
+    /**
+     * Preserves realtime compile behavior after importing a project file.
+     */
     private recompileIfNeeded() {
         if (!this.compileOptions.realtimeCompile) return;
         if (this.audioEnv.dsp) this.runDsp(this.fileManager.mainCode);
         else this.updateDiagram(this.fileManager.mainCode);
     }
 
+    /**
+     * Keeps imported filenames compatible with the project file model.
+     */
     private sanitizeFileName(fileName: string) {
         return fileName.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
     }
 
+    /**
+     * Default browser FileReader adapter used by production code.
+     */
     private static readFileAsText(file: File) {
         return new Promise<string>((resolve) => {
             const reader = new FileReader();

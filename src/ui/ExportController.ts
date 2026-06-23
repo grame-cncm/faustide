@@ -41,6 +41,12 @@ export class ExportController {
         this.onError = options.onError || (() => undefined);
     }
 
+    /**
+     * Wires the export modal, default export button, and initial target list.
+     *
+     * This method is async because the legacy startup path waits for target
+     * discovery before the rest of the UI is considered initialized.
+     */
     async bind() {
         $<HTMLInputElement>("#export-server").val(this.getServer()).on("change", e => this.changeServer(e.currentTarget.value));
         $(".btn-def-exp").prop("disabled", false).on("click", () => this.exportProgram(true));
@@ -51,6 +57,12 @@ export class ExportController {
         }
     }
 
+    /**
+     * Builds the export ZIP, uploads it to faustservice, and updates the modal
+     * with a download link plus QR code.
+     *
+     * @param download when true, triggers the generated download immediately.
+     */
     private async exportProgram(download: boolean) {
         this.showExportLoading();
         const name = this.sanitizeName($("#export-name").val() as string);
@@ -79,6 +91,10 @@ export class ExportController {
         }
     }
 
+    /**
+     * Refreshes available platform and architecture choices from a faustservice
+     * endpoint, then binds modal controls that depend on those targets.
+     */
     private async loadTargets(server: string) {
         this.resetTargetControls();
         const targets = await this.exportService.fetchTargets(server);
@@ -100,6 +116,9 @@ export class ExportController {
         $("#export-submit").prop("disabled", false).on("click", () => this.exportProgram(false));
     }
 
+    /**
+     * Clears target-dependent controls before fetching a new target table.
+     */
     private resetTargetControls() {
         $("#export-platform").add("#export-arch").empty();
         $("#export-platform").off("change");
@@ -108,11 +127,17 @@ export class ExportController {
         $("#export-submit").prop("disabled", true).off("click");
     }
 
+    /**
+     * Stores the selected service URL and reloads its target list.
+     */
     private changeServer(server: string) {
         this.setServer(server);
         this.loadTargets(server).catch(this.onError);
     }
 
+    /**
+     * Persists the selected platform and repopulates architectures for it.
+     */
     private changePlatform(platform: string, targets: Record<string, string[]>) {
         this.compileOptions.exportPlatform = platform;
         this.saveEditorParams();
@@ -120,11 +145,17 @@ export class ExportController {
         targets[this.compileOptions.exportPlatform].forEach((arch, i) => $("#export-arch").append(new Option(arch, arch, i === 0)));
     }
 
+    /**
+     * Persists the selected architecture.
+     */
     private changeArch(arch: string) {
         this.compileOptions.exportArch = arch;
         this.saveEditorParams();
     }
 
+    /**
+     * Shows both modal and default-button loading indicators while exporting.
+     */
     private showExportLoading() {
         $("#export-download").hide();
         $("#export-loading").css("display", "inline-block");
@@ -134,12 +165,18 @@ export class ExportController {
         $("#export-error").hide();
     }
 
+    /**
+     * Restores export buttons after success or failure.
+     */
     private hideExportLoading() {
         $("#export-loading").css("display", "none");
         $("#def-exp-loading").css("display", "none");
         $("#def-exp-icon").show();
     }
 
+    /**
+     * Applies faustservice-safe export naming while preserving legacy fallback.
+     */
     private sanitizeName(name: string) {
         return name.replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
     }

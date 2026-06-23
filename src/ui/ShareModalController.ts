@@ -34,17 +34,26 @@ export class ShareModalController {
         this.execCopy = options.execCopy || (() => document.execCommand("copy"));
     }
 
+    /**
+     * Binds modal show, autorun changes, and copy button actions.
+     */
     bind() {
         $("#modal-share").on("shown.bs.modal", () => this.refreshShareUrl());
         $("#share-autorun").on("change", () => this.refreshShareUrl());
         $("#share-btn-copy").on("click", e => this.copyShareUrl($(e.currentTarget)));
     }
 
+    /**
+     * Rebuilds the share URL from current project and modal state.
+     */
     private refreshShareUrl() {
         $("#share-btn-copy").html("Copy");
         $("#share-url").val(this.makeURL());
     }
 
+    /**
+     * Converts UI state into ShareUrlService build options.
+     */
     private makeURL() {
         const location = this.locationProvider();
         return this.shareUrlService.build({
@@ -57,6 +66,10 @@ export class ShareModalController {
         });
     }
 
+    /**
+     * Copies the generated URL using Clipboard API or the legacy selection
+     * fallback, then marks the button as successful.
+     */
     private copyShareUrl($button: JQuery<HTMLElement>) {
         const url = $("#share-url").val() as string;
         if (this.clipboard) {
