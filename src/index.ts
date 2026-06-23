@@ -64,6 +64,7 @@ import { ShareModalController } from "./ui/ShareModalController";
 import { ExportController } from "./ui/ExportController";
 import { DspControlsController } from "./ui/DspControlsController";
 import { FaustUiController } from "./ui/FaustUiController";
+import { UrlParamsController } from "./ui/UrlParamsController";
 
 declare global {
     interface Window {
@@ -509,61 +510,14 @@ $(async () => {
         runDsp,
         saveEditorParams
     }).bind();
-    /**
-     * Load options from URL, override current
-     * Available params:
-     * {boolean} autorun
-     * {boolean} realtime_compile
-     * {string} name - as string
-     * {string} code - as URL to fetch
-     * {string} inline - as Base64URL (should be url safe version)
-     * {string} code_string - as string
-     * {number} voices - poly voices
-     * {number} buffer_size - buffer size
-     *
-     * @param {string} url
-     * @returns
-     */
-    const loadURLParams = async (url: string) => {
-        const params = await shareUrlService.load(url);
-        if (params.realtimeCompile !== undefined) {
-            compileOptions.realtimeCompile = params.realtimeCompile;
-            saveEditorParams();
-        }
-        if (params.voices !== undefined) {
-            compileOptions.voices = params.voices;
-            saveEditorParams();
-        }
-        if (params.bufferSize !== undefined) {
-            compileOptions.bufferSize = params.bufferSize;
-            saveEditorParams();
-        }
-        if (params.mode) {
-            //server = "https://amstramservice.grame.fr/";
-            server = "https://faustservice-old.inria.fr"
-            compileOptions.exportPlatform = "esp32";
-            compileOptions.exportArch = "gramophoneFlash";
-            $("#export-server").val(server).change();
-            $("#btn-def-exp-content").html("Gramo");
-            if (params.mode === "amstram") {
-                $("#ide-params").css("display", "none");
-                $("#form-plot").css("display", "none");
-                $("#show-right-panel").click().change();
-            }
-        }
-        if (params.name) {
-            uiEnv.fileManager.renameSelected(`${params.name}.dsp`);
-            saveEditorParams();
-        }
-        if (params.code) {
-            uiEnv.fileManager.setValue(params.code);
-            if (params.autorun) {
-                const compileResult = await runDsp(params.code);
-                if (!compileResult.success) return;
-                if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
-            }
-        }
-    };
+    const urlParamsController = new UrlParamsController({
+        compileOptions,
+        fileManager: uiEnv.fileManager,
+        shareUrlService,
+        runDsp,
+        saveEditorParams,
+        setServer: value => { server = value; }
+    });
     new ProjectFilesController({
         fileManager: uiEnv.fileManager,
         compileOptions,
@@ -659,7 +613,7 @@ $(async () => {
     $("#output-analyser-ui").hide();
     uiEnv.outputScope.disabled = true;
     $<HTMLSelectElement>("#select-audio-input").change();
-    await loadURLParams(window.location.search);
+    await urlParamsController.load(window.location.search);
     $("#select-voices").children(`option[value=${compileOptions.voices}]`).prop("selected", true);
     $("#select-buffer-size").children(`option[value=${compileOptions.bufferSize}]`).prop("selected", true);
     dspControlsController.applyUseWorkletMode(compileOptions.useWorklet, false);
