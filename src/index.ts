@@ -44,6 +44,8 @@ import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
 import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
 import { safeStorage } from "./utils";
+import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
+import { ProjectPersistence } from "./runtime/ProjectPersistence";
 
 declare global {
     interface Window {
@@ -88,25 +90,29 @@ $(async () => {
     const QRCode = await import("qrcode");
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
     window.faustCompiler = faustCompiler;
+    const settingsStore = new EditorSettingsStore(VERSION as string);
+    const projectPersistence = new ProjectPersistence({
+        browserFS: bfs,
+        faustFS: libFaust.fs(),
+        projectDir: PROJECT_DIR
+    });
     /**
      * To save dsp table to localStorage
      */
     const saveEditorDspTable = () => {
-        safeStorage.setItem("faust_editor_dsp_table", FaustCompiler.stringifyDSPFactories());
+        settingsStore.saveDspFactoryCache(FaustCompiler);
     };
     /**
      * To load dsp table from localStorage
      */
     const loadEditorDspTable = async () => {
-        const str = safeStorage.getItem("faust_editor_dsp_table");
-        if (str) await FaustCompiler.importDSPFactories(str);
+        await settingsStore.loadDspFactoryCache(FaustCompiler);
     };
     /**
      * To save editor params to localStorage
      */
     const saveEditorParams = () => {
-        const str = JSON.stringify(compileOptions);
-        safeStorage.setItem("faust_editor_params", str);
+        settingsStore.saveCompileOptions(compileOptions);
     };
     /**
      * To load editor params from localStorage
@@ -114,15 +120,7 @@ $(async () => {
      * @returns {(FaustEditorCompileOptions | {})}
      */
     const loadEditorParams = (): FaustEditorCompileOptions | {} => {
-        const clientVersion = safeStorage.getItem("faust_editor_version");
-        if (clientVersion !== VERSION) return {};
-        const str = safeStorage.getItem("faust_editor_params");
-        if (!str) return {};
-        try {
-            return JSON.parse(str) as FaustEditorCompileOptions;
-        } catch (e) {
-            return {};
-        }
+        return settingsStore.loadCompileOptions();
     };
     /**
      * To load dsp params from localStorage
@@ -130,20 +128,13 @@ $(async () => {
      * @returns {{ [path: string]: number }}
      */
     const loadDspParams = (): { [path: string]: number } => {
-        const str = safeStorage.getItem("faust_editor_dsp_params");
-        if (!str) return {};
-        try {
-            return JSON.parse(str) as { [path: string]: number };
-        } catch (e) {
-            return {};
-        }
+        return settingsStore.loadDspParams();
     };
     /**
      * To save dsp params to localStorage
      */
     const saveDspParams = () => {
-        const str = JSON.stringify(dspParams);
-        safeStorage.setItem("faust_editor_dsp_params", str);
+        settingsStore.saveDspParams(dspParams);
     };
     const dspParams = loadDspParams();
     /**
@@ -151,18 +142,7 @@ $(async () => {
      *
      */
     const loadProject = async () => {
-        const mfs = libFaust.fs();
-        mfs.mkdir(PROJECT_DIR);
-        let files = await bfs.readdir("/");
-        files = files.filter(n => n !== "." && n !== "..");
-        if (!compileOptions.saveCode) {
-            await Promise.all(files.map(filename => bfs.unlink(filename)));
-        } else {
-            await Promise.all(files.map(async (filename) => {
-                const data = await bfs.readFile(filename);
-                mfs.writeFile(PROJECT_DIR + filename, new Uint8Array(data.buffer));
-            }));
-        }
+        await projectPersistence.loadProject(compileOptions.saveCode);
     };
     const loadSoundfiles = async (audioCtx: BaseAudioContext, soundfileList: string[]): Promise<Record<string, AudioData>> => {
         const map = {} as Record<string, AudioData>;
@@ -502,7 +482,7 @@ $(async () => {
         recorder: new Recorder(),
         browserFS: bfs
     };
-    safeStorage.setItem("faust_editor_version", VERSION);
+    settingsStore.saveVersion();
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
@@ -532,11 +512,7 @@ $(async () => {
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 try {
-                    const exist = await bfs.exists(fileName);
-                    if (exist) {
-                        await bfs.unlink(fileName);
-                    }
-                    await bfs.writeFile(fileName, content, typeof content === "string" ? { encoding: "utf8" } : {});
+                    await projectPersistence.saveFile(fileName, content);
                 } catch (e) {
                     showError(e);
                 }
@@ -556,7 +532,7 @@ $(async () => {
             safeStorage.setItem("faust_editor_project", JSON.stringify(project));
             */
             try {
-                await bfs.unlink(fileName);
+                await projectPersistence.deleteFile(fileName);
             } catch (e) {
                 showError(e);
             }
