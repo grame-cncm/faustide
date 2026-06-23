@@ -15,7 +15,7 @@
 
 import type * as monaco from "monaco-editor";
 import type { VimMode } from "monaco-vim";
-import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
+import webmidi from "webmidi";
 import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust } from "@grame/faustwasm";
 import type {
     FaustEditorAudioEnv,
@@ -25,7 +25,6 @@ import type {
     FaustEditorUIEnv,
     LegacyWaveSurferBackend
 } from "./runtime/types";
-import { Key2Midi } from "./Key2Midi";
 import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
@@ -53,6 +52,7 @@ import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
 import { DiagramView } from "./ui/DiagramView";
+import { MidiController } from "./ui/MidiController";
 
 declare global {
     interface Window {
@@ -73,6 +73,7 @@ let server = "https://faustservice.inria.fr";
 const PROJECT_DIR = "/usr/share/project/";
 const BUFFER_SIZE_VALUES = [128, 256, 512, 1024, 2048, 4096] as const;
 let audioEngine: AudioEngine;
+let midiController: MidiController;
 
 $(async () => {
     const { setTimeout } = window;
@@ -913,69 +914,16 @@ $(async () => {
     /**
      * Right panel options
      */
-    // Keyboard as MIDI input
-    const key2Midi = new Key2Midi({ keyMap: navigator.language === "fr-FR" ? Key2Midi.KEY_MAP_FR : Key2Midi.KEY_MAP, enabled: false });
-    $(document).on("keydown", (e) => {
-        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-        key2Midi.handleKeyDown(e.key);
-    });
-    $(document).on("keyup", (e) => {
-        if (faustEnv.editor && faustEnv.editor.hasTextFocus()) return;
-        key2Midi.handleKeyUp(e.key);
-    });
-    // MIDI Devices select
-    $<HTMLSelectElement>("#select-midi-input").on("change", (e) => {
-        const id = e.currentTarget.value;
-        if (midiEnv.input) midiEnv.input.removeListener("midimessage", "all");
-        const keys: number[] = [];
-        const listener = (data: number[] | Uint8Array) => {
-            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data); // Send midi message to dsp node
-            if (data[0] === 144 && data[2]) { // Show as pill midi note
-                if (keys.indexOf(data[1]) === -1) keys.push(data[1]);
-                $("#midi-ui-note").text(data[1]).show();
-            } else if (data[0] === 128 || (data[0] === 144 && !data[2])) {
-                keys.splice(keys.indexOf(data[1]), 1);
-                if (keys.length === 0) $("#midi-ui-note").hide();
-                else $("#midi-ui-note").text(keys[keys.length - 1]);
-            }
-        };
-        if (id === "-2") {
-            key2Midi.handler = listener;
-            key2Midi.enabled = true;
-            return;
+    midiController = new MidiController({
+        midiEnv,
+        webmidi,
+        keyMap: navigator.language === "fr-FR" ? MidiController.KEY_MAP_FR : MidiController.KEY_MAP,
+        hasEditorFocus: () => faustEnv.editor && faustEnv.editor.hasTextFocus(),
+        sendToDsp: data => {
+            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
         }
-        key2Midi.enabled = false;
-        if (id === "-1") return;
-        const input = webmidi.getInputById(id);
-        if (!input) return;
-        midiEnv.input = input;
-        input.addListener("midimessage", "all", e => listener(e.data));
     });
-    // Append current connected devices
-    const handleMIDIConnect = (e: WebMidiEventConnected) => {
-        if (e.port.type !== "input") return;
-        const $select = $("#select-midi-input");
-        if ($select.find(`option[value="${e.port.id}"]`).length) return;
-        const $option = $(new Option(e.port.name, e.port.id));
-        $select.append($option);
-        $option.prop("selected", true).change();
-    };
-    const handleMIDIDisconnect = (e: WebMidiEventDisconnected) => {
-        if (e.port.type !== "input") return;
-        const $select = $("#select-midi-input");
-        const $find = $select.find(`option[value="${e.port.id}"]`);
-        if (!$find.length) return;
-        $find.remove();
-        $select.children("option").last().prop("selected", true).change();
-    };
-    $("#select-midi-input").children("option").eq(1).prop("selected", true).change();
-    webmidi.enable((e) => {
-        if (e) return;
-        $("#midi-ui-default").hide();
-        $("#select-midi-input").prop("disabled", false);
-        webmidi.addListener("connected", handleMIDIConnect);
-        webmidi.addListener("disconnected", handleMIDIDisconnect);
-    });
+    midiController.bind();
     /**
      * Audio Inputs
      * Use WaveSurfer lib with MediaElement and <audio />
@@ -1387,8 +1335,8 @@ $(async () => {
             return;
         }
         // Pass keyboard midi messages even inner window is focused
-        if (data.type === "keydown") key2Midi.handleKeyDown(data.key);
-        else if (data.type === "keyup") key2Midi.handleKeyUp(data.key);
+        if (data.type === "keydown") midiController.handleKeyDown(data.key);
+        else if (data.type === "keyup") midiController.handleKeyUp(data.key);
         // From GUI Builder
         else if (data.type === "export") {
             void (async () => {
