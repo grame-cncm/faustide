@@ -16,7 +16,7 @@
 import type * as monaco from "monaco-editor";
 import type { VimMode } from "monaco-vim";
 import webmidi, { Input, WebMidiEventConnected, WebMidiEventDisconnected } from "webmidi";
-import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust, AudioData } from "@grame/faustwasm";
+import type { FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust } from "@grame/faustwasm";
 import type {
     FaustEditorAudioEnv,
     FaustEditorCompileOptions,
@@ -47,6 +47,7 @@ import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
 import { ProjectPersistence } from "./runtime/ProjectPersistence";
 import { DiagramService } from "./runtime/DiagramService";
 import { AudioEngine } from "./runtime/AudioEngine";
+import { DspRunner } from "./runtime/DspRunner";
 
 declare global {
     interface Window {
@@ -70,7 +71,7 @@ let audioEngine: AudioEngine;
 
 $(async () => {
     const { setTimeout } = window;
-    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator, FaustPolyDspGenerator } = await import("@grame/faustwasm");
+    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams, FaustMonoDspGenerator } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
     const libFaust = new LibFaust(faustModule);
     const faustCompiler = new FaustCompiler(libFaust);
@@ -147,21 +148,6 @@ $(async () => {
     const loadProject = async () => {
         await projectPersistence.loadProject(compileOptions.saveCode);
     };
-    const loadSoundfiles = async (audioCtx: BaseAudioContext, soundfileList: string[]): Promise<Record<string, AudioData>> => {
-        const map = {} as Record<string, AudioData>;
-        const files = libFaust.fs().readdir(PROJECT_DIR) as string[];
-        await Promise.all(files.filter(n => soundfileList.indexOf(n) !== -1).map(async (filename) => {
-            const ui8Array = libFaust.fs().readFile(PROJECT_DIR + filename);
-            try {
-                const audioBuffer = await audioCtx.decodeAudioData(ui8Array.buffer);
-                map[filename] = { audioBuffer: new Array(audioBuffer.numberOfChannels).fill(0).map((v, i) => audioBuffer.getChannelData(i)), sampleRate: audioBuffer.sampleRate } as AudioData;
-            } catch (error) {
-                return false;
-            }
-            return true;
-        }));
-        return map;
-    };
     /**
      * To show Error at bottom of center
      *
@@ -235,18 +221,10 @@ $(async () => {
         if (isCompilingDsp) return { success: false, error: new Error("Another DSP is compiling") };
         isCompilingDsp = true;
         const code = `declare filename "${uiEnv.fileManager.mainFileName}"; declare name "${uiEnv.fileManager.mainFileNameWithoutSuffix}"; ${codeIn}`;
-        const audioCtx = audioEnv.audioCtx;
-        const gain = audioEnv.gainInput;
-        let splitter = audioEnv.splitterOutput;
-        const analyser = audioEnv.analyserOutput;
-        if (!audioCtx) { // If audioCtx not init yet
+        if (!audioEnv.audioCtx) { // If audioCtx not init yet
             await initAudioCtx(audioEnv);
             initAnalysersUI(uiEnv, audioEnv);
         }
-        const { useWorklet, bufferSize, voices, useDouble } = compileOptions;
-        const args = compileOptions.args.slice();
-        if (useDouble) args.push("-double");
-        let node: FaustScriptProcessorNode<any> | FaustAudioWorkletNode<any>;
         // Recorder, show current recorded length without too many refreshes
         let mediaLengthRaf: number;
         let mediaLengthFrame = 0;
@@ -271,88 +249,41 @@ $(async () => {
             if (mediaLengthRaf) cancelAnimationFrame(mediaLengthRaf);
             mediaLengthRaf = requestAnimationFrame(() => mediaLengthDisplay(t));
         };
-        try {
-            // const getDiagramResult = getDiagram(code);
-            // if (!getDiagramResult.success) throw getDiagramResult.error;
-            if (voices) {
-                const factory = await new FaustPolyDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
-                const soundfileList = factory.getSoundfileList();
-                const soundfiles = await loadSoundfiles(audioCtx, soundfileList);
-                factory.addSoundfiles(soundfiles);
-                node = await factory.createNode(audioCtx, voices, "main", undefined, undefined, undefined, !useWorklet, bufferSize);
-            } else {
-                const factory = await new FaustMonoDspGenerator().compile(faustCompiler, "main", code, args.join(" "));
-                const soundfileList = factory.getSoundfileList();
-                const soundfiles = await loadSoundfiles(audioCtx, soundfileList);
-                factory.addSoundfiles(soundfiles);
-                node = await factory.createNode(audioCtx, "main", undefined, !useWorklet, bufferSize);
+        const compileResult = await dspRunner.run({
+            code,
+            compilerArgs: compileOptions.args,
+            useDouble: compileOptions.useDouble,
+            useWorklet: compileOptions.useWorklet,
+            bufferSize: compileOptions.bufferSize,
+            voices: compileOptions.voices,
+            saveParams: compileOptions.saveParams,
+            dspParams,
+            plotHandler,
+            onOutputSplitterChanged: (splitter, channelsCount) => {
+                uiEnv.outputScope.splitter = splitter;
+                uiEnv.outputScope.channels = channelsCount;
+                uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
+                splitter.connect(audioEnv.analyserOutput, uiEnv.outputScope.channel);
             }
-            if (!node) throw new Error("Unknown Error in WebAudio Node.");
-            node.setPlotHandler(plotHandler);
-            node.startSensors();
-        } catch (e) { /*
+        });
+        if (!compileResult.success || !compileResult.node) { /*
             const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
             uiWindow.postMessage(JSON.stringify({ type: "clear" }), "*");
             $("#faust-ui-default").show();
             $("#iframe-faust-ui").css("visibility", "hidden");
             $("#output-analyser-ui").hide();
             refreshDspUI(); */
-            showError(e);
+            showError(compileResult.error);
             isCompilingDsp = false;
-            return { success: false, error: e };
+            return { success: false, error: compileResult.error };
         }
+        const node = compileResult.node;
         /**
          * Push get diagram to end of scheduler
          * generate diagram only when the tab is active
          */
         if ($("#tab-diagram").hasClass("active")) setTimeout(updateDiagram, 0, code);
         $("#tab-diagram").off("show.bs.tab").one("show.bs.tab", () => updateDiagram(code));
-        if (audioEnv.dsp) { // Disconnect current
-            const dsp = audioEnv.dsp;
-            if (audioEnv.dspConnectedToInput) {
-                gain.disconnect(dsp);
-                audioEnv.dspConnectedToInput = false;
-            }
-            dsp.disconnect();
-            audioEnv.dspConnectedToOutput = false;
-            dsp.destroy();
-            delete audioEnv.dsp;
-        }
-        /**
-         * Update the dsp with saved params
-         */
-        if (compileOptions.saveParams) {
-            for (const path in dspParams) {
-                if (node.getParams().indexOf(path) !== -1) {
-                    node.setParamValue(path, dspParams[path]);
-                }
-            }
-        }
-        await audioEnv.audioCtx.resume(); // Resume audioContext for firefox
-        /**
-         * Connect the dsp to graph (use a new splitter)
-         */
-        audioEnv.dsp = node;
-        const channelsCount = node.getNumOutputs();
-        if (!splitter || splitter.numberOfOutputs !== channelsCount) {
-            if (splitter) splitter.disconnect();
-            splitter = audioCtx.createChannelSplitter(channelsCount);
-            delete audioEnv.splitterOutput;
-            audioEnv.splitterOutput = splitter;
-            uiEnv.outputScope.splitter = splitter;
-            uiEnv.outputScope.channels = channelsCount;
-            uiEnv.outputScope.channel = Math.min(uiEnv.outputScope.channel, channelsCount - 1);
-            splitter.connect(analyser, uiEnv.outputScope.channel);
-        }
-        if (audioEnv.gainInput && node.getNumInputs()) {
-            audioEnv.gainInput.connect(node);
-            audioEnv.dspConnectedToInput = true;
-        }
-        node.connect(splitter);
-        if (audioEnv.outputEnabled) {
-            node.connect(audioEnv.destination);
-            audioEnv.dspConnectedToOutput = true;
-        }
         const uiWindow = ($("#iframe-faust-ui")[0] as HTMLIFrameElement).contentWindow;
         /**
          * set handler for param changed of dsp
@@ -453,6 +384,12 @@ $(async () => {
                     .children("span").html("Output is Off");
             }
         }
+    });
+    const dspRunner = new DspRunner({
+        audioEnv,
+        faustCompiler,
+        libFaust,
+        projectDir: PROJECT_DIR
     });
     const midiEnv: FaustEditorMIDIEnv = { input: null };
     const uiEnv: FaustEditorUIEnv = {
@@ -711,7 +648,7 @@ $(async () => {
             await generator.compile(faustCompiler, "main", code, args.join(" "));
             const soundfileList = generator.getSoundfileList();
             const offlineCtx = new OfflineAudioContext({ sampleRate: plotSR, length: 1 });
-            const soundfiles = await loadSoundfiles(offlineCtx, soundfileList);
+            const soundfiles = await dspRunner.loadSoundfiles(offlineCtx, soundfileList);
             generator.addSoundfiles(soundfiles);
             const processor = await generator.createOfflineProcessor(plotSR, 128, undefined, offlineCtx);
             const output = processor.render([], plot);
