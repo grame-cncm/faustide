@@ -48,6 +48,7 @@ import { DiagramService } from "./runtime/DiagramService";
 import { AudioEngine } from "./runtime/AudioEngine";
 import { DspRunner } from "./runtime/DspRunner";
 import { ExportService } from "./runtime/ExportService";
+import { ShareUrlService } from "./runtime/ShareUrlService";
 
 declare global {
     interface Window {
@@ -101,6 +102,7 @@ $(async () => {
     });
     const diagramService = new DiagramService(faustSvgDiagrams, libFaust.fs());
     const exportService = new ExportService();
+    const shareUrlService = new ShareUrlService();
     /**
      * To save dsp table to localStorage
      */
@@ -713,68 +715,40 @@ $(async () => {
      * @returns
      */
     const loadURLParams = async (url: string) => {
-        const urlParams = new URLSearchParams(url);
-        if (urlParams.has("realtime_compile")) {
-            compileOptions.realtimeCompile = !!+urlParams.get("realtime_compile");
+        const params = await shareUrlService.load(url);
+        if (params.realtimeCompile !== undefined) {
+            compileOptions.realtimeCompile = params.realtimeCompile;
             saveEditorParams();
         }
-        if (urlParams.has("voices")) {
-            const voices = +urlParams.get("voices");
-            compileOptions.voices = [1, 2, 4, 8, 16, 32, 64, 128].indexOf(voices) === -1 ? 0 : voices;
+        if (params.voices !== undefined) {
+            compileOptions.voices = params.voices;
             saveEditorParams();
         }
-        if (urlParams.has("buffer_size")) {
-            const bufferSize = +urlParams.get("buffer_size");
-            compileOptions.bufferSize = [128, 256, 512, 1024, 2048, 4096].indexOf(bufferSize) === -1 ? 1024 : (bufferSize as 128 | 256 | 512 | 1024 | 2048 | 4096);
+        if (params.bufferSize !== undefined) {
+            compileOptions.bufferSize = params.bufferSize;
             saveEditorParams();
         }
-        if (urlParams.has("mode")) {
-            if (urlParams.get("mode") === "amstram") {
-                //server = "https://amstramservice.grame.fr/";
-                server = "https://faustservice-old.inria.fr"
-                compileOptions.exportPlatform = "esp32";
-                compileOptions.exportArch = "gramophoneFlash";
-                $("#export-server").val(server).change();
-                $("#btn-def-exp-content").html("Gramo");
+        if (params.mode) {
+            //server = "https://amstramservice.grame.fr/";
+            server = "https://faustservice-old.inria.fr"
+            compileOptions.exportPlatform = "esp32";
+            compileOptions.exportArch = "gramophoneFlash";
+            $("#export-server").val(server).change();
+            $("#btn-def-exp-content").html("Gramo");
+            if (params.mode === "amstram") {
                 $("#ide-params").css("display", "none");
                 $("#form-plot").css("display", "none");
                 $("#show-right-panel").click().change();
             }
-            if (urlParams.get("mode") === "amstram-pro") {
-                //server = "https://amstramservice.grame.fr/";
-                server = "https://faustservice-old.inria.fr"
-                compileOptions.exportPlatform = "esp32";
-                compileOptions.exportArch = "gramophoneFlash";
-                $("#export-server").val(server).change();
-                $("#btn-def-exp-content").html("Gramo");
-            }
         }
-        let code;
-        if (urlParams.has("code")) {
-            const codeURL = urlParams.get("code");
-            const name = codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            uiEnv.fileManager.renameSelected(`${name}.dsp`);
-            try {
-                const response = await fetch(codeURL);
-                code = await response.text();
-            } catch (e) { } // eslint-disable-line no-empty
-        }
-        if (urlParams.has("code_string")) {
-            code = urlParams.get("code_string");
-        }
-        if (urlParams.has("inline")) {
-            const b64Code = urlParams.get("inline").replace("-", "+").replace("_", "/");
-            code = atob(b64Code);
-        }
-        if (urlParams.has("name")) {
-            const name = urlParams.get("name").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
-            uiEnv.fileManager.renameSelected(`${name}.dsp`);
+        if (params.name) {
+            uiEnv.fileManager.renameSelected(`${params.name}.dsp`);
             saveEditorParams();
         }
-        if (code) {
-            uiEnv.fileManager.setValue(code);
-            if (urlParams.has("autorun") && urlParams.get("autorun")) {
-                const compileResult = await runDsp(code);
+        if (params.code) {
+            uiEnv.fileManager.setValue(params.code);
+            if (params.autorun) {
+                const compileResult = await runDsp(params.code);
                 if (!compileResult.success) return;
                 if (!$("#tab-faust-ui").hasClass("active")) $("#tab-faust-ui").tab("show");
             }
@@ -906,13 +880,14 @@ $(async () => {
      * @returns
      */
     const makeURL = () => {
-        const base = window.location.origin + window.location.pathname;
-        const urlParams = new URLSearchParams();
-        urlParams.set("autorun", $("#share-autorun").prop("checked") ? "1" : "0");
-        urlParams.set("voices", compileOptions.voices.toString());
-        urlParams.set("name", uiEnv.fileManager.mainFileNameWithoutSuffix);
-        urlParams.set("inline", btoa(uiEnv.fileManager.mainCode).replace("+", "-").replace("/", "_"));
-        return base + "?" + urlParams.toString();
+        return shareUrlService.build({
+            origin: window.location.origin,
+            pathname: window.location.pathname,
+            autorun: $("#share-autorun").prop("checked"),
+            voices: compileOptions.voices,
+            name: uiEnv.fileManager.mainFileNameWithoutSuffix,
+            code: uiEnv.fileManager.mainCode
+        });
     };
     $("#modal-share").on("shown.bs.modal", () => {
         $("#share-btn-copy").html("Copy");
