@@ -55,6 +55,7 @@ import { DiagramView } from "./ui/DiagramView";
 import { MidiController } from "./ui/MidiController";
 import { RecorderController } from "./ui/RecorderController";
 import { PlotController } from "./ui/PlotController";
+import { AudioOutputController } from "./ui/AudioOutputController";
 
 declare global {
     interface Window {
@@ -927,18 +928,13 @@ $(async () => {
         audioEnv.inputEnabled = true;
         if (gain) input.connect(gain);
     });
-    /**
-     * Audio Outputs
-     * Choose and audio stream <audio />
-     */
-    $<HTMLSelectElement>("#select-audio-output").on("change", async (e) => {
-        if (!supportMediaStreamDestination) return;
-        const id = e.currentTarget.value;
-        await initAudioCtx(audioEnv);
-        faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
-        const audio = $<HTMLAudioElement>("#output-audio-stream")[0];
-        audio.setSinkId(id);
-    }).change();
+    new AudioOutputController({
+        audioEnv,
+        getSupportMediaStreamDestination: () => supportMediaStreamDestination,
+        initAudioCtx: () => initAudioCtx(audioEnv),
+        initAnalysersUI: () => initAnalysersUI(uiEnv, audioEnv),
+        setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
+    }).bind();
     // Waveform
     $("#btn-source-play").on("click", () => {
         if (!wavesurfer || !wavesurfer.isReady) return;
@@ -1077,46 +1073,6 @@ $(async () => {
         recorder: faustEnv.recorder,
         fileNameProvider: () => uiEnv.fileManager.mainFileNameWithoutSuffix
     }).bind();
-    // Output switch to connect / disconnect dsp from destination
-    $(".btn-dac").on("click", async () => {
-        /*
-        if (!audioEnv.audioCtx) {
-            await initAudioCtx(audioEnv);
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-            .children("span").html("Output is On");
-        } else if (audioEnv.audioCtx.state === "suspended") {
-            audioEnv.audioCtx.resume();
-            $(e.currentTarget).removeClass("btn-light").addClass("btn-primary")
-            .children("span").html("Output is On");
-        } else {
-            audioEnv.audioCtx.suspend();
-            $(e.currentTarget).removeClass("btn-primary").addClass("btn-light")
-            .children("span").html("Output is Off");
-        }
-        */
-        if (audioEnv.outputEnabled) {
-            // disable audio output
-            audioEnv.outputEnabled = false;
-            if (audioEnv.dspConnectedToOutput) {
-                audioEnv.dsp.disconnect(audioEnv.destination);
-                audioEnv.dspConnectedToOutput = false;
-            }
-            $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
-            $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
-        } else {
-            // enable audio output
-            audioEnv.outputEnabled = true;
-            if (!audioEnv.audioCtx) {
-                await initAudioCtx(audioEnv);
-                initAnalysersUI(uiEnv, audioEnv);
-            } else if (audioEnv.dsp) {
-                audioEnv.dsp.connect(audioEnv.destination);
-                audioEnv.dspConnectedToOutput = true;
-            }
-            $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
-            $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
-        }
-    });
     /**
      * Center
      */
