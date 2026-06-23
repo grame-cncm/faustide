@@ -58,6 +58,7 @@ import { AudioOutputController } from "./ui/AudioOutputController";
 import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
+import { ProjectFilesController } from "./ui/ProjectFilesController";
 
 declare global {
     interface Window {
@@ -625,37 +626,14 @@ $(async () => {
             }
         }
     };
-    // Upload
-    $("#btn-upload").on("click", () => {
-        $("#input-upload").click();
-    });
-    $<HTMLInputElement>("#input-upload").on("input", (e) => {
-        const file = e.currentTarget.files[0];
-        const reader = new FileReader();
-        reader.onload = () => {
-            const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-            const code = reader.result.toString();
-            uiEnv.fileManager.newFile(fileName, code);
-            if (compileOptions.realtimeCompile) {
-                if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                else updateDiagram(uiEnv.fileManager.mainCode);
-            }
-        };
-        reader.onerror = () => undefined;
-        reader.readAsText(file);
-    }).on("click", e => e.stopPropagation());
-    // Save as zip
-    $("#btn-save").on("click", async () => {
-        const zip = new JSZip();
-        uiEnv.fileManager._fileList.forEach(n => zip.file(n, uiEnv.fileManager.getValue(n)));
-        const b = await zip.generateAsync({ type: "blob" });
-        const uri = URL.createObjectURL(b);
-        $("#a-save").attr({ href: uri, download: `${uiEnv.fileManager.mainFileNameWithoutSuffix}.zip` })[0].click();
-        setTimeout(() => URL.revokeObjectURL(uri), 5000);
-    });
-    $("#a-save").on("click", e => e.stopPropagation());
-    // Docs
-    $("#a-docs").on("click", e => e.stopPropagation());
+    new ProjectFilesController({
+        fileManager: uiEnv.fileManager,
+        compileOptions,
+        audioEnv,
+        createZip: () => new JSZip(),
+        runDsp,
+        updateDiagram
+    }).bind();
     /**
      * Export
      * Append options to export model
@@ -825,51 +803,6 @@ $(async () => {
         recorder: faustEnv.recorder,
         fileNameProvider: () => uiEnv.fileManager.mainFileNameWithoutSuffix
     }).bind();
-    /**
-     * Center
-     */
-    // File Drag and drop
-    $("#top").on("dragenter dragover", (e) => {
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === "file") {
-            e.preventDefault();
-            e.stopPropagation();
-            $("#editor-overlay").show();
-        }
-    });
-    $("#editor-overlay").on("dragleave dragend", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        $(e.currentTarget).hide();
-    });
-    $("#editor-overlay").on("dragenter dragover", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    });
-    $("#editor-overlay").on("drop", (e) => {
-        $(e.currentTarget).hide();
-        const event = e.originalEvent as DragEvent;
-        if (event.dataTransfer && event.dataTransfer.files.length) {
-            // Stop the propagation of the event
-            e.preventDefault();
-            e.stopPropagation();
-            const file = event.dataTransfer.files[0];
-            const reader = new FileReader();
-            reader.onload = () => {
-                // Update filename
-                const fileName = file.name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-                const code = reader.result.toString();
-                uiEnv.fileManager.newFile(fileName, code);
-                // compile diagram or dsp if necessary
-                if (compileOptions.realtimeCompile) {
-                    if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                    else updateDiagram(uiEnv.fileManager.mainCode);
-                }
-            };
-            reader.onerror = () => undefined;
-            reader.readAsText(file);
-        }
-    });
     // Examples
     type DirectoryTree = {
         path: string;
