@@ -13,10 +13,8 @@
 // snippets
 // indexDB
 
-import type * as monaco from "monaco-editor";
-import type { VimMode } from "monaco-vim";
 import webmidi from "webmidi";
-import type { FaustCompiler, LibFaust } from "@grame/faustwasm";
+import type { FaustCompiler } from "@grame/faustwasm";
 import type {
     FaustEditorAudioEnv,
     FaustEditorCompileOptions,
@@ -36,10 +34,7 @@ import { StaticScope } from "./StaticScope";
 import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
 import { Recorder } from "./Recorder";
-import { faustLangRegister } from "./monaco-faust/register";
 import * as VERSION from "./version";
-import { docSections, faustDocURL, faustSyntaxURL } from "./documentation";
-import { safeStorage } from "./utils";
 import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
 import { ProjectPersistence } from "./runtime/ProjectPersistence";
 import { DiagramService } from "./runtime/DiagramService";
@@ -68,6 +63,7 @@ import { UrlParamsController } from "./ui/UrlParamsController";
 import { AlertController } from "./ui/AlertController";
 import { DspCompileController } from "./ui/DspCompileController";
 import { StartupControlsController } from "./ui/StartupControlsController";
+import { initEditor } from "./ui/FaustEditorFactory";
 
 declare global {
     interface Window {
@@ -545,101 +541,4 @@ const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv)
         container: $<HTMLDivElement>("#output-analyser-ui")[0]
     });
     uiEnv.analysersInited = true;
-};
-/**
- * Init editor, register faust language and code hint
- *
- * @returns
- */
-const initEditor = async (libFaust: LibFaust) => {
-    const code = `import("stdfaust.lib");
-process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const polycode = `import("stdfaust.lib");
-process = ba.pulsen(1, ba.hz2midikey(freq) * 1000) : pm.marimba(freq, 0, 7000, 0.5, 0.8) * gate * gain with {
-    freq = hslider("freq", 440, 40, 8000, 1);
-    gain = hslider("gain", 0.5, 0, 1, 0.01);
-    gate = button("gate");
-};
-effect = dm.freeverb_demo;`;
-    const monaco = await import("monaco-editor");
-    const { initVimMode } = await import("monaco-vim");
-    const { faustLang, providers } = await faustLangRegister(monaco, libFaust);
-    let saveCode = false;
-    try {
-        saveCode = JSON.parse(safeStorage.getItem("faust_editor_params")).saveCode;
-    } catch { } // eslint-disable-line no-empty
-    const editor = monaco.editor.create($("#editor")[0], {
-        value: saveCode ? (safeStorage.getItem("faust_editor_code") || code) : code,
-        language: "faust",
-        theme: "vs-dark",
-        dragAndDrop: true,
-        mouseWheelZoom: true,
-        wordWrap: "on"
-    });
-    let vimMode: VimMode = null;
-    /*
-    const editorOptions = {
-        vimMode: false,
-        lineNumbers: true
-    };
-    */
-    editor.addAction({
-        id: "monaco-vim",
-        label: "Toggle Vim Mode",
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyV],
-        run: () => {
-            if (vimMode) {
-                vimMode.dispose();
-                vimMode = null;
-            } else {
-                vimMode = initVimMode(editor, null);
-            }
-        }
-    });
-    editor.onKeyDown((e) => {
-        if (e.ctrlKey && e.browserEvent.key === "d") {
-            e.stopPropagation();
-            e.preventDefault();
-            showDoc();
-        }
-    });
-
-    let docWindow: Window | null = null;
-    let syntaxWindow: Window | null = null;
-
-    const showDoc = () => {
-        const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
-        let docUrl = faustDocURL; // Default documentation URL
-        let syntaxUrl = faustSyntaxURL; // Default syntax URL
-
-        if (matched) {
-            const prefix = matched.nameArray.slice();
-            prefix.pop();
-            const doc = matched.doc;
-            docUrl = `${faustDocURL}/${docSections[prefix.toString().slice(0, 2) as keyof typeof docSections]}/#${prefix.join(".")}${doc.name.replace(/[[\]|]/g, "").toLowerCase()}`;
-        }
-
-        // Check if the syntax tab is already open, if not, open it
-        if (!syntaxWindow || syntaxWindow.closed) {
-            syntaxWindow = window.open(syntaxUrl, "_blank");
-        } else {
-            syntaxWindow.location.href = syntaxUrl; // Update the URL if already open
-            syntaxWindow.focus(); // Bring it to the front
-        }
-
-        // Check if the documentation tab is already open, if not, open it
-        if (!docWindow || docWindow.closed) {
-            docWindow = window.open(docUrl, "_blank");
-        } else {
-            docWindow.location.href = docUrl; // Update the URL if already open
-            docWindow.focus(); // Bring it to the front
-        }
-    };
-
-    // Attach the event listener to the button
-    $("#btn-docs").off("click").on("click", showDoc);
-
-    $(window).on("resize", () => editor.layout());
-    return { editor, monaco };
 };
