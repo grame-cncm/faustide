@@ -49,6 +49,9 @@ import { AudioEngine } from "./runtime/AudioEngine";
 import { DspRunner } from "./runtime/DspRunner";
 import { ExportService } from "./runtime/ExportService";
 import { ShareUrlService } from "./runtime/ShareUrlService";
+import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
+import { PanelToggleView } from "./ui/PanelToggleView";
+import { ResizablePanelsController } from "./ui/ResizablePanelsController";
 
 declare global {
     interface Window {
@@ -1515,98 +1518,12 @@ $(async () => {
         const w = $svg.width();
         $svg.width(w * (1 - d * 0.25));
     });
-    // Keys
-    $(document).on("keydown", (e) => {
-        if (e.ctrlKey) {
-            if (e.key === "d") {
-                e.preventDefault();
-                e.stopPropagation();
-                $("#btn-docs")[0].click();
-                return;
-            }
-            if (e.key === "r") {
-                e.preventDefault();
-                e.stopPropagation();
-                $("#btn-run").click();
-            }
-        }
-    });
-    // Resizables
-    $(".resizable").on("mousedown touchstart", (e: JQuery.TouchStartEvent | JQuery.MouseDownEvent) => {
-        if (e.originalEvent instanceof MouseEvent) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        $("#iframe-faust-ui").css("pointer-events", "none");
-        const $div = $(e.currentTarget).parent();
-        const x = e.pageX && typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX;
-        const y = e.pageY && typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY;
-        const w = $div.width();
-        const h = $div.height();
-        const modes: string[] = [];
-        if ($(e.currentTarget).hasClass("resizable-left")) modes.push("left");
-        if ($(e.currentTarget).hasClass("resizable-right")) modes.push("right");
-        if ($(e.currentTarget).hasClass("resizable-top")) modes.push("top");
-        if ($(e.currentTarget).hasClass("resizable-bottom")) modes.push("bottom");
-        const handleMouseMove = (e: JQuery.TouchMoveEvent | JQuery.MouseMoveEvent) => {
-            if (e.originalEvent instanceof MouseEvent) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            const dX = (e.pageX && typeof e.pageX === "number" ? e.pageX : e.touches[0].pageX) - x;
-            const dY = (e.pageY && typeof e.pageY === "number" ? e.pageY : e.touches[0].pageY) - y;
-            if (modes.indexOf("left") !== -1) $div.width(w - dX);
-            if (modes.indexOf("right") !== -1) $div.width(w + dX);
-            if (modes.indexOf("top") !== -1) $div.height(h - dY);
-            if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
-            if (editor) editor.layout();
-            if (wavesurfer.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
-                wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
-                wavesurfer.drawBuffer();
-            }
-        };
-        const handleMouseUp = (e: JQuery.TouchEndEvent | JQuery.MouseUpEvent) => {
-            if (e.originalEvent instanceof MouseEvent) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            $("#iframe-faust-ui").css("pointer-events", "");
-            $(document).off("mousemove touchmove", handleMouseMove);
-            $(document).off("mouseup", handleMouseUp);
-        };
-        $(document).on("mousemove touchmove", handleMouseMove);
-        $(document).on("mouseup touchend", handleMouseUp);
-    });
-    // Panels
-    $(".btn-show-left").on("click", (e) => {
-        if ($(e.currentTarget).hasClass("active")) {
-            $("#left").hide();
-            $(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-        } else {
-            $("#left").show();
-            $(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
-        }
-        editor.layout();
-    });
-    $(".btn-show-right").on("click", (e) => {
-        if ($(e.currentTarget).hasClass("active")) {
-            $("#right").hide();
-            $(".btn-show-right").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-        } else {
-            $("#right").show();
-            $(".btn-show-right").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
-        }
-        editor.layout();
-    });
-    $(window).on("resize", () => {
-        if (window.innerWidth <= 900) {
-            $("#right").add("#left").hide();
-            $(".btn-show-right").add(".btn-show-left").removeClass(["btn-primary", "active"]).addClass("btn-outline-secondary");
-        } else {
-            $("#right").add("#left").show();
-            $(".btn-show-right").add(".btn-show-left").addClass(["btn-primary", "active"]).removeClass("btn-outline-secondary");
-        }
-    }).resize();
+    new GlobalShortcutsController({
+        docs: () => $("#btn-docs")[0].click(),
+        run: () => $("#btn-run").click()
+    }).bind();
+    new ResizablePanelsController(editor, wavesurfer).bind();
+    new PanelToggleView(editor).bind();
     // autorunning
     await initAudioCtx(audioEnv);
     faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
