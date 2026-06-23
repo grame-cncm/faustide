@@ -10,9 +10,19 @@ export type TFileSystem = {
     readFile: (path: string, opt?: { encoding?: string; flags?: string }) => any;
 };
 
+/**
+ * Built-in fallback project used when no editable DSP file exists.
+ */
 export const DEFAULT_DSP_CODE = `import("stdfaust.lib");
 process = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;`;
 
+/**
+ * Pure project/file rules used by FileManager.
+ *
+ * The model owns file list state, selected file, main DSP selection, filename
+ * sanitization, audio-file guards, and reads/writes through the Faust virtual
+ * filesystem. It intentionally does not render DOM or call UI callbacks.
+ */
 export class ProjectModel {
     fileList: string[] = [];
     selectedFile: string = null;
@@ -25,19 +35,31 @@ export class ProjectModel {
         this.path = options.path || "./";
     }
 
+    /**
+     * Keeps only the characters accepted by the legacy FileManager UI.
+     */
     static sanitizeFileName(fileName: string, fallback = "untitled.dsp") {
         return fileName.replace(/[^a-zA-Z0-9_.]/g, "") || fallback;
     }
 
+    /**
+     * Audio files can be part of a project but are not editable code or main DSP.
+     */
     static isAudioFile(fileName: string) {
         return !!fileName && !!fileName.match(/\.(wav|mp3|ogg|flac|aac)$/);
     }
 
+    /**
+     * Refreshes the model file list from the backing virtual filesystem.
+     */
     listFiles() {
         this.fileList = this.fs.readdir(this.path).filter(fileName => fileName !== "." && fileName !== ".." && this.fs.isFile(this.fs.stat(this.path + fileName).mode));
         return this.fileList;
     }
 
+    /**
+     * Produces the next available `untitledN.ext` name.
+     */
     uniqueUntitledName(extension: string | string[] = "dsp") {
         let i = 1;
         let fileName = `untitled${i}.${extension}`;
@@ -47,6 +69,10 @@ export class ProjectModel {
         return fileName;
     }
 
+    /**
+     * Sanitizes a requested name and falls back to a unique untitled name when
+     * the requested name is empty or already used.
+     */
     defaultFileName(fileNameIn?: string) {
         let fileName: string;
         if (fileNameIn) fileName = ProjectModel.sanitizeFileName(fileNameIn, "");
@@ -55,6 +81,9 @@ export class ProjectModel {
         return fileName;
     }
 
+    /**
+     * Creates a file in the backing filesystem and appends it to the model list.
+     */
     createFile(fileNameIn?: string, content?: string | Uint8Array) {
         const fileName = this.defaultFileName(fileNameIn);
         this.fs.writeFile(this.path + fileName, content || "");
@@ -62,10 +91,16 @@ export class ProjectModel {
         return fileName;
     }
 
+    /**
+     * Creates the built-in fallback DSP file.
+     */
     createDefaultFile() {
         return this.createFile("untitled.dsp", DEFAULT_DSP_CODE);
     }
 
+    /**
+     * Renames a file and keeps selected-file state coherent.
+     */
     renameFile(oldName: string, newNameIn: string) {
         const newName = ProjectModel.sanitizeFileName(newNameIn);
         if (oldName === newName) return null;
@@ -77,6 +112,9 @@ export class ProjectModel {
         return newName;
     }
 
+    /**
+     * Deletes a file and clears selection when the deleted file was selected.
+     */
     deleteFile(fileName: string) {
         const index = this.fileList.indexOf(fileName);
         if (index === -1) return false;
@@ -86,6 +124,9 @@ export class ProjectModel {
         return true;
     }
 
+    /**
+     * Selects an editable non-audio project file.
+     */
     selectFile(fileName: string) {
         if (ProjectModel.isAudioFile(fileName)) return false;
         if (this.fileList.indexOf(fileName) === -1) return false;
@@ -93,6 +134,9 @@ export class ProjectModel {
         return true;
     }
 
+    /**
+     * Sets the main DSP file by index, ignoring audio files.
+     */
     setMainFile(index: number) {
         if (index >= this.fileList.length) return false;
         if (ProjectModel.isAudioFile(this.fileList[index])) return false;
@@ -100,6 +144,9 @@ export class ProjectModel {
         return true;
     }
 
+    /**
+     * Replaces a file only when content changed.
+     */
     saveFile(fileName: string, content: string) {
         if (this.getValue(fileName) === content) return false;
         this.fs.unlink(this.path + fileName);
@@ -107,6 +154,9 @@ export class ProjectModel {
         return true;
     }
 
+    /**
+     * Reads text files as UTF-8 and audio files as raw bytes.
+     */
     getValue(fileName: string) {
         if (ProjectModel.isAudioFile(fileName)) return this.fs.readFile(this.path + fileName) as Uint8Array;
         return this.fs.readFile(this.path + fileName, { encoding: "utf8" }) as string;
