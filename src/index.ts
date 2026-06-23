@@ -52,6 +52,7 @@ import { ShareUrlService } from "./runtime/ShareUrlService";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
+import { DiagramView } from "./ui/DiagramView";
 
 declare global {
     interface Window {
@@ -1465,59 +1466,7 @@ $(async () => {
         if (uiEnv.outputScope) uiEnv.outputScope.disabled = true;
         refreshDspUI();
     });
-    let svgDragged = false;
-    // svg inject
-    $<SVGAElement>("#diagram-svg").on("click", "a", (e) => {
-        e.preventDefault();
-        if (svgDragged) return;
-        // const $svg = $("#diagram-svg>svg");
-        // const curWidth = $svg.length ? $svg.width() : $("#diagram").width(); // preserve current zoom
-        const fileName = e.currentTarget.href.baseVal;
-        const strSvg = diagramService.readGeneratedSvg(fileName);
-        const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
-        const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
-        $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-    });
-    // svg zoom
-    $("#diagram-svg").on("mousedown", "svg", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        svgDragged = false;
-        const $div = $(e.currentTarget).parent();
-        const x = e.pageX;
-        const y = e.pageY;
-        const sL = $div.scrollLeft();
-        const sT = $div.scrollTop();
-        const handleMouseMove = (e: JQuery.MouseMoveEvent) => {
-            if (!e.originalEvent.movementX && !e.originalEvent.movementY) return;
-            svgDragged = true;
-            const dX = e.pageX - x;
-            const dY = e.pageY - y;
-            $div.scrollLeft(sL - dX);
-            $div.scrollTop(sT - dY);
-            e.preventDefault();
-            e.stopPropagation();
-        };
-        const handleMouseUp = (e: JQuery.MouseUpEvent) => {
-            $(document).off("mousemove", handleMouseMove);
-            $(document).off("mouseup", handleMouseUp);
-            if (!svgDragged) return;
-            e.preventDefault();
-            e.stopPropagation();
-        };
-        $(document).on("mousemove", handleMouseMove);
-        $(document).on("mouseup", handleMouseUp);
-    });
-    $("#diagram").on("wheel", (e) => {
-        if (!e.ctrlKey) return;
-        const $svg = $(e.currentTarget).find("svg");
-        if (!$svg.length) return;
-        e.preventDefault();
-        e.stopPropagation();
-        const d = (e.originalEvent as WheelEvent).deltaY > 0 ? 1 : -1;
-        const w = $svg.width();
-        $svg.width(w * (1 - d * 0.25));
-    });
+    new DiagramView(diagramService).bind();
     new GlobalShortcutsController({
         docs: () => $("#btn-docs")[0].click(),
         run: () => $("#btn-run").click()
