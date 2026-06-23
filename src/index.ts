@@ -57,6 +57,7 @@ import { PlotController } from "./ui/PlotController";
 import { AudioOutputController } from "./ui/AudioOutputController";
 import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
+import { SettingsPanelController } from "./ui/SettingsPanelController";
 
 declare global {
     interface Window {
@@ -549,89 +550,16 @@ $(async () => {
     $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-share").tooltip({ trigger: "hover", boundary: "viewport" });
     $("#btn-tab-setting").tooltip({ trigger: "hover", boundary: "viewport" });
-    $<HTMLInputElement>("#enable-gui-editor").on("change", (e) => {
-        const { checked } = e.currentTarget;
-        if (!checked) {
-            $("#nav-item-gui-builder").hide(); // Hide GUI Builder tab
-            $("#iframe-gui-builder").css("visibility", "hidden"); // Show iframe
-        }
-        compileOptions.enableGuiBuilder = checked;
-        saveEditorParams();
-    })[0].checked = compileOptions.enableGuiBuilder;
-    $<HTMLInputElement>("#gui-builder-url").val(compileOptions.guiBuilderUrl).on("change", (e) => {
-        compileOptions.guiBuilderUrl = e.currentTarget.value || "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/";
-        saveEditorParams();
-    });
-    /**
-     * Left panel options
-     */
-    // Voices
-    $<HTMLSelectElement>("#select-voices").on("change", (e) => {
-        compileOptions.voices = +e.currentTarget.value;
-        saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-    });
-    // BufferSize
-    $<HTMLSelectElement>("#select-buffer-size").on("change", (e) => {
-        compileOptions.bufferSize = +e.currentTarget.value as 128 | 256 | 512 | 1024 | 2048 | 4096;
-        saveEditorParams();
-        if (compileOptions.realtimeCompile && audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-    });
-    // Double
-    $<HTMLInputElement>("#check-double").on("change", (e) => {
-        compileOptions.useDouble = e.currentTarget.checked;
-        saveEditorParams();
-        if (compileOptions.realtimeCompile) {
-            if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-            else updateDiagram(uiEnv.fileManager.mainCode);
-        }
-    })[0].checked = compileOptions.useDouble;
-    // Save Code
-    $<HTMLInputElement>("#check-save-code").on("change", (e) => {
-        compileOptions.saveCode = e.currentTarget.checked;
-        saveEditorParams();
-    })[0].checked = compileOptions.saveCode;
-    // Save Params
-    $<HTMLInputElement>("#check-save-params").on("change", (e) => {
-        compileOptions.saveParams = e.currentTarget.checked;
-        saveEditorParams();
-    })[0].checked = compileOptions.saveParams;
-    // Save DSP
-    $<HTMLInputElement>("#check-save-dsp").on("change", (e) => {
-        compileOptions.saveDsp = e.currentTarget.checked;
-        saveEditorDspTable();
-        saveEditorParams();
-    })[0].checked = compileOptions.saveDsp;
-    if (compileOptions.saveDsp) loadEditorDspTable();
-    // Real-time Diagram
-    $<HTMLInputElement>("#check-realtime-compile").on("change", (e) => {
-        compileOptions.realtimeCompile = e.currentTarget.checked;
-        saveEditorParams();
-        if (compileOptions.realtimeCompile) {
-            const code = uiEnv.fileManager.mainCode;
-            if (audioEnv.dsp) runDsp(code);
-            else updateDiagram(code);
-        }
-    });
-
-    // Save Params
-    $<HTMLInputElement>("#check-popup").on("change", (e) => {
-        compileOptions.popup = e.currentTarget.checked;
-        saveEditorParams();
-    })[0].checked = compileOptions.popup;
-
-    /*
-    // Editor Options
-    $<HTMLInputElement>("#check-vim-mode").on("change", (e) => {
-        editorOptions.vimMode = e.currentTarget.checked;
-        if (editorOptions.vimMode) {
-            vimMode = initVimMode(editor, null);
-        } else {
-            vimMode.dispose();
-        }
-    })[0].checked = editorOptions.vimMode;
-    */
-
+    new SettingsPanelController({
+        compileOptions,
+        audioEnv,
+        uiEnv,
+        saveEditorParams,
+        saveEditorDspTable,
+        loadEditorDspTable,
+        runDsp,
+        updateDiagram
+    }).bind();
     new PlotController({
         compileOptions,
         audioEnv,
