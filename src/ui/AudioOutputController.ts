@@ -30,6 +30,9 @@ export class AudioOutputController {
         this.setRecorderSampleRate = options.setRecorderSampleRate;
     }
 
+    /**
+     * Binds output device selection and DAC toggle controls.
+     */
     bind() {
         $<HTMLSelectElement>("#select-audio-output")
             .on("change", e => this.selectOutputDevice(e.currentTarget.value))
@@ -37,6 +40,9 @@ export class AudioOutputController {
         $(".btn-dac").on("click", () => this.toggleDac());
     }
 
+    /**
+     * Applies the selected output sink when the browser supports setSinkId.
+     */
     private async selectOutputDevice(id: string) {
         if (!this.getSupportMediaStreamDestination()) return;
         await this.initAudioCtx();
@@ -45,6 +51,9 @@ export class AudioOutputController {
         audio.setSinkId(id);
     }
 
+    /**
+     * Switches the DSP output connection on or off.
+     */
     private async toggleDac() {
         if (this.audioEnv.outputEnabled) {
             this.disableOutput();
@@ -53,6 +62,9 @@ export class AudioOutputController {
         }
     }
 
+    /**
+     * Disconnects the DSP from the audio destination and updates button state.
+     */
     private disableOutput() {
         this.audioEnv.outputEnabled = false;
         if (this.audioEnv.dspConnectedToOutput) {
@@ -63,6 +75,9 @@ export class AudioOutputController {
         $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
     }
 
+    /**
+     * Ensures audio is initialized, connects DSP output, and updates UI state.
+     */
     private async enableOutput() {
         this.audioEnv.outputEnabled = true;
         if (!this.audioEnv.audioCtx) {
