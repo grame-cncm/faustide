@@ -59,6 +59,7 @@ import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
+import { ExamplesController } from "./ui/ExamplesController";
 
 declare global {
     interface Window {
@@ -803,60 +804,13 @@ $(async () => {
         recorder: faustEnv.recorder,
         fileNameProvider: () => uiEnv.fileManager.mainFileNameWithoutSuffix
     }).bind();
-    // Examples
-    type DirectoryTree = {
-        path: string;
-        name: string;
-        size: number;
-        type: "directory" | "file";
-        children?: DirectoryTree[];
-        extension?: string;
-    };
-    // Append each file in examples.json to div menu
-    fetch("./examples.json")
-        .then(response => response.json())
-        .then((tree: DirectoryTree) => {
-            const $menu = $("#tab-examples");
-            const parseTree = (treeIn: DirectoryTree, $menu: JQuery<HTMLElement>) => {
-                if (treeIn.type === "file") {
-                    const $item = $("<a>").addClass(["dropdown-item", "faust-example"]).attr("href", "#").text(treeIn.name).data("path", treeIn.path);
-                    $menu.append($item);
-                } else {
-                    const $item = $("<div>").addClass(["dropright", "submenu"]);
-                    const $a = $("<a>").addClass(["dropdown-item", "dropdown-toggle", "submenu-toggle"]).attr("href", "#").text(treeIn.name);
-                    $a.on("click", (e) => {
-                        e.stopImmediatePropagation();
-                        e.preventDefault();
-                    });
-                    const $submenu = $("<div>").addClass("dropdown-menu");
-                    $item.append($a, $submenu);
-                    treeIn.children.forEach(v => parseTree(v, $submenu));
-                    $menu.append($item);
-                    $a.dropdown();
-                }
-            };
-            if (tree.children) tree.children.forEach(v => parseTree(v, $menu));
-        }).catch(() => undefined);
-    // Load an example
-    $("#tab-examples").on("click", ".faust-example", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const path = $(e.currentTarget).data("path");
-        const name = $(e.currentTarget).text();
-        if (path) {
-            fetch(path)
-                .then(response => response.text())
-                .then((code) => {
-                    const fileName = name.replace(/[^a-zA-Z0-9_.]/g, "") || "untitled.dsp";
-                    uiEnv.fileManager.newFile(fileName, code);
-                    if (compileOptions.realtimeCompile) {
-                        if (audioEnv.dsp) runDsp(uiEnv.fileManager.mainCode);
-                        else updateDiagram(uiEnv.fileManager.mainCode);
-                    }
-                });
-        }
-        $("#tab-examples").dropdown("toggle");
-    });
+    new ExamplesController({
+        fileManager: uiEnv.fileManager,
+        compileOptions,
+        audioEnv,
+        runDsp,
+        updateDiagram
+    }).bind();
     /**
      * Save current code to localStorage
      * if realtime compile is on, do compile
