@@ -1,11 +1,7 @@
 import "./Scope.scss";
 import { estimateFreq, getRms } from "./utils";
+import { RealtimeScopeType as TScopeType, getRealtimeScopeIconClassName } from "./scope/ScopeModes";
 
-enum TScopeType {
-    Oscilloscope = 0,
-    Spectroscope = 1,
-    Spectrogram = 2
-}
 type TOptions = {
     audioCtx: AudioContext;
     analyser: AnalyserNode;
@@ -188,11 +184,7 @@ export class Scope {
         ctx.restore();
     }
     static getIconClassName(typeIn: TScopeType) {
-        const prefix = "fas fa-sm ";
-        if (typeIn === TScopeType.Oscilloscope) return prefix + "fa-wave-square";
-        if (typeIn === TScopeType.Spectroscope) return prefix + "fa-chart-bar";
-        if (typeIn === TScopeType.Spectrogram) return prefix + "fa-water";
-        return prefix;
+        return getRealtimeScopeIconClassName(typeIn);
     }
 
     constructor(options: TOptions) {
