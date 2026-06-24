@@ -1,5 +1,6 @@
 import "./Scope.scss";
 import { estimateFreq, getRms } from "./utils";
+import { drawCanvasBackground } from "./scope/CanvasDrawing";
 import { RealtimeScopeType as TScopeType, getRealtimeScopeIconClassName } from "./scope/ScopeModes";
 
 type TOptions = {
@@ -140,10 +141,7 @@ export class Scope {
         ctx.restore();
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
-        ctx.save();
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, w, h);
-        ctx.restore();
+        drawCanvasBackground(ctx, w, h, "#000000");
     }
     static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number) {
         ctx.save();

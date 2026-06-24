@@ -5,6 +5,7 @@ import {
     getStaticScopeIconClassName,
     getStaticScopeModeName
 } from "./scope/ScopeModes";
+import { drawCanvasBackground } from "./scope/CanvasDrawing";
 import "./StaticScope.scss";
 
 /**
@@ -798,10 +799,7 @@ export class StaticScope {
      * @param {number} canvasHeight The height of the canvas.
      */
     static drawBackground(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number) {
-        ctx.save();
-        ctx.fillStyle = "#181818";
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        ctx.restore();
+        drawCanvasBackground(ctx, canvasWidth, canvasHeight, "#181818");
     }
     /**
      * Draws the grid lines and labels for axes.
