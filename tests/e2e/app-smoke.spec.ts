@@ -50,6 +50,15 @@ test("Faust service target discovery is populated from mocked targets", async ({
     await expect(page.locator("#export-arch option", { hasText: "cplusplus" })).toHaveCount(1);
 });
 
+test("examples menu is populated from the static examples index", async ({ page }) => {
+    await openApp(page);
+
+    await page.locator("#editor-top .dropdown-toggle", { hasText: "Examples" }).click();
+
+    await expect(page.locator("#tab-examples .submenu-toggle").first()).toBeVisible();
+    await expect(page.locator("#tab-examples .faust-example").first()).toHaveText(/\.dsp|\.lib/);
+});
+
 test("share URL contains the current project name, voices, autorun, and inline code", async ({ page }) => {
     await openApp(page);
     await page.evaluate(() => window.faustEnv.editor.setValue("process = _;"));
