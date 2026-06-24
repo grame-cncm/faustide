@@ -14,8 +14,6 @@
 // indexDB
 
 import webmidi from "webmidi";
-import type { FaustCompiler } from "@grame/faustwasm";
-import type { FaustEditorEnv } from "./runtime/types";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
@@ -37,6 +35,7 @@ import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
 import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport } from "./runtime/AppRuntimeConfig";
 import { createCompileOptions } from "./runtime/CompileOptionsFactory";
 import { createEditorRuntimeEnvironment } from "./runtime/EditorRuntimeEnvironment";
+import { exposeFaustCompilerGlobal, exposeFaustEnvironmentGlobal } from "./runtime/FaustCompatibilityGlobals";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -64,14 +63,6 @@ import { DiagramController } from "./ui/DiagramController";
 import { AnalyserScopeController } from "./ui/AnalyserScopeController";
 import { TooltipController } from "./ui/TooltipController";
 
-declare global {
-    interface Window {
-        webkitAudioContext: typeof AudioContext;
-        faustEnv: FaustEditorEnv;
-        faustCompiler: FaustCompiler;
-    }
-}
-
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
@@ -97,7 +88,7 @@ $(async () => {
     const WaveSurfer = (await import("wavesurfer.js") as any).default as import("wavesurfer.js");
     const QRCode = await import("qrcode");
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
-    window.faustCompiler = faustCompiler;
+    exposeFaustCompilerGlobal(faustCompiler);
     const settingsStore = new EditorSettingsStore(VERSION as string);
     const projectPersistence = new ProjectPersistence({
         browserFS: bfs,
@@ -361,5 +352,5 @@ $(async () => {
         dspControlsController,
         updateDiagram
     }).apply();
-    window.faustEnv = faustEnv;
+    exposeFaustEnvironmentGlobal(faustEnv);
 });
