@@ -7,15 +7,14 @@ import {
 } from "./scope/ScopeModes";
 import { drawCanvasBackground } from "./scope/CanvasDrawing";
 import {
-    binIndexToFrequency,
     clampZoomOffset,
     frequencyToBinIndex,
-    getLogFrequencyWindow,
     indexToFrequency,
     logarithmicPositionToFrequency
 } from "./scope/FrequencyScale";
 import { fillStaticScopeDataTable } from "./scope/static/DataTableRenderer";
 import { drawStaticInterleaved, drawStaticOscilloscope } from "./scope/static/TimeDomainRenderer";
+import { drawStaticSpectroscope } from "./scope/static/FrequencyRenderer";
 import "./StaticScope.scss";
 
 /**
@@ -263,138 +262,12 @@ export class StaticScope {
      * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
      */
     static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, freqDomainData, fftSize, fftOverlap, sampleRate } = drawOptions;
-        if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-
-        const frequencyBinCount = fftSize / 2;
-        let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-        startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-        const freqBufferLength = freqDomainData[0].length;
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const heightPerChannel = (canvasHeight - bottomMargin) / freqDomainData.length;
-
-        if (freqScaleMode === EFreqScaleMode.Logarithmic) {
-            const minFrequency = sampleRate / fftSize;
-            const maxFrequency = sampleRate / 2;
-            if (minFrequency <= 0) return;
-
-            const { startLog, startFrequency, endFrequency, viewLogRange } = getLogFrequencyWindow(minFrequency, maxFrequency, horizontalZoom, horizontalZoomOffset);
-
-            const startBinIndex = Math.max(1, Math.floor(frequencyToBinIndex(startFrequency, maxFrequency, frequencyBinCount)));
-            const endBinIndex = Math.min(frequencyBinCount, Math.ceil(frequencyToBinIndex(endFrequency, maxFrequency, frequencyBinCount)));
-
-            const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, EScopeMode.Spectroscope, freqScaleMode);
-
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                ctx.beginPath();
-                ctx.fillStyle = freqDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
-
-                const getX = (binIdx: number) => leftMargin + (canvasWidth - leftMargin) * (log(binIndexToFrequency(binIdx, maxFrequency, frequencyBinCount)) - startLog) / viewLogRange;
-
-                const startX = getX(startBinIndex);
-                ctx.moveTo(startX, heightPerChannel * (channelIndex + 1));
-
-                // Optimization: group values by pixel column and draw the max value.
-                let lastPixelX = -1;
-                let maxMagnitudeInStep = -Infinity;
-
-                for (let binIndex = startBinIndex; binIndex < endBinIndex; binIndex++) {
-                    const currentPixelX = Math.round(getX(binIndex));
-                    const wrappedBinIndex = wrap(binIndex, startFreqDataIndex, freqBufferLength);
-                    const magnitude = freqDomainData[channelIndex][wrappedBinIndex];
-
-                    if (currentPixelX === lastPixelX) { // Still on the same pixel, find the max
-                        if (magnitude > maxMagnitudeInStep) maxMagnitudeInStep = magnitude;
-                    } else { // Moved to a new pixel
-                        if (lastPixelX !== -1) { // Draw the max value of the previous pixel group
-                            const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                            ctx.lineTo(lastPixelX, y);
-                        }
-                        // Start a new group
-                        lastPixelX = currentPixelX;
-                        maxMagnitudeInStep = magnitude;
-                    }
-                }
-                // Draw the last collected step
-                if (lastPixelX !== -1) {
-                    const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                    ctx.lineTo(lastPixelX, y);
-                }
-
-                const endX = getX(endBinIndex - 1);
-                ctx.lineTo(endX, heightPerChannel * (channelIndex + 1));
-                ctx.closePath();
-                ctx.fill();
-            }
-            eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-            if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
-                const statsToDraw: TStatsToDraw = { values: [] };
-                const canvasDrawableWidth = canvasWidth - leftMargin;
-                const logarithmicCursorFreq = startLog + (cursor.x - leftMargin) / canvasDrawableWidth * viewLogRange;
-                const cursorFrequency = pow(10, logarithmicCursorFreq);
-                const cursorBinIndex = Math.round(frequencyToBinIndex(cursorFrequency, maxFrequency, frequencyBinCount));
-                if (cursorBinIndex >= 0 && cursorBinIndex < frequencyBinCount) {
-                    statsToDraw.x = cursor.x;
-                    statsToDraw.xLabel = cursorFrequency.toFixed(0);
-                    const wrappedCursorBinIndex = wrap(cursorBinIndex, startFreqDataIndex, freqBufferLength);
-                    for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                        const magnitude = freqDomainData[channelIndex][wrappedCursorBinIndex];
-                        if (typeof magnitude === "number") statsToDraw.values.push(magnitude);
-                    }
-                    this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
-                }
-            }
-        } else { // Linear Scale
-            const startBinIndex = freqBufferLength - frequencyBinCount + Math.round(frequencyBinCount * horizontalZoomOffset);
-            const endBinIndex = freqBufferLength - frequencyBinCount + Math.round(frequencyBinCount / horizontalZoom + frequencyBinCount * horizontalZoomOffset);
-            const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startBinIndex, endBinIndex, 0, 1, drawOptions, EScopeMode.Spectroscope, freqScaleMode);
-
-            const pixelsPerBin = (canvasWidth - leftMargin) / (endBinIndex - startBinIndex - 1);
-            const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerBin));
-
-            for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                ctx.beginPath();
-                ctx.fillStyle = freqDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
-                let maxMagnitudeInStep;
-                for (let binIndex = startBinIndex; binIndex < endBinIndex; binIndex++) {
-                    const wrappedBinIndex = wrap(binIndex, startFreqDataIndex, freqBufferLength);
-                    const magnitude = freqDomainData[channelIndex][wrappedBinIndex];
-                    const stepCounter = (binIndex - startBinIndex) % horizontalDrawStep;
-
-                    if (stepCounter === 0) maxMagnitudeInStep = magnitude;
-                    if (stepCounter !== horizontalDrawStep - 1) {
-                        if (stepCounter !== 0 && magnitude > maxMagnitudeInStep) maxMagnitudeInStep = magnitude;
-                        continue;
-                    }
-
-                    const x = (binIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                    const y = heightPerChannel * (channelIndex + 1 - Math.min(1, Math.max(0, maxMagnitudeInStep / 100 + 1)));
-                    if (binIndex === startBinIndex) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                }
-                ctx.lineTo(canvasWidth, heightPerChannel * (channelIndex + 1));
-                ctx.lineTo(leftMargin, heightPerChannel * (channelIndex + 1));
-                ctx.closePath();
-                ctx.fill();
-            }
-            eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-            if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
-                const statsToDraw: TStatsToDraw = { values: [] };
-                const cursorBinIndex = startBinIndex + Math.round((cursor.x - leftMargin) / pixelsPerBin);
-                statsToDraw.x = (cursorBinIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                statsToDraw.xLabel = indexToFrequency(cursorBinIndex, frequencyBinCount, drawOptions.sampleRate).toFixed(0);
-                const wrappedCursorBinIndex = wrap(cursorBinIndex, startFreqDataIndex, freqBufferLength);
-                for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                    const magnitude = freqDomainData[channelIndex][wrappedCursorBinIndex];
-                    if (typeof magnitude === "number") statsToDraw.values.push(magnitude);
-                }
-                this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
-            }
-        }
+        drawStaticSpectroscope({
+            drawBackground: this.drawBackground.bind(this),
+            drawGrid: this.drawGrid.bind(this),
+            drawEvent: this.drawEvent.bind(this),
+            drawStats: this.drawStats.bind(this)
+        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
     }
     /**
      * Draws the scope in spectrogram mode.
