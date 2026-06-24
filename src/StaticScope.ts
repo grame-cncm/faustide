@@ -19,6 +19,12 @@ import {
     updateStaticScopeModeControls,
     updateStaticScopeScaleButton
 } from "./scope/static/StaticScopeControls";
+import {
+    handleStaticScopePointerDown,
+    handleStaticScopePointerLeave,
+    handleStaticScopePointerMove,
+    handleStaticScopeWheel
+} from "./scope/static/StaticScopeInteractions";
 import "./StaticScope.scss";
 
 /**
@@ -142,68 +148,20 @@ export class StaticScope {
      * @param {MouseEvent | TouchEvent} event The mouse or touch event.
      */
     handleMouseMove = (event: MouseEvent | TouchEvent) => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
-        if (this.mode === EScopeMode.Data) return;
-        const canvasWidth = this.container.clientWidth;
-        const canvasHeight = this.container.clientHeight;
-        const rect = this.canvas.getBoundingClientRect();
-        let x = event instanceof MouseEvent ? event.offsetX : event.touches[0].pageX - rect.left;
-        x = Math.max(0, Math.min(canvasWidth, x));
-        let y = event instanceof MouseEvent ? event.offsetY : event.touches[0].pageY - rect.top;
-        y = Math.max(0, Math.min(canvasHeight, y));
-        this.cursor = { x, y };
-        // if (this.data.drawMode === "continuous") return;
-        this.draw();
+        handleStaticScopePointerMove(this, event);
     }
     /**
      * Handles mouse down events for panning the view.
      * @param {MouseEvent | TouchEvent} eventDown The mouse or touch event.
      */
     handleMouseDown = (eventDown: MouseEvent | TouchEvent) => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
-        if (this.mode === EScopeMode.Data) return;
-        eventDown.preventDefault();
-        eventDown.stopPropagation();
-        this.dragging = true;
-        this.canvas.style.cursor = "grab";
-        const originalZoom = this.zoom;
-        const originalOffset = this.zoomOffset;
-        let previousX = eventDown instanceof MouseEvent ? eventDown.pageX : eventDown.touches[0].pageX;
-        // let previousY = eventDown instanceof MouseEvent ? eventDown.pageY : eventDown.touches[0].pageY;
-        const handleMouseMove = (moveEvent: MouseEvent | TouchEvent) => {
-            const currentX = moveEvent instanceof MouseEvent ? moveEvent.pageX : moveEvent.touches[0].pageX;
-            // const currentY = moveEvent instanceof MouseEvent ? moveEvent.pageY : moveEvent.touches[0].pageY;
-            const deltaX = currentX - previousX;
-            // const deltaY = currentY - previousY;
-            previousX = currentX;
-            // previousY = currentY;
-            // const multiplier = 1 / 1.015 ** deltaY;
-            const offsetChange = -deltaX / this.zoom / this.canvas.width;
-            // if (multiplier !== 1) this.zoom *= multiplier;
-            if (offsetChange !== 0) this.zoomOffset += offsetChange;
-            if (this.zoom !== originalZoom || this.zoomOffset !== originalOffset) this.draw();
-        };
-        const handleMouseUp = () => {
-            this.dragging = false;
-            this.canvas.style.cursor = "";
-            document.removeEventListener("mousemove", handleMouseMove);
-            document.removeEventListener("touchmove", handleMouseMove);
-            document.removeEventListener("mouseup", handleMouseUp);
-            document.removeEventListener("touchend", handleMouseUp);
-        };
-        document.addEventListener("mousemove", handleMouseMove);
-        document.addEventListener("touchmove", handleMouseMove);
-        document.addEventListener("mouseup", handleMouseUp);
-        document.addEventListener("touchend", handleMouseUp);
+        handleStaticScopePointerDown(this, eventDown);
     }
     /**
      * Handles the mouse leaving the canvas area.
      */
     handleMouseLeave = () => {
-        if (!this.data || !this.data.timeDomainData || !this.data.timeDomainData.length || !this.data.timeDomainData[0].length) return;
-        if (this.mode === EScopeMode.Data) return;
-        this.cursor = undefined;
-        this.draw();
+        handleStaticScopePointerLeave(this);
     }
     /**
      * Draws the scope in interleaved mode.
@@ -660,18 +618,7 @@ export class StaticScope {
         this.canvas.addEventListener("click", () => {
         });
         this.canvas.addEventListener("wheel", (e) => {
-            const leftMargin = 50;
-            const bottomMargin = 20;
-            const multiplier = 1.5 ** (e.deltaY > 0 ? -1 : 1);
-            // Vertical zoom on Y-Axis
-            if (e.offsetX < leftMargin && e.offsetY < this.canvas.height - bottomMargin) {
-                if (multiplier !== 1) this.vzoom *= 1 / multiplier;
-                this.draw();
-            } else { // Horizontal zoom elsewhere
-                if (multiplier !== 1) this.zoom *= multiplier;
-                if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
-                this.handleMouseMove(e);
-            }
+            handleStaticScopeWheel(this, e);
         });
         this.btnZoomOut.addEventListener("click", () => {
             this.zoom /= 1.5;
