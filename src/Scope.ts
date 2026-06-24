@@ -11,6 +11,7 @@ import {
     drawRealtimeSpectroscope,
     drawRealtimeStats
 } from "./scope/realtime/RealtimeScopeRenderer";
+import { createRealtimeScopeControls } from "./scope/realtime/RealtimeScopeControls";
 
 type TOptions = {
     audioCtx: AudioContext;
@@ -87,87 +88,7 @@ export class Scope {
         else if (typeof options.paused === "undefined") this.paused = false;
     }
     getChildren() {
-        this.spectTempCtx = document.createElement("canvas").getContext("2d");
-        this.spectTempCtx.canvas.height = 1024;
-        this.spectTempCtx.canvas.width = 1024;
-        let ctrl: HTMLDivElement;
-        for (let i = 0; i < this.container.children.length; i++) {
-            const e = this.container.children[i];
-            if (e.classList.contains("scope-controller")) ctrl = e as HTMLDivElement;
-            if (e.classList.contains("scope-canvas")) this.canvas = e as HTMLCanvasElement;
-        }
-        if (!ctrl) {
-            ctrl = document.createElement("div");
-            ctrl.classList.add("scope-controller");
-            this.container.appendChild(ctrl);
-        }
-        if (!this.canvas) {
-            const canvas = document.createElement("canvas");
-            canvas.classList.add("scope-canvas");
-            canvas.setAttribute("data-toggle", "tooltip");
-            canvas.setAttribute("data-placement", "left");
-            canvas.setAttribute("title", "Input analyser");
-            this.container.appendChild(canvas);
-            this.canvas = canvas;
-            try {
-                $(canvas).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) {} // eslint-disable-line no-empty
-        }
-        this.ctx = this.canvas.getContext("2d");
-        for (let i = 0; i < ctrl.children.length; i++) {
-            const e = ctrl.children[i];
-            if (e.classList.contains("scope-btn-switch")) this.btnSwitch = e as HTMLButtonElement;
-            if (e.classList.contains("scope-btn-size")) this.btnSize = e as HTMLButtonElement;
-            if (e.classList.contains("scope-btn-ch")) this.btnCh = e as HTMLButtonElement;
-        }
-        if (!this.btnSwitch) {
-            const btn = document.createElement("button");
-            btn.className = "scope-btn-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Oscilloscope / Spectroscope / Spectrogram");
-            ctrl.appendChild(btn);
-            this.btnSwitch = btn;
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) {} // eslint-disable-line no-empty
-        }
-        if (!this.btnSize) {
-            const btn = document.createElement("button");
-            btn.className = "scope-btn-size btn btn-outline-light btn-sm btn-overlay";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Analyser Size");
-            btn.innerText = this.analyser.fftSize + "samps";
-            ctrl.appendChild(btn);
-            this.btnSize = btn;
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) {} // eslint-disable-line no-empty
-        }
-        if (!this.btnCh) {
-            const btn = document.createElement("button");
-            btn.className = "scope-btn-ch btn btn-outline-light btn-sm btn-overlay";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Current Channel");
-            btn.innerText = "ch " + (this._channel + 1).toString();
-            ctrl.appendChild(btn);
-            this.btnCh = btn;
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) {} // eslint-disable-line no-empty
-        }
-        for (let i = 0; i < this.btnSwitch.children.length; i++) {
-            const e = this.btnSwitch.children[i];
-            if (e.classList.contains("fas")) this.iSwitch = e as HTMLElement;
-        }
-        if (!this.iSwitch) {
-            const i = document.createElement("i");
-            i.className = "fas fa-sm fa-wave-square";
-            this.btnSwitch.appendChild(i);
-            this.iSwitch = i;
-        }
+        Object.assign(this, createRealtimeScopeControls(this.container, this.analyser.fftSize, this._channel));
     }
     bind() {
         this.btnSwitch.addEventListener("click", () => {
