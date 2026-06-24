@@ -1,5 +1,4 @@
 import "./Scope.scss";
-import { estimateFreq, getRms } from "./utils";
 import { clampZoomOffset } from "./scope/FrequencyScale";
 import { RealtimeScopeType as TScopeType, getRealtimeScopeIconClassName } from "./scope/ScopeModes";
 import {
@@ -12,8 +11,9 @@ import {
     drawRealtimeStats
 } from "./scope/realtime/RealtimeScopeRenderer";
 import { createRealtimeScopeControls } from "./scope/realtime/RealtimeScopeControls";
-import { createAnalyserFrameBuffers, readAnalyserFrame } from "./scope/realtime/AnalyserFrameReader";
+import { createAnalyserFrameBuffers } from "./scope/realtime/AnalyserFrameReader";
 import { routeScopeChannel } from "./scope/realtime/ScopeChannelRouter";
+import { drawRealtimeScopePause, runRealtimeScopeDrawLoop } from "./scope/realtime/ScopeDrawLoop";
 
 type TOptions = {
     audioCtx: AudioContext;
@@ -121,43 +121,16 @@ export class Scope {
         });
     }
     draw = () => {
-        this.frame++; // Reduce frame rate
-        if (this.canvas.offsetParent !== null && this.frame % 3 === 0 && this.audioCtx && this.audioCtx.state === "running" && this.analyser) {
-            const ctx = this.ctx;
-            const sr = this.audioCtx.sampleRate;
-            const w = this.container.clientWidth;
-            const h = Math.floor(Math.min(w * 0.75, this.container.clientHeight));
-            this.canvas.width = w;
-            this.canvas.height = h;
-            readAnalyserFrame(this.analyser, { t: this.t, ti: this.ti, f: this.f });
-            const freq = estimateFreq(this.f, sr);
-            const samp = this.t[this.t.length - 1];
-            const rms = getRms(this.t);
-            if (this.drawSpectrogram) Scope.drawOfflineSpectrogram(this.spectTempCtx, this.f, this.spectCol$);
-            if (this.type === TScopeType.Oscilloscope) {
-                Scope.drawOscilloscope(ctx, w, h, this.t, freq, sr, this.zoom, this.zoomOffset);
-                Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
-            } else if (this.type === TScopeType.Spectroscope) {
-                Scope.drawSpectroscope(ctx, w, h, this.f, this.zoom, this.zoomOffset);
-                Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom, sr / 2 * this.zoomOffset, sr / 2 / this.zoom + sr / 2 * this.zoomOffset);
-            } else if (this.type === TScopeType.Spectrogram) {
-                Scope.drawSpectrogram(ctx, this.spectTempCtx, this.spectCol$, w, h, this.f, this.zoom);
-                Scope.drawStats(ctx, w, h, freq, samp, rms, this.zoom);
-            }
-            this.spectCol$ = (this.spectCol$ + 1) % this.spectTempCtx.canvas.width;
-        }
-        this.raf = requestAnimationFrame(this.draw);
-        return this.raf;
+        return runRealtimeScopeDrawLoop(this, {
+            drawOfflineSpectrogram: Scope.drawOfflineSpectrogram,
+            drawOscilloscope: Scope.drawOscilloscope,
+            drawSpectroscope: Scope.drawSpectroscope,
+            drawSpectrogram: Scope.drawSpectrogram,
+            drawStats: Scope.drawStats
+        });
     }
     drawPause = () => {
-        const ctx = this.ctx;
-        const w = this.canvas.width;
-        const h = this.canvas.height;
-        ctx.fillStyle = "#00000080";
-        ctx.fillRect(0, 0, w, h);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(w * 0.38, h * 0.35, w * 0.08, h * 0.3);
-        ctx.fillRect(w * 0.54, h * 0.35, w * 0.08, h * 0.3);
+        drawRealtimeScopePause(this.ctx, this.canvas.width, this.canvas.height);
     };
     get size() {
         return this._size;
