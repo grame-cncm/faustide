@@ -57,7 +57,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
-| Phase 11: scope rendering factorization | In progress | Characterization tests cover `StaticScope` and `Scope`; shared primitives and the static data table renderer are extracted. |
+| Phase 11: scope rendering factorization | In progress | Characterization tests cover `StaticScope` and `Scope`; shared primitives plus static data, time-domain, and frequency renderers are extracted. |
 
 ## Test strategy (as implemented)
 
@@ -66,7 +66,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 52 files, 223 tests at the latest Phase 11 pass |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 54 files, 227 tests at the latest Phase 11 pass |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 62 tests against the built `dist/` at the last documentation pass |
 
 ### Unit and integration layer (Vitest)
@@ -374,7 +374,7 @@ Current Phase 11 progress:
 
 - Phase 11.1 through Phase 11.5 are implemented with Vitest characterization coverage for canvas/DOM helpers, `StaticScope`, and `Scope`.
 - Phase 11.6 has extracted `src/scope/ScopeModes.ts`, `src/scope/CanvasDrawing.ts`, and `src/scope/FrequencyScale.ts`; public static wrapper methods still delegate to the extracted helpers for compatibility.
-- Phase 11.7 has started with `src/scope/static/DataTableRenderer.ts`, with `StaticScope.fillDivData` retained as a compatibility wrapper.
+- Phase 11.7 has extracted `src/scope/static/DataTableRenderer.ts`, `src/scope/static/TimeDomainRenderer.ts`, and `src/scope/static/FrequencyRenderer.ts`; the corresponding `StaticScope` static methods are retained as compatibility wrappers.
 - The latest validation pass ran `npm run test:unit` and `npm run build`; Playwright e2e last passed after the `Scope` instance characterization.
 
 ### Phase 11.1: canvas and DOM test harness
@@ -621,6 +621,11 @@ Validation after each renderer extraction:
 npm run test:unit
 npm run build
 ```
+
+Current extraction status:
+
+- Done: `DataTableRenderer`, `TimeDomainRenderer`, and `FrequencyRenderer`.
+- Remaining: `SpectrogramRenderer`, then `StaticScopeInteractions` and `StaticScopeControls`.
 
 Run:
 
