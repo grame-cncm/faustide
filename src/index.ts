@@ -22,7 +22,6 @@ import type {
     FaustEditorMIDIEnv,
     FaustEditorUIEnv
 } from "./runtime/types";
-import { Scope } from "./Scope";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
@@ -66,6 +65,7 @@ import { StartupControlsController } from "./ui/StartupControlsController";
 import { initEditor } from "./ui/FaustEditorFactory";
 import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 import { DiagramController } from "./ui/DiagramController";
+import { AnalyserScopeController } from "./ui/AnalyserScopeController";
 
 declare global {
     interface Window {
@@ -225,6 +225,7 @@ $(async () => {
         analyser: new Analyser(16, "continuous"),
         fileManager: undefined
     };
+    const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv });
     const compileOptions: FaustEditorCompileOptions = {
         useWorklet: supportAudioWorklet,
         useDouble: false,
@@ -312,7 +313,7 @@ $(async () => {
         faustUiController,
         alertController,
         initAudioCtx: () => initAudioCtx(audioEnv),
-        initAnalysersUI: () => initAnalysersUI(uiEnv, audioEnv),
+        initAnalysersUI: () => analyserScopeController.initialize(),
         updateDiagram,
         saveEditorDspTable
     });
@@ -402,7 +403,7 @@ $(async () => {
         audioEnv,
         getSupportMediaStreamDestination: () => supportMediaStreamDestination,
         initAudioCtx: () => initAudioCtx(audioEnv),
-        initAnalysersUI: () => initAnalysersUI(uiEnv, audioEnv),
+        initAnalysersUI: () => analyserScopeController.initialize(),
         setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
     }).bind();
     await new AudioDeviceController({
@@ -436,10 +437,8 @@ $(async () => {
     // autorunning
     await initAudioCtx(audioEnv);
     faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
-    // Analysers
-    initAnalysersUI(uiEnv, audioEnv);
-    $("#output-analyser-ui").hide();
-    uiEnv.outputScope.disabled = true;
+    analyserScopeController.initialize();
+    analyserScopeController.disableOutputDisplay();
     $<HTMLSelectElement>("#select-audio-input").change();
     await urlParamsController.load(window.location.search);
     new StartupControlsController({
@@ -461,29 +460,4 @@ $(async () => {
 const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
     if (!audioEngine) throw new Error("Audio engine is not ready");
     return audioEngine.initialize(deviceId);
-};
-/**
- * Init analyser scopes with audio environment
- *
- * @param {FaustEditorUIEnv} uiEnv
- * @param {FaustEditorAudioEnv} audioEnv
- * @returns
- */
-const initAnalysersUI = (uiEnv: FaustEditorUIEnv, audioEnv: FaustEditorAudioEnv) => {
-    if (uiEnv.analysersInited) return;
-    uiEnv.inputScope = new Scope({
-        audioCtx: audioEnv.audioCtx,
-        analyser: audioEnv.analyserInput,
-        splitter: audioEnv.splitterInput,
-        channels: 2,
-        container: $<HTMLDivElement>("#input-analyser-ui")[0]
-    });
-    uiEnv.outputScope = new Scope({
-        audioCtx: audioEnv.audioCtx,
-        analyser: audioEnv.analyserOutput,
-        splitter: audioEnv.splitterOutput,
-        channels: 1,
-        container: $<HTMLDivElement>("#output-analyser-ui")[0]
-    });
-    uiEnv.analysersInited = true;
 };
