@@ -58,6 +58,7 @@ import { UrlParamsController } from "./ui/UrlParamsController";
 import { AlertController } from "./ui/AlertController";
 import { DspCompileController } from "./ui/DspCompileController";
 import { StartupControlsController } from "./ui/StartupControlsController";
+import { ApplicationStartupController } from "./ui/ApplicationStartupController";
 import { initEditor } from "./ui/FaustEditorFactory";
 import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 import { DiagramController } from "./ui/DiagramController";
@@ -322,19 +323,20 @@ $(async () => {
     }).bind();
     new ResizablePanelsController(editor, wavesurfer).bind();
     new PanelToggleView(editor).bind();
-    // autorunning
-    await initializeAudioContext();
-    faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
-    analyserScopeController.initialize();
-    analyserScopeController.disableOutputDisplay();
-    $<HTMLSelectElement>("#select-audio-input").change();
-    await urlParamsController.load(window.location.search);
-    new StartupControlsController({
-        compileOptions,
+    await new ApplicationStartupController({
         audioEnv,
-        fileManager: uiEnv.fileManager,
-        dspControlsController,
-        updateDiagram
+        faustEnv,
+        initAudioCtx: () => initializeAudioContext(),
+        analyserScopeController,
+        loadUrlParams: () => urlParamsController.load(window.location.search),
+        createStartupControls: () => new StartupControlsController({
+            compileOptions,
+            audioEnv,
+            fileManager: uiEnv.fileManager,
+            dspControlsController,
+            updateDiagram
+        }),
+        selectAudioInput: () => $<HTMLSelectElement>("#select-audio-input").change(),
+        exposeFaustEnv: exposeFaustEnvironmentGlobal
     }).apply();
-    exposeFaustEnvironmentGlobal(faustEnv);
 });
