@@ -57,6 +57,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
+| Phase 11: scope rendering factorization | Planned | `StaticScope.ts` and `Scope.ts` still need dedicated characterization tests and incremental extraction. |
 
 ## Test strategy (as implemented)
 
@@ -357,6 +358,336 @@ npm run test:e2e
 ```
 
 Then run the manual checklist.
+
+## Phase 11: factor `StaticScope.ts` and `Scope.ts`
+
+Goal: make analyser and plot rendering maintainable without changing visual or interaction behavior.
+
+Current risks:
+
+- `src/StaticScope.ts` is a large mixed module: data-mode rendering, oscilloscope rendering, interleaved rendering, spectroscope rendering, spectrogram cache rendering, grid/event/stat overlays, mode UI, zoom state, pointer interactions, and requestAnimationFrame scheduling live together.
+- `src/Scope.ts` mixes real-time analyser node reads, channel/FFT controls, canvas drawing, spectrogram cache updates, zoom, pause/disable state, and DOM construction.
+- Existing tests mostly cover `AnalyserScopeController` wiring. They do not directly characterize the rendering helpers, DOM controls, zoom math, analyser polling, or mode transitions.
+- Canvas output is visual, so tests should assert deterministic drawing calls and state transitions rather than fragile pixel-perfect full-canvas snapshots.
+
+### Phase 11.1: canvas and DOM test harness
+
+Add reusable test helpers before moving code:
+
+- `src/tests/helpers/canvasContext.ts`
+  - fake `CanvasRenderingContext2D` with spies for `save`, `restore`, `beginPath`, `moveTo`, `lineTo`, `stroke`, `fill`, `fillRect`, `clearRect`, `drawImage`, `fillText`, `putImageData`, `getImageData`, `createImageData`;
+  - fake `canvas` dimensions and `getBoundingClientRect`;
+  - mutable drawing properties such as `fillStyle`, `strokeStyle`, `font`, `lineWidth`, `globalCompositeOperation`.
+- `src/tests/helpers/scopeDom.ts`
+  - factory for a scope container with `.scope-controller`, `.scope-canvas`, and optional pre-existing children;
+  - helper to install deterministic `HTMLCanvasElement.prototype.getContext`;
+  - helper to make `offsetParent` visible or hidden.
+- `src/tests/helpers/audioAnalyser.ts`
+  - fake `AnalyserNode` implementing `fftSize`, `frequencyBinCount`, `minDecibels`, `maxDecibels`, `getFloatFrequencyData`, `getFloatTimeDomainData`, and `getByteTimeDomainData`;
+  - fake `ChannelSplitterNode` with connect/disconnect spies.
+- `src/tests/helpers/animationFrame.ts`
+  - deterministic `requestAnimationFrame` / `cancelAnimationFrame` queue so scope draw loops can be stepped manually.
+
+Validation:
+
+```sh
+npm run test:unit
+```
+
+### Phase 11.2: characterize `StaticScope` pure helpers
+
+Add `src/tests/StaticScopeRendering.test.ts` before extraction.
+
+Cover mode metadata:
+
+- `getIconClassName` returns the current Font Awesome classes for all `EScopeMode` values;
+- `getModeName` returns the current display labels for all `EScopeMode` values.
+
+Cover shared drawing primitives:
+
+- `drawBackground` fills the full canvas in black;
+- `drawStats` draws the stats panel, zoom labels, sample label, frequency label, RMS label, and respects optional min/max labels;
+- `drawEvent` groups simultaneous event payloads at the same x position and draws stable labels;
+- `drawGrid` draws expected grid lines for time-domain modes;
+- `drawGrid` draws expected frequency labels for linear and logarithmic spectroscope/spectrogram modes.
+
+Cover data rendering:
+
+- `fillDivData` renders sample rows for single and multi-channel data;
+- `fillDivData` includes event markers at the expected sample or buffer positions;
+- `fillDivData` clears stale rows when called with shorter data.
+
+Cover time-domain rendering:
+
+- `drawOscilloscope` uses the stabilization/zero-crossing window when frequency estimation is present;
+- `drawOscilloscope` falls back to full-buffer drawing when the period is not finite;
+- `drawInterleaved` separates channels into horizontal lanes;
+- both time-domain renderers group min/max values when many samples map to the same x pixel;
+- cursor stats identify the expected sample/channel/value.
+
+Cover frequency-domain rendering:
+
+- `drawSpectroscope` draws one filled spectrum per channel in linear mode;
+- `drawSpectroscope` maps logarithmic cursor position to frequency and dB stats;
+- `drawSpectrogram` renders the wrapped cache split when the visible source range crosses the cache end;
+- `drawSpectrogram` renders a contiguous cache range when no wrap is needed;
+- `drawOfflineSpectrogram` initializes/resizes the cache canvas to the expected frame count;
+- `drawOfflineSpectrogram` returns an unchanged last-sample index when no new frames are available;
+- `drawOfflineSpectrogram` draws expected columns for linear and logarithmic frequency scales.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+### Phase 11.3: characterize `StaticScope` instance behavior
+
+Add `src/tests/StaticScope.test.ts` before extraction.
+
+Cover construction:
+
+- creates missing controller and canvas DOM when the container is empty;
+- reuses existing `.scope-controller` and `.scope-canvas` when provided;
+- creates the offscreen spectrogram cache canvas;
+- initializes the default mode, frequency scale, zoom, vertical zoom, cursor, and draw data.
+
+Cover mode controls:
+
+- mode button cycles Data -> Interleaved -> Oscilloscope -> Spectroscope -> Spectrogram when spectrogram drawing is enabled;
+- Spectrogram is skipped when `drawSpectrogram` is false;
+- Data mode is skipped during continuous drawing;
+- mode setter updates icon, label, container classes, visibility of data/canvas surfaces, and triggers redraw.
+
+Cover frequency-scale controls:
+
+- frequency scale toggle switches linear/logarithmic modes;
+- switching scale resets spectrogram cache state and redraws;
+- toggle is visible only for frequency-domain modes.
+
+Cover zoom and cursor:
+
+- wheel zoom clamps to the mode-specific zoom range;
+- wheel panning clamps `zoomOffset` between 0 and the maximum allowed offset;
+- vertical zoom updates only the active mode;
+- double-click or equivalent reset path restores zoom and offset defaults;
+- mouse/touch move updates cursor and redraws outside Data mode;
+- mouse leave clears cursor and redraws.
+
+Cover draw scheduling:
+
+- `draw(data)` stores new data, marks new spectrogram data, and schedules exactly one animation frame;
+- repeated `draw()` calls before the frame do not schedule duplicate frames;
+- draw callback chooses `fillDivData`, `drawInterleaved`, `drawOscilloscope`, `drawSpectroscope`, or `drawSpectrogram` according to current mode;
+- continuous mode does not draw when the canvas is hidden;
+- changing data shape resets the spectrogram cache index.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+Run Playwright because plot and scope UI are browser-visible.
+
+### Phase 11.4: characterize `Scope` pure helpers
+
+Add `src/tests/ScopeRendering.test.ts` before extraction.
+
+Cover:
+
+- `drawBackground` and `drawGrid` call the expected canvas primitives;
+- `drawStats` renders sample, frequency, RMS, zoom, min, and max labels;
+- `getIconClassName` returns stable icons for Oscilloscope, Spectroscope, and Spectrogram;
+- `drawOscilloscope` computes the zero-crossing start and draws the expected visible window;
+- `drawOscilloscope` falls back when estimated frequency is invalid;
+- `drawSpectroscope` draws a filled spectrum using the current zoom window;
+- `drawOfflineSpectrogram` writes one cache column and advances through frequency bins deterministically;
+- `drawSpectrogram` draws a wrapped cache range and a non-wrapped cache range.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+### Phase 11.5: characterize `Scope` instance behavior
+
+Add `src/tests/Scope.test.ts` before extraction.
+
+Cover construction:
+
+- creates or reuses controller/canvas children;
+- initializes analyser buffers from `fftSize` and `frequencyBinCount`;
+- pauses by default when `window.AudioWorklet` is unavailable;
+- respects explicit `paused` option.
+
+Cover analyser polling and rendering:
+
+- visible, running scopes read frequency and time-domain analyser data every third frame;
+- byte time-domain fallback is used when `getFloatTimeDomainData` is unavailable;
+- oscilloscope mode calls `drawOscilloscope` and `drawStats`;
+- spectroscope mode calls `drawSpectroscope` and `drawStats`;
+- spectrogram mode updates the offline cache, calls `drawSpectrogram`, and draws stats;
+- hidden scopes skip analyser reads and rendering;
+- disabled scopes do not schedule active drawing.
+
+Cover controls:
+
+- mode button cycles through available modes and respects `drawSpectrogram`;
+- FFT-size button cycles through `Scope.sizes`, updates analyser `fftSize`, and reallocates buffers;
+- channel button cycles through channels and reconnects the splitter in the documented order;
+- pause toggle switches between active draw loop and pause loop;
+- wheel zoom updates `zoom` and `zoomOffset` with clamping.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+Run Playwright because analyser scopes are browser-visible.
+
+### Phase 11.6: extract shared rendering primitives
+
+After the tests above are green, move low-risk helpers first:
+
+- create `src/scope/CanvasDrawing.ts`
+  - `drawBackground`;
+  - common grid line helpers;
+  - stats panel helpers;
+  - text label helpers.
+- create `src/scope/ScopeModes.ts`
+  - mode enums and display/icon metadata for `Scope` and `StaticScope`;
+  - keep exported aliases if existing imports need compatibility.
+- create `src/scope/FrequencyScale.ts`
+  - linear/logarithmic frequency mapping;
+  - index/frequency conversion;
+  - clamp helpers for zoom windows.
+
+Migration rules:
+
+- move one helper group per commit;
+- keep old static methods as delegating wrappers until all callers are migrated;
+- avoid changing numeric constants or labels in the same commit as a move;
+- keep tests green after each move.
+
+Validation after each commit:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+### Phase 11.7: extract `StaticScope` renderers
+
+Split rendering by mode while keeping `StaticScope` as the public widget:
+
+- `src/scope/static/DataTableRenderer.ts`
+  - data table rendering and event row placement.
+- `src/scope/static/TimeDomainRenderer.ts`
+  - oscilloscope/interleaved windowing, stabilization, min/max grouping, cursor stats.
+- `src/scope/static/FrequencyRenderer.ts`
+  - spectroscope linear/logarithmic drawing and cursor stats.
+- `src/scope/static/SpectrogramRenderer.ts`
+  - offline cache update, wrapped cache drawing, linear/logarithmic bin rendering.
+- `src/scope/static/StaticScopeInteractions.ts`
+  - cursor, wheel zoom, drag/pan, mouse/touch event normalization.
+- `src/scope/static/StaticScopeControls.ts`
+  - DOM control creation, mode button, scale button, label/icon updates.
+
+Migration rules:
+
+- keep `StaticScope.drawOscilloscope`, `StaticScope.drawInterleaved`, `StaticScope.drawSpectroscope`, `StaticScope.drawSpectrogram`, `StaticScope.drawOfflineSpectrogram`, and `StaticScope.fillDivData` as compatibility wrappers at first;
+- move instance event handlers only after renderer extraction is complete;
+- remove wrappers only if no external imports use them, otherwise keep them documented as compatibility API.
+
+Validation after each renderer extraction:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+Run:
+
+```sh
+npm run test:e2e
+```
+
+after `SpectrogramRenderer`, `StaticScopeInteractions`, and `StaticScopeControls`.
+
+### Phase 11.8: extract `Scope` real-time analyser widget
+
+Split real-time analyser concerns while keeping `Scope` as the public widget:
+
+- `src/scope/realtime/RealtimeScopeRenderer.ts`
+  - oscilloscope, spectroscope, spectrogram rendering wrappers around shared drawing helpers.
+- `src/scope/realtime/RealtimeScopeControls.ts`
+  - DOM control creation, icon updates, FFT-size button, channel button, pause button.
+- `src/scope/realtime/AnalyserFrameReader.ts`
+  - reads float/byte time-domain data and frequency data from `AnalyserNode`;
+  - owns buffer allocation when `fftSize` changes.
+- `src/scope/realtime/ScopeChannelRouter.ts`
+  - channel cycling and splitter reconnect/disconnect order.
+- `src/scope/realtime/ScopeDrawLoop.ts`
+  - requestAnimationFrame scheduling, every-third-frame throttling, hidden/disabled/paused handling.
+
+Migration rules:
+
+- keep constructor behavior and public properties stable while extracting;
+- prefer injected collaborators in tests, but keep default collaborators wired in `Scope`;
+- preserve the Chrome graph ordering comment around splitter/analyser reconnects.
+
+Validation after each extraction:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+Run:
+
+```sh
+npm run test:e2e
+```
+
+after `AnalyserFrameReader`, `ScopeChannelRouter`, and `ScopeDrawLoop`.
+
+### Phase 11.9: final cleanup and manual validation
+
+After both widgets are split:
+
+- remove duplicate constants between `Scope` and `StaticScope`;
+- ensure public exported types are documented;
+- ensure wrapper methods either have tests or are removed with a compatibility note;
+- update this document's phase status from Planned to Done;
+- run the full automated suite.
+
+Final automated validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+Manual validation specific to scopes:
+
+- run a DSP and verify input/output analyser canvases render;
+- cycle oscilloscope, spectroscope, and spectrogram modes;
+- change FFT size and channel on multi-output DSPs;
+- verify pause/disable behavior for output scope before and after running a DSP;
+- run offline plot and verify Data, Interleaved, Oscilloscope, Spectroscope, and Spectrogram modes;
+- test wheel zoom, drag pan, cursor stats, and frequency scale switching;
+- verify spectrogram cache behavior after changing plot data shape and frequency scale;
+- verify narrow and wide layouts do not break scope controls.
 
 ## Manual validation checklist
 
