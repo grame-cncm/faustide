@@ -149,8 +149,10 @@ export class PlotController {
     private applySpectrogram(checked: boolean) {
         this.compileOptions.drawSpectrogram = checked;
         this.uiEnv.plotScope.drawSpectrogram = this.compileOptions.drawSpectrogram;
-        this.uiEnv.inputScope.drawSpectrogram = this.compileOptions.drawSpectrogram;
-        this.uiEnv.outputScope.drawSpectrogram = this.compileOptions.drawSpectrogram;
+        // inputScope/outputScope are created lazily on the first analyser init;
+        // guard like every other access so an early toggle cannot throw.
+        if (this.uiEnv.inputScope) this.uiEnv.inputScope.drawSpectrogram = this.compileOptions.drawSpectrogram;
+        if (this.uiEnv.outputScope) this.uiEnv.outputScope.drawSpectrogram = this.compileOptions.drawSpectrogram;
         this.saveEditorParams();
     }
 }

@@ -145,6 +145,28 @@ describe("PlotController", () => {
         expect(uiEnv.outputScope.drawSpectrogram).toBe(true);
     });
 
+    it("toggles the spectrogram flag without throwing before the analyser scopes exist", () => {
+        const compileOptions = createCompileOptions();
+        const uiEnv = createUiEnv();
+        // input/output scopes are created lazily on first analyser init.
+        uiEnv.inputScope = null;
+        uiEnv.outputScope = null;
+        new PlotController({
+            compileOptions: compileOptions as any,
+            audioEnv: { dspConnectedToInput: false, dspConnectedToOutput: false, inputEnabled: false, outputEnabled: false } as any,
+            uiEnv: uiEnv as any,
+            faustCompiler: {} as any,
+            dspRunner: {} as any,
+            getMainCode: () => "process = _;",
+            runDsp: vi.fn(),
+            saveEditorParams: vi.fn()
+        }).bind();
+
+        expect(() => $("#check-draw-spectrogram").prop("checked", true).trigger("change")).not.toThrow();
+        expect(compileOptions.drawSpectrogram).toBe(true);
+        expect(uiEnv.plotScope.drawSpectrogram).toBe(true);
+    });
+
     it("draws the analyser in non-offline mode when a DSP already exists", async () => {
         const compileOptions = createCompileOptions();
         compileOptions.plotMode = "manual";
