@@ -378,7 +378,7 @@ $(async () => {
         docs: () => $("#btn-docs")[0].click(),
         run: () => $("#btn-run").click()
     }).bind();
-    new ResizablePanelsController(editor, wavesurfer).bind();
+    new ResizablePanelsController(editor, () => wavesurfer).bind();
     new PanelToggleView(editor).bind();
 
     /*
