@@ -13,6 +13,7 @@ import {
 } from "./scope/realtime/RealtimeScopeRenderer";
 import { createRealtimeScopeControls } from "./scope/realtime/RealtimeScopeControls";
 import { createAnalyserFrameBuffers, readAnalyserFrame } from "./scope/realtime/AnalyserFrameReader";
+import { routeScopeChannel } from "./scope/realtime/ScopeChannelRouter";
 
 type TOptions = {
     audioCtx: AudioContext;
@@ -198,16 +199,16 @@ export class Scope {
         return this._channel;
     }
     set channel(channelIn) {
-        if (channelIn >= this.channels) return;
-        const oldCh = this._channel;
-        this._channel = channelIn;
+        const routedChannel = routeScopeChannel({
+            splitter: this.splitter,
+            analyser: this.analyser,
+            channels: this.channels,
+            currentChannel: this._channel,
+            nextChannel: channelIn
+        });
+        if (typeof routedChannel !== "number") return;
+        this._channel = routedChannel;
         this.btnCh.innerText = "ch " + (this._channel + 1).toString();
-        if (this._channel === oldCh) return;
-        this.splitter.connect(this.analyser, this._channel, 0); // Need to be done in the order, or Chrome inspect the graph and disable the analyser.
-        setTimeout(() => {
-            try { this.splitter.disconnect(this.analyser, oldCh, 0); } catch {} // eslint-disable-line no-empty
-        }, 10);
-        this._channel = channelIn;
     }
     get zoom() {
         return this._zoom;
