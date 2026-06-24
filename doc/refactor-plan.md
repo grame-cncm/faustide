@@ -9,8 +9,8 @@ This document records the `src/index.ts` refactor plan and the current post-refa
 - `src/FileManager.ts` delegates project/file decision rules to `src/model/ProjectModel.ts` while preserving the public API used by controllers.
 - Runtime types are explicit in `src/runtime/types.ts`; the old hidden global type coupling has been removed for the refactored runtime surface.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
-- The main residual coupling is the shared mutable runtime environment (`FaustEditor*Env`): it is passed by reference and written by several controllers, and it is what forces the late-bound wiring above. Reducing it is tracked as Phase 12.
-- The remaining structural work is tracked as Phase 11 (scope rendering factorization) and Phase 12 (shared-state ownership and wiring). Everything else is manual validation and normal maintenance, not another large extraction pass.
+- The shared mutable runtime environment (`FaustEditor*Env`) is no longer written by reference from many sites: Phase 12 routed every audio/scope mutation and the DSP graph connect/disconnect through `AudioGraphState`/`ScopeState`, and named the run/diagram seam (`RuntimeActions`). The composition root has a single remaining late binding (`dspCompileController`), a genuine initialization cycle.
+- The remaining structural work is tracked as Phase 11 (scope rendering factorization). Everything else is manual validation and normal maintenance, not another large extraction pass.
 
 ## Target architecture
 
@@ -59,7 +59,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
 | Phase 11: scope rendering factorization | In progress | `StaticScope` renderer/control/interaction extraction is complete; `Scope` real-time analyser extraction remains. |
-| Phase 12: owned state and explicit wiring | In progress | Owned state (`AudioGraphState`/`ScopeState`), the `RuntimeActions` seam, and `index.ts` linearization (one late-bound controller left) are done. Remaining: graph-connect intent methods (rest of 12.3), bridge-as-getters (12.6), cleanup (12.7). |
+| Phase 12: owned state and explicit wiring | Done | Owned state (`AudioGraphState`/`ScopeState`), DSP graph connect/disconnect ownership (12.3), the `RuntimeActions` seam, and `index.ts` linearization (one genuinely-cyclic late binding left). 12.6/12.7 are moot by design: the states wrap the same env record, so the `window.faustEnv` bridge is unchanged and there are no duplicate fields to remove. |
 
 ## Test strategy (as implemented)
 
@@ -721,7 +721,8 @@ Current Phase 12 progress:
 - `src/runtime/state/ScopeState.ts` wraps the analyser/scope slice; `AnalyserScopeController` routes `inputScope`, `outputScope`, `plotScope`, and `analysersInited` through it.
 - Both states wrap the *same* underlying record, so constructors are unchanged and the `window.faustEnv` bridge is untouched. Characterization tests `AudioGraphState.test.ts` and `ScopeState.test.ts` cover the accessors.
 - `src/runtime/RuntimeActions.ts` names the run/diagram seam (12.4). `index.ts` is linearized (12.5): the late-bound controller references dropped from three to one. `diagramController` and `midiController` are now plain `const`; only `dspCompileController` stays late-bound, a genuine initialization cycle (its actions are consumed by controllers built earlier, while it transitively needs the FileManager those controllers help build).
-- Remaining: assign graph-connect/disconnect intent methods to `AudioEngine` so the connect calls move with the flags (rest of 12.3); back `window.faustEnv` with getters over the owned state (12.6); cleanup and status flip to Done (12.7).
+- The DSP graph connect/disconnect calls (12.3) now live in `AudioGraphState` (`disconnectCurrentDsp`, `connectInput`, `connectToOutput`, `disconnectFromOutput`), removing the duplicated teardown in `DspRunner`/`FaustUiController` and the destination connect in `AudioOutputController`. Splitter (re)creation stays in `DspRunner`. `tests/e2e/audio-graph.spec.ts` characterizes the connection contract (signal at the output analyser, DAC toggle flag, input flag, recompile reconnect) and was added before the move.
+- 12.6 (bridge as getters) and 12.7 (remove duplicate fields) are moot under the chosen design: `AudioGraphState`/`ScopeState` wrap the *same* `FaustEditor*Env` record rather than replacing it, so the `window.faustEnv` bridge is unchanged and there are no duplicate fields to remove. The trade-off is that the env record stays the source of truth instead of a fully separate store.
 
 ### State ownership map
 
