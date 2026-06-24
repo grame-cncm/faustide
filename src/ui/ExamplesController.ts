@@ -38,7 +38,7 @@ export class ExamplesController {
         this.fileManager = options.fileManager;
         this.compileOptions = options.compileOptions;
         this.audioEnv = options.audioEnv;
-        this.fetchResource = options.fetchResource || fetch;
+        this.fetchResource = options.fetchResource || ((input, init) => fetch(input, init));
         this.runDsp = options.runDsp;
         this.updateDiagram = options.updateDiagram;
     }
