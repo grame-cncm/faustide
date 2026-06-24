@@ -1,4 +1,4 @@
-import { wrap, indexToFreq } from "./utils";
+import { wrap } from "./utils";
 import {
     FrequencyScaleMode as EFreqScaleMode,
     StaticScopeMode as EScopeMode,
@@ -6,6 +6,14 @@ import {
     getStaticScopeModeName
 } from "./scope/ScopeModes";
 import { drawCanvasBackground } from "./scope/CanvasDrawing";
+import {
+    binIndexToFrequency,
+    clampZoomOffset,
+    frequencyToBinIndex,
+    getLogFrequencyWindow,
+    indexToFrequency,
+    logarithmicPositionToFrequency
+} from "./scope/FrequencyScale";
 import "./StaticScope.scss";
 
 /**
@@ -472,20 +480,10 @@ export class StaticScope {
             const maxFrequency = sampleRate / 2;
             if (minFrequency <= 0) return;
 
-            // Calculate the visible frequency range based on zoom and offset
-            const fullLogRange = log(maxFrequency) - log(minFrequency);
-            const viewLogRange = fullLogRange / horizontalZoom;
-            const startLog = log(minFrequency) + horizontalZoomOffset * fullLogRange;
-            const endLog = startLog + viewLogRange;
-            const startFrequency = pow(10, startLog);
-            const endFrequency = pow(10, endLog);
+            const { startLog, startFrequency, endFrequency, viewLogRange } = getLogFrequencyWindow(minFrequency, maxFrequency, horizontalZoom, horizontalZoomOffset);
 
-            // Helper functions for frequency/index conversion
-            const freqToBinIndex = (freq: number) => freq / maxFrequency * frequencyBinCount;
-            const binIndexToFreq = (idx: number) => idx / frequencyBinCount * maxFrequency;
-
-            const startBinIndex = Math.max(1, Math.floor(freqToBinIndex(startFrequency)));
-            const endBinIndex = Math.min(frequencyBinCount, Math.ceil(freqToBinIndex(endFrequency)));
+            const startBinIndex = Math.max(1, Math.floor(frequencyToBinIndex(startFrequency, maxFrequency, frequencyBinCount)));
+            const endBinIndex = Math.min(frequencyBinCount, Math.ceil(frequencyToBinIndex(endFrequency, maxFrequency, frequencyBinCount)));
 
             const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, EScopeMode.Spectroscope, freqScaleMode);
 
@@ -493,7 +491,7 @@ export class StaticScope {
                 ctx.beginPath();
                 ctx.fillStyle = freqDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
 
-                const getX = (binIdx: number) => leftMargin + (canvasWidth - leftMargin) * (log(binIndexToFreq(binIdx)) - startLog) / viewLogRange;
+                const getX = (binIdx: number) => leftMargin + (canvasWidth - leftMargin) * (log(binIndexToFrequency(binIdx, maxFrequency, frequencyBinCount)) - startLog) / viewLogRange;
 
                 const startX = getX(startBinIndex);
                 ctx.moveTo(startX, heightPerChannel * (channelIndex + 1));
@@ -536,7 +534,7 @@ export class StaticScope {
                 const canvasDrawableWidth = canvasWidth - leftMargin;
                 const logarithmicCursorFreq = startLog + (cursor.x - leftMargin) / canvasDrawableWidth * viewLogRange;
                 const cursorFrequency = pow(10, logarithmicCursorFreq);
-                const cursorBinIndex = Math.round(freqToBinIndex(cursorFrequency));
+                const cursorBinIndex = Math.round(frequencyToBinIndex(cursorFrequency, maxFrequency, frequencyBinCount));
                 if (cursorBinIndex >= 0 && cursorBinIndex < frequencyBinCount) {
                     statsToDraw.x = cursor.x;
                     statsToDraw.xLabel = cursorFrequency.toFixed(0);
@@ -586,7 +584,7 @@ export class StaticScope {
                 const statsToDraw: TStatsToDraw = { values: [] };
                 const cursorBinIndex = startBinIndex + Math.round((cursor.x - leftMargin) / pixelsPerBin);
                 statsToDraw.x = (cursorBinIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                statsToDraw.xLabel = indexToFreq(cursorBinIndex, frequencyBinCount, drawOptions.sampleRate).toFixed(0);
+                statsToDraw.xLabel = indexToFrequency(cursorBinIndex, frequencyBinCount, drawOptions.sampleRate).toFixed(0);
                 const wrappedCursorBinIndex = wrap(cursorBinIndex, startFreqDataIndex, freqBufferLength);
                 for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
                     const magnitude = freqDomainData[channelIndex][wrappedCursorBinIndex];
@@ -671,17 +669,15 @@ export class StaticScope {
                 const minFrequency = sampleRate / fftSize;
                 const maxFrequency = sampleRate / 2;
                 if (minFrequency > 0) {
-                    const logMinFreq = log(minFrequency);
-                    const logMaxFreq = log(maxFrequency);
                     const logPosition = (heightPerChannel - yInChannel) / heightPerChannel;
-                    cursorFrequency = pow(10, logMinFreq + logPosition * (logMaxFreq - logMinFreq));
-                    cursorBinIndex = Math.floor(cursorFrequency / maxFrequency * frequencyBinCount);
+                    cursorFrequency = logarithmicPositionToFrequency(logPosition, minFrequency, maxFrequency);
+                    cursorBinIndex = Math.floor(frequencyToBinIndex(cursorFrequency, maxFrequency, frequencyBinCount));
                 }
             } else { // Linear Scale
                 const pixelsPerBin = (canvasHeight - bottomMargin) / freqDomainData.length / frequencyBinCount;
                 const yInChannelView = (cursorChannelIndex + 1) * (canvasHeight - bottomMargin) / freqDomainData.length - cursor.y;
                 cursorBinIndex = Math.floor(yInChannelView / pixelsPerBin);
-                cursorFrequency = indexToFreq(cursorBinIndex, frequencyBinCount, sampleRate);
+                cursorFrequency = indexToFrequency(cursorBinIndex, frequencyBinCount, sampleRate);
             }
 
             if (typeof cursorFrequency === "number") {
@@ -736,18 +732,13 @@ export class StaticScope {
             const minFrequency = sampleRate / fftSize;
             const maxFrequency = sampleRate / 2;
             if (minFrequency <= 0) return lastDrawnSampleIndex;
-            const logMinFreq = log(minFrequency);
-            const logMaxFreq = log(maxFrequency);
-            const logPosToFreq = (pos: number) => pow(10, logMinFreq + pos * (logMaxFreq - logMinFreq));
-            const freqToBinIndex = (freq: number) => Math.floor(freq / maxFrequency * frequencyBinCount);
-
             for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
                 for (let frameIndex = startFrameIndex; frameIndex < endFrameIndex; frameIndex++) {
                     for (let yPixel = 0; yPixel < heightPerChannel; yPixel++) {
                         // For each vertical pixel, calculate the corresponding frequency on a log scale
                         const logPosition = (heightPerChannel - yPixel - 1) / heightPerChannel;
-                        const frequency = logPosToFreq(logPosition);
-                        const binIndex = freqToBinIndex(frequency);
+                        const frequency = logarithmicPositionToFrequency(logPosition, minFrequency, maxFrequency);
+                        const binIndex = Math.floor(frequencyToBinIndex(frequency, maxFrequency, frequencyBinCount));
                         if (binIndex >= frequencyBinCount || binIndex < 0) continue;
 
                         const magnitude = freqDomainData[channelIndex][wrap(binIndex, frameIndex * frequencyBinCount, freqBufferLength)];
@@ -900,7 +891,7 @@ export class StaticScope {
                     const fftFrameIndex = gridLineIndex / (frequencyBinCount / bufferSize) * fftOverlap / 2;
                     if (fftFrameIndex % 1 === 0) ctx.fillText(fftFrameIndex.toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
                 } else if (mode === EScopeMode.Spectroscope) {
-                    const freq = indexToFreq(gridLineIndex * bufferSize, frequencyBinCount, sampleRate);
+                    const freq = indexToFrequency(gridLineIndex * bufferSize, frequencyBinCount, sampleRate);
                     ctx.fillText(freq.toFixed(0), Math.min(x, canvasWidth - 20), canvasHeight - 10);
                 } else {
                     ctx.fillText((gridLineIndex * bufferSize).toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
@@ -973,7 +964,7 @@ export class StaticScope {
                 let y = (i + 0.5) * heightPerChannel;
                 let positionRatio = 0.5;
                 const getYLabel = () => {
-                    if (mode === EScopeMode.Spectrogram) return indexToFreq(frequencyBinCount * positionRatio, frequencyBinCount, sampleRate).toFixed(0);
+                    if (mode === EScopeMode.Spectrogram) return indexToFrequency(frequencyBinCount * positionRatio, frequencyBinCount, sampleRate).toFixed(0);
                     if (mode === EScopeMode.Spectroscope) return (-100 + 100 * positionRatio).toFixed(0);
                     return (-verticalScaleFactor + 2 * verticalScaleFactor * positionRatio).toFixed(2);
                 };
@@ -1552,7 +1543,7 @@ export class StaticScope {
      * @type {number}
      */
     set zoomOffset(newZoomOffset: number) {
-        this._zoomOffset[this.zoomType] = Math.max(0, Math.min(1 - 1 / this.zoom, newZoomOffset));
+        this._zoomOffset[this.zoomType] = clampZoomOffset(this.zoom, newZoomOffset);
     }
     /**
      * Resets zoom and offset for all modes to their default values.
