@@ -2,12 +2,15 @@ import { expect, test } from "@playwright/test";
 import { openApp, runDsp, setEditorCode } from "./helpers";
 
 test.describe("Block diagram", () => {
-    test("running a DSP with the diagram tab active renders the SVG", async ({ page }) => {
+    test("activating the diagram tab after a run renders the SVG", async ({ page }) => {
         await openApp(page);
-        // The diagram tab is the default active tab, so a successful run schedules
-        // an updateDiagram() for the current code.
         await setEditorCode(page, "process = _;");
         await runDsp(page);
+
+        // A successful run switches to the Faust UI tab; activating the diagram
+        // tab triggers updateDiagram() for the current code and makes the pane
+        // visible.
+        await page.locator("#tab-diagram").click();
 
         const svg = page.locator("#diagram-svg svg");
         await expect(svg.first()).toBeVisible();
@@ -18,6 +21,7 @@ test.describe("Block diagram", () => {
         await openApp(page);
         await setEditorCode(page, "process = _;");
         await runDsp(page);
+        await page.locator("#tab-diagram").click();
 
         const svg = page.locator("#diagram-svg svg").first();
         await expect(svg).toBeVisible();
