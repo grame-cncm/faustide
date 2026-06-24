@@ -64,6 +64,7 @@ import { AlertController } from "./ui/AlertController";
 import { DspCompileController } from "./ui/DspCompileController";
 import { StartupControlsController } from "./ui/StartupControlsController";
 import { initEditor } from "./ui/FaustEditorFactory";
+import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 
 declare global {
     interface Window {
@@ -214,7 +215,6 @@ $(async () => {
         $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
         return { success: true };
     };
-    let rtCompileTimer: number;
     let dspCompileController: DspCompileController;
     const runDsp = (code: string) => dspCompileController.run(code);
     const audioEnv: FaustEditorAudioEnv = {
@@ -295,38 +295,21 @@ $(async () => {
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
     await loadProject();
-    let saveTimeout: number;
+    const projectRuntimeController = new ProjectRuntimeController({
+        compileOptions,
+        audioEnv,
+        projectPersistence,
+        alertController,
+        saveEditorParams,
+        runDsp,
+        updateDiagram
+    });
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
         fs: libFaust.fs(),
         path: PROJECT_DIR,
         mainFile: compileOptions.mainFile,
-        selectHandler: (fileName, content) => editor.setValue(content),
-        saveHandler: async (fileName: string, content: string | Uint8Array, mainCode: string) => {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                try {
-                    await projectPersistence.saveFile(fileName, content);
-                } catch (e) {
-                    alertController.show(e instanceof Error ? e : String(e));
-                }
-            }, 1000);
-            clearTimeout(rtCompileTimer);
-            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 1000, mainCode);
-        },
-        deleteHandler: async (fileName) => {
-            try {
-                await projectPersistence.deleteFile(fileName);
-            } catch (e) {
-                alertController.show(e instanceof Error ? e : String(e));
-            }
-        },
-        mainFileChangeHandler: (filename, mainCode) => {
-            compileOptions.mainFile = filename;
-            saveEditorParams();
-            clearTimeout(rtCompileTimer);
-            if (compileOptions.realtimeCompile) rtCompileTimer = setTimeout(audioEnv.dsp ? runDsp : updateDiagram, 100, mainCode);
-        }
+        ...projectRuntimeController.createFileManagerHandlers((fileName, content) => editor.setValue(content))
     });
     if (compileOptions.saveDsp) loadEditorDspTable();
 
@@ -472,14 +455,7 @@ $(async () => {
         runDsp,
         updateDiagram
     }).bind();
-    /**
-     * Save current code to localStorage
-     * if realtime compile is on, do compile
-     */
-    editor.getModel().onDidChangeContent(() => {
-        const code = editor.getValue();
-        uiEnv.fileManager.setValue(code, false);
-    });
+    projectRuntimeController.bindEditorContent(editor, uiEnv.fileManager);
     faustUiController.bind();
     new DiagramView(diagramService).bind();
     new GlobalShortcutsController({
