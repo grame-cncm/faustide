@@ -1,3 +1,4 @@
+import { AudioGraphState } from "./state/AudioGraphState";
 import type { FaustEditorAudioEnv } from "./types";
 import { GainUI, createMeterNode } from "../MeterNode";
 
@@ -35,6 +36,7 @@ type AudioEngineOptions = {
  */
 export class AudioEngine {
     env: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     gainContainer: HTMLDivElement;
     mediaElementProvider: () => HTMLMediaElement | null;
     unlockTarget?: UnlockTarget;
@@ -42,6 +44,7 @@ export class AudioEngine {
 
     constructor(options: AudioEngineOptions) {
         this.env = options.env;
+        this.audioState = new AudioGraphState(options.env);
         this.gainContainer = options.gainContainer;
         this.mediaElementProvider = options.mediaElementProvider || (() => null);
         this.unlockTarget = options.unlockTarget;
@@ -69,7 +72,7 @@ export class AudioEngine {
     private createAudioContext() {
         const audioCtx = new (window.webkitAudioContext || window.AudioContext)({ latencyHint: 0.00001 });
         this.env.audioCtx = audioCtx;
-        this.env.outputEnabled = true;
+        this.audioState.setOutputEnabled(true);
         audioCtx.addEventListener("statechange", () => this.onStateChange(audioCtx.state));
         this.installUnlockHandler(audioCtx);
     }
@@ -129,7 +132,7 @@ export class AudioEngine {
      */
     private ensureDestination() {
         if (this.env.destination) return;
-        this.env.destination = this.env.audioCtx.destination;
+        this.audioState.setDestination(this.env.audioCtx.destination);
         this.env.destination.channelCount = this.env.destination.maxChannelCount;
         this.env.destination.channelInterpretation = "discrete";
     }

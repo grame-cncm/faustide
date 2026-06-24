@@ -1,6 +1,7 @@
 import type { FaustCompiler, FaustAudioWorkletNode, FaustScriptProcessorNode } from "@grame/faustwasm";
 import type { FileManager } from "../FileManager";
 import type { ExportService } from "../runtime/ExportService";
+import { AudioGraphState } from "../runtime/state/AudioGraphState";
 import type { FaustEditorAudioEnv, FaustEditorCompileOptions, FaustEditorUIEnv } from "../runtime/types";
 import type { MidiController } from "./MidiController";
 
@@ -29,6 +30,7 @@ type FaustUiControllerOptions = {
  */
 export class FaustUiController {
     private readonly audioEnv: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     private readonly uiEnv: FaustEditorUIEnv;
     private readonly compileOptions: FaustEditorCompileOptions;
     private readonly fileManager: FileManager;
@@ -41,6 +43,7 @@ export class FaustUiController {
 
     constructor(options: FaustUiControllerOptions) {
         this.audioEnv = options.audioEnv;
+        this.audioState = new AudioGraphState(options.audioEnv);
         this.uiEnv = options.uiEnv;
         this.compileOptions = options.compileOptions;
         this.fileManager = options.fileManager;
@@ -194,14 +197,14 @@ export class FaustUiController {
         if (this.audioEnv.dsp) {
             const gain = this.audioEnv.gainInput;
             const dsp = this.audioEnv.dsp;
-            if (this.audioEnv.dspConnectedToInput) {
+            if (this.audioState.connectedToInput) {
                 gain.disconnect(dsp);
-                this.audioEnv.dspConnectedToInput = false;
+                this.audioState.markConnectedToInput(false);
             }
             dsp.disconnect();
-            this.audioEnv.dspConnectedToOutput = false;
+            this.audioState.markConnectedToOutput(false);
             dsp.destroy();
-            delete this.audioEnv.dsp;
+            this.audioState.clearCurrentDsp();
         }
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();

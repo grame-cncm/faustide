@@ -1,3 +1,4 @@
+import { AudioGraphState } from "../runtime/state/AudioGraphState";
 import type { FaustEditorAudioEnv, FaustEditorUIEnv, LegacyWaveSurferBackend } from "../runtime/types";
 
 type WaveSurferFactory = {
@@ -22,6 +23,7 @@ type AudioInputControllerOptions = {
  */
 export class AudioInputController {
     private readonly audioEnv: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     private readonly uiEnv: FaustEditorUIEnv;
     private readonly waveSurferFactory: WaveSurferFactory;
     private readonly initAudioCtx: (deviceId: string) => Promise<FaustEditorAudioEnv>;
@@ -31,6 +33,7 @@ export class AudioInputController {
 
     constructor(options: AudioInputControllerOptions) {
         this.audioEnv = options.audioEnv;
+        this.audioState = new AudioGraphState(options.audioEnv);
         this.uiEnv = options.uiEnv;
         this.waveSurferFactory = options.waveSurferFactory;
         this.initAudioCtx = options.initAudioCtx;
@@ -67,8 +70,8 @@ export class AudioInputController {
         await this.initAudioCtx(id);
         const gain = this.audioEnv.gainInput;
         const input = this.audioEnv.inputs[id];
-        this.audioEnv.currentInput = id;
-        this.audioEnv.inputEnabled = true;
+        this.audioState.setCurrentInput(id);
+        this.audioState.setInputEnabled(true);
         if (gain) input.connect(gain);
     }
 
@@ -208,7 +211,7 @@ export class AudioInputController {
         const gain = this.audioEnv.gainInput;
         let input = this.audioEnv.inputs[-1];
         if (gain) input.disconnect(gain);
-        this.audioEnv.inputEnabled = false;
+        this.audioState.setInputEnabled(false);
 
         const file = event.dataTransfer.files[0];
         try {
@@ -222,7 +225,7 @@ export class AudioInputController {
             this.audioEnv.inputs[-1] = this.audioEnv.audioCtx.createMediaElementSource($<HTMLAudioElement>("#source-waveform audio")[0]);
             input = this.audioEnv.inputs[-1];
         }
-        this.audioEnv.inputEnabled = true;
+        this.audioState.setInputEnabled(true);
         if (gain) input.connect(gain);
     }
 }
