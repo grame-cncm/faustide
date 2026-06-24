@@ -1,3 +1,8 @@
+/**
+ * Static-scope time-domain renderers (oscilloscope and interleaved modes):
+ * zero-crossing stabilization, min/max grouping per pixel, and cursor stats.
+ * Extracted from StaticScope.
+ */
 import type { TDrawOptions } from "../../StaticScope";
 import { StaticScopeMode } from "../ScopeModes";
 import { wrap } from "../../utils";

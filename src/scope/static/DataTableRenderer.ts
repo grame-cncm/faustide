@@ -1,3 +1,7 @@
+/**
+ * Static-scope "Data" mode renderer: fills a DOM table with the raw sample
+ * values (and event markers) for the current buffer. Extracted from StaticScope.
+ */
 import type { TDrawOptions } from "../../StaticScope";
 import { wrap } from "../../utils";
 

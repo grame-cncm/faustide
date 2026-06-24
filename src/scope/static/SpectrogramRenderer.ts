@@ -1,3 +1,8 @@
+/**
+ * Static-scope spectrogram renderer: maintains the offscreen cache canvas of
+ * the full history and blits the visible (possibly wrapped) range, on a linear
+ * or logarithmic frequency scale. Extracted from StaticScope.
+ */
 import type { TDrawOptions } from "../../StaticScope";
 import { wrap } from "../../utils";
 import {

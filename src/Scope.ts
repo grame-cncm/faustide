@@ -25,7 +25,19 @@ type TOptions = {
     paused?: boolean;
 };
 
+/**
+ * Real-time analyser scope widget (oscilloscope / spectroscope / spectrogram).
+ *
+ * Bound to a Web Audio `AnalyserNode` and `ChannelSplitterNode`, it polls the
+ * analyser each animation frame and renders the selected view onto its own
+ * canvas, with overlay controls for type, FFT size, channel, and pause. The
+ * heavy rendering, control DOM, analyser reads, channel routing, and draw loop
+ * live in `src/scope/realtime/`; this class owns the widget lifecycle and the
+ * zoom/channel/pause/disabled state. The `static draw*` methods are thin
+ * compatibility wrappers over those renderers.
+ */
 export class Scope {
+    /** Selectable FFT window sizes cycled by the size button. */
     static sizes = [128, 512, 2048, 8192];
     raf: number;
     ctx: CanvasRenderingContext2D;
@@ -54,6 +66,9 @@ export class Scope {
     f: Float32Array;
     drawSpectrogram: boolean = false;
 
+    // Compatibility wrappers: the real implementations live in
+    // src/scope/realtime/RealtimeScopeRenderer. Kept as static methods because
+    // the draw loop and tests reference them through the class.
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
         drawRealtimeOscilloscope(ctx, w, h, d, freq, sr, zoom, zoomOffset);
     }
@@ -79,6 +94,10 @@ export class Scope {
         return getRealtimeScopeIconClassName(typeIn);
     }
 
+    /**
+     * Wires the scope to an analyser/splitter, allocates frame buffers, builds
+     * the controls, and starts paused when AudioWorklet is unavailable.
+     */
     constructor(options: TOptions) {
         Object.assign(this, options);
         Object.assign(this, createAnalyserFrameBuffers(this.analyser));
@@ -87,9 +106,11 @@ export class Scope {
         if (!window.AudioWorklet) this.paused = true;
         else if (typeof options.paused === "undefined") this.paused = false;
     }
+    /** Creates (or reuses) the canvas and overlay control buttons. */
     getChildren() {
         Object.assign(this, createRealtimeScopeControls(this.container, this.analyser.fftSize, this._channel));
     }
+    /** Binds the type/size/channel buttons, click-to-pause, and wheel zoom/pan. */
     bind() {
         this.btnSwitch.addEventListener("click", () => {
             this.zoom = 1;
@@ -120,6 +141,7 @@ export class Scope {
             if (e.deltaX !== 0) this.zoomOffset += (e.deltaX > 0 ? 1 : -1) * 0.1;
         });
     }
+    /** One animation-frame tick: reads the analyser and renders the current view. */
     draw = () => {
         return runRealtimeScopeDrawLoop(this, {
             drawOfflineSpectrogram: Scope.drawOfflineSpectrogram,
@@ -129,9 +151,11 @@ export class Scope {
             drawStats: Scope.drawStats
         });
     }
+    /** Renders the static "paused" frame instead of running the draw loop. */
     drawPause = () => {
         drawRealtimeScopePause(this.ctx, this.canvas.width, this.canvas.height);
     };
+    /** FFT window size; the setter reallocates analyser buffers and relabels the button. */
     get size() {
         return this._size;
     }
@@ -141,6 +165,7 @@ export class Scope {
         this.btnSize.innerText = sizeIn.toString() + " samps";
         this._size = sizeIn;
     }
+    /** Pauses/resumes the draw loop (shows the paused frame while paused). */
     get paused() {
         return this._paused;
     }
@@ -155,6 +180,7 @@ export class Scope {
             this.raf = requestAnimationFrame(this.draw);
         }
     }
+    /** When disabled, the draw loop is stopped regardless of pause state (no-DSP output scope). */
     get disabled() {
         return this._disabled;
     }
@@ -168,6 +194,7 @@ export class Scope {
             this.raf = requestAnimationFrame(this.draw);
         }
     }
+    /** Displayed channel; the setter reconnects the splitter to the analyser. */
     get channel() {
         return this._channel;
     }
@@ -183,6 +210,7 @@ export class Scope {
         this._channel = routedChannel;
         this.btnCh.innerText = "ch " + (this._channel + 1).toString();
     }
+    /** Horizontal zoom factor, clamped to [1, 16]; re-clamps the offset on change. */
     get zoom() {
         return this._zoom;
     }

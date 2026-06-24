@@ -10,11 +10,13 @@ export type FaustLanguageProviders = {
     completionItemProvider: languages.CompletionItemProvider;
     docs: TFaustDocs;
 };
+/** Monaco language registration for Faust (`.dsp`/`.lib` files). */
 export const language: languages.ILanguageExtensionPoint = {
     id: "faust",
     extensions: ["dsp", "lib"],
     mimetypes: ["application/faust"]
 };
+/** Comment, bracket, and auto-closing-pair configuration for the Faust language. */
 export const config: languages.LanguageConfiguration = {
     comments: {
         lineComment: "//",
@@ -33,6 +35,7 @@ export const config: languages.LanguageConfiguration = {
         { open: "/*", close: "*/", notIn: ["string"] }
     ]
 };
+/** Dark editor theme with token colors for Faust syntax highlighting. */
 export const theme: editor.IStandaloneThemeData = {
     base: "vs-dark",
     inherit: true,
@@ -105,6 +108,15 @@ export const matchDocKey = (doc: TFaustDocs, model: editor.ITextModel, position:
     }
     return null;
 };
+/**
+ * Builds the Monaco hover, tokenizer, and completion providers for Faust.
+ *
+ * It first parses `stdfaust.lib` and `primitives.lib` (via the Faust compiler
+ * filesystem, falling back to the online libraries) into a doc map, then uses
+ * that map to power hover tooltips and library-symbol completions.
+ *
+ * @param libFaust Faust compiler used to read library sources for documentation
+ */
 export const getProviders = async (libFaust: LibFaust): Promise<FaustLanguageProviders> => {
     let libDocs: TFaustDocs = {};
     let primDocs: TFaustDocs = {};

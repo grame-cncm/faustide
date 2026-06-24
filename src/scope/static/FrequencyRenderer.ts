@@ -1,3 +1,8 @@
+/**
+ * Static-scope spectroscope renderer: draws one filled magnitude spectrum per
+ * channel on a linear or logarithmic frequency scale, with cursor dB/Hz stats.
+ * Extracted from StaticScope.
+ */
 import type { TDrawOptions } from "../../StaticScope";
 import { wrap } from "../../utils";
 import {
