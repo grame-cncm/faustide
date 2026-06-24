@@ -194,18 +194,7 @@ export class FaustUiController {
     private closeDspTab(e: JQuery.ClickEvent) {
         e.stopPropagation();
         e.preventDefault();
-        if (this.audioEnv.dsp) {
-            const gain = this.audioEnv.gainInput;
-            const dsp = this.audioEnv.dsp;
-            if (this.audioState.connectedToInput) {
-                gain.disconnect(dsp);
-                this.audioState.markConnectedToInput(false);
-            }
-            dsp.disconnect();
-            this.audioState.markConnectedToOutput(false);
-            dsp.destroy();
-            this.audioState.clearCurrentDsp();
-        }
+        this.audioState.disconnectCurrentDsp();
         if ($("#tab-faust-ui").hasClass("active")) $("#tab-diagram").tab("show");
         $("#nav-item-faust-ui").hide();
         if (this.uiEnv.uiPopup) this.uiEnv.uiPopup.close();

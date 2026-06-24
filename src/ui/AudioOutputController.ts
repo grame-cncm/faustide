@@ -70,10 +70,7 @@ export class AudioOutputController {
      */
     private disableOutput() {
         this.audioState.setOutputEnabled(false);
-        if (this.audioState.connectedToOutput) {
-            this.audioEnv.dsp.disconnect(this.audioEnv.destination);
-            this.audioState.markConnectedToOutput(false);
-        }
+        this.audioState.disconnectFromOutput();
         $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
         $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
     }
@@ -87,8 +84,7 @@ export class AudioOutputController {
             await this.initAudioCtx();
             this.initAnalysersUI();
         } else if (this.audioEnv.dsp) {
-            this.audioEnv.dsp.connect(this.audioEnv.destination);
-            this.audioState.markConnectedToOutput(true);
+            this.audioState.connectToOutput(this.audioEnv.dsp);
         }
         $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
         $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");
