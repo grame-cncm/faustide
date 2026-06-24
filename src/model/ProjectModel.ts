@@ -36,6 +36,24 @@ export class ProjectModel {
     }
 
     /**
+     * Loads the filesystem-backed project and guarantees that at least one DSP
+     * file exists.
+     *
+     * FileManager calls this during construction before rendering. Keeping the
+     * fallback creation here means the UI layer does not need to know which
+     * default source code should be inserted when a project is empty.
+     */
+    loadProjectFiles() {
+        this.listFiles();
+        const createdDefaultFile = this.fileList.length === 0;
+        if (createdDefaultFile) this.createDefaultFile();
+        return {
+            fileList: this.fileList,
+            createdDefaultFile
+        };
+    }
+
+    /**
      * Keeps only the characters accepted by the legacy FileManager UI.
      */
     static sanitizeFileName(fileName: string, fallback = "untitled.dsp") {
@@ -142,6 +160,32 @@ export class ProjectModel {
         if (ProjectModel.isAudioFile(this.fileList[index])) return false;
         this.mainFileIndex = index;
         return true;
+    }
+
+    /**
+     * Sets the main file from a stored filename, falling back to the first file.
+     *
+     * The persisted compile option can refer to a missing file after imports or
+     * deletes. This helper centralizes the legacy fallback to index 0.
+     */
+    setMainFileByName(fileName?: string) {
+        const index = Math.max(0, this.fileList.indexOf(fileName));
+        return this.setMainFile(index);
+    }
+
+    /**
+     * Returns the file that should become selected after a deletion.
+     *
+     * If the deletion emptied the project, a new default DSP file is created
+     * first. Otherwise the legacy behavior selects the first remaining file.
+     */
+    ensureSelectionAfterDelete() {
+        const createdDefaultFile = this.fileList.length === 0;
+        const fileName = createdDefaultFile ? this.createDefaultFile() : this.fileList[0];
+        return {
+            fileName,
+            createdDefaultFile
+        };
     }
 
     /**
