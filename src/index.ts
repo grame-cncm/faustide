@@ -44,6 +44,7 @@ import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
 import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport } from "./runtime/AppRuntimeConfig";
 import { createCompileOptions } from "./runtime/CompileOptionsFactory";
 import { createEditorRuntimeEnvironment } from "./runtime/EditorRuntimeEnvironment";
+import type { RuntimeActions } from "./runtime/RuntimeActions";
 import { exposeFaustCompilerGlobal, exposeFaustEnvironmentGlobal } from "./runtime/FaustCompatibilityGlobals";
 import { loadBrowserFileSystem, loadBrowserLibraries, loadFaustRuntime } from "./runtime/BootstrapLoaders";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
@@ -128,18 +129,17 @@ $(async () => {
     editor.layout(); // Force editor to fill div
 
     /*
-     * Cross-controller callback bridge.
+     * Cross-controller action seam.
      *
-     * Several controllers need to trigger "compile current DSP" or "refresh
-     * diagram" before every participant can be constructed. These late-bound
-     * references keep the wiring visible here while avoiding service-location
-     * lookups inside the controllers.
+     * `dspCompileController` is the one participant that cannot be constructed
+     * before its consumers: the run/diagram actions are needed by controllers
+     * built earlier (ProjectRuntimeController, DspControlsController, ...), while
+     * dspCompileController transitively depends on the FileManager those
+     * controllers help build. It stays late-bound; the `runtimeActions` seam
+     * (defined once diagramController exists, below) names it. diagramController
+     * and midiController have no such cycle and are constructed directly.
      */
     let dspCompileController: DspCompileController;
-    let diagramController: DiagramController;
-    let midiController: MidiController;
-    const updateDiagram = (code: string) => diagramController.update(code);
-    const runDsp = (code: string) => dspCompileController.run(code);
     const compileOptions = createCompileOptions({
         projectDir: PROJECT_DIR,
         supportAudioWorklet: runtimeConfig.supportAudioWorklet,
@@ -173,13 +173,18 @@ $(async () => {
         projectDir: PROJECT_DIR
     });
     const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv, compileOptions });
-    diagramController = new DiagramController({
+    const diagramController = new DiagramController({
         compileOptions,
         diagramService,
         alertController,
         editor,
         monaco
     });
+    const runtimeActions: RuntimeActions = {
+        runDsp: code => dspCompileController.run(code),
+        updateDiagram: code => diagramController.update(code)
+    };
+    const { runDsp, updateDiagram } = runtimeActions;
     runtimeSettings.saveVersion();
     analyserScopeController.initializePlotScope();
 
@@ -225,6 +230,15 @@ $(async () => {
         supportAudioWorklet: runtimeConfig.supportAudioWorklet,
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp
+    });
+    const midiController = new MidiController({
+        midiEnv,
+        webmidi,
+        keyMap: navigator.language === "fr-FR" ? MidiController.KEY_MAP_FR : MidiController.KEY_MAP,
+        hasEditorFocus: () => faustEnv.editor && faustEnv.editor.hasTextFocus(),
+        sendToDsp: data => {
+            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
+        }
     });
     const faustUiController = new FaustUiController({
         audioEnv,
@@ -316,20 +330,11 @@ $(async () => {
     /*
      * Audio, MIDI, recorder, examples, and panel controls.
      *
-     * MidiController is late-bound because FaustUiController needs a getter for
-     * the current MIDI controller, while the MIDI controller itself needs the
-     * runtime Faust environment and DSP bridge. WaveSurfer is also captured
-     * after AudioInputController creates it, then passed to panel resizing.
+     * MidiController is constructed earlier (FaustUiController reads it through a
+     * getter); here it only binds its DOM and Web MIDI listeners. WaveSurfer is
+     * captured after AudioInputController creates it, then passed to panel
+     * resizing.
      */
-    midiController = new MidiController({
-        midiEnv,
-        webmidi,
-        keyMap: navigator.language === "fr-FR" ? MidiController.KEY_MAP_FR : MidiController.KEY_MAP,
-        hasEditorFocus: () => faustEnv.editor && faustEnv.editor.hasTextFocus(),
-        sendToDsp: data => {
-            if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
-        }
-    });
     midiController.bind();
     let wavesurfer: WaveSurfer;
     new AudioInputController({
