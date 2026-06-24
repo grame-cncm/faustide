@@ -35,8 +35,8 @@ jobs:
         run: npm run test-stylelint
         continue-on-error: true
 
-      - name: Unit tests (Vitest)
-        run: npm run test:unit
+      - name: Unit tests + coverage thresholds (Vitest)
+        run: npm run test:coverage
 
       - name: Build (production bundle)
         run: npm run dist
