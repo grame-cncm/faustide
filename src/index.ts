@@ -42,6 +42,7 @@ import { DspRunner } from "./runtime/DspRunner";
 import { ExportService } from "./runtime/ExportService";
 import { ShareUrlService } from "./runtime/ShareUrlService";
 import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
+import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport } from "./runtime/AppRuntimeConfig";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -76,14 +77,6 @@ declare global {
         faustCompiler: FaustCompiler;
     }
 }
-
-const supportAudioWorklet = !!window.AudioWorklet;
-let supportMediaStreamDestination = !!(window.AudioContext
-    || window.webkitAudioContext).prototype.createMediaStreamDestination
-    && !!HTMLAudioElement.prototype.setSinkId;
-
-//let server = "https://faustservicecloud.grame.fr";
-let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -122,6 +115,10 @@ $(async () => {
     const shareUrlService = new ShareUrlService();
     const alertController = new AlertController();
     const runtimeSettings = new RuntimeSettingsController(settingsStore, FaustCompiler);
+    const runtimeConfig = new AppRuntimeConfig({
+        server: DEFAULT_FAUST_SERVICE_URL,
+        ...detectAudioFeatureSupport()
+    });
     const dspParams = runtimeSettings.loadDspParams();
     /**
      * Load all files to Emscripten File System from localStorage
@@ -183,7 +180,7 @@ $(async () => {
     };
     const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv });
     const compileOptions: FaustEditorCompileOptions = {
-        useWorklet: supportAudioWorklet,
+        useWorklet: runtimeConfig.supportAudioWorklet,
         useDouble: false,
         bufferSize: 1024,
         saveCode: true,
@@ -250,7 +247,7 @@ $(async () => {
         compileOptions,
         audioEnv,
         fileManager: uiEnv.fileManager,
-        supportAudioWorklet,
+        supportAudioWorklet: runtimeConfig.supportAudioWorklet,
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp
     });
@@ -262,7 +259,7 @@ $(async () => {
         dspParams,
         faustCompiler,
         exportService,
-        getServer: () => server,
+        getServer: () => runtimeConfig.getServer(),
         getMidiController: () => midiController,
         saveDspParams: () => runtimeSettings.saveDspParams(dspParams)
     });
@@ -311,7 +308,7 @@ $(async () => {
         shareUrlService,
         runDsp,
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
-        setServer: value => { server = value; }
+        setServer: value => runtimeConfig.setServer(value)
     });
     new ProjectFilesController({
         fileManager: uiEnv.fileManager,
@@ -326,8 +323,8 @@ $(async () => {
         fileManager: uiEnv.fileManager,
         exportService,
         qrCode: QRCode,
-        getServer: () => server,
-        setServer: value => { server = value; },
+        getServer: () => runtimeConfig.getServer(),
+        setServer: value => runtimeConfig.setServer(value),
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         onError: error => console.error(error) // eslint-disable-line no-console
     }).bind();
@@ -360,7 +357,7 @@ $(async () => {
     }).bind();
     new AudioOutputController({
         audioEnv,
-        getSupportMediaStreamDestination: () => supportMediaStreamDestination,
+        getSupportMediaStreamDestination: () => runtimeConfig.getSupportMediaStreamDestination(),
         initAudioCtx: () => initializeAudioContext(),
         initAnalysersUI: () => analyserScopeController.initialize(),
         setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
@@ -368,8 +365,8 @@ $(async () => {
     await new AudioDeviceController({
         audioEnv,
         mediaDevices: navigator.mediaDevices,
-        getSupportMediaStreamDestination: () => supportMediaStreamDestination,
-        setSupportMediaStreamDestination: supported => { supportMediaStreamDestination = supported; }
+        getSupportMediaStreamDestination: () => runtimeConfig.getSupportMediaStreamDestination(),
+        setSupportMediaStreamDestination: supported => runtimeConfig.setSupportMediaStreamDestination(supported)
     }).bind();
     faustUiController.refreshDspUI();
     dspControlsController.bind();
