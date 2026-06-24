@@ -125,12 +125,14 @@ export class GainUI {
         this.bind();
         this.paint();
     }
+    /** Creates the canvas inside the (cleared) container. */
     getChildren() {
         this.container.innerHTML = "";
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
         this.container.appendChild(this.canvas);
     }
+    /** Binds mouse/touch fader gestures and subscribes to the meter's levels. */
     bind() {
         this.canvas.addEventListener("mousedown", this.handleMouseDown);
         this.canvas.addEventListener("touchstart", this.handleTouchStart, { passive: false });
@@ -194,11 +196,13 @@ export class GainUI {
         document.addEventListener("mousemove", handleMouseMove);
         document.addEventListener("mouseup", handleMouseUp);
     };
+    /** Double-click resets the fader to 0 dB (unity gain). */
     handleDblClick = (e: MouseEvent) => {
         e.preventDefault();
         this.value = 0;
     }
     handlePointerUp = (e: PointerUpEvent) => {}; // eslint-disable-line @typescript-eslint/no-unused-vars
+    /** Current fader value in dB; the setter applies the gain and repaints. */
     get value() {
         return this.state.value;
     }
@@ -207,10 +211,12 @@ export class GainUI {
         this.gainNode.gain.setValueAtTime(valueIn <= -70 ? 0 : 10 ** (valueIn / 20), 0);
         this.paint();
     }
+    /** Fader fill ratio in [0, 1] for the current value within [min, max]. */
     get distance() {
         const { max, min, value } = this.state;
         return (value - min) / (max - min);
     }
+    /** Number of discrete fader steps, bounded by the pixel width. */
     get trueSteps() {
         const { max, min, step } = this.state;
         const full = this.interactionRect[2];
@@ -223,16 +229,19 @@ export class GainUI {
         const trueSteps = this.trueSteps;
         return full / trueSteps;
     }
+    /** Schedules a repaint on the next animation frame (coalesced). */
     paint() {
         if (this.$raf) return;
         this.$raf = window.requestAnimationFrame(this.raf);
     }
+    /** Meter callback: converts linear levels to dB and repaints on change. */
     levelHandler = (levels: number[]) => {
         const levelsIn = levels.map(e => 20 * Math.log10(e));
         if (this.state.levels.length === levelsIn.length && this.state.levels.every((v, i) => v === levelsIn[i])) return;
         this.state.levels = levelsIn;
         this.paint();
     }
+    /** Animation-frame painter: draws the meter bars, peak holds, and fader triangle. */
     raf = () => {
         this.$frame++;
         if (this.$frame % this.frameReduce !== 0) {
@@ -334,6 +343,7 @@ export class GainUI {
         ctx.textAlign = "left";
         ctx.fillText(`${value.toFixed(2)} dB`, 4, height - 2, width);
     }
+    /** Maps an x position within the fader to a stepped dB value, clamped to range. */
     getValueFromPos(e: { x: number; y: number }) {
         const { min, max } = this.state;
         const stepRange = this.stepRange;
@@ -343,6 +353,7 @@ export class GainUI {
         steps = Math.min(trueSteps, Math.max(0, steps));
         return steps * step + min;
     }
+    /** Sets the value from a pointer press inside the fader's interaction rect. */
     handlePointerDown = (e: PointerDownEvent) => {
         const { value } = this.state;
         if (
@@ -354,6 +365,7 @@ export class GainUI {
         const newValue = this.getValueFromPos(e);
         if (newValue !== value) this.value = this.getValueFromPos(e);
     }
+    /** Updates the value as the pointer is dragged across the fader. */
     handlePointerDrag = (e: PointerDragEvent) => {
         const newValue = this.getValueFromPos(e);
         if (newValue !== this.state.value) this.value = newValue;

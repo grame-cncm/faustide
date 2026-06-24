@@ -11,6 +11,7 @@ import { blackman } from "window-function";
  */
 export const mod = (x: number, y: number) => (x % y + y) % y;
 
+/** Adds an offset to an index and wraps the result into `[0, l)`. */
 export const wrap = (i: number, $: number, l: number) => mod(i + $, l);
 
 /**
@@ -111,6 +112,7 @@ export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint
     return f;
 };
 
+/** Estimates the dominant frequency (Hz) as the peak bin of a power spectrum. */
 export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
     let index = 0;
     let max = -Infinity;
@@ -124,8 +126,10 @@ export const estimateFreq = (fft: Float32Array, sampleRate: number) => {
     return sampleRate / 2 * index / fft.length;
 };
 
+/** Converts an FFT bin index to its center frequency in Hz. */
 export const indexToFreq = (i: number, fftBins: number, sampleRate: number) => (i % fftBins) / fftBins * sampleRate / 2;
 
+/** Root-mean-square level of a sample buffer. */
 export const getRms = (t: Float32Array) => {
     let i = t.length;
     let squareSum = 0;
@@ -135,6 +139,12 @@ export const getRms = (t: Float32Array) => {
     return (squareSum / t.length) ** 0.5;
 };
 
+/**
+ * `localStorage` wrapper that never throws.
+ *
+ * Browsers block storage in private mode or when quota is exceeded; each
+ * operation is guarded so callers can read/write settings without try/catch.
+ */
 export const safeStorage = (() => {
     const tryLocalStorage = (method: string, ...rest: any[]) => {
         try {
