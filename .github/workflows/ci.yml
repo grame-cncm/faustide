@@ -19,7 +19,8 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          # Vitest 4 / rolldown needs node:util styleText (Node >= 20.12).
+          node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
