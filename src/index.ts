@@ -91,13 +91,6 @@ $(async () => {
     });
     const dspParams = runtimeSettings.loadDspParams();
     /**
-     * Load all files to Emscripten File System from localStorage
-     *
-     */
-    const loadProject = async () => {
-        await projectPersistence.loadProject(compileOptions.saveCode);
-    };
-    /**
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
@@ -157,7 +150,7 @@ $(async () => {
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
-    await loadProject();
+    await projectPersistence.loadProject(compileOptions.saveCode);
     const projectRuntimeController = new ProjectRuntimeController({
         compileOptions,
         audioEnv,
