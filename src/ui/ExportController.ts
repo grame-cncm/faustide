@@ -69,7 +69,7 @@ export class ExportController {
         try {
             const file = await this.exportService.buildProjectZip({
                 name,
-                fileNames: this.fileManager._fileList,
+                fileNames: this.fileManager.fileNames,
                 getValue: fileName => this.fileManager.getValue(fileName),
                 mainCode: this.fileManager.mainCode
             });
