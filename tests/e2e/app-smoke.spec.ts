@@ -1,21 +1,5 @@
-import { expect, Page, test } from "@playwright/test";
-
-const mockFaustService = async (page: Page) => {
-    await page.route("https://faustservice.inria.fr/targets", route => route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify({
-            source: ["cplusplus"],
-            web: ["wasm", "wap"],
-            linux: ["x64"]
-        })
-    }));
-};
-
-const openApp = async (page: Page) => {
-    await mockFaustService(page);
-    await page.goto("/");
-    await page.waitForFunction(() => Boolean(window.faustEnv && window.faustEnv.uiEnv && window.faustEnv.uiEnv.fileManager));
-};
+import { expect, test } from "@playwright/test";
+import { openApp } from "./helpers";
 
 test("app loads and exposes the compatibility Faust environment", async ({ page }) => {
     await openApp(page);
