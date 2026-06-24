@@ -36,6 +36,7 @@ import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport 
 import { createCompileOptions } from "./runtime/CompileOptionsFactory";
 import { createEditorRuntimeEnvironment } from "./runtime/EditorRuntimeEnvironment";
 import { exposeFaustCompilerGlobal, exposeFaustEnvironmentGlobal } from "./runtime/FaustCompatibilityGlobals";
+import { loadBrowserFileSystem, loadBrowserLibraries, loadFaustRuntime } from "./runtime/BootstrapLoaders";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -67,26 +68,9 @@ const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
     const { setTimeout } = window;
-    const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams } = await import("@grame/faustwasm");
-    const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
-    const libFaust = new LibFaust(faustModule);
-    const faustCompiler = new FaustCompiler(libFaust);
-    const faustSvgDiagrams = new FaustSvgDiagrams(faustCompiler);
-    const faustPrimitiveLibFile = await fetch("primitives.lib");
-    const faustPrimitiveLib = await faustPrimitiveLibFile.text();
-    libFaust.fs().writeFile("/usr/share/faust/primitives.lib", faustPrimitiveLib);
-
-    const BrowserFS = await import("@zenfs/core");
-    const { IndexedDB } = await import("@zenfs/dom");
-    await BrowserFS.configureSingle({
-        backend: IndexedDB,
-        storeName: "FaustIDE" as any
-    });
-    const bfs = BrowserFS.promises;
-
-    const JSZip = (await import("jszip") as any).default as import("jszip");
-    const WaveSurfer = (await import("wavesurfer.js") as any).default as import("wavesurfer.js");
-    const QRCode = await import("qrcode");
+    const { FaustCompiler, libFaust, faustCompiler, faustSvgDiagrams } = await loadFaustRuntime();
+    const bfs = await loadBrowserFileSystem();
+    const { JSZip, WaveSurfer, QRCode } = await loadBrowserLibraries();
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
     exposeFaustCompilerGlobal(faustCompiler);
     const settingsStore = new EditorSettingsStore(VERSION as string);
