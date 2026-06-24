@@ -69,7 +69,6 @@ import { TooltipController } from "./ui/TooltipController";
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
-    const { setTimeout } = window;
     const { FaustCompiler, libFaust, faustCompiler, faustSvgDiagrams } = await loadFaustRuntime();
     const bfs = await loadBrowserFileSystem();
     const { JSZip, WaveSurfer, QRCode } = await loadBrowserLibraries();
