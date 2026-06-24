@@ -15,6 +15,7 @@ import {
     logarithmicPositionToFrequency
 } from "./scope/FrequencyScale";
 import { fillStaticScopeDataTable } from "./scope/static/DataTableRenderer";
+import { drawStaticInterleaved, drawStaticOscilloscope } from "./scope/static/TimeDomainRenderer";
 import "./StaticScope.scss";
 
 /**
@@ -217,115 +218,12 @@ export class StaticScope {
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
     static drawInterleaved(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, timeDomainData, estimatedFundamentalFrequency, sampleRate, drawMode } = drawOptions;
-        if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-
-        const bufferLength = timeDomainData[0].length;
-        // Find the absolute maximum value for vertical scaling.
-        let minSampleValue = timeDomainData[0][0];
-        let maxSampleValue = timeDomainData[0][0];
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            for (let sampleIndex = 0; sampleIndex < bufferLength; sampleIndex++) {
-                const sampleValue = timeDomainData[channelIndex][sampleIndex];
-                if (sampleValue < minSampleValue) minSampleValue = sampleValue;
-                else if (sampleValue > maxSampleValue) maxSampleValue = sampleValue;
-            }
-        }
-
-        const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-
-        let drawStartIndex = 0;
-        let drawEndIndex = bufferLength - 1;
-        let stabilizationOffset = 0;
-
-        // Stabilize waveform view by finding a zero-crossing if possible
-        if (drawMode === "continuous" && bufferLength < sampleRate) {
-            const zeroCrossingThreshold = (minSampleValue + maxSampleValue) * 0.5 + 0.001;
-            const estimatedPeriod = sampleRate / estimatedFundamentalFrequency;
-            const periodsToDisplay = Math.floor(bufferLength / estimatedPeriod) - 1;
-
-            // Find first rising edge
-            while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] > zeroCrossingThreshold && stabilizationOffset < bufferLength);
-            if (stabilizationOffset >= bufferLength - 1) {
-                stabilizationOffset = 0;
-            } else {
-                // Find next falling edge
-                while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] < zeroCrossingThreshold && stabilizationOffset < bufferLength);
-                if (stabilizationOffset >= bufferLength - 1) {
-                    stabilizationOffset = 0;
-                }
-            }
-
-            const drawableLength = periodsToDisplay > 0 && isFinite(estimatedPeriod) ? Math.min(estimatedPeriod * periodsToDisplay, bufferLength - stabilizationOffset) : bufferLength - stabilizationOffset;
-            drawStartIndex = Math.round(stabilizationOffset + drawableLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(stabilizationOffset + drawableLength / horizontalZoom + drawableLength * horizontalZoomOffset);
-        } else {
-            drawStartIndex = Math.round(bufferLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(bufferLength / horizontalZoom + bufferLength * horizontalZoomOffset);
-        }
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const heightPerChannel = (canvasHeight - bottomMargin) / timeDomainData.length;
-        const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, EScopeMode.Interleaved);
-
-        const pixelsPerSample = (canvasWidth - leftMargin) / (drawEndIndex - drawStartIndex - 1);
-        const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerSample)); // Optimization for drawing
-
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            ctx.beginPath();
-            ctx.strokeStyle = `hsl(${channelIndex * 60}, 100%, 85%)`;
-            let maxInStep: number;
-            let minInStep: number;
-
-            for (let sampleIndex = drawStartIndex; sampleIndex < drawEndIndex; sampleIndex++) {
-                const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
-                const sampleValue = timeDomainData[channelIndex][wrappedSampleIndex];
-                const stepCounter = (sampleIndex - drawStartIndex) % horizontalDrawStep;
-
-                if (stepCounter === 0) {
-                    maxInStep = sampleValue;
-                    minInStep = sampleValue;
-                } else {
-                    if (sampleValue > maxInStep) maxInStep = sampleValue;
-                    if (sampleValue < minInStep) minInStep = sampleValue;
-                }
-
-                if (stepCounter !== horizontalDrawStep - 1) continue;
-
-                const x = (sampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-                let y = heightPerChannel * (channelIndex + 0.5 - maxInStep / verticalScaleFactor * 0.5);
-
-                if (sampleIndex === drawStartIndex) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-
-                if (minInStep !== maxInStep) {
-                    y = heightPerChannel * (channelIndex + 0.5 - minInStep / verticalScaleFactor * 0.5);
-                    ctx.lineTo(x, y);
-                }
-            }
-            ctx.stroke();
-        }
-
-        eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-
-        if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
-            const statsToDraw: TStatsToDraw = { values: [] };
-            const cursorSampleIndex = Math.round(drawStartIndex + (cursor.x - leftMargin) / pixelsPerSample);
-            statsToDraw.values = [];
-            statsToDraw.x = (cursorSampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-            statsToDraw.xLabel = (cursorSampleIndex - stabilizationOffset).toFixed(0);
-            const wrappedCursorSampleIndex = wrap(cursorSampleIndex, startSampleIndex, bufferLength);
-            for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-                const sampleValue = timeDomainData[channelIndex][wrappedCursorSampleIndex];
-                if (typeof sampleValue === "number") statsToDraw.values.push(sampleValue);
-            }
-            this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
-        }
+        drawStaticInterleaved({
+            drawBackground: this.drawBackground.bind(this),
+            drawGrid: this.drawGrid.bind(this),
+            drawEvent: this.drawEvent.bind(this),
+            drawStats: this.drawStats.bind(this)
+        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
     }
     /**
      * Draws the scope in oscilloscope mode.
@@ -342,109 +240,12 @@ export class StaticScope {
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
     static drawOscilloscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        this.drawBackground(ctx, canvasWidth, canvasHeight);
-        if (!drawOptions) return;
-        const { startSampleIndex, timeDomainData, estimatedFundamentalFrequency, sampleRate, drawMode } = drawOptions;
-        if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-
-        const bufferLength = timeDomainData[0].length;
-        // Find the absolute maximum value for vertical scaling.
-        let minSampleValue = timeDomainData[0][0];
-        let maxSampleValue = timeDomainData[0][0];
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            for (let sampleIndex = 0; sampleIndex < bufferLength; sampleIndex++) {
-                const sampleValue = timeDomainData[channelIndex][sampleIndex];
-                if (sampleValue < minSampleValue) minSampleValue = sampleValue;
-                else if (sampleValue > maxSampleValue) maxSampleValue = sampleValue;
-            }
-        }
-        const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-
-        let drawStartIndex = 0;
-        let drawEndIndex = bufferLength - 1;
-        let stabilizationOffset = 0;
-
-        // Stabilize waveform view
-        if (drawMode === "continuous" && bufferLength < sampleRate) {
-            const zeroCrossingThreshold = (minSampleValue + maxSampleValue) * 0.5 + 0.001;
-            const estimatedPeriod = sampleRate / estimatedFundamentalFrequency;
-            const periodsToDisplay = Math.floor(bufferLength / estimatedPeriod) - 1;
-
-            while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] > zeroCrossingThreshold && stabilizationOffset < bufferLength);
-            if (stabilizationOffset >= bufferLength - 1) {
-                stabilizationOffset = 0;
-            } else {
-                while (timeDomainData[0][wrap(stabilizationOffset++, startSampleIndex, bufferLength)] < zeroCrossingThreshold && stabilizationOffset < bufferLength);
-                if (stabilizationOffset >= bufferLength - 1) {
-                    stabilizationOffset = 0;
-                }
-            }
-            const drawableLength = periodsToDisplay > 0 && isFinite(estimatedPeriod) ? Math.min(estimatedPeriod * periodsToDisplay, bufferLength - stabilizationOffset) : bufferLength - stabilizationOffset;
-            drawStartIndex = Math.round(stabilizationOffset + drawableLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(stabilizationOffset + drawableLength / horizontalZoom + drawableLength * horizontalZoomOffset);
-        } else {
-            drawStartIndex = Math.round(bufferLength * horizontalZoomOffset);
-            drawEndIndex = Math.round(bufferLength / horizontalZoom + bufferLength * horizontalZoomOffset);
-        }
-
-        const leftMargin = 50;
-        const bottomMargin = 20;
-        const eventsToDraw = this.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, EScopeMode.Oscilloscope);
-        const pixelsPerSample = (canvasWidth - leftMargin) / (drawEndIndex - drawStartIndex - 1);
-        const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerSample));
-
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-            ctx.beginPath();
-            ctx.strokeStyle = timeDomainData.length === 1 ? "white" : `hsl(${channelIndex * 60}, 100%, 85%)`;
-            let maxInStep: number;
-            let minInStep: number;
-
-            for (let sampleIndex = drawStartIndex; sampleIndex < drawEndIndex; sampleIndex++) {
-                const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
-                const sampleValue = timeDomainData[channelIndex][wrappedSampleIndex];
-                const stepCounter = (sampleIndex - drawStartIndex) % horizontalDrawStep;
-
-                if (stepCounter === 0) {
-                    maxInStep = sampleValue;
-                    minInStep = sampleValue;
-                } else {
-                    if (sampleValue > maxInStep) maxInStep = sampleValue;
-                    if (sampleValue < minInStep) minInStep = sampleValue;
-                }
-
-                if (stepCounter !== horizontalDrawStep - 1) continue;
-
-                const x = (sampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-                let y = (canvasHeight - bottomMargin) * (0.5 - maxInStep / verticalScaleFactor * 0.5);
-
-                if (sampleIndex === drawStartIndex) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-
-                if (minInStep !== maxInStep) {
-                    y = (canvasHeight - bottomMargin) * (0.5 - minInStep / verticalScaleFactor * 0.5);
-                    ctx.lineTo(x, y);
-                }
-            }
-            ctx.stroke();
-        }
-
-        eventsToDraw.forEach(params => this.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
-
-        if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
-            const statsToDraw: TStatsToDraw = { values: [] };
-            const cursorSampleIndex = Math.round(drawStartIndex + (cursor.x - leftMargin) / pixelsPerSample);
-            statsToDraw.values = [];
-            statsToDraw.x = (cursorSampleIndex - drawStartIndex) * pixelsPerSample + leftMargin;
-            statsToDraw.xLabel = (cursorSampleIndex - stabilizationOffset).toFixed(0);
-            const wrappedCursorSampleIndex = wrap(cursorSampleIndex, startSampleIndex, bufferLength);
-            for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
-                const sampleValue = timeDomainData[channelIndex][wrappedCursorSampleIndex];
-                if (typeof sampleValue === "number") statsToDraw.values.push(sampleValue);
-            }
-            this.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
-        }
+        drawStaticOscilloscope({
+            drawBackground: this.drawBackground.bind(this),
+            drawGrid: this.drawGrid.bind(this),
+            drawEvent: this.drawEvent.bind(this),
+            drawStats: this.drawStats.bind(this)
+        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
     }
     /**
      * Draws the scope in spectroscope mode.
