@@ -1,5 +1,9 @@
 import type { TDrawOptions } from "../../StaticScope";
 import { StaticScopeMode } from "../ScopeModes";
+import {
+    STATIC_SCOPE_BOTTOM_MARGIN,
+    STATIC_SCOPE_LEFT_MARGIN
+} from "./StaticScopeLayout";
 
 export type StaticScopeInteractionTarget = {
     /** Latest draw payload used to determine whether pointer interaction is meaningful. */
@@ -116,8 +120,8 @@ export const handleStaticScopeWheel = (
     target: StaticScopeInteractionTarget,
     event: WheelEvent
 ) => {
-    const leftMargin = 50;
-    const bottomMargin = 20;
+    const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
     const multiplier = 1.5 ** (event.deltaY > 0 ? -1 : 1);
 
     if (event.offsetX < leftMargin && event.offsetY < target.canvas.height - bottomMargin) {
