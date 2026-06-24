@@ -13,6 +13,16 @@
 // snippets
 // indexDB
 
+/**
+ * Browser application composition root.
+ *
+ * This file intentionally centralizes the startup order and cross-module
+ * wiring for Faust IDE. Runtime behavior should live in services, models,
+ * controllers, or views; `index.ts` should only load browser dependencies,
+ * construct shared objects, connect callbacks between them, run startup, and
+ * expose legacy compatibility globals.
+ */
+
 import webmidi from "webmidi";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
@@ -69,11 +79,26 @@ import { TooltipController } from "./ui/TooltipController";
 const PROJECT_DIR = "/usr/share/project/";
 
 $(async () => {
+    /*
+     * Browser-only loaders.
+     *
+     * These initialize the Faust WebAssembly runtime, persistent BrowserFS
+     * storage, and heavy browser libraries that are kept out of the static
+     * import graph for bootstrap/code-splitting reasons.
+     */
     const { FaustCompiler, libFaust, faustCompiler, faustSvgDiagrams } = await loadFaustRuntime();
     const bfs = await loadBrowserFileSystem();
     const { JSZip, WaveSurfer, QRCode } = await loadBrowserLibraries();
     // TODO(ijc): This previously set `window.faust`; what depends on that being set?
     exposeFaustCompilerGlobal(faustCompiler);
+
+    /*
+     * Long-lived stores and runtime services.
+     *
+     * These objects are shared by several controllers. They are created before
+     * DOM controllers so every controller receives explicit dependencies
+     * instead of importing storage, Faust runtime, or service globals directly.
+     */
     const settingsStore = new EditorSettingsStore(VERSION as string);
     const projectPersistence = new ProjectPersistence({
         browserFS: bfs,
@@ -94,12 +119,22 @@ $(async () => {
         onStateChange: state => audioOutputStateView.updateAudioContextState(state)
     });
     const dspParams = runtimeSettings.loadDspParams();
+
     /**
      * Async Load Monaco Editor Core
      * Use import() for webpack code splitting, needs babel-dynamic-import
      */
     const { editor, monaco } = await initEditor(libFaust);
     editor.layout(); // Force editor to fill div
+
+    /*
+     * Cross-controller callback bridge.
+     *
+     * Several controllers need to trigger "compile current DSP" or "refresh
+     * diagram" before every participant can be constructed. These late-bound
+     * references keep the wiring visible here while avoiding service-location
+     * lookups inside the controllers.
+     */
     let dspCompileController: DspCompileController;
     let diagramController: DiagramController;
     let midiController: MidiController;
@@ -117,6 +152,15 @@ $(async () => {
         faustCompiler,
         browserFS: bfs
     });
+
+    /*
+     * Core runtime graph.
+     *
+     * AudioEngine owns the base Web Audio graph, DspRunner owns Faust DSP node
+     * creation/replacement, and AnalyserScopeController owns analyser/plot
+     * scope startup. The composition root only supplies browser adapters and
+     * callbacks between those pieces.
+     */
     const audioEngine = new AudioEngine({
         env: audioEnv,
         ...browserAudioEngineBindings.createOptions()
@@ -138,6 +182,15 @@ $(async () => {
     });
     runtimeSettings.saveVersion();
     analyserScopeController.initializePlotScope();
+
+    /*
+     * Project model and persistence wiring.
+     *
+     * Persistent files are loaded into the Faust virtual filesystem before
+     * FileManager is constructed, so FileManager can render the current project
+     * immediately. ProjectRuntimeController supplies the save/delete/main-file
+     * side effects used by FileManager.
+     */
     await projectPersistence.loadProject(compileOptions.saveCode);
     const projectRuntimeController = new ProjectRuntimeController({
         compileOptions,
@@ -157,6 +210,14 @@ $(async () => {
     });
     if (compileOptions.saveDsp) runtimeSettings.loadDspFactoryCache();
 
+    /*
+     * DSP compilation and UI surface.
+     *
+     * DspControlsController owns run/build options, FaustUiController owns the
+     * generated Faust UI and popup synchronization, and DspCompileController
+     * connects editor code, Faust compilation, DSP node replacement, analyser
+     * initialization, recorder state, and diagram refresh.
+     */
     const dspControlsController = new DspControlsController({
         compileOptions,
         audioEnv,
@@ -191,8 +252,13 @@ $(async () => {
         updateDiagram,
         saveEditorDspTable: () => runtimeSettings.saveDspFactoryCache()
     });
-    /**
-     * Bind DOM events
+
+    /*
+     * Left/top project and compile controls.
+     *
+     * These controllers bind existing DOM controls to settings, plot, file,
+     * export, share URL, and URL-parameter services. Bind calls are kept here
+     * so startup order remains explicit.
      */
     alertController.bind();
     new TooltipController().bind();
@@ -247,8 +313,13 @@ $(async () => {
         fileManager: uiEnv.fileManager,
         shareUrlService
     }).bind();
-    /**
-     * Right panel options
+    /*
+     * Audio, MIDI, recorder, examples, and panel controls.
+     *
+     * MidiController is late-bound because FaustUiController needs a getter for
+     * the current MIDI controller, while the MIDI controller itself needs the
+     * runtime Faust environment and DSP bridge. WaveSurfer is also captured
+     * after AudioInputController creates it, then passed to panel resizing.
      */
     midiController = new MidiController({
         midiEnv,
@@ -304,6 +375,14 @@ $(async () => {
     }).bind();
     new ResizablePanelsController(editor, wavesurfer).bind();
     new PanelToggleView(editor).bind();
+
+    /*
+     * Final startup sequence and compatibility bridge.
+     *
+     * ApplicationStartupController preserves the historical startup order:
+     * unlock audio, initialize analyser state, apply URL/startup controls, then
+     * expose `window.faustEnv` for integrations that still depend on it.
+     */
     await new ApplicationStartupController({
         audioEnv,
         faustEnv,
