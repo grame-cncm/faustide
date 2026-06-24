@@ -152,6 +152,139 @@ describe("StaticScope rendering helpers", () => {
         expect(context.fillText).toHaveBeenCalledWith("10.0k", expect.any(Number), 170);
     });
 
+    it("draws oscilloscope traces and cursor stats", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawOscilloscope(
+            context,
+            320,
+            180,
+            createDrawOptions({
+                timeDomainData: [
+                    new Float32Array([0, 0.5, 0, -0.5, 0, 0.75, 0, -0.75]),
+                    new Float32Array([0.25, 0, -0.25, 0, 0.5, 0, -0.5, 0])
+                ]
+            }),
+            1,
+            0,
+            1,
+            { x: 160, y: 60 }
+        );
+
+        expect(context.beginPath).toHaveBeenCalled();
+        expect(context.moveTo).toHaveBeenCalledWith(50, expect.any(Number));
+        expect(context.lineTo).toHaveBeenCalledWith(expect.any(Number), expect.any(Number));
+        expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
+    });
+
+    it("draws interleaved traces in separate channel lanes", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawInterleaved(
+            context,
+            320,
+            180,
+            createDrawOptions({
+                timeDomainData: [
+                    new Float32Array([0, 0.5, 0, -0.5]),
+                    new Float32Array([1, 0.5, 0, -0.5])
+                ]
+            }),
+            1,
+            0,
+            1,
+            { x: 120, y: 40 }
+        );
+
+        expect(context.beginPath).toHaveBeenCalled();
+        expect(context.stroke).toHaveBeenCalled();
+        expect(context.moveTo).toHaveBeenCalledWith(50, expect.any(Number));
+        expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
+    });
+
+    it("draws a linear spectroscope filled spectrum", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawSpectroscope(
+            context,
+            320,
+            180,
+            createDrawOptions({
+                freqDomainData: [new Float32Array([-90, -60, -30, -10, -20, -40, -70, -95])],
+                fftSize: 8
+            }),
+            1,
+            0,
+            { x: 160, y: 60 },
+            FreqScaleMode.Linear as any
+        );
+
+        expect(context.closePath).toHaveBeenCalled();
+        expect(context.fill).toHaveBeenCalled();
+        expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
+    });
+
+    it("draws contiguous and wrapped spectrogram cache regions", () => {
+        const main = createMockCanvasContext();
+        const cache = createMockCanvasContext({ width: 4, height: 64 });
+        const drawOptions = createDrawOptions({
+            startSampleIndex: 0,
+            freqDomainData: [new Float32Array(16).fill(-30)],
+            fftSize: 8,
+            fftOverlap: 2
+        });
+
+        StaticScope.drawSpectrogram(
+            main.context,
+            cache.context,
+            320,
+            180,
+            drawOptions,
+            2,
+            0,
+            { x: 160, y: 60 },
+            FreqScaleMode.Linear as any
+        );
+        expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 0, 0, 2, 64, 50, 0, 270, 160);
+
+        StaticScope.drawSpectrogram(
+            main.context,
+            cache.context,
+            320,
+            180,
+            { ...drawOptions, startSampleIndex: 8 },
+            1,
+            0,
+            { x: 160, y: 60 },
+            FreqScaleMode.Linear as any
+        );
+        expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 2, 0, 2, 64, 50, 0, 135, 160);
+        expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 0, 0, 1.99, 64, 185, 0, 135, 160);
+    });
+
+    it("updates the offline spectrogram cache in linear and logarithmic modes", () => {
+        const cache = createMockCanvasContext({ width: 1, height: 8 });
+        const drawOptions = createDrawOptions({
+            startSampleIndex: 0,
+            freqDomainData: [new Float32Array([-90, -60, -30, -10, -20, -40, -70, -95])],
+            fftSize: 4,
+            fftOverlap: 2,
+            sampleRate: 48000
+        });
+
+        const linearLastIndex = StaticScope.drawOfflineSpectrogram(cache.context, drawOptions, 0, FreqScaleMode.Linear as any);
+
+        expect(cache.canvas.width).toBe(4);
+        expect(cache.context.fillRect).toHaveBeenCalledWith(0, 0, 1, 8);
+        expect(linearLastIndex).toBe(0);
+
+        const logCache = createMockCanvasContext({ width: 1, height: 8 });
+        StaticScope.drawOfflineSpectrogram(logCache.context, drawOptions, 0, FreqScaleMode.Logarithmic as any);
+
+        expect(logCache.canvas.width).toBe(4);
+        expect(logCache.context.fillRect).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), 1, 1);
+    });
+
     it("renders data rows and clears stale rows", () => {
         const container = document.createElement("div");
 

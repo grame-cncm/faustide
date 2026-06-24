@@ -47,6 +47,7 @@ export const createMockCanvasContext = (options: CanvasContextOptions = {}) => {
         textAlign: "start",
         textBaseline: "alphabetic",
         globalCompositeOperation: "source-over",
+        imageSmoothingEnabled: true,
         save: vi.fn(),
         restore: vi.fn(),
         setLineDash: vi.fn(),
