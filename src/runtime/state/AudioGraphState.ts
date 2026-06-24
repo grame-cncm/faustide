@@ -13,8 +13,11 @@ type DspNode = FaustScriptProcessorNode<any> | FaustAudioWorkletNode<any>;
  * (so `window.faustEnv.audioEnv` identity and the e2e contract are preserved)
  * and exposes intent-named setters so every mutation funnels through one place.
  *
- * It owns no graph logic: callers still perform the actual node connect/
- * disconnect; this type only owns *when the recorded state changes*.
+ * As of Phase 12.3 it also owns the DSP node graph connections (input gain,
+ * destination, teardown), so the `connect()`/`disconnect()` calls travel
+ * together with the flags they update instead of being duplicated across
+ * `DspRunner`, `FaustUiController`, and `AudioOutputController`. Splitter
+ * (re)creation stays in `DspRunner` because it is tied to node channel counts.
  */
 export class AudioGraphState {
     constructor(private readonly env: FaustEditorAudioEnv) {}
@@ -97,5 +100,48 @@ export class AudioGraphState {
 
     setDestination(destination: MediaStreamAudioDestinationNode | AudioDestinationNode): void {
         this.env.destination = destination;
+    }
+
+    /**
+     * Tears down the current DSP node: detaches it from the input gain and the
+     * destination, destroys it, and clears the slot. Single owner of the DSP
+     * teardown sequence previously duplicated in DspRunner and FaustUiController.
+     */
+    disconnectCurrentDsp(): void {
+        const dsp = this.env.dsp;
+        if (!dsp) return;
+        const gain = this.env.gainInput;
+        if (this.connectedToInput && gain) {
+            gain.disconnect(dsp);
+            this.markConnectedToInput(false);
+        }
+        dsp.disconnect();
+        this.markConnectedToOutput(false);
+        dsp.destroy();
+        this.clearCurrentDsp();
+    }
+
+    /** Connects the input gain to a node that declares inputs, recording the flag. */
+    connectInput(node: DspNode): void {
+        const gain = this.env.gainInput;
+        if (gain && node.getNumInputs()) {
+            gain.connect(node);
+            this.markConnectedToInput(true);
+        }
+    }
+
+    /** Connects a node to the audio destination and records the flag. */
+    connectToOutput(node: DspNode): void {
+        node.connect(this.env.destination);
+        this.markConnectedToOutput(true);
+    }
+
+    /** Disconnects the current DSP from the destination if currently connected. */
+    disconnectFromOutput(): void {
+        const dsp = this.env.dsp;
+        if (dsp && this.connectedToOutput) {
+            dsp.disconnect(this.env.destination);
+            this.markConnectedToOutput(false);
+        }
     }
 }

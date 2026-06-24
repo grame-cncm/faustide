@@ -131,7 +131,7 @@ export class DspRunner {
         const gain = this.audioEnv.gainInput;
         const analyser = this.audioEnv.analyserOutput;
         if (!gain || !analyser || !this.audioEnv.destination) throw new Error("Audio graph is not ready");
-        this.disconnectCurrentNode(gain);
+        this.audioState.disconnectCurrentDsp();
         this.restoreParams(node, options);
         this.audioState.setCurrentDsp(node);
 
@@ -143,15 +143,9 @@ export class DspRunner {
             this.audioState.setSplitterOutput(splitter);
             options.onOutputSplitterChanged?.(splitter, channelsCount);
         }
-        if (this.audioEnv.gainInput && node.getNumInputs()) {
-            this.audioEnv.gainInput.connect(node);
-            this.audioState.markConnectedToInput(true);
-        }
+        this.audioState.connectInput(node);
         node.connect(splitter);
-        if (this.audioEnv.outputEnabled) {
-            node.connect(this.audioEnv.destination);
-            this.audioState.markConnectedToOutput(true);
-        }
+        if (this.audioEnv.outputEnabled) this.audioState.connectToOutput(node);
     }
 
     /** Re-applies saved parameter values to a freshly created node, skipping paths it does not expose. */
@@ -161,20 +155,6 @@ export class DspRunner {
         for (const path in options.dspParams) {
             if (params.indexOf(path) !== -1) node.setParamValue(path, options.dspParams[path]);
         }
-    }
-
-    /** Disconnects, destroys, and clears the current DSP node, resetting its input/output wiring flags. */
-    private disconnectCurrentNode(gain: GainNode) {
-        if (!this.audioEnv.dsp) return;
-        const dsp = this.audioEnv.dsp;
-        if (this.audioState.connectedToInput) {
-            gain.disconnect(dsp);
-            this.audioState.markConnectedToInput(false);
-        }
-        dsp.disconnect();
-        this.audioState.markConnectedToOutput(false);
-        dsp.destroy();
-        this.audioState.clearCurrentDsp();
     }
 
     /** Returns the active AudioContext or throws if the audio graph is not ready. */
