@@ -26,6 +26,33 @@ The runtime should be split into:
 - services: audio context/graph, DSP compilation, diagram generation, export/share URL generation, device enumeration;
 - views/controllers: file manager DOM, settings controls, plot controls, MIDI controls, recorder controls, audio input/output controls, panels, diagram gestures, DSP iframe/popup messaging.
 
+## Test strategy (as implemented)
+
+The plan above is driven by characterization testing: behavior is locked down with tests before any code is moved. The realized test setup is a three-layer pyramid, each layer wired to its own npm script.
+
+| Layer | Tool | Script | Scope |
+|-------|------|--------|-------|
+| Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | ~42 files, ~168 `it()` blocks |
+| Browser end-to-end | Playwright | `npm run test:e2e` | smoke tests against the built `dist/` |
+
+### Unit and integration layer (Vitest)
+
+- Config in `vitest.config.ts`: `jsdom` environment, `restoreMocks: true`, test files matched by `src/**/*.test.ts`, global setup file `src/tests/setup.ts`.
+- `src/tests/setup.ts` builds the browser environment jsdom does not provide:
+  - jQuery injected into `window` and `globalThis`;
+  - `requestAnimationFrame` / `cancelAnimationFrame` and `URL.createObjectURL` / `URL.revokeObjectURL` polyfills;
+  - Web Audio mocks (`MockAudioContext`, `MockGainNode`, `MockAudioNode`);
+  - DOM (`document.body.innerHTML`) and `localStorage` reset in `beforeEach`.
+- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, …), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), and utilities (`utils`, `Key2Midi`, `Recorder`).
+- Mocking approach: prefer `vi.mock` over network mocking. For example `DspRunner.test.ts` replaces `@grame/faustwasm` with small factory doubles and asserts only the audio-graph effects. MSW is used in only a few tests (`AudioEngine`, `DspRunner`, `Recorder`). For the file system, use an in-memory fake FS implementing the `TFileSystem` contract rather than real BrowserFS.
+
+### End-to-end layer (Playwright)
+
+- Config in `playwright.config.ts`: a minimal static server (`tests/e2e/serve-dist.cjs`) serves the built `dist/` on `http://127.0.0.1:4173`, so e2e exercises the production artifact, not the source.
+- `tests/e2e/app-smoke.spec.ts` validates high-level behavior that jsdom cannot cover reliably: app load + `window.faustEnv` exposure, default `untitled.dsp` project, Monaco editing updating the selected file, deleting the last file recreating the default DSP, export targets populated from a mocked `faustservice.inria.fr/targets` route, and the share URL containing name/voices/autorun/inline code.
+- External Faust service requests are mocked via `page.route`. Real audio hardware, popup blockers, and production Faust service export stay in the manual checklist.
+
 ## Phase 1: test harness before refactoring
 
 Goal: make behavior observable before moving code.
