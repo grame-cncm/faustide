@@ -46,6 +46,7 @@ import { PlotController } from "./ui/PlotController";
 import { AudioOutputController } from "./ui/AudioOutputController";
 import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
+import { AudioOutputStateView } from "./ui/AudioOutputStateView";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
 import { ExampleLoaderController } from "./ui/ExampleLoaderController";
@@ -88,6 +89,7 @@ $(async () => {
         server: DEFAULT_FAUST_SERVICE_URL,
         ...detectAudioFeatureSupport()
     });
+    const audioOutputStateView = new AudioOutputStateView();
     const dspParams = runtimeSettings.loadDspParams();
     /**
      * Async Load Monaco Editor Core
@@ -120,15 +122,7 @@ $(async () => {
             add: handler => $("body").on("touchstart touchend mousedown keydown", handler),
             remove: handler => $("body").off("touchstart touchend mousedown keydown", handler)
         },
-        onStateChange: (state) => {
-            if (state === "running") {
-                $(".btn-dac").removeClass("btn-light").addClass("btn-primary")
-                    .children("span").html("Output is On");
-            } else {
-                $(".btn-dac").removeClass("btn-primary").addClass("btn-light")
-                    .children("span").html("Output is Off");
-            }
-        }
+        onStateChange: state => audioOutputStateView.updateAudioContextState(state)
     });
     const initializeAudioContext = (deviceId?: string) => audioEngine.initialize(deviceId);
     const dspRunner = new DspRunner({
