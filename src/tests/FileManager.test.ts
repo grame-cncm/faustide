@@ -136,10 +136,10 @@ describe("FileManager", () => {
         const { manager } = createManager({ "main.dsp": "process = _;", "sound.wav": new Uint8Array([1, 2]) });
 
         const mainBefore = manager.mainFileName;
-        manager.setMain(manager._fileList.indexOf("sound.wav"));
+        manager.setMain(manager.fileNames.indexOf("sound.wav"));
         expect(manager.mainFileName).toBe(mainBefore);
 
-        manager.setMain(manager._fileList.indexOf("main.dsp"));
+        manager.setMain(manager.fileNames.indexOf("main.dsp"));
         expect(manager.mainFileName).toBe("main.dsp");
     });
 
@@ -160,7 +160,7 @@ describe("FileManager", () => {
         manager.setValue("process = 1;");
         manager.renameSelected("next.dsp");
         manager.newFile("other.dsp", "process = 2;");
-        manager.setMain(manager._fileList.indexOf("other.dsp"));
+        manager.setMain(manager.fileNames.indexOf("other.dsp"));
         const deleteButton = manager.divFiles.querySelector("[data-filename='next.dsp'] .filemanager-btn-delete") as HTMLButtonElement;
         fireEvent.click(deleteButton);
 

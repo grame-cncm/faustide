@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectFilesController } from "../ui/ProjectFilesController";
 
 const createFileManager = () => ({
-    _fileList: ["main.dsp", "lib.lib"],
+    fileNames: ["main.dsp", "lib.lib"],
     mainFileNameWithoutSuffix: "main",
     mainCode: "process = _;",
     newFile: vi.fn(),

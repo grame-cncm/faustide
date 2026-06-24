@@ -398,6 +398,15 @@ export class FileManager {
     get allCodes() {
         return this.project.allCodes;
     }
+    /**
+     * Current project file names in display/order-preserving project order.
+     *
+     * Controllers that need to serialize or export a whole project should use
+     * this public view instead of the legacy `_fileList` compatibility field.
+     */
+    get fileNames() {
+        return this.project.fileList;
+    }
     get selectedCode() {
         return this.project.selectedCode;
     }

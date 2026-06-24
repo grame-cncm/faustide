@@ -70,7 +70,7 @@ export class ProjectFilesController {
      */
     private async saveZip() {
         const zip = this.createZip();
-        this.fileManager._fileList.forEach(n => zip.file(n, this.fileManager.getValue(n)));
+        this.fileManager.fileNames.forEach(n => zip.file(n, this.fileManager.getValue(n)));
         const blob = await zip.generateAsync({ type: "blob" });
         const uri = URL.createObjectURL(blob);
         $("#a-save").attr({ href: uri, download: `${this.fileManager.mainFileNameWithoutSuffix}.zip` })[0].click();

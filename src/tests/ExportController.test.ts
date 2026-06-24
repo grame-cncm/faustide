@@ -21,7 +21,7 @@ const setupDom = () => {
 };
 
 const createFileManager = () => ({
-    _fileList: ["main.dsp", "lib.lib"],
+    fileNames: ["main.dsp", "lib.lib"],
     mainCode: "process = _;",
     mainFileNameWithoutSuffix: "main",
     getValue: vi.fn((fileName: string) => fileName)
