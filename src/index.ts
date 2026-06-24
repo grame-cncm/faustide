@@ -47,6 +47,7 @@ import { AudioOutputController } from "./ui/AudioOutputController";
 import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
 import { AudioOutputStateView } from "./ui/AudioOutputStateView";
+import { BrowserAudioEngineBindings } from "./ui/BrowserAudioEngineBindings";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
 import { ExampleLoaderController } from "./ui/ExampleLoaderController";
@@ -90,6 +91,9 @@ $(async () => {
         ...detectAudioFeatureSupport()
     });
     const audioOutputStateView = new AudioOutputStateView();
+    const browserAudioEngineBindings = new BrowserAudioEngineBindings({
+        onStateChange: state => audioOutputStateView.updateAudioContextState(state)
+    });
     const dspParams = runtimeSettings.loadDspParams();
     /**
      * Async Load Monaco Editor Core
@@ -116,13 +120,7 @@ $(async () => {
     });
     const audioEngine = new AudioEngine({
         env: audioEnv,
-        gainContainer: $<HTMLDivElement>("#input-gain")[0],
-        mediaElementProvider: () => $<HTMLAudioElement>("#source-waveform audio")[0] || null,
-        unlockTarget: {
-            add: handler => $("body").on("touchstart touchend mousedown keydown", handler),
-            remove: handler => $("body").off("touchstart touchend mousedown keydown", handler)
-        },
-        onStateChange: state => audioOutputStateView.updateAudioContextState(state)
+        ...browserAudioEngineBindings.createOptions()
     });
     const initializeAudioContext = (deviceId?: string) => audioEngine.initialize(deviceId);
     const dspRunner = new DspRunner({
