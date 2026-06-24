@@ -180,6 +180,59 @@ A local HTTP server has to be started with `npm run serve` (or something similar
 
 You'll have to raise the package version number in `package.json` before `npm run build` to properly work.
 
+## Contributing
+
+The TypeScript runtime is organized as a small composition root (`src/index.ts`)
+plus layered modules: `model/` (project rules), `runtime/` (DOM-free services and
+state), `ui/` (controllers/views), and `scope/` (analyser/plot widgets).
+
+Quality bar for any contribution — keep the code **clean, well-tested, and
+well-documented**:
+
+- **Tests first.** Add a test that pins the current behavior before changing it,
+  and keep the suite green at every commit. Bug fixes ship with a regression
+  test. The setup is a three-layer pyramid: ESLint/Stylelint, Vitest (jsdom)
+  unit/integration tests, and Playwright end-to-end tests against the built
+  `dist/`.
+- **Run the gate before committing:**
+
+  ```bash
+  npm test          # lint (eslint + stylelint)
+  npm run test:unit # vitest
+  npm run build
+  # and, for browser-visible / bundle changes:
+  npm run dist && npm run test:e2e
+  ```
+
+  CI runs the same gate (with coverage thresholds) on every push/PR; keep it
+  green. Coverage thresholds are a ratchet — raise them as you add tests, never
+  lower them to pass.
+- **Document what you touch.** Public modules and methods carry TSDoc headers
+  describing their role; keep `doc/refactor-plan.md` (architecture + phase
+  status) up to date when structure changes.
+- **Small, focused diffs.** No drive-by reformatting, no dead code, no scope
+  creep.
+
+### AI-assisted development
+
+This repository is set up to be worked on with AI coding agents (Claude Code,
+Cursor, Copilot, …). The rules an agent must follow — architecture boundaries,
+the characterize-first workflow, the validation gate, documentation and commit
+conventions, and anti-hallucination guardrails — are written in
+[`AGENTS.md`](AGENTS.md), which compatible tools read automatically.
+
+If you use an agent, **you remain the author and reviewer**: you own everything
+in the PR. In practice that means
+
+- review every line the agent produces, and reject unrelated changes;
+- make sure the agent **actually ran** the gate and reported real output — never
+  accept "tests pass" on faith;
+- confirm any API/symbol the agent used really exists (agents hallucinate);
+- require tests and documentation in the same change as the code.
+
+A change produced with an agent is held to exactly the same standard as one
+typed by hand — `AGENTS.md` is the contract for both.
+
 ## Useful links
 
 - [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website
