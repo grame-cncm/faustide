@@ -86,8 +86,6 @@ let supportMediaStreamDestination = !!(window.AudioContext
 let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
-let midiController: MidiController;
-let faustUiController: FaustUiController;
 
 $(async () => {
     const { setTimeout } = window;
@@ -140,6 +138,7 @@ $(async () => {
     editor.layout(); // Force editor to fill div
     let dspCompileController: DspCompileController;
     let diagramController: DiagramController;
+    let midiController: MidiController;
     const updateDiagram = (code: string) => diagramController.update(code);
     const runDsp = (code: string) => dspCompileController.run(code);
     const audioEnv: FaustEditorAudioEnv = {
@@ -255,7 +254,7 @@ $(async () => {
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp
     });
-    faustUiController = new FaustUiController({
+    const faustUiController = new FaustUiController({
         audioEnv,
         uiEnv,
         compileOptions,
