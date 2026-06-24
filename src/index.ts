@@ -41,6 +41,7 @@ import { AudioEngine } from "./runtime/AudioEngine";
 import { DspRunner } from "./runtime/DspRunner";
 import { ExportService } from "./runtime/ExportService";
 import { ShareUrlService } from "./runtime/ShareUrlService";
+import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -123,47 +124,8 @@ $(async () => {
     const exportService = new ExportService();
     const shareUrlService = new ShareUrlService();
     const alertController = new AlertController();
-    /**
-     * To save dsp table to localStorage
-     */
-    const saveEditorDspTable = () => {
-        settingsStore.saveDspFactoryCache(FaustCompiler);
-    };
-    /**
-     * To load dsp table from localStorage
-     */
-    const loadEditorDspTable = async () => {
-        await settingsStore.loadDspFactoryCache(FaustCompiler);
-    };
-    /**
-     * To save editor params to localStorage
-     */
-    const saveEditorParams = () => {
-        settingsStore.saveCompileOptions(compileOptions);
-    };
-    /**
-     * To load editor params from localStorage
-     *
-     * @returns {(FaustEditorCompileOptions | {})}
-     */
-    const loadEditorParams = (): FaustEditorCompileOptions | {} => {
-        return settingsStore.loadCompileOptions();
-    };
-    /**
-     * To load dsp params from localStorage
-     *
-     * @returns {{ [path: string]: number }}
-     */
-    const loadDspParams = (): { [path: string]: number } => {
-        return settingsStore.loadDspParams();
-    };
-    /**
-     * To save dsp params to localStorage
-     */
-    const saveDspParams = () => {
-        settingsStore.saveDspParams(dspParams);
-    };
-    const dspParams = loadDspParams();
+    const runtimeSettings = new RuntimeSettingsController(settingsStore, FaustCompiler);
+    const dspParams = runtimeSettings.loadDspParams();
     /**
      * Load all files to Emscripten File System from localStorage
      *
@@ -178,13 +140,7 @@ $(async () => {
     const { editor, monaco } = await initEditor(libFaust);
     editor.layout(); // Force editor to fill div
     let dspCompileController: DspCompileController;
-    const diagramController = new DiagramController({
-        compileOptions,
-        diagramService,
-        alertController,
-        editor,
-        monaco
-    });
+    let diagramController: DiagramController;
     const updateDiagram = (code: string) => diagramController.update(code);
     const runDsp = (code: string) => dspCompileController.run(code);
     const audioEnv: FaustEditorAudioEnv = {
@@ -246,10 +202,17 @@ $(async () => {
         guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
         exportPlatform: "source",
         exportArch: "cplusplus",
-        ...loadEditorParams(),
+        ...runtimeSettings.loadCompileOptions(),
         realtimeCompile: false,
         args: ["-f", "10", "-I", PROJECT_DIR]
     };
+    diagramController = new DiagramController({
+        compileOptions,
+        diagramService,
+        alertController,
+        editor,
+        monaco
+    });
     const faustEnv: FaustEditorEnv = {
         audioEnv,
         midiEnv,
@@ -261,7 +224,7 @@ $(async () => {
         recorder: new Recorder(),
         browserFS: bfs
     };
-    settingsStore.saveVersion();
+    runtimeSettings.saveVersion();
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
     uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
@@ -271,7 +234,7 @@ $(async () => {
         audioEnv,
         projectPersistence,
         alertController,
-        saveEditorParams,
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp,
         updateDiagram
     });
@@ -282,14 +245,14 @@ $(async () => {
         mainFile: compileOptions.mainFile,
         ...projectRuntimeController.createFileManagerHandlers((fileName, content) => editor.setValue(content))
     });
-    if (compileOptions.saveDsp) loadEditorDspTable();
+    if (compileOptions.saveDsp) runtimeSettings.loadDspFactoryCache();
 
     const dspControlsController = new DspControlsController({
         compileOptions,
         audioEnv,
         fileManager: uiEnv.fileManager,
         supportAudioWorklet,
-        saveEditorParams,
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp
     });
     faustUiController = new FaustUiController({
@@ -302,7 +265,7 @@ $(async () => {
         exportService,
         getServer: () => server,
         getMidiController: () => midiController,
-        saveDspParams
+        saveDspParams: () => runtimeSettings.saveDspParams(dspParams)
     });
     dspCompileController = new DspCompileController({
         audioEnv,
@@ -316,7 +279,7 @@ $(async () => {
         initAudioCtx: () => initAudioCtx(audioEnv),
         initAnalysersUI: () => analyserScopeController.initialize(),
         updateDiagram,
-        saveEditorDspTable
+        saveEditorDspTable: () => runtimeSettings.saveDspFactoryCache()
     });
     /**
      * Bind DOM events
@@ -327,9 +290,9 @@ $(async () => {
         compileOptions,
         audioEnv,
         uiEnv,
-        saveEditorParams,
-        saveEditorDspTable,
-        loadEditorDspTable,
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
+        saveEditorDspTable: () => runtimeSettings.saveDspFactoryCache(),
+        loadEditorDspTable: () => runtimeSettings.loadDspFactoryCache(),
         runDsp,
         updateDiagram
     }).bind();
@@ -341,14 +304,14 @@ $(async () => {
         dspRunner,
         getMainCode: () => uiEnv.fileManager.mainCode,
         runDsp,
-        saveEditorParams
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions)
     }).bind();
     const urlParamsController = new UrlParamsController({
         compileOptions,
         fileManager: uiEnv.fileManager,
         shareUrlService,
         runDsp,
-        saveEditorParams,
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         setServer: value => { server = value; }
     });
     new ProjectFilesController({
@@ -366,7 +329,7 @@ $(async () => {
         qrCode: QRCode,
         getServer: () => server,
         setServer: value => { server = value; },
-        saveEditorParams,
+        saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         onError: error => console.error(error) // eslint-disable-line no-console
     }).bind();
     new ShareModalController({
