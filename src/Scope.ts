@@ -1,8 +1,16 @@
 import "./Scope.scss";
 import { estimateFreq, getRms } from "./utils";
-import { drawCanvasBackground } from "./scope/CanvasDrawing";
 import { clampZoomOffset } from "./scope/FrequencyScale";
 import { RealtimeScopeType as TScopeType, getRealtimeScopeIconClassName } from "./scope/ScopeModes";
+import {
+    drawRealtimeBackground,
+    drawRealtimeGrid,
+    drawRealtimeOfflineSpectrogram,
+    drawRealtimeOscilloscope,
+    drawRealtimeSpectrogram,
+    drawRealtimeSpectroscope,
+    drawRealtimeStats
+} from "./scope/realtime/RealtimeScopeRenderer";
 
 type TOptions = {
     audioCtx: AudioContext;
@@ -44,143 +52,25 @@ export class Scope {
     drawSpectrogram: boolean = false;
 
     static drawOscilloscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, freq: number, sr: number, zoom: number, zoomOffset: number) {
-        this.drawBackground(ctx, w, h);
-        this.drawGrid(ctx, w, h);
-        const l = d.length;
-        ctx.strokeStyle = "#FFFFFF";
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        ctx.beginPath();
-        // Fastest way to get min and max to have: 1. max abs value for y scaling, 2. mean value for zero-crossing
-        let min = d[0];
-        let max = d[0];
-        let i = d.length;
-        while (i--) {
-            const s = d[i];
-            if (s < min) min = s;
-            else if (s > max) max = s;
-        }
-        let $zerox = 0;
-        const thresh = (min + max) * 0.5 + 0.001; // the zero-crossing with "offset"
-        const period = sr / freq;
-        const times = Math.floor(l / period) - 1;
-        while (d[$zerox++] > thresh && $zerox < l);
-        if ($zerox >= l - 1) {
-            $zerox = 0;
-        } else {
-            while (d[$zerox++] < thresh && $zerox < l);
-            if ($zerox >= l - 1) {
-                $zerox = 0;
-            }
-        }
-        const drawL = times > 0 && isFinite(period) ? Math.min(period * times, l - $zerox) : l - $zerox;
-        const $0 = Math.round($zerox + drawL * zoomOffset);
-        const $1 = Math.round($zerox + drawL / zoom + drawL * zoomOffset);
-        for (let i = $0; i < $1; i++) {
-            const x = w * (i - $0) / ($1 - $0 - 1);
-            const y = h - (d[i] * 0.5 + 0.5) * h;
-            if (i === $0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+        drawRealtimeOscilloscope(ctx, w, h, d, freq, sr, zoom, zoomOffset);
     }
     static drawSpectroscope(ctx: CanvasRenderingContext2D, w: number, h: number, d: Float32Array, zoom: number, zoomOffset: number) {
-        this.drawBackground(ctx, w, h);
-        this.drawGrid(ctx, w, h);
-        const l = d.length;
-        const $0 = Math.round(l * zoomOffset);
-        const $1 = Math.round(l / zoom + l * zoomOffset);
-        ctx.fillStyle = "#FFFFFF";
-        ctx.beginPath();
-        for (let i = $0; i < $1; i++) {
-            const x = w * (i - $0) / ($1 - $0);
-            const y = ((d[i] + 10) / 100 + 1) * h;
-            if (i === $0) ctx.moveTo(x, h - y);
-            else ctx.lineTo(x, h - y);
-        }
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.closePath();
-        ctx.fill();
+        drawRealtimeSpectroscope(ctx, w, h, d, zoom, zoomOffset);
     }
     static drawOfflineSpectrogram(ctx: CanvasRenderingContext2D, d: Float32Array, $: number) {
-        const l = d.length;
-        const h = ctx.canvas.height;
-        const step = Math.max(1, Math.round(l / h));
-        let maxInStep;
-        ctx.fillStyle = "black";
-        ctx.fillRect($, 0, 1, h);
-        const $h = h / l;
-        for (let i = 0; i < l; i++) {
-            const samp = d[i];
-            const $step = i % step;
-            if ($step === 0) maxInStep = samp;
-            if ($step !== step - 1) {
-                if ($step !== 0 && samp > maxInStep) maxInStep = samp;
-                continue;
-            }
-            const normalized = Math.min(1, Math.max(0, (maxInStep + 10) / 100 + 1));
-            if (normalized === 0) continue;
-            const hue = (normalized * 180 + 240) % 360;
-            const lum = normalized * 50;
-            ctx.fillStyle = `hsl(${hue}, 100%, ${lum}%)`;
-            ctx.fillRect($, (1 - i / l) * h, 1, Math.max(1, $h));
-        }
+        drawRealtimeOfflineSpectrogram(ctx, d, $);
     }
     static drawSpectrogram(ctx: CanvasRenderingContext2D, tempCtx: CanvasRenderingContext2D, $: number, w: number, h: number, d: Float32Array, zoom: number) {
-        this.drawBackground(ctx, w, h);
-        this.drawGrid(ctx, w, h);
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        if ($ + 1 < tempCtx.canvas.width) {
-            const d$ = Math.round($ / tempCtx.canvas.width * w * zoom);
-            if (d$ < w) ctx.drawImage(tempCtx.canvas, $ + 1, 0, tempCtx.canvas.width - $ - 1, tempCtx.canvas.height, w - w * zoom, 0, w * zoom - d$, h);
-            if (d$) ctx.drawImage(tempCtx.canvas, 0, 0, $ + 1, tempCtx.canvas.height, w - d$, 0, d$, h);
-        } else {
-            ctx.drawImage(tempCtx.canvas, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height, w - w * zoom, 0, w * zoom, h);
-        }
-        ctx.restore();
+        drawRealtimeSpectrogram(ctx, tempCtx, $, w, h, d, zoom);
     }
     static drawBackground(ctx: CanvasRenderingContext2D, w: number, h: number) {
-        drawCanvasBackground(ctx, w, h, "#000000");
+        drawRealtimeBackground(ctx, w, h);
     }
     static drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "#404040";
-        for (let i = 0.25; i < 1; i += 0.25) {
-            ctx.moveTo(w * i, 0);
-            ctx.lineTo(w * i, h);
-            ctx.moveTo(0, h * i);
-            ctx.lineTo(w, h * i);
-        }
-        ctx.stroke();
-        ctx.restore();
+        drawRealtimeGrid(ctx, w, h);
     }
     static drawStats(ctx: CanvasRenderingContext2D, w: number, h: number, freq: number, samp: number, rms: number, zoom?: number, zoomMin?: number, zoomMax?: number) {
-        ctx.save();
-        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-        ctx.fillRect(w - 50, 0, 50, 50);
-        if (typeof zoomMin === "number") ctx.fillRect(0, h - 16, 40, 16);
-        if (typeof zoomMax === "number") ctx.fillRect(w - 40, h - 16, 40, 16);
-        if (typeof zoom === "number") ctx.fillRect(w / 2 - 20, h - 16, 40, 16);
-        ctx.fillStyle = "#DDDD99";
-        ctx.font = "bold 12px Consolas, monospace";
-        if (typeof zoom === "number") {
-            ctx.textAlign = "center";
-            ctx.fillText(zoom.toFixed(1) + "x", w / 2, h - 2, 40);
-        }
-        if (typeof zoomMin === "number") {
-            ctx.textAlign = "left";
-            ctx.fillText(zoomMin.toFixed(0), 2, h - 2, 40);
-        }
-        ctx.textAlign = "right";
-        if (typeof zoomMax === "number") ctx.fillText(zoomMax.toFixed(0), w - 2, h - 2, 40);
-        ctx.fillText((samp >= 0 ? "@+" : "@") + samp.toFixed(3), w - 2, 15, 50);
-        ctx.fillText(freq.toFixed(0) + "Hz", w - 2, 30, 50);
-        ctx.fillText("x̄:" + rms.toFixed(3), w - 2, 45, 50);
-        ctx.restore();
+        drawRealtimeStats(ctx, w, h, freq, samp, rms, zoom, zoomMin, zoomMax);
     }
     static getIconClassName(typeIn: TScopeType) {
         return getRealtimeScopeIconClassName(typeIn);
