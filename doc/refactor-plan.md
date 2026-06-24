@@ -68,7 +68,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 64 files, 258 tests at the latest Phase 11 pass |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 68 files, 286 tests; ~76% statement coverage after the MeterNode/monaco-faust passes |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 68 tests against the built `dist/` at the latest Phase 11 pass |
 
 ### Unit and integration layer (Vitest)
