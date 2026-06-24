@@ -57,7 +57,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
-| Phase 11: scope rendering factorization | Planned | `StaticScope.ts` and `Scope.ts` still need dedicated characterization tests and incremental extraction. |
+| Phase 11: scope rendering factorization | In progress | Characterization tests cover `StaticScope` and `Scope`; shared mode metadata and canvas background drawing are extracted. |
 
 ## Test strategy (as implemented)
 
@@ -66,7 +66,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 43 files, 170 tests at the last documentation pass |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 50 files, 217 tests at the latest Phase 11 pass |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 62 tests against the built `dist/` at the last documentation pass |
 
 ### Unit and integration layer (Vitest)
@@ -369,6 +369,12 @@ Current risks:
 - `src/Scope.ts` mixes real-time analyser node reads, channel/FFT controls, canvas drawing, spectrogram cache updates, zoom, pause/disable state, and DOM construction.
 - Existing tests mostly cover `AnalyserScopeController` wiring. They do not directly characterize the rendering helpers, DOM controls, zoom math, analyser polling, or mode transitions.
 - Canvas output is visual, so tests should assert deterministic drawing calls and state transitions rather than fragile pixel-perfect full-canvas snapshots.
+
+Current Phase 11 progress:
+
+- Phase 11.1 through Phase 11.5 are implemented with Vitest characterization coverage for canvas/DOM helpers, `StaticScope`, and `Scope`.
+- Phase 11.6 has started with `src/scope/ScopeModes.ts` and `src/scope/CanvasDrawing.ts`; public static wrapper methods still delegate to the extracted helpers for compatibility.
+- The latest validation pass ran `npm run test:unit`, `npm run build`, and `npm run test:e2e` after the `Scope` instance characterization; subsequent 11.6 extraction commits ran unit tests and build.
 
 ### Phase 11.1: canvas and DOM test harness
 
