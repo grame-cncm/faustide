@@ -1,5 +1,6 @@
 import { Scope } from "../Scope";
 import { StaticScope } from "../StaticScope";
+import { ScopeState } from "../runtime/state/ScopeState";
 import type { FaustEditorAudioEnv, FaustEditorCompileOptions, FaustEditorUIEnv } from "../runtime/types";
 
 type ScopeFactoryOptions = ConstructorParameters<typeof Scope>[0];
@@ -26,6 +27,7 @@ type AnalyserScopeControllerOptions = {
 export class AnalyserScopeController {
     private readonly audioEnv: FaustEditorAudioEnv;
     private readonly uiEnv: FaustEditorUIEnv;
+    private readonly scopeState: ScopeState;
     private readonly compileOptions: FaustEditorCompileOptions;
     private readonly scopeFactory: ScopeFactory;
     private readonly staticScopeFactory: StaticScopeFactory;
@@ -33,6 +35,7 @@ export class AnalyserScopeController {
     constructor(options: AnalyserScopeControllerOptions) {
         this.audioEnv = options.audioEnv;
         this.uiEnv = options.uiEnv;
+        this.scopeState = new ScopeState(options.uiEnv);
         this.compileOptions = options.compileOptions;
         this.scopeFactory = options.scopeFactory || Scope;
         this.staticScopeFactory = options.staticScopeFactory || StaticScope;
@@ -46,7 +49,7 @@ export class AnalyserScopeController {
      * current plot mode and audio context.
      */
     initializePlotScope() {
-        this.uiEnv.plotScope = new this.staticScopeFactory({ container: $<HTMLDivElement>("#plot-ui")[0] });
+        this.scopeState.setPlotScope(new this.staticScopeFactory({ container: $<HTMLDivElement>("#plot-ui")[0] }));
         this.uiEnv.analyser.drawHandler = this.uiEnv.plotScope.draw;
         this.uiEnv.analyser.getSampleRate = () => (
             this.compileOptions.plotMode === "offline"
@@ -59,22 +62,22 @@ export class AnalyserScopeController {
      * Initializes input and output analyser scopes once.
      */
     initialize() {
-        if (this.uiEnv.analysersInited) return;
-        this.uiEnv.inputScope = new this.scopeFactory({
+        if (this.scopeState.analysersInited) return;
+        this.scopeState.setInputScope(new this.scopeFactory({
             audioCtx: this.audioEnv.audioCtx,
             analyser: this.audioEnv.analyserInput,
             splitter: this.audioEnv.splitterInput,
             channels: 2,
             container: $<HTMLDivElement>("#input-analyser-ui")[0]
-        });
-        this.uiEnv.outputScope = new this.scopeFactory({
+        }));
+        this.scopeState.setOutputScope(new this.scopeFactory({
             audioCtx: this.audioEnv.audioCtx,
             analyser: this.audioEnv.analyserOutput,
             splitter: this.audioEnv.splitterOutput,
             channels: 1,
             container: $<HTMLDivElement>("#output-analyser-ui")[0]
-        });
-        this.uiEnv.analysersInited = true;
+        }));
+        this.scopeState.markAnalysersInited();
     }
 
     /**
