@@ -1,3 +1,4 @@
+import { AudioGraphState } from "../runtime/state/AudioGraphState";
 import type { FaustEditorAudioEnv } from "../runtime/types";
 
 type AudioDeviceControllerOptions = {
@@ -16,12 +17,14 @@ type AudioDeviceControllerOptions = {
  */
 export class AudioDeviceController {
     private readonly audioEnv: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     private readonly mediaDevices?: MediaDevices;
     private readonly getSupportMediaStreamDestination: () => boolean;
     private readonly setSupportMediaStreamDestination: (supported: boolean) => void;
 
     constructor(options: AudioDeviceControllerOptions) {
         this.audioEnv = options.audioEnv;
+        this.audioState = new AudioGraphState(options.audioEnv);
         this.mediaDevices = options.mediaDevices;
         this.getSupportMediaStreamDestination = options.getSupportMediaStreamDestination;
         this.setSupportMediaStreamDestination = options.setSupportMediaStreamDestination;
@@ -43,7 +46,7 @@ export class AudioDeviceController {
                 $("#output-ui-default").hide();
                 $selectOutput = $("#select-audio-output").prop("disabled", false);
             } else {
-                if (this.audioEnv.audioCtx && this.audioEnv.destination) this.audioEnv.destination = this.audioEnv.audioCtx.destination;
+                if (this.audioEnv.audioCtx && this.audioEnv.destination) this.audioState.setDestination(this.audioEnv.audioCtx.destination);
                 this.setSupportMediaStreamDestination(false);
             }
         }

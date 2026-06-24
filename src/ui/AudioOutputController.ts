@@ -1,3 +1,4 @@
+import { AudioGraphState } from "../runtime/state/AudioGraphState";
 import type { FaustEditorAudioEnv } from "../runtime/types";
 
 type AudioOutputControllerOptions = {
@@ -17,6 +18,7 @@ type AudioOutputControllerOptions = {
  */
 export class AudioOutputController {
     private readonly audioEnv: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     private readonly getSupportMediaStreamDestination: () => boolean;
     private readonly initAudioCtx: () => Promise<FaustEditorAudioEnv>;
     private readonly initAnalysersUI: () => void;
@@ -24,6 +26,7 @@ export class AudioOutputController {
 
     constructor(options: AudioOutputControllerOptions) {
         this.audioEnv = options.audioEnv;
+        this.audioState = new AudioGraphState(options.audioEnv);
         this.getSupportMediaStreamDestination = options.getSupportMediaStreamDestination;
         this.initAudioCtx = options.initAudioCtx;
         this.initAnalysersUI = options.initAnalysersUI;
@@ -66,10 +69,10 @@ export class AudioOutputController {
      * Disconnects the DSP from the audio destination and updates button state.
      */
     private disableOutput() {
-        this.audioEnv.outputEnabled = false;
-        if (this.audioEnv.dspConnectedToOutput) {
+        this.audioState.setOutputEnabled(false);
+        if (this.audioState.connectedToOutput) {
             this.audioEnv.dsp.disconnect(this.audioEnv.destination);
-            this.audioEnv.dspConnectedToOutput = false;
+            this.audioState.markConnectedToOutput(false);
         }
         $(".btn-dac").removeClass("btn-primary").addClass("btn-light").children("span").html("Output is Off");
         $(".fa-volume-up").removeClass("fa-volume-up").addClass("fa-volume-mute");
@@ -79,13 +82,13 @@ export class AudioOutputController {
      * Ensures audio is initialized, connects DSP output, and updates UI state.
      */
     private async enableOutput() {
-        this.audioEnv.outputEnabled = true;
+        this.audioState.setOutputEnabled(true);
         if (!this.audioEnv.audioCtx) {
             await this.initAudioCtx();
             this.initAnalysersUI();
         } else if (this.audioEnv.dsp) {
             this.audioEnv.dsp.connect(this.audioEnv.destination);
-            this.audioEnv.dspConnectedToOutput = true;
+            this.audioState.markConnectedToOutput(true);
         }
         $(".btn-dac").removeClass("btn-light").addClass("btn-primary").children("span").html("Output is On");
         $(".fa-volume-mute").removeClass("fa-volume-mute").addClass("fa-volume-up");

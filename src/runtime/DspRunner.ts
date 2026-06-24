@@ -1,5 +1,6 @@
 import type { AudioData, FaustAudioWorkletNode, FaustCompiler, FaustScriptProcessorNode, LibFaust } from "@grame/faustwasm";
 import { FaustMonoDspGenerator, FaustPolyDspGenerator } from "@grame/faustwasm";
+import { AudioGraphState } from "./state/AudioGraphState";
 import type { FaustEditorAudioEnv } from "./types";
 
 type DspNode = FaustScriptProcessorNode<any> | FaustAudioWorkletNode<any>;
@@ -40,6 +41,7 @@ export type DspRunResult = {
  */
 export class DspRunner {
     private readonly audioEnv: FaustEditorAudioEnv;
+    private readonly audioState: AudioGraphState;
     private readonly faustCompiler: FaustCompiler;
     private readonly libFaust: LibFaust;
     private readonly projectDir: string;
@@ -47,6 +49,7 @@ export class DspRunner {
 
     constructor(options: DspRunnerOptions) {
         this.audioEnv = options.audioEnv;
+        this.audioState = new AudioGraphState(options.audioEnv);
         this.faustCompiler = options.faustCompiler;
         this.libFaust = options.libFaust;
         this.projectDir = options.projectDir;
@@ -130,24 +133,24 @@ export class DspRunner {
         if (!gain || !analyser || !this.audioEnv.destination) throw new Error("Audio graph is not ready");
         this.disconnectCurrentNode(gain);
         this.restoreParams(node, options);
-        this.audioEnv.dsp = node;
+        this.audioState.setCurrentDsp(node);
 
         const channelsCount = node.getNumOutputs();
         let splitter = this.audioEnv.splitterOutput;
         if (!splitter || splitter.numberOfOutputs !== channelsCount) {
             if (splitter) splitter.disconnect();
             splitter = audioCtx.createChannelSplitter(channelsCount);
-            this.audioEnv.splitterOutput = splitter;
+            this.audioState.setSplitterOutput(splitter);
             options.onOutputSplitterChanged?.(splitter, channelsCount);
         }
         if (this.audioEnv.gainInput && node.getNumInputs()) {
             this.audioEnv.gainInput.connect(node);
-            this.audioEnv.dspConnectedToInput = true;
+            this.audioState.markConnectedToInput(true);
         }
         node.connect(splitter);
         if (this.audioEnv.outputEnabled) {
             node.connect(this.audioEnv.destination);
-            this.audioEnv.dspConnectedToOutput = true;
+            this.audioState.markConnectedToOutput(true);
         }
     }
 
@@ -164,14 +167,14 @@ export class DspRunner {
     private disconnectCurrentNode(gain: GainNode) {
         if (!this.audioEnv.dsp) return;
         const dsp = this.audioEnv.dsp;
-        if (this.audioEnv.dspConnectedToInput) {
+        if (this.audioState.connectedToInput) {
             gain.disconnect(dsp);
-            this.audioEnv.dspConnectedToInput = false;
+            this.audioState.markConnectedToInput(false);
         }
         dsp.disconnect();
-        this.audioEnv.dspConnectedToOutput = false;
+        this.audioState.markConnectedToOutput(false);
         dsp.destroy();
-        delete this.audioEnv.dsp;
+        this.audioState.clearCurrentDsp();
     }
 
     /** Returns the active AudioContext or throws if the audio graph is not ready. */
