@@ -17,7 +17,6 @@ import webmidi from "webmidi";
 import type { FaustCompiler } from "@grame/faustwasm";
 import type {
     FaustEditorAudioEnv,
-    FaustEditorCompileOptions,
     FaustEditorEnv,
     FaustEditorMIDIEnv,
     FaustEditorUIEnv
@@ -43,6 +42,7 @@ import { ExportService } from "./runtime/ExportService";
 import { ShareUrlService } from "./runtime/ShareUrlService";
 import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
 import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport } from "./runtime/AppRuntimeConfig";
+import { createCompileOptions } from "./runtime/CompileOptionsFactory";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -179,29 +179,11 @@ $(async () => {
         fileManager: undefined
     };
     const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv });
-    const compileOptions: FaustEditorCompileOptions = {
-        useWorklet: runtimeConfig.supportAudioWorklet,
-        useDouble: false,
-        bufferSize: 1024,
-        saveCode: true,
-        saveParams: false,
-        saveDsp: false,
-        popup: false,
-        voices: 0,
-        plotMode: "offline",
-        plot: 256,
-        plotSR: 48000,
-        plotFFT: 256,
-        plotFFTOverlap: 2,
-        drawSpectrogram: false,
-        enableGuiBuilder: false,
-        guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",
-        exportPlatform: "source",
-        exportArch: "cplusplus",
-        ...runtimeSettings.loadCompileOptions(),
-        realtimeCompile: false,
-        args: ["-f", "10", "-I", PROJECT_DIR]
-    };
+    const compileOptions = createCompileOptions({
+        projectDir: PROJECT_DIR,
+        supportAudioWorklet: runtimeConfig.supportAudioWorklet,
+        savedOptions: runtimeSettings.loadCompileOptions()
+    });
     diagramController = new DiagramController({
         compileOptions,
         diagramService,
