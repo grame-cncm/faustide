@@ -9,7 +9,8 @@ This document records the `src/index.ts` refactor plan and the current post-refa
 - `src/FileManager.ts` delegates project/file decision rules to `src/model/ProjectModel.ts` while preserving the public API used by controllers.
 - Runtime types are explicit in `src/runtime/types.ts`; the old hidden global type coupling has been removed for the refactored runtime surface.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
-- The remaining work is manual validation and normal maintenance, not another large extraction pass.
+- The main residual coupling is the shared mutable runtime environment (`FaustEditor*Env`): it is passed by reference and written by several controllers, and it is what forces the late-bound wiring above. Reducing it is tracked as Phase 12.
+- The remaining structural work is tracked as Phase 11 (scope rendering factorization) and Phase 12 (shared-state ownership and wiring). Everything else is manual validation and normal maintenance, not another large extraction pass.
 
 ## Target architecture
 
@@ -58,6 +59,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
 | Phase 11: scope rendering factorization | In progress | `StaticScope` renderer/control/interaction extraction is complete; `Scope` real-time analyser extraction remains. |
+| Phase 12: owned state and explicit wiring | Planned | Replace the shared mutable `FaustEditor*Env` bags with single-owner state and an explicit action seam; linearize `index.ts`. |
 
 ## Test strategy (as implemented)
 
@@ -701,6 +703,204 @@ Manual validation specific to scopes:
 - verify spectrogram cache behavior after changing plot data shape and frequency scale;
 - verify narrow and wide layouts do not break scope controls.
 
+## Phase 12: replace the shared mutable runtime environment with owned state and explicit wiring
+
+Goal: remove the last large coupling — the mutable `FaustEditor*Env` records shared by reference across controllers — without changing behavior. Give each piece of runtime state a single owner with controlled access, replace the ad-hoc `runDsp`/`updateDiagram` callback bridges with an explicit action/event seam, and linearize `index.ts` so late-bound `let` controller references become ordered `const` construction.
+
+Current risks:
+
+- `FaustEditorAudioEnv`, `FaustEditorUIEnv`, and `FaustEditorMIDIEnv` are mutable records passed by reference. Any controller can read or write any field. For example: `DspRunner` and `DspCompileController` set `audioEnv.dsp` and the `dspConnectedToInput/Output` flags; `AnalyserScopeController` sets `uiEnv.inputScope`, `uiEnv.outputScope`, and `uiEnv.analysersInited`; `DspCompileController` reaches into `uiEnv.outputScope.splitter/channels/channel`. Ownership is implicit and mutation points are scattered.
+- `index.ts` resolves a near-cyclic controller graph with late-bound `let` declarations (declared early, assigned once their collaborators exist) and with callback bridges (`runDsp`, `updateDiagram`) threaded into many controllers. These are symptoms of dependency cycles rather than a clean construction order.
+- `window.faustEnv` exposes the entire mutable env, so external scripts and the e2e suite depend on the bag shape (for example `window.faustEnv.audioEnv.dsp`).
+
+The work is behavior-preserving: the runtime keeps mutating the same logical state and the compatibility bridge keeps surfacing the same fields. The change is *where* state is owned and *how* control flows, not *what* the app does. As elsewhere in this plan, characterize first, then move in small reversible steps.
+
+### State ownership map
+
+The concrete problem is measurable. A grep for env field writes (excluding tests) shows several fields written from multiple modules — the connection flags are the worst:
+
+| Env field(s) | Current writers (count) | Target owner |
+|--------------|-------------------------|--------------|
+| `dspConnectedToOutput` | `DspRunner` ×2, `FaustUiController`, `AudioOutputController` ×2 (5) | `AudioGraphState` |
+| `dspConnectedToInput` | `DspRunner` ×2, `FaustUiController` (3) | `AudioGraphState` |
+| `outputEnabled` | `AudioEngine`, `AudioOutputController` ×2 (3) | `AudioGraphState` |
+| `inputEnabled`, `currentInput` | `AudioInputController` | `AudioGraphState` (input section) |
+| `destination` | `AudioEngine`, `AudioDeviceController` (2) | `AudioGraphState` |
+| `dsp`, `splitterOutput` | `DspRunner` | `AudioGraphState`, set via `AudioEngine` |
+| `audioCtx`, `meterInput`, `gainInput`, `gainUIInput`, `splitterInput`, `analyserInput`, `analyserOutput` | `AudioEngine` | `AudioGraphState` |
+| `inputs` | `AudioEngine` | `AudioGraphState` |
+| `inputScope`, `outputScope`, `plotScope`, `analysersInited` | `AnalyserScopeController` | `ScopeState` |
+| `uiPopup` | `FaustUiController` | `FaustUiController` (private) |
+| `fileManager` | `index.ts` | composition root, set once |
+
+The audio-node and scope fields already have a de-facto single writer; the goal there is to make that ownership explicit and read-only to others. The connection/enable flags are the genuine multi-writer hazard and are the priority of Phase 12.3.
+
+### Target signatures
+
+The accessors introduced in Phase 12.2 and the action seam in Phase 12.4 should land on shapes close to these (illustrative, not final):
+
+```ts
+// src/runtime/state/AudioGraphState.ts
+export class AudioGraphState {
+    // Audio nodes: written once by AudioEngine, read-only elsewhere.
+    get audioCtx(): AudioContext | undefined;
+    get analyserOutput(): AnalyserNode | undefined;
+    // ... remaining node getters
+
+    // Current DSP node lifecycle (owned here, driven by DspRunner/AudioEngine).
+    get currentDsp(): FaustScriptProcessorNode | FaustAudioWorkletNode | undefined;
+    setCurrentDsp(node: FaustScriptProcessorNode | FaustAudioWorkletNode): void;
+    clearCurrentDsp(): void; // also resets both connection flags
+
+    // Connection flags: single writer, replacing the 5+3 scattered sites.
+    get connectedToInput(): boolean;
+    get connectedToOutput(): boolean;
+    markConnectedToInput(connected: boolean): void;
+    markConnectedToOutput(connected: boolean): void;
+
+    // Enable state.
+    get inputEnabled(): boolean;
+    setInputEnabled(enabled: boolean): void;
+    get outputEnabled(): boolean;
+    setOutputEnabled(enabled: boolean): void;
+}
+
+// src/runtime/RuntimeActions.ts
+export interface RuntimeActions {
+    runDsp(code: string): Promise<{ success: boolean; error?: Error }>;
+    updateDiagram(code: string): { success: boolean; error?: Error };
+}
+```
+
+Worked example for the 5-site `dspConnectedToOutput`. Today each call site does:
+
+```ts
+this.audioEnv.dspConnectedToOutput = true; // and = false elsewhere
+```
+
+After Phase 12.3 the flag has one owner and callers express intent through `AudioEngine`:
+
+```ts
+this.audioEngine.connectCurrentDspToOutput();    // sets the node up + flag
+this.audioEngine.disconnectCurrentDspFromOutput(); // tears it down + flag
+```
+
+`AudioGraphState.markConnectedToOutput` stays the only place that writes the boolean, so the flag can no longer drift out of sync with the actual graph.
+
+### Phase 12.1: characterize the cross-controller state contract
+
+Before changing ownership, pin the observable effects that currently flow through the env records. Some are already covered (scope e2e, `DspRunner` unit). Add explicit unit characterization for the mutations each controller performs:
+
+- after `DspRunner.run`, `audioEnv.dsp` is set and the input/output connection flags reflect the run options;
+- after `disconnectCurrentNode`, `audioEnv.dsp` is cleared and both flags are false;
+- `AnalyserScopeController.initialize` sets `inputScope`/`outputScope` exactly once and is guarded by `analysersInited`;
+- the output-splitter callback updates `outputScope.splitter`, `channels`, and clamps `channel`;
+- `AudioEngine.initialize` populates the meter/gain/splitter/analyser nodes exactly once.
+
+Validation:
+
+```sh
+npm run test:unit
+```
+
+### Phase 12.2: funnel env access through typed accessors
+
+Introduce small typed state objects that, at first, wrap the existing env records so runtime behavior is unchanged:
+
+- `AudioGraphState` — current DSP node, connection flags, and audio nodes;
+- `ScopeState` — input/output/plot scope instances and `analysersInited`;
+- `MidiState` — selected input.
+
+Each exposes explicit getters and intent-named setters (`setCurrentDsp`, `markConnectedToOutput`, `setInputScope`, ...). Back them by the same underlying record initially, so nothing moves at runtime; the only change is that reads/writes go through methods. This makes every mutation point greppable and individually testable.
+
+Migration rules: one state group per commit; replace direct field access only for that group; keep the env record in sync so the compatibility bridge is unaffected.
+
+Validation after each commit:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+### Phase 12.3: assign single ownership
+
+Move write authority for each field to exactly one owner; every other collaborator gets a read-only view:
+
+- `AudioEngine` owns the audio nodes and the connection flags. `DspRunner` asks `AudioEngine` to connect/disconnect the current node instead of mutating flags directly.
+- `DspRunner`/`AudioEngine` own the current DSP node lifecycle.
+- `AnalyserScopeController` owns the scope instances; `DspCompileController` requests an output-splitter change through it instead of mutating `outputScope` internals.
+
+This is a move of mutation authority, not a logic change; behavior stays identical.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+Run Playwright because audio graph and DSP wiring are browser-visible.
+
+### Phase 12.4: replace callback bridges with an explicit action seam
+
+The `runDsp`/`updateDiagram` callbacks threaded through many controllers are an implicit mediator. Replace them with one explicit seam:
+
+- a typed `RuntimeActions` interface (`runDsp`, `updateDiagram`, ...) constructed once and injected; or
+- a small typed event bus where controllers emit intents (`"run-requested"`, `"diagram-requested"`) and a single coordinator handles them.
+
+Either way the cycle is broken at one named seam, so controllers no longer need forward references to each other.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+### Phase 12.5: linearize `index.ts` wiring
+
+With owned state and the action seam in place, reorder construction so every controller receives already-built dependencies. Convert the late-bound `let` controller variables into `const` in dependency order. `index.ts` becomes a topologically ordered wiring with no reassignment.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+```
+
+### Phase 12.6: back the compatibility bridge with owned state
+
+`window.faustEnv` must keep surfacing the historic fields (the e2e suite reads `audioEnv.dsp`, `uiEnv.inputScope`, and similar). Re-express the bridge as getters over the owned state so the external shape is unchanged while the internal source of truth becomes the new stores. Optionally freeze the exposed sub-objects to prevent external mutation.
+
+Validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
+Run Playwright because the compatibility bridge is asserted by the e2e suite.
+
+### Phase 12.7: final cleanup
+
+After ownership and wiring are in place:
+
+- remove the now-unused mutable fields from the env records, or keep them only as bridge getters with a compatibility note;
+- document the owned-state types in `src/runtime/types.ts`;
+- update this document's Phase 12 status from Planned to Done;
+- run the full automated suite and the scope/audio manual checks.
+
+Final automated validation:
+
+```sh
+npm run test:unit
+npm run build
+npm run test:e2e
+```
+
 ## Manual validation checklist
 
 Run these manually after phases touching audio, DSP, export, or cross-window messaging:
@@ -738,7 +938,9 @@ The refactor used one commit per testable phase or extraction target. Keep that 
 7. persistence extraction;
 8. each runtime service;
 9. each UI controller group;
-10. final `index.ts` cleanup.
+10. final `index.ts` cleanup;
+11. each scope test pass, each rendering/control/interaction extraction;
+12. each owned-state group, the action seam, and the `index.ts` linearization.
 
 Each commit should keep:
 
