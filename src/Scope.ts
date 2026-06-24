@@ -12,6 +12,7 @@ import {
     drawRealtimeStats
 } from "./scope/realtime/RealtimeScopeRenderer";
 import { createRealtimeScopeControls } from "./scope/realtime/RealtimeScopeControls";
+import { createAnalyserFrameBuffers, readAnalyserFrame } from "./scope/realtime/AnalyserFrameReader";
 
 type TOptions = {
     audioCtx: AudioContext;
@@ -79,9 +80,7 @@ export class Scope {
 
     constructor(options: TOptions) {
         Object.assign(this, options);
-        this.t = new Float32Array(this.analyser.fftSize);
-        this.ti = new Uint8Array(this.analyser.fftSize);
-        this.f = new Float32Array(this.analyser.frequencyBinCount);
+        Object.assign(this, createAnalyserFrameBuffers(this.analyser));
         this.getChildren();
         this.bind();
         if (!window.AudioWorklet) this.paused = true;
@@ -129,13 +128,7 @@ export class Scope {
             const h = Math.floor(Math.min(w * 0.75, this.container.clientHeight));
             this.canvas.width = w;
             this.canvas.height = h;
-            this.analyser.getFloatFrequencyData(this.f);
-            if (this.analyser.getFloatTimeDomainData) {
-                this.analyser.getFloatTimeDomainData(this.t);
-            } else { // This is for Safari, what a shame
-                this.analyser.getByteTimeDomainData(this.ti);
-                this.ti.forEach((v, i) => this.t[i] = v / 128 - 1);
-            }
+            readAnalyserFrame(this.analyser, { t: this.t, ti: this.ti, f: this.f });
             const freq = estimateFreq(this.f, sr);
             const samp = this.t[this.t.length - 1];
             const rms = getRms(this.t);
@@ -170,9 +163,7 @@ export class Scope {
     }
     set size(sizeIn: number) {
         this.analyser.fftSize = sizeIn;
-        this.t = new Float32Array(this.analyser.fftSize);
-        this.ti = new Uint8Array(this.analyser.fftSize);
-        this.f = new Float32Array(this.analyser.frequencyBinCount);
+        Object.assign(this, createAnalyserFrameBuffers(this.analyser));
         this.btnSize.innerText = sizeIn.toString() + " samps";
         this._size = sizeIn;
     }
