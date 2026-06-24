@@ -1,5 +1,5 @@
 import "./FileManager.scss";
-import { DEFAULT_DSP_CODE, ProjectModel } from "./model/ProjectModel";
+import { ProjectModel } from "./model/ProjectModel";
 import type { TFileSystem } from "./model/ProjectModel";
 
 type TOptions = {
@@ -57,10 +57,9 @@ export class FileManager {
         this.deleteHandler = options.deleteHandler;
         this.mainFileChangeHandler = options.mainFileChangeHandler;
         this.getChildren();
-        this.getFiles();
         this.bind();
-        this.$mainFile = Math.max(0, this._fileList.indexOf(options.mainFile));
-        this.setMain(this.$mainFile);
+        this.getFiles();
+        this.setMainByName(options.mainFile);
         this.select(this._fileList[this.$mainFile]);
     }
     getChildren() {
@@ -251,12 +250,12 @@ export class FileManager {
             this.project.deleteFile(fileName);
             divFile.remove();
             if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
-            if (this._fileList.length === 0) {
-                const fileName = this.newFile("untitled.dsp", DEFAULT_DSP_CODE);
-                this.select(fileName);
-            } else {
-                this.select(this._fileList[0]);
+            const nextSelection = this.project.ensureSelectionAfterDelete();
+            if (!this.findFileDiv(nextSelection.fileName)) this.divFiles.appendChild(this.createFileDiv(nextSelection.fileName, false));
+            if (nextSelection.createdDefaultFile && this.saveHandler) {
+                this.saveHandler(nextSelection.fileName, this.getValue(nextSelection.fileName), this.mainCode);
             }
+            this.select(nextSelection.fileName);
             if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
             else this.setMain(this.$mainFile);
         });
@@ -274,15 +273,19 @@ export class FileManager {
      */
     setMain($: number) {
         if (!this.project.setMainFile($)) return;
-        for (let i = 0; i < this.divFiles.children.length; i++) {
-            const e = this.divFiles.children[i];
-            const btnMain = e.querySelector(".filemanager-btn-main");
-            if (btnMain) {
-                if (i === $) btnMain.classList.add("active");
-                else btnMain.classList.remove("active");
-            }
-        }
+        this.syncMainFileButtons();
         if (this.mainFileChangeHandler) this.mainFileChangeHandler(this._fileList[$], this.mainCode);
+    }
+    /**
+     * Change main DSP file from a filename stored in compile options.
+     *
+     * Missing or invalid names fall back to the first project file through
+     * ProjectModel so the UI only mirrors the resulting state.
+     */
+    setMainByName(fileName?: string) {
+        if (!this.project.setMainFileByName(fileName)) return;
+        this.syncMainFileButtons();
+        if (this.mainFileChangeHandler) this.mainFileChangeHandler(this.mainFileName, this.mainCode);
     }
     /**
      * Get files from Emscripten Virtual File System.
@@ -291,17 +294,13 @@ export class FileManager {
      */
     getFiles() {
         this.divFiles.innerHTML = "";
-        this.project.listFiles();
+        const { createdDefaultFile } = this.project.loadProjectFiles();
         this._fileList.forEach((fileName) => {
             const divFile = this.createFileDiv(fileName, false);
             this.divFiles.appendChild(divFile);
         });
-        if (this._fileList.length === 0) {
-            const fileName = this.newFile("untitled.dsp", DEFAULT_DSP_CODE);
-            this.select(fileName);
-        } else {
-            this.select(this._fileList[0]);
-        }
+        this.select(this._fileList[0]);
+        if (createdDefaultFile && this.saveHandler) this.saveHandler(this._fileList[0], this.getValue(this._fileList[0]), this.mainCode);
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
     }
@@ -434,5 +433,19 @@ export class FileManager {
     set fs(fsIn) {
         this._fs = fsIn;
         if (this.project) this.project.fs = fsIn;
+    }
+    private findFileDiv(fileName: string) {
+        return this.divFiles.querySelector(`[data-filename="${fileName}"]`) as HTMLDivElement;
+    }
+
+    private syncMainFileButtons() {
+        for (let i = 0; i < this.divFiles.children.length; i++) {
+            const e = this.divFiles.children[i];
+            const btnMain = e.querySelector(".filemanager-btn-main");
+            if (btnMain) {
+                if (i === this.$mainFile) btnMain.classList.add("active");
+                else btnMain.classList.remove("active");
+            }
+        }
     }
 }

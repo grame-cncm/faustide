@@ -82,6 +82,17 @@ describe("ProjectModel", () => {
         expect(fs.files.get("untitled.dsp")).toBe(DEFAULT_DSP_CODE);
     });
 
+    it("loads project files and creates a default DSP for empty projects", () => {
+        const fs = new MemoryFs();
+        const model = new ProjectModel({ fs: fs as any });
+
+        expect(model.loadProjectFiles()).toEqual({
+            fileList: ["untitled.dsp"],
+            createdDefaultFile: true
+        });
+        expect(fs.files.get("untitled.dsp")).toBe(DEFAULT_DSP_CODE);
+    });
+
     it("selects and sets main files only for non-audio files", () => {
         const model = new ProjectModel({ fs: new MemoryFs({ "main.dsp": "process = _;", "sound.wav": new Uint8Array([1]) }) as any });
         model.listFiles();
@@ -92,6 +103,16 @@ describe("ProjectModel", () => {
         expect(model.selectedFile).toBe("main.dsp");
 
         expect(model.setMainFile(1)).toBe(false);
+        expect(model.mainFileName).toBe("main.dsp");
+    });
+
+    it("sets the main file by saved name with a fallback to the first project file", () => {
+        const model = new ProjectModel({ fs: new MemoryFs({ "main.dsp": "process = _;", "helper.lib": "foo = _;" }) as any });
+        model.listFiles();
+
+        expect(model.setMainFileByName("helper.lib")).toBe(true);
+        expect(model.mainFileName).toBe("helper.lib");
+        expect(model.setMainFileByName("missing.dsp")).toBe(true);
         expect(model.mainFileName).toBe("main.dsp");
     });
 
@@ -107,5 +128,24 @@ describe("ProjectModel", () => {
         expect(model.getValue("next.dsp")).toBe("process = 1;");
         expect(model.deleteFile("next.dsp")).toBe(true);
         expect(model.fileList).toEqual([]);
+    });
+
+    it("chooses the next selection after deletion and recreates defaults when empty", () => {
+        const fs = new MemoryFs({ "main.dsp": "process = _;", "other.dsp": "process = 1;" });
+        const model = new ProjectModel({ fs: fs as any });
+        model.listFiles();
+        model.deleteFile("main.dsp");
+
+        expect(model.ensureSelectionAfterDelete()).toEqual({
+            fileName: "other.dsp",
+            createdDefaultFile: false
+        });
+
+        model.deleteFile("other.dsp");
+        expect(model.ensureSelectionAfterDelete()).toEqual({
+            fileName: "untitled.dsp",
+            createdDefaultFile: true
+        });
+        expect(fs.files.get("untitled.dsp")).toBe(DEFAULT_DSP_CODE);
     });
 });
