@@ -65,6 +65,7 @@ import { DspCompileController } from "./ui/DspCompileController";
 import { StartupControlsController } from "./ui/StartupControlsController";
 import { initEditor } from "./ui/FaustEditorFactory";
 import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
+import { DiagramController } from "./ui/DiagramController";
 
 declare global {
     interface Window {
@@ -175,47 +176,15 @@ $(async () => {
      */
     const { editor, monaco } = await initEditor(libFaust);
     editor.layout(); // Force editor to fill div
-    // Editor and Diagram
-    let editorDecoration: string[] = []; // lines with error
-    /**
-     * Generate diagram and insert the svg into diagram container
-     *
-     * @param {string} code
-     * @returns {{ success: boolean; error?: Error }}
-     */
-    /**
-     * Generate the SVG diagram for the current DSP code.
-     *
-     * Mirrors the DSP compilation path so options such as `-double`
-     * stay consistent between audio rendering and the visual graph.
-     */
-    const updateDiagram = (code: string): { success: boolean; error?: Error } => {
-        editorDecoration = editor.deltaDecorations(editorDecoration, []);
-        const result = diagramService.generateProcessSvg(code, compileOptions.args, compileOptions.useDouble);
-        if (!result.success) {
-            /**
-             * Parse Faust-generated error message to locate the lines with error
-             */
-            if (result.errorLine) {
-                editorDecoration = editor.deltaDecorations(editorDecoration, [{
-                    range: new monaco.Range(result.errorLine, 1, result.errorLine, 1),
-                    options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
-                }]);
-            }
-            alertController.show(result.error);
-            return { error: result.error, success: false };
-        }
-        // const $svg = $("#diagram-svg>svg");
-        // const curWidth = $svg.length ? $svg.width() : "100%"; // preserve current zoom
-        const svg = $<SVGSVGElement>(result.svg).filter("svg")[0];
-        const width = Math.min($("#diagram").width(), $("#diagram").height() / svg.height.baseVal.value * svg.width.baseVal.value);
-        $("#diagram-svg").empty().append(svg).children("svg").width(width); // replace svg;
-        $("#diagram-default").hide(); // hide "No Diagram" info
-        alertController.clear(); // Supress error shown
-        $("#diagram-svg").show(); // Show diagram div (if first time after opening page)
-        return { success: true };
-    };
     let dspCompileController: DspCompileController;
+    const diagramController = new DiagramController({
+        compileOptions,
+        diagramService,
+        alertController,
+        editor,
+        monaco
+    });
+    const updateDiagram = (code: string) => diagramController.update(code);
     const runDsp = (code: string) => dspCompileController.run(code);
     const audioEnv: FaustEditorAudioEnv = {
         dspConnectedToInput: false,
