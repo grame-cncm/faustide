@@ -21,11 +21,17 @@ type WaveSurferResizeTarget = {
  */
 export class ResizablePanelsController {
     private readonly editor: LayoutTarget;
-    private readonly wavesurfer: WaveSurferResizeTarget;
+    private readonly getWavesurfer: () => WaveSurferResizeTarget | undefined;
 
-    constructor(editor: LayoutTarget, wavesurfer: WaveSurferResizeTarget) {
+    /**
+     * @param editor relayout target invoked while dragging
+     * @param getWavesurfer late-bound accessor for the WaveSurfer instance,
+     *   which is created lazily when an audio input is first selected (so it is
+     *   typically still undefined when this controller is constructed)
+     */
+    constructor(editor: LayoutTarget, getWavesurfer: () => WaveSurferResizeTarget | undefined) {
         this.editor = editor;
-        this.wavesurfer = wavesurfer;
+        this.getWavesurfer = getWavesurfer;
     }
 
     /**
@@ -64,9 +70,10 @@ export class ResizablePanelsController {
                 if (modes.indexOf("top") !== -1) $div.height(h - dY);
                 if (modes.indexOf("bottom") !== -1) $div.height(h + dY);
                 this.editor.layout();
-                if (this.wavesurfer.isReady && this.wavesurfer.drawer.containerWidth !== this.wavesurfer.drawer.container.clientWidth) {
-                    this.wavesurfer.drawer.containerWidth = this.wavesurfer.drawer.container.clientWidth;
-                    this.wavesurfer.drawBuffer();
+                const wavesurfer = this.getWavesurfer();
+                if (wavesurfer?.isReady && wavesurfer.drawer.containerWidth !== wavesurfer.drawer.container.clientWidth) {
+                    wavesurfer.drawer.containerWidth = wavesurfer.drawer.container.clientWidth;
+                    wavesurfer.drawBuffer();
                 }
             };
             const handleMouseUp = (e: JQuery.TouchEndEvent | JQuery.MouseUpEvent) => {

@@ -69,7 +69,7 @@ describe("panel and shortcut controllers", () => {
             },
             drawBuffer: vi.fn()
         };
-        new ResizablePanelsController(editor, wavesurfer).bind();
+        new ResizablePanelsController(editor, () => wavesurfer).bind();
 
         $(".resizable").trigger($.Event("mousedown", { pageX: 10, pageY: 20 }));
         expect($("#iframe-faust-ui").css("pointer-events")).toBe("none");
@@ -82,5 +82,24 @@ describe("panel and shortcut controllers", () => {
         expect(wavesurfer.drawer.containerWidth).toBe(90);
         expect(wavesurfer.drawBuffer).toHaveBeenCalledTimes(1);
         expect($("#iframe-faust-ui").css("pointer-events")).not.toBe("none");
+    });
+
+    it("resizes without throwing when the wavesurfer has not been created yet", () => {
+        // Regression: the wavesurfer is built lazily on first audio-input
+        // selection, so it is undefined while the user resizes panels. The
+        // controller must read it through the late-bound accessor and guard.
+        document.body.innerHTML = `
+            <iframe id="iframe-faust-ui"></iframe>
+            <div id="panel" style="width: 100px; height: 80px;">
+                <div class="resizable resizable-right"></div>
+            </div>
+        `;
+        const editor = { layout: vi.fn() };
+        new ResizablePanelsController(editor, () => undefined).bind();
+
+        $(".resizable").trigger($.Event("mousedown", { pageX: 10, pageY: 20 }));
+        expect(() => $(document).trigger($.Event("mousemove", { pageX: 30, pageY: 20 }))).not.toThrow();
+        $(document).trigger($.Event("mouseup"));
+        expect(editor.layout).toHaveBeenCalled();
     });
 });
