@@ -58,7 +58,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
-| Phase 11: scope rendering factorization | Done for code structure | `StaticScope` and `Scope` renderers, controls, interactions, analyser reads, channel routing, draw loops, and shared static layout constants are extracted. Remaining work is manual validation. |
+| Phase 11: scope rendering factorization | Done for code structure | `StaticScope` and `Scope` renderers, controls, interactions, analyser reads, channel routing, draw loops, shared layout constants, and the drawing overlays (grid/event/stats, in `scope/static/StaticScopeOverlays.ts`) are extracted. `StaticScope.ts` dropped from ~900 to ~650 lines, owning only the widget lifecycle; thin static wrappers remain as the tested/compat API. Remaining work is manual validation. |
 | Phase 12: owned state and explicit wiring | Done | Owned state (`AudioGraphState`/`ScopeState`), DSP graph connect/disconnect ownership (12.3), the `RuntimeActions` seam, and `index.ts` linearization (one genuinely-cyclic late binding left). 12.6/12.7 are moot by design: the states wrap the same env record, so the `window.faustEnv` bridge is unchanged and there are no duplicate fields to remove. |
 
 ## Test strategy (as implemented)
