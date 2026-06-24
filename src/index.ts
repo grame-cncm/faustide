@@ -48,7 +48,7 @@ import { AudioInputController } from "./ui/AudioInputController";
 import { AudioDeviceController } from "./ui/AudioDeviceController";
 import { SettingsPanelController } from "./ui/SettingsPanelController";
 import { ProjectFilesController } from "./ui/ProjectFilesController";
-import { ExamplesController } from "./ui/ExamplesController";
+import { ExampleLoaderController } from "./ui/ExampleLoaderController";
 import { ShareModalController } from "./ui/ShareModalController";
 import { ExportController } from "./ui/ExportController";
 import { DspControlsController } from "./ui/DspControlsController";
@@ -322,7 +322,7 @@ $(async () => {
         recorder: faustEnv.recorder,
         fileNameProvider: () => uiEnv.fileManager.mainFileNameWithoutSuffix
     }).bind();
-    new ExamplesController({
+    new ExampleLoaderController({
         fileManager: uiEnv.fileManager,
         compileOptions,
         audioEnv,

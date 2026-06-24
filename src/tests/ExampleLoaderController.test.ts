@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ExamplesController } from "../ui/ExamplesController";
+import { ExampleLoaderController } from "../ui/ExampleLoaderController";
 
 const setupDom = () => {
     document.body.innerHTML = `<div id="tab-examples"></div>`;
@@ -41,7 +41,7 @@ const createFetch = () => vi.fn(async (path: string) => {
 
 const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
 
-describe("ExamplesController", () => {
+describe("ExampleLoaderController", () => {
     beforeEach(() => {
         vi.restoreAllMocks();
         setupDom();
@@ -49,7 +49,7 @@ describe("ExamplesController", () => {
 
     it("loads the examples tree into the dropdown menu", async () => {
         const fetchResource = createFetch();
-        new ExamplesController({
+        new ExampleLoaderController({
             fileManager: createFileManager() as any,
             compileOptions: { realtimeCompile: false } as any,
             audioEnv: {} as any,
@@ -68,7 +68,7 @@ describe("ExamplesController", () => {
     it("loads an example file and sanitizes the target file name", async () => {
         const fetchResource = createFetch();
         const fileManager = createFileManager();
-        new ExamplesController({
+        new ExampleLoaderController({
             fileManager: fileManager as any,
             compileOptions: { realtimeCompile: false } as any,
             audioEnv: {} as any,
@@ -88,7 +88,7 @@ describe("ExamplesController", () => {
     it("runs DSP after loading an example when realtime mode has an active DSP", async () => {
         const fetchResource = createFetch();
         const runDsp = vi.fn();
-        new ExamplesController({
+        new ExampleLoaderController({
             fileManager: createFileManager() as any,
             compileOptions: { realtimeCompile: true } as any,
             audioEnv: { dsp: {} } as any,
@@ -107,7 +107,7 @@ describe("ExamplesController", () => {
     it("updates the diagram after loading an example when no DSP exists", async () => {
         const fetchResource = createFetch();
         const updateDiagram = vi.fn();
-        new ExamplesController({
+        new ExampleLoaderController({
             fileManager: createFileManager() as any,
             compileOptions: { realtimeCompile: true } as any,
             audioEnv: {} as any,
