@@ -66,6 +66,7 @@ import { initEditor } from "./ui/FaustEditorFactory";
 import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 import { DiagramController } from "./ui/DiagramController";
 import { AnalyserScopeController } from "./ui/AnalyserScopeController";
+import { TooltipController } from "./ui/TooltipController";
 
 declare global {
     interface Window {
@@ -321,11 +322,7 @@ $(async () => {
      * Bind DOM events
      */
     alertController.bind();
-    // Tooltips
-    $('[data-toggle="tooltip"]').tooltip({ trigger: "hover", boundary: "viewport" });
-    $("#btn-export").tooltip({ trigger: "hover", boundary: "viewport" });
-    $("#btn-share").tooltip({ trigger: "hover", boundary: "viewport" });
-    $("#btn-tab-setting").tooltip({ trigger: "hover", boundary: "viewport" });
+    new TooltipController().bind();
     new SettingsPanelController({
         compileOptions,
         audioEnv,
