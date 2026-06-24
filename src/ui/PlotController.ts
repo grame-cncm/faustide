@@ -41,6 +41,11 @@ export class PlotController {
         this.saveEditorParams = options.saveEditorParams;
     }
 
+    /**
+     * Wires the plot panel controls (mode, plot button, sample count, sample
+     * rate, FFT size/overlap, spectrogram) and seeds them from the current
+     * compile options.
+     */
     bind() {
         $<HTMLInputElement>("#select-plot-mode").on("change", e => this.applyPlotMode(e.currentTarget.value as FaustEditorCompileOptions["plotMode"]));
         $("#btn-plot").on("click", () => this.plot());
@@ -65,6 +70,11 @@ export class PlotController {
         $<HTMLInputElement>("#input-plot-samps")[0].value = this.compileOptions.plot.toString();
     }
 
+    /**
+     * Applies a plot mode, updating the analyser draw mode, the plot button
+     * label/visibility, and whether the sample-rate field is editable (only the
+     * offline mode lets the user choose a rate; live modes track the AudioContext).
+     */
     private applyPlotMode(plotMode: FaustEditorCompileOptions["plotMode"]) {
         this.compileOptions.plotMode = plotMode;
         this.uiEnv.analyser.drawMode = this.compileOptions.plotMode;
@@ -83,6 +93,11 @@ export class PlotController {
         this.saveEditorParams();
     }
 
+    /**
+     * Handles the plot button: renders offline samples in offline mode, redraws
+     * the analyser if a DSP is already running, otherwise compiles and runs the
+     * main code to start producing data.
+     */
     private async plot() {
         if (this.compileOptions.plotMode === "offline") {
             await this.plotOffline();
@@ -90,6 +105,11 @@ export class PlotController {
         else await this.runDsp(this.getMainCode());
     }
 
+    /**
+     * Compiles the main code, renders the first N samples through an
+     * OfflineAudioContext (loading any required soundfiles first), and feeds the
+     * result to the analyser plot handler.
+     */
     private async plotOffline() {
         const code = this.getMainCode();
         const { plot, plotSR, useDouble } = this.compileOptions;
@@ -107,6 +127,11 @@ export class PlotController {
         if (!$("#tab-plot-ui").hasClass("active")) $("#tab-plot-ui").tab("show");
     }
 
+    /**
+     * Snaps the requested sample count to a multiple of the step (the larger of
+     * the buffer size and FFT size), updates the analyser buffer count, and
+     * persists the value. Stepping down keeps the lower multiple.
+     */
     private applySampleCount(input: HTMLInputElement) {
         const v = +input.value;
         const bufferSize = (this.compileOptions.useWorklet ? 128 : this.compileOptions.bufferSize);
@@ -120,6 +145,7 @@ export class PlotController {
         this.saveEditorParams();
     }
 
+    /** Toggles spectrogram rendering across the plot, input, and output scopes. */
     private applySpectrogram(checked: boolean) {
         this.compileOptions.drawSpectrogram = checked;
         this.uiEnv.plotScope.drawSpectrogram = this.compileOptions.drawSpectrogram;

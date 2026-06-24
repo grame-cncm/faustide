@@ -15,6 +15,11 @@ export class PanelToggleView {
         this.editor = editor;
     }
 
+    /**
+     * Wires the left/right panel toggle buttons and a window-resize handler
+     * that auto-collapses both panels below 900px. Re-lays out the editor after
+     * each manual toggle.
+     */
     bind() {
         $(".btn-show-left").on("click", (e) => {
             if ($(e.currentTarget).hasClass("active")) {

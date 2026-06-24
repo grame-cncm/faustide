@@ -16,12 +16,17 @@ export class DiagramView {
         this.diagramSource = diagramSource;
     }
 
+    /** Binds the three diagram interactions: link navigation, pan, and zoom. */
     bind() {
         this.bindSvgLinks();
         this.bindDragPan();
         this.bindZoom();
     }
 
+    /**
+     * Follows a Faust SVG hyperlink by replacing the pane with the linked
+     * sub-diagram, scaled to fit. Clicks that were part of a drag are ignored.
+     */
     private bindSvgLinks() {
         $<SVGAElement>("#diagram-svg").on("click", "a", (e) => {
             e.preventDefault();
@@ -34,6 +39,7 @@ export class DiagramView {
         });
     }
 
+    /** Enables click-drag panning of the diagram, setting `svgDragged` so a drag does not trigger link navigation. */
     private bindDragPan() {
         $("#diagram-svg").on("mousedown", "svg", (e) => {
             e.preventDefault();
@@ -66,6 +72,7 @@ export class DiagramView {
         });
     }
 
+    /** Enables Ctrl+wheel zoom, scaling the SVG width by ±25% per wheel step. */
     private bindZoom() {
         $("#diagram").on("wheel", (e) => {
             if (!e.ctrlKey) return;
@@ -79,10 +86,12 @@ export class DiagramView {
         });
     }
 
+    /** Reads the SVG intrinsic width from the DOM value or `width` attribute. */
     private getSvgWidth(svg: SVGSVGElement) {
         return svg.width?.baseVal?.value || +svg.getAttribute("width") || 0;
     }
 
+    /** Reads the SVG intrinsic height (defaulting to 1 to avoid division by zero). */
     private getSvgHeight(svg: SVGSVGElement) {
         return svg.height?.baseVal?.value || +svg.getAttribute("height") || 1;
     }

@@ -20,6 +20,11 @@ type DspFactoryCache = {
     importDSPFactories: (cache: string) => Promise<any> | any;
 };
 
+/**
+ * localStorage keys for persisted editor state. These string values are part of
+ * the on-disk contract and must stay stable so existing users keep their saved
+ * version marker, compile options, DSP parameters, and factory cache.
+ */
 export const EDITOR_VERSION_KEY = "faust_editor_version";
 export const EDITOR_PARAMS_KEY = "faust_editor_params";
 export const DSP_PARAMS_KEY = "faust_editor_dsp_params";

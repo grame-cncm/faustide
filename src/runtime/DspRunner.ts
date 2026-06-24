@@ -151,6 +151,7 @@ export class DspRunner {
         }
     }
 
+    /** Re-applies saved parameter values to a freshly created node, skipping paths it does not expose. */
     private restoreParams(node: DspNode, options: DspRunOptions) {
         if (!options.saveParams) return;
         const params = node.getParams();
@@ -159,6 +160,7 @@ export class DspRunner {
         }
     }
 
+    /** Disconnects, destroys, and clears the current DSP node, resetting its input/output wiring flags. */
     private disconnectCurrentNode(gain: GainNode) {
         if (!this.audioEnv.dsp) return;
         const dsp = this.audioEnv.dsp;
@@ -172,6 +174,7 @@ export class DspRunner {
         delete this.audioEnv.dsp;
     }
 
+    /** Returns the active AudioContext or throws if the audio graph is not ready. */
     private requireAudioContext() {
         if (!this.audioEnv.audioCtx) throw new Error("Audio context is not ready");
         return this.audioEnv.audioCtx;

@@ -16,6 +16,7 @@ export class GlobalShortcutsController {
         this.actions = actions;
     }
 
+    /** Routes Ctrl+D to the docs action and Ctrl+R to the run action. */
     bind() {
         $(document).on("keydown", (e) => {
             if (!e.ctrlKey) return;

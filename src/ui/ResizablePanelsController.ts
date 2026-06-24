@@ -28,6 +28,13 @@ export class ResizablePanelsController {
         this.wavesurfer = wavesurfer;
     }
 
+    /**
+     * Attaches drag handlers to every `.resizable` handle. While dragging it
+     * resizes the parent panel along the directions encoded by the handle's
+     * classes, re-lays out the editor, and rebuilds the WaveSurfer buffer when
+     * the container width changes. Pointer events on the Faust UI iframe are
+     * disabled for the duration of the drag.
+     */
     bind() {
         $(".resizable").on("mousedown touchstart", (e: JQuery.TouchStartEvent | JQuery.MouseDownEvent) => {
             if (e.originalEvent instanceof MouseEvent) {
