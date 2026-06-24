@@ -86,7 +86,6 @@ let supportMediaStreamDestination = !!(window.AudioContext
 let server = "https://faustservice.inria.fr";
 
 const PROJECT_DIR = "/usr/share/project/";
-let audioEngine: AudioEngine;
 let midiController: MidiController;
 let faustUiController: FaustUiController;
 
@@ -149,7 +148,7 @@ $(async () => {
         inputEnabled: false,
         outputEnabled: false
     };
-    audioEngine = new AudioEngine({
+    const audioEngine = new AudioEngine({
         env: audioEnv,
         gainContainer: $<HTMLDivElement>("#input-gain")[0],
         mediaElementProvider: () => $<HTMLAudioElement>("#source-waveform audio")[0] || null,
@@ -167,6 +166,7 @@ $(async () => {
             }
         }
     });
+    const initializeAudioContext = (deviceId?: string) => audioEngine.initialize(deviceId);
     const dspRunner = new DspRunner({
         audioEnv,
         faustCompiler,
@@ -276,7 +276,7 @@ $(async () => {
         dspRunner,
         faustUiController,
         alertController,
-        initAudioCtx: () => initAudioCtx(audioEnv),
+        initAudioCtx: () => initializeAudioContext(),
         initAnalysersUI: () => analyserScopeController.initialize(),
         updateDiagram,
         saveEditorDspTable: () => runtimeSettings.saveDspFactoryCache()
@@ -355,14 +355,14 @@ $(async () => {
         audioEnv,
         uiEnv,
         waveSurferFactory: WaveSurfer,
-        initAudioCtx: deviceId => initAudioCtx(audioEnv, deviceId),
+        initAudioCtx: deviceId => initializeAudioContext(deviceId),
         showError: error => alertController.show(error),
         onWaveSurferCreated: value => { wavesurfer = value; }
     }).bind();
     new AudioOutputController({
         audioEnv,
         getSupportMediaStreamDestination: () => supportMediaStreamDestination,
-        initAudioCtx: () => initAudioCtx(audioEnv),
+        initAudioCtx: () => initializeAudioContext(),
         initAnalysersUI: () => analyserScopeController.initialize(),
         setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
     }).bind();
@@ -395,7 +395,7 @@ $(async () => {
     new ResizablePanelsController(editor, wavesurfer).bind();
     new PanelToggleView(editor).bind();
     // autorunning
-    await initAudioCtx(audioEnv);
+    await initializeAudioContext();
     faustEnv.recorder.sampleRate = audioEnv.audioCtx.sampleRate;
     analyserScopeController.initialize();
     analyserScopeController.disableOutputDisplay();
@@ -410,14 +410,3 @@ $(async () => {
     }).apply();
     window.faustEnv = faustEnv;
 });
-/**
- * Init audio environment, audioNodes
- *
- * @param {FaustEditorAudioEnv} audioEnv
- * @param {string} [deviceId]
- * @returns
- */
-const initAudioCtx = async (audioEnv: FaustEditorAudioEnv, deviceId?: string) => {
-    if (!audioEngine) throw new Error("Audio engine is not ready");
-    return audioEngine.initialize(deviceId);
-};
