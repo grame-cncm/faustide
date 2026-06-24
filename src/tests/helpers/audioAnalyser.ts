@@ -16,15 +16,27 @@ const copyInto = <T extends Float32Array | Uint8Array>(target: T, values: number
  * Creates the analyser subset used by `Scope`.
  */
 export const createMockAnalyserNode = (options: MockAnalyserOptions = {}) => {
+    let fftSize = options.fftSize || 2048;
     const analyser = {
-        fftSize: options.fftSize || 2048,
-        frequencyBinCount: options.frequencyBinCount || Math.floor((options.fftSize || 2048) / 2),
         minDecibels: -100,
         maxDecibels: -10,
         getFloatFrequencyData: vi.fn((target: Float32Array) => copyInto(target, options.frequencyData || [-90, -60, -30])),
         getFloatTimeDomainData: vi.fn((target: Float32Array) => copyInto(target, options.floatTimeDomainData || [0, 0.5, 0, -0.5])),
         getByteTimeDomainData: vi.fn((target: Uint8Array) => copyInto(target, options.byteTimeDomainData || [128, 255, 128, 0]))
     };
+    Object.defineProperties(analyser, {
+        fftSize: {
+            configurable: true,
+            get: () => fftSize,
+            set: (value: number) => {
+                fftSize = value;
+            }
+        },
+        frequencyBinCount: {
+            configurable: true,
+            get: () => options.frequencyBinCount || Math.floor(fftSize / 2)
+        }
+    });
     return analyser as unknown as AnalyserNode & typeof analyser;
 };
 
