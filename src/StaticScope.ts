@@ -25,6 +25,10 @@ import {
     handleStaticScopePointerMove,
     handleStaticScopeWheel
 } from "./scope/static/StaticScopeInteractions";
+import {
+    STATIC_SCOPE_BOTTOM_MARGIN,
+    STATIC_SCOPE_LEFT_MARGIN
+} from "./scope/static/StaticScopeLayout";
 import "./StaticScope.scss";
 
 /**
@@ -305,8 +309,8 @@ export class StaticScope {
         const unit = mode === EScopeMode.Spectrogram ? "Hz/frame" : mode === EScopeMode.Spectroscope ? "dB/Hz" : "lvl/samp";
         const eventsToDraw: [number, { type: string; data: any }[]][] = [];
 
-        const leftMargin = 50;
-        const bottomMargin = 20;
+        const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+        const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
         const eventStrokeStyle = "#ff8800";
         const bufferStrokeStyle = "#004000";
         const normalStrokeStyle = "#404040";
@@ -520,8 +524,8 @@ export class StaticScope {
      * @param {TStatsToDraw} statsToDraw The statistics data to draw.
      */
     static drawStats(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, statsToDraw: TStatsToDraw) {
-        const leftMargin = 50;
-        const bottomMargin = 20;
+        const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+        const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
         ctx.save();
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#b0b0b0";
@@ -809,7 +813,7 @@ export class StaticScope {
 
         const canvasWidth = this.canvas.width;
         let cursorPositionRatio = 0.5;
-        const leftMargin = 50;
+        const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
         if (this.cursor) cursorPositionRatio = Math.max(0, this.cursor.x - leftMargin) / (canvasWidth - leftMargin);
 
         const cursorPositionInData = this.zoomOffset + cursorPositionRatio / this.zoom;

@@ -6,6 +6,10 @@ import {
     logarithmicPositionToFrequency
 } from "../FrequencyScale";
 import { FrequencyScaleMode, StaticScopeMode } from "../ScopeModes";
+import {
+    STATIC_SCOPE_BOTTOM_MARGIN,
+    STATIC_SCOPE_LEFT_MARGIN
+} from "./StaticScopeLayout";
 
 type StatsToDraw = {
     x?: number;
@@ -74,8 +78,8 @@ export const drawStaticSpectrogram = (
     const endDataIndex = endFrameIndex * frequencyBinCount;
     const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, startDataIndex, endDataIndex, 0, 1, drawOptions, StaticScopeMode.Spectrogram, freqScaleMode);
 
-    const leftMargin = 50;
-    const bottomMargin = 20;
+    const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     ctx.imageSmoothingEnabled = false;

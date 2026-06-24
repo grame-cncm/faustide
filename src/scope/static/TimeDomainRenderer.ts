@@ -1,6 +1,10 @@
 import type { TDrawOptions } from "../../StaticScope";
 import { StaticScopeMode } from "../ScopeModes";
 import { wrap } from "../../utils";
+import {
+    STATIC_SCOPE_BOTTOM_MARGIN,
+    STATIC_SCOPE_LEFT_MARGIN
+} from "./StaticScopeLayout";
 
 type StatsToDraw = {
     x?: number;
@@ -121,8 +125,8 @@ export const drawStaticInterleaved = (
     const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
     const { drawStartIndex, drawEndIndex, stabilizationOffset } = getTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
 
-    const leftMargin = 50;
-    const bottomMargin = 20;
+    const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
     const heightPerChannel = (canvasHeight - bottomMargin) / timeDomainData.length;
     const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, StaticScopeMode.Interleaved);
 
@@ -207,8 +211,8 @@ export const drawStaticOscilloscope = (
     const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
     const { drawStartIndex, drawEndIndex, stabilizationOffset } = getTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
 
-    const leftMargin = 50;
-    const bottomMargin = 20;
+    const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
     const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, drawStartIndex - stabilizationOffset, drawEndIndex - stabilizationOffset, stabilizationOffset, verticalScaleFactor, drawOptions, StaticScopeMode.Oscilloscope);
     const pixelsPerSample = (canvasWidth - leftMargin) / (drawEndIndex - drawStartIndex - 1);
     const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerSample));

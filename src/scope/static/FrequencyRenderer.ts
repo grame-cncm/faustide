@@ -7,6 +7,10 @@ import {
     indexToFrequency
 } from "../FrequencyScale";
 import { FrequencyScaleMode, StaticScopeMode } from "../ScopeModes";
+import {
+    STATIC_SCOPE_BOTTOM_MARGIN,
+    STATIC_SCOPE_LEFT_MARGIN
+} from "./StaticScopeLayout";
 
 type StatsToDraw = {
     x?: number;
@@ -68,8 +72,8 @@ export const drawStaticSpectroscope = (
     startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
     const freqBufferLength = freqDomainData[0].length;
 
-    const leftMargin = 50;
-    const bottomMargin = 20;
+    const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
     const heightPerChannel = (canvasHeight - bottomMargin) / freqDomainData.length;
 
     if (freqScaleMode === FrequencyScaleMode.Logarithmic) {
