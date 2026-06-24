@@ -1,46 +1,11 @@
 import { wrap, indexToFreq } from "./utils";
+import {
+    FrequencyScaleMode as EFreqScaleMode,
+    StaticScopeMode as EScopeMode,
+    getStaticScopeIconClassName,
+    getStaticScopeModeName
+} from "./scope/ScopeModes";
 import "./StaticScope.scss";
-
-/**
- * Enumeration for the different display modes of the scope.
- */
-enum EScopeMode {
-    /** * Raw numerical data view.
-     * This mode displays the raw sample values for each channel in a tabular format.
-     * It's useful for inspecting precise numerical data without graphical interpretation.
-     */
-    Data = 0,
-    /** * Interleaved multi-channel time-domain view.
-     * This mode displays the waveform of each channel in a separate horizontal lane.
-     * It is ideal for comparing the timing and shape of multiple signals simultaneously while keeping them visually distinct.
-     */
-    Interleaved = 1,
-    /** * Overlaid multi-channel time-domain view.
-     * This mode draws all channel waveforms overlaid in the same viewport, similar to a classic oscilloscope.
-     * It is best suited for observing phase relationships and direct amplitude comparisons between signals.
-     */
-    Oscilloscope = 2,
-    /** * Frequency-domain view.
-     * This mode shows the frequency spectrum of the signal, plotting frequency against magnitude (in dB).
-     * It helps in analyzing the harmonic content and frequency components of the signal.
-     */
-    Spectroscope = 3,
-    /** * Time-frequency-domain view (waterfall).
-     * This mode visualizes how the frequency spectrum changes over time. The x-axis represents time,
-     * the y-axis represents frequency, and the color intensity represents the magnitude of the frequency component.
-     */
-    Spectrogram = 4
-}
-
-/**
- * Enumeration for the frequency scale modes.
- */
-enum EFreqScaleMode {
-    /** Linear frequency scale */
-    Linear,
-    /** Logarithmic frequency scale */
-    Logarithmic
-}
 
 /**
  * Options for initializing the StaticScope instance.
@@ -1178,13 +1143,7 @@ export class StaticScope {
      * @returns {string} The corresponding class name.
      */
     static getIconClassName(scopeMode: EScopeMode) {
-        const prefix = "fas fa-sm ";
-        if (scopeMode === EScopeMode.Data) return prefix + "fa-table";
-        if (scopeMode === EScopeMode.Interleaved) return prefix + "fa-water";
-        if (scopeMode === EScopeMode.Oscilloscope) return prefix + "fa-wave-square";
-        if (scopeMode === EScopeMode.Spectroscope) return prefix + "fa-chart-bar";
-        if (scopeMode === EScopeMode.Spectrogram) return prefix + "fa-align-justify";
-        return prefix;
+        return getStaticScopeIconClassName(scopeMode);
     }
     /**
      * Gets the display name for a given scope mode.
@@ -1192,12 +1151,7 @@ export class StaticScope {
      * @returns {string} The corresponding name.
      */
     static getModeName(scopeMode: EScopeMode) {
-        if (scopeMode === EScopeMode.Data) return "Data";
-        if (scopeMode === EScopeMode.Interleaved) return "Interleaved";
-        if (scopeMode === EScopeMode.Oscilloscope) return "Oscilloscope";
-        if (scopeMode === EScopeMode.Spectroscope) return "Spectroscope";
-        if (scopeMode === EScopeMode.Spectrogram) return "Spectrogram";
-        return "";
+        return getStaticScopeModeName(scopeMode);
     }
 
     /**
