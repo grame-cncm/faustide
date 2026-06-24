@@ -1,30 +1,62 @@
-# Refactoring plan for the TypeScript runtime
+# TypeScript runtime refactor plan and final status
 
-This plan targets the current `src/index.ts` runtime while preserving the existing behavior. The core rule is: add characterization tests first, then move code in small reversible steps.
+This document records the `src/index.ts` refactor plan and the current post-refactor status. The core rule for the work was: add characterization tests first, then move code in small reversible steps.
 
-## Current state
+## Current status
 
-- `src/index.ts` is the application composition root, but it also contains most runtime logic: bootstrap, persistence, project loading, DSP compilation, audio graph wiring, export, MIDI, recorder controls, plot controls, panel layout, diagram interactions, and global event handlers.
-- `src/FileManager.ts` mixes project/file state with DOM rendering and DOM event handlers.
-- `src/Recorder.ts`, `src/Key2Midi.ts`, and `src/utils.ts` are already mostly independent and are good first test targets.
-- `src/Analyser.ts`, `src/Scope.ts`, `src/StaticScope.ts`, and `src/MeterNode.ts` are UI/audio-adjacent and should be covered after the base test harness works.
-- `src/types.d.ts` currently defines `FaustEditorCompileOptions` globally. Runtime types should be made explicit modules before deeper extraction.
+- `src/index.ts` is now a composition root of roughly 320 lines. It loads browser-only dependencies, creates stores/services/controllers/views, wires callbacks, runs startup, and exposes compatibility globals.
+- Runtime behavior formerly embedded in `index.ts` has been moved into model, runtime service, and UI controller modules.
+- `src/FileManager.ts` delegates project/file decision rules to `src/model/ProjectModel.ts` while preserving the public API used by controllers.
+- Runtime types are explicit in `src/runtime/types.ts`; the old hidden global type coupling has been removed for the refactored runtime surface.
+- The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
+- The remaining work is manual validation and normal maintenance, not another large extraction pass.
 
 ## Target architecture
 
-The final shape should keep `src/index.ts` as a small composition root:
+The final shape keeps `src/index.ts` as a composition root:
 
 - load CSS and browser-only libraries;
 - instantiate Faust WASM, BrowserFS, Monaco, stores, services, controllers, and views;
 - keep `window.faustEnv` only as a compatibility bridge;
 - call `initialize()` methods.
 
-The runtime should be split into:
+The runtime is split into:
 
 - model: project files, selected file, main DSP file, compile options, DSP parameter state;
 - stores: localStorage settings, BrowserFS project persistence, Faust compiler factory cache;
 - services: audio context/graph, DSP compilation, diagram generation, export/share URL generation, device enumeration;
 - views/controllers: file manager DOM, settings controls, plot controls, MIDI controls, recorder controls, audio input/output controls, panels, diagram gestures, DSP iframe/popup messaging.
+
+## Implementation map
+
+The refactor split the original runtime responsibilities as follows.
+
+| Responsibility | Main modules |
+|----------------|--------------|
+| Explicit runtime shape | `src/runtime/types.ts`, `src/runtime/EditorRuntimeEnvironment.ts`, `src/runtime/CompileOptionsFactory.ts` |
+| Settings and persistence | `src/runtime/EditorSettingsStore.ts`, `src/runtime/ProjectPersistence.ts` |
+| Project/file rules | `src/model/ProjectModel.ts`, `src/FileManager.ts`, `src/ui/ProjectRuntimeController.ts`, `src/ui/ProjectFilesController.ts` |
+| Faust runtime loading | `src/runtime/BootstrapLoaders.ts`, `src/runtime/FaustCompatibilityGlobals.ts` |
+| Audio graph and DSP execution | `src/runtime/AudioEngine.ts`, `src/runtime/DspRunner.ts`, `src/ui/BrowserAudioEngineBindings.ts` |
+| Diagram generation and interaction | `src/runtime/DiagramService.ts`, `src/ui/DiagramController.ts`, `src/ui/DiagramView.ts` |
+| Export and sharing | `src/runtime/ExportService.ts`, `src/runtime/ShareUrlService.ts`, `src/ui/ExportController.ts`, `src/ui/ShareModalController.ts`, `src/ui/UrlParamsController.ts` |
+| UI controls | `src/ui/SettingsPanelController.ts`, `src/ui/PlotController.ts`, `src/ui/MidiController.ts`, `src/ui/AudioInputController.ts`, `src/ui/AudioOutputController.ts`, `src/ui/AudioDeviceController.ts`, `src/ui/RecorderController.ts`, `src/ui/DspControlsController.ts`, `src/ui/FaustUiController.ts` |
+| Layout and startup | `src/ui/PanelToggleView.ts`, `src/ui/ResizablePanelsController.ts`, `src/ui/GlobalShortcutsController.ts`, `src/ui/TooltipController.ts`, `src/ui/ApplicationStartupController.ts`, `src/ui/StartupControlsController.ts` |
+
+## Phase status
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| Phase 1: test harness | Done | Vitest/jsdom setup and Playwright e2e are in place. |
+| Phase 2: independent module tests | Done | Utilities, keyboard MIDI, recorder, and related modules are covered. |
+| Phase 3: DOM component characterization | Done | File manager behavior is covered with fake filesystem tests. |
+| Phase 4: browser smoke tests | Done and expanded | Playwright now covers smoke flows plus examples, DSP, panels, plot, scopes, settings, MIDI, files, export, and diagrams. |
+| Phase 5: explicit runtime types | Done | Runtime types live in `src/runtime/types.ts`. |
+| Phase 6: project model extraction | Done | `ProjectModel` owns file/project decision rules. |
+| Phase 7: persistence extraction | Done | Settings and BrowserFS/Faust FS synchronization are isolated. |
+| Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
+| Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
+| Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
 
 ## Test strategy (as implemented)
 
@@ -33,8 +65,8 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | ~42 files, ~168 `it()` blocks |
-| Browser end-to-end | Playwright | `npm run test:e2e` | smoke tests against the built `dist/` |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 43 files, 170 tests at the last documentation pass |
+| Browser end-to-end | Playwright | `npm run test:e2e` | 62 tests against the built `dist/` at the last documentation pass |
 
 ### Unit and integration layer (Vitest)
 
@@ -44,13 +76,14 @@ The plan above is driven by characterization testing: behavior is locked down wi
   - `requestAnimationFrame` / `cancelAnimationFrame` and `URL.createObjectURL` / `URL.revokeObjectURL` polyfills;
   - Web Audio mocks (`MockAudioContext`, `MockGainNode`, `MockAudioNode`);
   - DOM (`document.body.innerHTML`) and `localStorage` reset in `beforeEach`.
-- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, …), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), and utilities (`utils`, `Key2Midi`, `Recorder`).
+- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, etc.), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), and utilities (`utils`, `Key2Midi`, `Recorder`).
 - Mocking approach: prefer `vi.mock` over network mocking. For example `DspRunner.test.ts` replaces `@grame/faustwasm` with small factory doubles and asserts only the audio-graph effects. MSW is used in only a few tests (`AudioEngine`, `DspRunner`, `Recorder`). For the file system, use an in-memory fake FS implementing the `TFileSystem` contract rather than real BrowserFS.
 
 ### End-to-end layer (Playwright)
 
 - Config in `playwright.config.ts`: a minimal static server (`tests/e2e/serve-dist.cjs`) serves the built `dist/` on `http://127.0.0.1:4173`, so e2e exercises the production artifact, not the source.
-- `tests/e2e/app-smoke.spec.ts` validates high-level behavior that jsdom cannot cover reliably: app load + `window.faustEnv` exposure, default `untitled.dsp` project, Monaco editing updating the selected file, deleting the last file recreating the default DSP, export targets populated from a mocked `faustservice.inria.fr/targets` route, and the share URL containing name/voices/autorun/inline code.
+- `tests/e2e/app-smoke.spec.ts` validates high-level behavior that jsdom cannot cover reliably: app load plus `window.faustEnv` exposure, default `untitled.dsp` project, Monaco editing updating the selected file, deleting the last file recreating the default DSP, export targets populated from a mocked `faustservice.inria.fr/targets` route, and the share URL containing name/voices/autorun/inline code.
+- Additional e2e specs cover real example compilation, DSP replacement, diagram navigation and zoom, plot/scopes, panels, settings, MIDI, file manager behavior, and export modal wiring.
 - External Faust service requests are mocked via `page.route`. Real audio hardware, popup blockers, and production Faust service export stay in the manual checklist.
 
 ## Phase 1: test harness before refactoring
@@ -284,7 +317,7 @@ Extract controllers with narrow dependencies:
 - `AudioInputController`;
 - `AudioOutputController`;
 - `RecorderController`;
-- `DspUiController`;
+- `FaustUiController`;
 - `DiagramView`;
 - `PanelToggleView`;
 - `ResizablePanelsController`;
@@ -341,9 +374,17 @@ Run these manually after phases touching audio, DSP, export, or cross-window mes
 - export via the production Faust service;
 - verify layout on narrow and wide windows.
 
+## Maintenance notes
+
+- Keep `src/index.ts` as a composition root. New behavior should generally live in a model, runtime service, controller, or view, with `index.ts` only constructing and wiring it.
+- Prefer explicit dependencies over importing browser globals inside runtime services. Browser-specific DOM adapters belong in `src/ui/` or a small bootstrap module.
+- Add or update a unit test for each extracted module before moving behavior. Add Playwright coverage when the behavior is browser-visible or depends on the built bundle.
+- Run `npm run test:unit` and `npm run build` before every refactor commit. Run `npm run test:e2e` after changes that touch bootstrap, examples, files, audio, DSP compilation, diagram, export/share URL, panels, or startup sequencing.
+- The last known automated validation during the final documentation pass was `npm run test:unit` and `npm run build` passing, with the previous Phase 10 pass also running `npm run test:e2e` successfully over 62 tests.
+
 ## Commit strategy
 
-Use one commit per testable phase. For larger phases, split by extraction target:
+The refactor used one commit per testable phase or extraction target. Keep that pattern for future cleanup:
 
 1. test harness;
 2. independent module tests;
