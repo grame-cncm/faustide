@@ -1,6 +1,7 @@
 import "./Scope.scss";
 import { estimateFreq, getRms } from "./utils";
 import { drawCanvasBackground } from "./scope/CanvasDrawing";
+import { clampZoomOffset } from "./scope/FrequencyScale";
 import { RealtimeScopeType as TScopeType, getRealtimeScopeIconClassName } from "./scope/ScopeModes";
 
 type TOptions = {
@@ -417,6 +418,6 @@ export class Scope {
         return this._zoomOffset;
     }
     set zoomOffset(zoomOffsetIn) {
-        this._zoomOffset = Math.max(0, Math.min(1 - 1 / this._zoom, zoomOffsetIn));
+        this._zoomOffset = clampZoomOffset(this._zoom, zoomOffsetIn);
     }
 }
