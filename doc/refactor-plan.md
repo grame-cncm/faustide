@@ -10,7 +10,7 @@ This document records the `src/index.ts` refactor plan and the current post-refa
 - Runtime types are explicit in `src/runtime/types.ts`; the old hidden global type coupling has been removed for the refactored runtime surface.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
 - The shared mutable runtime environment (`FaustEditor*Env`) is no longer written by reference from many sites: Phase 12 routed every audio/scope mutation and the DSP graph connect/disconnect through `AudioGraphState`/`ScopeState`, and named the run/diagram seam (`RuntimeActions`). The composition root has a single remaining late binding (`dspCompileController`), a genuine initialization cycle.
-- The remaining structural work is tracked as Phase 11 (scope rendering factorization). Everything else is manual validation and normal maintenance, not another large extraction pass.
+- The planned structural extraction work is complete through Phase 11 (scope rendering factorization). Remaining work is manual validation and normal maintenance, not another large extraction pass.
 
 ## Target architecture
 
@@ -58,7 +58,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 8: runtime service extraction | Done | Diagram, audio graph, DSP running, export, and share URL behavior are service-backed. |
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
-| Phase 11: scope rendering factorization | In progress | `StaticScope` and `Scope` extraction steps are complete; final cleanup/manual validation remains. |
+| Phase 11: scope rendering factorization | Done for code structure | `StaticScope` and `Scope` renderers, controls, interactions, analyser reads, channel routing, draw loops, and shared static layout constants are extracted. Remaining work is manual validation. |
 | Phase 12: owned state and explicit wiring | Done | Owned state (`AudioGraphState`/`ScopeState`), DSP graph connect/disconnect ownership (12.3), the `RuntimeActions` seam, and `index.ts` linearization (one genuinely-cyclic late binding left). 12.6/12.7 are moot by design: the states wrap the same env record, so the `window.faustEnv` bridge is unchanged and there are no duplicate fields to remove. |
 
 ## Test strategy (as implemented)
@@ -372,13 +372,14 @@ Current risks:
 - Existing tests mostly cover `AnalyserScopeController` wiring. They do not directly characterize the rendering helpers, DOM controls, zoom math, analyser polling, or mode transitions.
 - Canvas output is visual, so tests should assert deterministic drawing calls and state transitions rather than fragile pixel-perfect full-canvas snapshots.
 
-Current Phase 11 progress:
+Current Phase 11 status:
 
 - Phase 11.1 through Phase 11.5 are implemented with Vitest characterization coverage for canvas/DOM helpers, `StaticScope`, and `Scope`.
 - Phase 11.6 has extracted `src/scope/ScopeModes.ts`, `src/scope/CanvasDrawing.ts`, and `src/scope/FrequencyScale.ts`; public static wrapper methods still delegate to the extracted helpers for compatibility.
-- Phase 11.7 has extracted `src/scope/static/DataTableRenderer.ts`, `src/scope/static/TimeDomainRenderer.ts`, `src/scope/static/FrequencyRenderer.ts`, `src/scope/static/SpectrogramRenderer.ts`, `src/scope/static/StaticScopeControls.ts`, and `src/scope/static/StaticScopeInteractions.ts`; the corresponding `StaticScope` static methods are retained as compatibility wrappers.
+- Phase 11.7 has extracted `src/scope/static/DataTableRenderer.ts`, `src/scope/static/TimeDomainRenderer.ts`, `src/scope/static/FrequencyRenderer.ts`, `src/scope/static/SpectrogramRenderer.ts`, `src/scope/static/StaticScopeControls.ts`, `src/scope/static/StaticScopeInteractions.ts`, and `src/scope/static/StaticScopeLayout.ts`; the corresponding `StaticScope` static methods are retained as compatibility wrappers.
 - Phase 11.8 has extracted `src/scope/realtime/RealtimeScopeRenderer.ts`, `src/scope/realtime/RealtimeScopeControls.ts`, `src/scope/realtime/AnalyserFrameReader.ts`, `src/scope/realtime/ScopeChannelRouter.ts`, and `src/scope/realtime/ScopeDrawLoop.ts`; `Scope` keeps its public wrapper methods and properties for compatibility.
-- The latest validation pass ran `npm run test:unit`, `npm run build`, and `npm run test:e2e` after the draw-loop extraction.
+- Phase 11.9 has completed the final code cleanup by centralizing static scope canvas layout constants and documenting their shared renderer/interaction contract.
+- The latest validation pass ran `npm run test:unit`, `npm run build`, and `npm run test:e2e` after the final cleanup.
 
 ### Phase 11.1: canvas and DOM test harness
 
@@ -627,8 +628,8 @@ npm run build
 
 Current extraction status:
 
-- Done: `DataTableRenderer`, `TimeDomainRenderer`, `FrequencyRenderer`, `SpectrogramRenderer`, `StaticScopeInteractions`, and `StaticScopeControls`.
-- Remaining in Phase 11: continue with Phase 11.9 final cleanup and manual validation.
+- Done: `DataTableRenderer`, `TimeDomainRenderer`, `FrequencyRenderer`, `SpectrogramRenderer`, `StaticScopeInteractions`, `StaticScopeControls`, and `StaticScopeLayout`.
+- Remaining in Phase 11: manual validation only.
 
 Run:
 
@@ -679,11 +680,11 @@ after `AnalyserFrameReader`, `ScopeChannelRouter`, and `ScopeDrawLoop`.
 
 After both widgets are split:
 
-- remove duplicate constants between `Scope` and `StaticScope`;
-- ensure public exported types are documented;
-- ensure wrapper methods either have tests or are removed with a compatibility note;
-- update this document's phase status from Planned to Done;
-- run the full automated suite.
+- Done: duplicate static canvas layout constants are centralized in `src/scope/static/StaticScopeLayout.ts`.
+- Done: new exported types and helpers are documented in their extracted modules.
+- Done: wrapper methods are retained intentionally as compatibility APIs and remain covered through characterization tests.
+- Done: this document's phase status is updated to Done for code structure.
+- Done: run the full automated suite.
 
 Final automated validation:
 
