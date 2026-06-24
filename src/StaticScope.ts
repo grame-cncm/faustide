@@ -14,6 +14,11 @@ import { fillStaticScopeDataTable } from "./scope/static/DataTableRenderer";
 import { drawStaticInterleaved, drawStaticOscilloscope } from "./scope/static/TimeDomainRenderer";
 import { drawStaticSpectroscope } from "./scope/static/FrequencyRenderer";
 import { drawStaticOfflineSpectrogram, drawStaticSpectrogram } from "./scope/static/SpectrogramRenderer";
+import {
+    createStaticScopeControls,
+    updateStaticScopeModeControls,
+    updateStaticScopeScaleButton
+} from "./scope/static/StaticScopeControls";
 import "./StaticScope.scss";
 
 /**
@@ -639,153 +644,7 @@ export class StaticScope {
      * Finds or creates the necessary child DOM elements for the scope.
      */
     getChildren() {
-        this.spectTempCtx = document.createElement("canvas").getContext("2d");
-        this.spectTempCtx.canvas.height = 1024;
-        let controllerDiv: HTMLDivElement;
-        for (let i = 0; i < this.container.children.length; i++) {
-            const element = this.container.children[i];
-            if (element.classList.contains("static-scope-ui-controller")) controllerDiv = element as HTMLDivElement;
-            if (element.classList.contains("static-scope-canvas")) this.canvas = element as HTMLCanvasElement;
-            if (element.classList.contains("static-scope-data")) this.divData = element as HTMLDivElement;
-            if (element.classList.contains("static-scope-default")) this.divDefault = element as HTMLDivElement;
-        }
-        if (!controllerDiv) {
-            controllerDiv = document.createElement("div");
-            controllerDiv.classList.add("static-scope-ui-controller");
-            this.container.appendChild(controllerDiv);
-        }
-        if (!this.canvas) {
-            const canvas = document.createElement("canvas");
-            canvas.classList.add("static-scope-canvas");
-            this.container.appendChild(canvas);
-            this.canvas = canvas;
-        }
-        if (!this.divData) {
-            const divData = document.createElement("div");
-            divData.classList.add("static-scope-data");
-            this.container.appendChild(divData);
-            this.divData = divData;
-        }
-        if (!this.divDefault) {
-            const divDefault = document.createElement("div");
-            divDefault.classList.add("static-scope-default", "alert", "alert-info");
-            divDefault.setAttribute("role", "alert");
-            divDefault.innerHTML = "<h5>No Data</h5>";
-            this.container.appendChild(divDefault);
-            this.divDefault = divDefault;
-        }
-        this.ctx = this.canvas.getContext("2d");
-        for (let i = 0; i < controllerDiv.children.length; i++) {
-            const element = controllerDiv.children[i];
-            if (element.classList.contains("static-scope-ui-switch")) this.btnSwitch = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoomout")) this.btnZoomOut = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoom")) this.btnZoom = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-zoomin")) this.btnZoomIn = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-scale")) this.btnScale = element as HTMLButtonElement;
-            if (element.classList.contains("static-scope-ui-download")) this.btnDownload = element as HTMLButtonElement;
-        }
-        if (!this.btnSwitch) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-switch btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Interleaved Scope / Stacked Scope / Data");
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnSwitch = btn;
-        }
-        if (!this.btnZoomOut) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-zoomout btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Zoom Out");
-            btn.innerHTML = '<i class="fas fa-minus"></i>';
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnZoomOut = btn;
-        }
-        if (!this.btnZoom) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-zoom btn btn-outline-light btn-sm btn-overlay";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Reset Zoom");
-            btn.innerText = "1.0x";
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnZoom = btn;
-        }
-        if (!this.btnZoomIn) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-zoomin btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Zoom In");
-            btn.innerHTML = '<i class="fas fa-plus"></i>';
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnZoomIn = btn;
-        }
-        if (!this.btnScale) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-scale btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnScale = btn;
-        }
-        if (!this.btnDownload) {
-            const btn = document.createElement("button");
-            btn.className = "static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon";
-            btn.setAttribute("data-toggle", "tooltip");
-            btn.setAttribute("data-placement", "top");
-            btn.setAttribute("title", "Download Data");
-            btn.innerHTML = '<i class="fas fa-download"></i>';
-            controllerDiv.appendChild(btn);
-            try {
-                $(btn).tooltip({ trigger: "hover", boundary: "viewport" });
-            } catch (e) { } // eslint-disable-line no-empty
-            this.btnDownload = btn;
-        }
-
-        for (let i = 0; i < this.btnSwitch.children.length; i++) {
-            const e = this.btnSwitch.children[i];
-            if (e.classList.contains("fas")) this.iSwitch = e as HTMLElement;
-            if (e instanceof HTMLSpanElement) this.spanSwitch = e;
-        }
-        if (!this.iSwitch) {
-            const i = document.createElement("i");
-            i.className = "fas fa-sm fa-wave-square";
-            this.btnSwitch.appendChild(i);
-            this.iSwitch = i;
-        }
-        if (!this.spanSwitch) {
-            const span = document.createElement("span");
-            span.innerText = "Oscilloscope";
-            this.btnSwitch.appendChild(span);
-            this.spanSwitch = span;
-        }
-        for (let i = 0; i < this.btnScale.children.length; i++) {
-            const e = this.btnScale.children[i];
-            if (e.classList.contains("fas")) this.iScale = e as HTMLElement;
-        }
-        if (!this.iScale) {
-            const i = document.createElement("i");
-            this.btnScale.appendChild(i);
-            this.iScale = i;
-        }
+        Object.assign(this, createStaticScopeControls(this.container));
     }
     /**
      * Binds all event listeners for the UI elements.
@@ -1046,19 +905,7 @@ export class StaticScope {
      */
     set freqScaleMode(newMode: EFreqScaleMode) {
         this._freqScaleMode = newMode;
-        if (newMode === EFreqScaleMode.Linear) {
-            this.iScale.className = "fas fa-ruler-horizontal";
-            this.btnScale.setAttribute("title", "Switch to Logarithmic Scale");
-        } else {
-            this.iScale.className = "fas fa-chart-line";
-            this.btnScale.setAttribute("title", "Switch to Linear Scale");
-        }
-        // Re-initialize tooltip to update title
-        try {
-            $(this.btnScale).tooltip("hide").tooltip("dispose").tooltip({ trigger: "hover", boundary: "viewport" });
-        } catch (e) { } // eslint-disable-line no-empty
-
-        // Reset and redraw spectrogram on scale change
+        updateStaticScopeScaleButton(this.btnScale, this.iScale, newMode);
         this.lastSpect$ = 0;
         this.spectTempCtx.clearRect(0, 0, this.spectTempCtx.canvas.width, this.spectTempCtx.canvas.height);
         this.draw();
@@ -1075,20 +922,19 @@ export class StaticScope {
      * @type {EScopeMode}
      */
     set mode(newMode: EScopeMode) {
-        this.iSwitch.className = StaticScope.getIconClassName(newMode);
-        this.spanSwitch.innerText = StaticScope.getModeName(newMode);
         this._mode = newMode;
-
-        if (newMode === EScopeMode.Data) {
-            this.divData.style.display = "block";
-            this.canvas.style.display = "none";
-            [this.btnZoom, this.btnZoomIn, this.btnZoomOut, this.btnScale].forEach(button => button.style.display = "none");
-        } else {
-            this.divData.style.display = "none";
-            this.canvas.style.display = "block";
-            [this.btnZoom, this.btnZoomIn, this.btnZoomOut].forEach(button => button.style.display = "");
-            this.btnScale.style.display = this.inFreqDomain ? "" : "none";
-        }
+        updateStaticScopeModeControls({
+            mode: newMode,
+            inFrequencyDomain: this.inFreqDomain,
+            iSwitch: this.iSwitch,
+            spanSwitch: this.spanSwitch,
+            divData: this.divData,
+            canvas: this.canvas,
+            btnZoom: this.btnZoom,
+            btnZoomIn: this.btnZoomIn,
+            btnZoomOut: this.btnZoomOut,
+            btnScale: this.btnScale
+        });
         this.draw();
     }
     /**
