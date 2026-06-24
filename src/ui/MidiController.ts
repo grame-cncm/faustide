@@ -45,6 +45,10 @@ export class MidiController {
         this.key2Midi = new Key2Midi({ keyMap: options.keyMap, enabled: false });
     }
 
+    /**
+     * Wires keyboard listeners, the input selector, and Web MIDI device
+     * hotplug. Enables the selector only once Web MIDI access is granted.
+     */
     bind() {
         $(document).on("keydown", (e) => {
             if (this.hasEditorFocus()) return;
@@ -65,14 +69,21 @@ export class MidiController {
         });
     }
 
+    /** Forwards a physical key press to the computer-keyboard MIDI mapper. */
     handleKeyDown(key: string) {
         this.key2Midi.handleKeyDown(key);
     }
 
+    /** Forwards a physical key release to the computer-keyboard MIDI mapper. */
     handleKeyUp(key: string) {
         this.key2Midi.handleKeyUp(key);
     }
 
+    /**
+     * Switches the active MIDI source. The sentinel ids `-2` (computer
+     * keyboard) and `-1` (none) bypass Web MIDI; any other id selects a
+     * hardware input. Detaches the previous listener and clears held notes.
+     */
     private selectInput(id: string) {
         if (this.midiEnv.input) this.midiEnv.input.removeListener("midimessage", "all");
         this.activeKeys = [];
@@ -93,6 +104,11 @@ export class MidiController {
         input.addListener("midimessage", "all", e => listener(e.data));
     }
 
+    /**
+     * Tracks held notes from raw MIDI bytes and shows the most recent one.
+     * Note-on (status 144, velocity > 0) pushes; note-off (128, or 144 with
+     * velocity 0) removes and hides the display once nothing is held.
+     */
     private updateActiveNote(data: number[] | Uint8Array) {
         if (data[0] === 144 && data[2]) {
             if (this.activeKeys.indexOf(data[1]) === -1) this.activeKeys.push(data[1]);
@@ -104,6 +120,7 @@ export class MidiController {
         }
     }
 
+    /** Adds a newly connected hardware input to the selector and selects it. */
     private handleMIDIConnect(e: WebMidiEventConnected) {
         if (e.port.type !== "input") return;
         const $select = $("#select-midi-input");
@@ -113,6 +130,7 @@ export class MidiController {
         $option.prop("selected", true).change();
     }
 
+    /** Removes a disconnected input from the selector and falls back to the last option. */
     private handleMIDIDisconnect(e: WebMidiEventDisconnected) {
         if (e.port.type !== "input") return;
         const $select = $("#select-midi-input");

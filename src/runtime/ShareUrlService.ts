@@ -30,6 +30,13 @@ export type ShareUrlLoadResult = {
  * decisions for the composition root to apply to editor state and controls.
  */
 export class ShareUrlService {
+    /**
+     * Builds a shareable URL encoding autorun, voices, sanitized name, and the
+     * current code as a URL-safe base64 `inline=` payload.
+     *
+     * @param options origin/pathname plus the project state to encode
+     * @returns the absolute share URL
+     */
     build(options: ShareUrlBuildOptions) {
         const base = options.origin + options.pathname;
         const urlParams = new URLSearchParams();
@@ -40,6 +47,17 @@ export class ShareUrlService {
         return `${base}?${urlParams.toString()}`;
     }
 
+    /**
+     * Decodes a query string into the subset of settings it carries.
+     *
+     * Supports the legacy parameter set (`autorun`, `realtime_compile`,
+     * `voices`, `buffer_size`, `mode`, `name`) and three mutually compatible
+     * code sources: a remote `code=` URL (fetched here, failures ignored to
+     * preserve legacy behavior), a raw `code_string=`, and a base64 `inline=`.
+     *
+     * @param search the URL query string (with or without leading `?`)
+     * @returns normalized settings; absent parameters are left undefined
+     */
     async load(search: string): Promise<ShareUrlLoadResult> {
         const urlParams = new URLSearchParams(search);
         const result: ShareUrlLoadResult = {
@@ -70,18 +88,22 @@ export class ShareUrlService {
         return result;
     }
 
+    /** Strips non-identifier characters from a project name, defaulting to `untitled`. */
     sanitizeName(name: string) {
         return name.replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
     }
 
+    /** Returns the voice count if it is a valid power-of-two value, else 0 (mono). */
     private normalizeVoices(voices: number) {
         return VALID_VOICES.indexOf(voices) === -1 ? 0 : voices;
     }
 
+    /** Returns the buffer size if valid, else the 1024-sample default. */
     private normalizeBufferSize(bufferSize: number): FaustEditorCompileOptions["bufferSize"] {
         return VALID_BUFFER_SIZES.indexOf(bufferSize as any) === -1 ? 1024 : bufferSize as FaustEditorCompileOptions["bufferSize"];
     }
 
+    /** Derives a sanitized project name from the basename of a remote code URL. */
     private nameFromCodeUrl(codeURL: string) {
         return codeURL.split("/").slice(-1)[0].split(".").slice(0, -1).join(".").replace(/[^a-zA-Z0-9_]/g, "") || "untitled";
     }

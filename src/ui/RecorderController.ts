@@ -21,12 +21,14 @@ export class RecorderController {
         this.fileNameProvider = options.fileNameProvider;
     }
 
+    /** Wires the arm/disarm toggle and the WAV save button. */
     bind() {
         $("#recorder-aim").on("click", (e) => this.toggleRecording($(e.currentTarget)));
         $("#recorder-save").on("click", () => this.save());
         $("#a-recorder-save").on("click", e => e.stopPropagation());
     }
 
+    /** Arms or disarms the recorder, reflecting state via the button color. */
     private toggleRecording($button: JQuery<HTMLElement>) {
         if ($button.hasClass("btn-light")) {
             $button.removeClass("btn-light").addClass("btn-danger");
@@ -37,6 +39,11 @@ export class RecorderController {
         }
     }
 
+    /**
+     * Encodes the accumulated recording to a WAV blob and triggers a download
+     * named after the current project. No-op when nothing has been recorded.
+     * The object URL is revoked after a short delay.
+     */
     private async save() {
         if (this.recorder.totalSec === 0) return;
         const blob = new Blob([await this.recorder.encode()], { type: "audio/wav" });

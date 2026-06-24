@@ -37,6 +37,13 @@ export type ExportResult = {
  * and `/precompile` polling for the current single-request behavior.
  */
 export class ExportService {
+    /**
+     * Fetches the available export targets (platform → architectures) from the
+     * Faust service.
+     *
+     * @param server base URL of the Faust service
+     * @throws if the service responds with a non-OK status
+     */
     async fetchTargets(server: string): Promise<FaustExportTargets> {
         const response = await fetch(`${server}/targets`);
         if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -97,6 +104,7 @@ export class ExportService {
         return "binary.zip";
     }
 
+    /** POSTs the project form to `/filepost` and returns the SHA key body, throwing on a non-OK status. */
     private async postFile(server: string, form: FormData) {
         const response = await fetch(`${server}/filepost`, { method: "POST", body: form });
         const text = await response.text();
