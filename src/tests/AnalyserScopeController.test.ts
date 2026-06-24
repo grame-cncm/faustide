@@ -5,6 +5,7 @@ const setupDom = () => {
     document.body.innerHTML = `
         <div id="input-analyser-ui"></div>
         <div id="output-analyser-ui"></div>
+        <div id="plot-ui"></div>
     `;
 };
 
@@ -27,14 +28,26 @@ const bindController = (overrides: any = {}) => {
         analysersInited: false,
         inputScope: null,
         outputScope: null,
+        analyser: {},
         ...overrides.uiEnv
     };
+    const compileOptions = {
+        plotMode: "offline",
+        plotSR: 44100,
+        ...overrides.compileOptions
+    };
+    const StaticScopeFactory = vi.fn(function FakeStaticScope(this: any, options: any) {
+        Object.assign(this, options);
+        this.draw = vi.fn();
+    });
     const controller = new AnalyserScopeController({
         audioEnv,
         uiEnv,
-        scopeFactory: ScopeFactory as any
+        compileOptions,
+        scopeFactory: ScopeFactory as any,
+        staticScopeFactory: StaticScopeFactory as any
     });
-    return { controller, audioEnv, uiEnv, ScopeFactory, createdScopes };
+    return { controller, audioEnv, uiEnv, compileOptions, ScopeFactory, StaticScopeFactory, createdScopes };
 };
 
 describe("AnalyserScopeController", () => {
@@ -65,5 +78,21 @@ describe("AnalyserScopeController", () => {
 
         expect($("#output-analyser-ui").css("display")).toBe("none");
         expect(uiEnv.outputScope.disabled).toBe(true);
+    });
+
+    it("initializes the plot scope and analyser draw callbacks", () => {
+        const { controller, audioEnv, uiEnv, compileOptions, StaticScopeFactory } = bindController();
+
+        controller.initializePlotScope();
+
+        expect(StaticScopeFactory).toHaveBeenCalledWith({ container: $("#plot-ui")[0] });
+        expect(uiEnv.analyser.drawHandler).toBe(uiEnv.plotScope.draw);
+        expect(uiEnv.analyser.getSampleRate()).toBe(44100);
+
+        uiEnv.plotScope.draw();
+        expect(uiEnv.plotScope.draw).toHaveBeenCalled();
+
+        compileOptions.plotMode = "continuous";
+        expect(uiEnv.analyser.getSampleRate()).toBe(audioEnv.audioCtx.sampleRate);
     });
 });

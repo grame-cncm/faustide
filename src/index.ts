@@ -21,7 +21,6 @@ import "bootstrap/js/dist/modal";
 import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
-import { StaticScope } from "./StaticScope";
 import { FileManager } from "./FileManager";
 import * as VERSION from "./version";
 import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
@@ -138,7 +137,7 @@ $(async () => {
         libFaust,
         projectDir: PROJECT_DIR
     });
-    const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv });
+    const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv, compileOptions });
     diagramController = new DiagramController({
         compileOptions,
         diagramService,
@@ -147,9 +146,7 @@ $(async () => {
         monaco
     });
     runtimeSettings.saveVersion();
-    uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
-    uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
-    uiEnv.analyser.getSampleRate = () => (compileOptions.plotMode === "offline" ? compileOptions.plotSR : audioEnv.audioCtx.sampleRate);
+    analyserScopeController.initializePlotScope();
     await projectPersistence.loadProject(compileOptions.saveCode);
     const projectRuntimeController = new ProjectRuntimeController({
         compileOptions,
