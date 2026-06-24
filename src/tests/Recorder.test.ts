@@ -54,6 +54,24 @@ describe("Recorder", () => {
         expect(recorder.totalSec).toBe(1.5);
     });
 
+    it("copies appended buffers so reused source arrays do not corrupt the recording", async () => {
+        const { Recorder } = await import("../Recorder");
+        const recorder = new Recorder(4);
+        recorder.enabled = true;
+
+        // Simulate a node that reuses the same output buffer across blocks.
+        const reused = [new Float32Array([1, 2])];
+        recorder.append(reused, 1);
+        reused[0][0] = 99;
+        reused[0][1] = 98;
+        recorder.append(reused, 2);
+
+        // Each stored block keeps its own values, independent of later mutation.
+        expect(Array.from(recorder.data[0][0])).toEqual([1, 2]);
+        expect(Array.from(recorder.data[1][0])).toEqual([99, 98]);
+        expect(recorder.data[0][0]).not.toBe(reused[0]);
+    });
+
     it("passes multi-channel data to the WAV encoder", async () => {
         const { Recorder } = await import("../Recorder");
         const recorder = new Recorder(44100);

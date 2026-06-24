@@ -18,7 +18,10 @@ export class Recorder {
     append(buffer: Float32Array[], index: number) {
         if (!this.enabled) return this.totalSec;
         if (index === 0 || !this.data || this.data.length === 0 || index !== ++this.$last) this.reset(index);
-        this.data.push(buffer);
+        // Copy each channel: some DSP node backends (e.g. ScriptProcessor) reuse
+        // the same output Float32Array across blocks, so storing the reference
+        // would make the whole recording the last block repeated.
+        this.data.push(buffer.map(channel => channel.slice()));
         return this.totalSec;
     }
     get totalSec() {
