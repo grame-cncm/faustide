@@ -35,4 +35,23 @@ test.describe("Block diagram", () => {
 
         await expect.poll(() => svg.evaluate((el: SVGElement) => el.getBoundingClientRect().width)).not.toBe(before);
     });
+
+    test("a hierarchical process generates navigable sub-diagram links", async ({ page }) => {
+        await openApp(page);
+        // Library blocks make Faust emit separate sub-diagrams reachable through
+        // SVG <a> links in the top-level process diagram.
+        await setEditorCode(page, "import(\"stdfaust.lib\");\nprocess = os.osc(440) : fi.lowpass(3, 1000) <: dm.freeverb_demo;");
+        await runDsp(page);
+        await page.locator("#tab-diagram").click();
+
+        const links = page.locator("#diagram-svg svg a");
+        await expect(links.first()).toBeAttached();
+        const before = await page.locator("#diagram-svg").innerHTML();
+
+        // Clicking a link replaces the pane with the linked sub-diagram via
+        // DiagramService.readGeneratedSvg.
+        await links.first().dispatchEvent("click");
+        await expect.poll(() => page.locator("#diagram-svg").innerHTML()).not.toBe(before);
+        await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
+    });
 });
