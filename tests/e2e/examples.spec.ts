@@ -1,13 +1,27 @@
 import { expect, test } from "@playwright/test";
 import { openApp } from "./helpers";
 
-// A representative sample across categories. The full index has ~180 DSPs;
-// these exercise the load-example path end to end (fetch -> import -> compile).
+// A representative sample spanning every top-level example category (the full
+// index has ~180 DSPs). Each name is unique across the index so the menu
+// locator is unambiguous. These exercise the load-example path end to end
+// (fetch -> import -> compile -> run).
 const EXAMPLES = [
-    "freeverb.dsp",
-    "moogVCF.dsp",
-    "noiseGate.dsp",
-    "cryBaby.dsp"
+    "oneSourceToStereo.dsp", "fourSourcesToOcto.dsp", // ambisonics
+    "spectralLevel.dsp", "vumeter.dsp",               // analysis
+    "AdditiveSynth.dsp", "AdditiveSynth_Analog.dsp",  // generator
+    "echo.dsp", "stereoEcho.dsp",                     // delayEcho
+    "noiseGate.dsp", "distortion.dsp",                // dynamic
+    "moogVCF.dsp", "cryBaby.dsp",                     // filtering
+    "wind.dsp", "rain.dsp",                           // gameaudio
+    "dx7.dsp", "filterOsc.dsp",                       // misc
+    "matrix.dsp", "switcher.dsp",                     // bela
+    "phaser.dsp", "flanger.dsp",                      // phasing
+    "vocalFOF.dsp", "churchBell.dsp",                 // physicalModeling
+    "pitchShifter.dsp",                               // pitchShifting
+    "harmonicExciter.dsp",                            // psychoacoustic
+    "reverbTank.dsp",                                 // reverb (jprev omitted: ~30s compile, too close to timeout)
+    "myEffect.dsp", "reverb.dsp",                     // smartKeyboard
+    "spcap.dsp", "panpot.dsp"                         // spat
 ];
 
 test.describe("Examples menu", () => {
