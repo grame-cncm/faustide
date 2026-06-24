@@ -15,12 +15,7 @@
 
 import webmidi from "webmidi";
 import type { FaustCompiler } from "@grame/faustwasm";
-import type {
-    FaustEditorAudioEnv,
-    FaustEditorEnv,
-    FaustEditorMIDIEnv,
-    FaustEditorUIEnv
-} from "./runtime/types";
+import type { FaustEditorEnv } from "./runtime/types";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/tab";
 import "bootstrap/js/dist/tooltip";
@@ -29,9 +24,7 @@ import "@fortawesome/fontawesome-free/css/all.css";
 import "bootstrap/scss/bootstrap.scss";
 import "./index.scss";
 import { StaticScope } from "./StaticScope";
-import { Analyser } from "./Analyser";
 import { FileManager } from "./FileManager";
-import { Recorder } from "./Recorder";
 import * as VERSION from "./version";
 import { EditorSettingsStore } from "./runtime/EditorSettingsStore";
 import { ProjectPersistence } from "./runtime/ProjectPersistence";
@@ -43,6 +36,7 @@ import { ShareUrlService } from "./runtime/ShareUrlService";
 import { RuntimeSettingsController } from "./runtime/RuntimeSettingsController";
 import { AppRuntimeConfig, DEFAULT_FAUST_SERVICE_URL, detectAudioFeatureSupport } from "./runtime/AppRuntimeConfig";
 import { createCompileOptions } from "./runtime/CompileOptionsFactory";
+import { createEditorRuntimeEnvironment } from "./runtime/EditorRuntimeEnvironment";
 import { GlobalShortcutsController } from "./ui/GlobalShortcutsController";
 import { PanelToggleView } from "./ui/PanelToggleView";
 import { ResizablePanelsController } from "./ui/ResizablePanelsController";
@@ -138,12 +132,18 @@ $(async () => {
     let midiController: MidiController;
     const updateDiagram = (code: string) => diagramController.update(code);
     const runDsp = (code: string) => dspCompileController.run(code);
-    const audioEnv: FaustEditorAudioEnv = {
-        dspConnectedToInput: false,
-        dspConnectedToOutput: false,
-        inputEnabled: false,
-        outputEnabled: false
-    };
+    const compileOptions = createCompileOptions({
+        projectDir: PROJECT_DIR,
+        supportAudioWorklet: runtimeConfig.supportAudioWorklet,
+        savedOptions: runtimeSettings.loadCompileOptions()
+    });
+    const { audioEnv, midiEnv, uiEnv, faustEnv } = createEditorRuntimeEnvironment({
+        compileOptions,
+        editor,
+        jQuery,
+        faustCompiler,
+        browserFS: bfs
+    });
     const audioEngine = new AudioEngine({
         env: audioEnv,
         gainContainer: $<HTMLDivElement>("#input-gain")[0],
@@ -169,21 +169,7 @@ $(async () => {
         libFaust,
         projectDir: PROJECT_DIR
     });
-    const midiEnv: FaustEditorMIDIEnv = { input: null };
-    const uiEnv: FaustEditorUIEnv = {
-        analysersInited: false,
-        inputScope: null,
-        outputScope: null,
-        plotScope: undefined,
-        analyser: new Analyser(16, "continuous"),
-        fileManager: undefined
-    };
     const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv });
-    const compileOptions = createCompileOptions({
-        projectDir: PROJECT_DIR,
-        supportAudioWorklet: runtimeConfig.supportAudioWorklet,
-        savedOptions: runtimeSettings.loadCompileOptions()
-    });
     diagramController = new DiagramController({
         compileOptions,
         diagramService,
@@ -191,17 +177,6 @@ $(async () => {
         editor,
         monaco
     });
-    const faustEnv: FaustEditorEnv = {
-        audioEnv,
-        midiEnv,
-        uiEnv,
-        compileOptions,
-        jQuery,
-        editor,
-        faustCompiler,
-        recorder: new Recorder(),
-        browserFS: bfs
-    };
     runtimeSettings.saveVersion();
     uiEnv.plotScope = new StaticScope({ container: $<HTMLDivElement>("#plot-ui")[0] });
     uiEnv.analyser.drawHandler = uiEnv.plotScope.draw;
