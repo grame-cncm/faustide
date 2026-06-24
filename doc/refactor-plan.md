@@ -59,7 +59,7 @@ The refactor split the original runtime responsibilities as follows.
 | Phase 9: UI controller extraction | Done | The planned controllers/views are extracted and named consistently, including `ExampleLoaderController`. |
 | Phase 10: shrink `src/index.ts` | Done for code structure | `index.ts` is a composition root. Remaining work is manual validation. |
 | Phase 11: scope rendering factorization | In progress | `StaticScope` renderer/control/interaction extraction is complete; `Scope` real-time analyser extraction remains. |
-| Phase 12: owned state and explicit wiring | In progress | Audio and scope state groups now funnel through `AudioGraphState`/`ScopeState` (12.2 + flag ownership of 12.3). Action seam (12.4) and `index.ts` linearization (12.5) remain. |
+| Phase 12: owned state and explicit wiring | In progress | Owned state (`AudioGraphState`/`ScopeState`), the `RuntimeActions` seam, and `index.ts` linearization (one late-bound controller left) are done. Remaining: graph-connect intent methods (rest of 12.3), bridge-as-getters (12.6), cleanup (12.7). |
 
 ## Test strategy (as implemented)
 
@@ -720,7 +720,8 @@ Current Phase 12 progress:
 - `src/runtime/state/AudioGraphState.ts` wraps the audio slice of the env record. Every write of `dsp`, `dspConnectedToInput/Output`, `inputEnabled`, `outputEnabled`, `currentInput`, `splitterOutput`, and `destination` now funnels through it (`DspRunner`, `AudioEngine`, `FaustUiController`, `AudioInputController`, `AudioOutputController`, `AudioDeviceController`). The connection flags that were assigned from five and three scattered sites now have a single writer each.
 - `src/runtime/state/ScopeState.ts` wraps the analyser/scope slice; `AnalyserScopeController` routes `inputScope`, `outputScope`, `plotScope`, and `analysersInited` through it.
 - Both states wrap the *same* underlying record, so constructors are unchanged and the `window.faustEnv` bridge is untouched. Characterization tests `AudioGraphState.test.ts` and `ScopeState.test.ts` cover the accessors.
-- Remaining: assign graph-connect/disconnect intent methods to `AudioEngine` so the connect calls move with the flags (rest of 12.3), then the action seam (12.4), `index.ts` linearization (12.5), bridge-as-getters (12.6), and cleanup (12.7).
+- `src/runtime/RuntimeActions.ts` names the run/diagram seam (12.4). `index.ts` is linearized (12.5): the late-bound controller references dropped from three to one. `diagramController` and `midiController` are now plain `const`; only `dspCompileController` stays late-bound, a genuine initialization cycle (its actions are consumed by controllers built earlier, while it transitively needs the FileManager those controllers help build).
+- Remaining: assign graph-connect/disconnect intent methods to `AudioEngine` so the connect calls move with the flags (rest of 12.3); back `window.faustEnv` with getters over the owned state (12.6); cleanup and status flip to Done (12.7).
 
 ### State ownership map
 
