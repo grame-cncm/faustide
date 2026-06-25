@@ -175,6 +175,10 @@ regression you caused, and don't disable other lint to "fix" it.
   structure or finish a planned step — keep the phase status table, the
   "current status" notes, and the test-strategy counts accurate. When you defer
   or skip a step, say why.
+- **Testing:** `doc/testing.md` is the living reference for the test
+  architecture. When you add a new test file, a new helper, a new stub, or a
+  new E2E spec that introduces a pattern not yet described there, extend the
+  relevant section. Keep the file accurate — don't let it drift from reality.
 - Write `doc/refactor-plan.md` and journal-style entries in **English**.
 
 ## Commits
