@@ -546,22 +546,29 @@ than claim it.
 
 ---
 
-## Resolved (Step 0) — fill in after the spike
+## Resolved (Step 0) — filled after the spike (2026-06-26)
 
-Record the outcome of the pre-flight here, so later phases inherit settled facts
-instead of re-deciding:
-
-- **`crypto.subtle` in jsdom:** _TBD_ — does the WebCrypto shim (0.4) make
-  `gitBlobSha` runnable in unit tests?
-- **`for…of` policy:** _TBD_ — confirmed: rewrite sync `for…of` to array methods;
-  one justified `// eslint-disable-next-line no-restricted-syntax` per file for
-  `for await…of` over directory handles.
-- **TypeScript:** _TBD_ — kept at 4.9 (apply the §0.3 adaptations) **or** bumped to
-  5.x (modern idioms kept verbatim)? State which, and why.
-- **Type-check gate:** _TBD_ — `tsconfig.fs.json` + `type-check:fs` wired into
-  `npm test` and green? Initial `include` list.
-- **Harness:** _TBD_ — `fake-indexeddb/auto` + WebCrypto added to `setup.ts`; all
-  pre-existing tests still green.
+- **`crypto.subtle` in jsdom:** ✅ — Node 22 exposes `globalThis.crypto`
+  (WebCrypto); shimming it into `window` in a `beforeAll` in `setup.ts` makes
+  `gitBlobSha` and SHA-256 runnable in unit tests. `gitBlobSha("hello")` matches
+  the expected git SHA-1. Non-ASCII `"é"` encodes to 2 UTF-8 bytes as expected.
+- **`for…of` policy:** ✅ — Airbnb `no-restricted-syntax` bans `ForOfStatement`
+  as an error. Policy: rewrite sync `for…of` to array methods (`map`/`filter`/
+  `forEach`/`reduce`). For `for await…of` over directory handles (no equivalent),
+  add one justified `// eslint-disable-next-line no-restricted-syntax` per file.
+- **TypeScript:** ✅ — **kept at 4.9.5** (no bump). The only adaptation needed
+  per §0.3: drop `Uint8Array<ArrayBuffer>` generic argument when it appears in
+  lifted code (use plain `Uint8Array`). markpage's interface shims for async-iter
+  directory handles port as-is.
+- **Type-check gate:** ✅ — `tsconfig.fs.json` added; `type-check:fs` script
+  wired into `npm test`. Scoped `include`: `src/runtime/fs/**/*`,
+  `src/model/Perimeter.ts`, `src/runtime/state/OriginState.ts`,
+  `src/ui/VolumeBrowserController.ts`, `src/tests/helpers/FakeDirectoryHandle.ts`.
+  Grows with each phase.
+- **Harness:** ✅ — `fake-indexeddb/auto` + WebCrypto shim added to `setup.ts`.
+  Extra finding: `fake-indexeddb`'s `deleteDatabase` hangs in jsdom; workaround
+  is to reset by patching `window.indexedDB = new IDBFactory()` in `beforeEach`.
+  All 288 pre-existing tests still pass; 56 new tests added through P3.
 
 ## References
 
