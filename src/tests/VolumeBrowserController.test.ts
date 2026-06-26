@@ -284,4 +284,184 @@ describe("VolumeBrowserController", () => {
         ctrl.open();
         expect(document.querySelector(".vb-open-device")).toBeNull();
     });
+
+    // ── save mode ──────────────────────────────────────────────────────────────
+
+    it("save mode shows the 'Save As' title", () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save" });
+        ctrl.open();
+        const title = document.querySelector(".vb-title");
+        expect(title && title.textContent).toBe("Save As");
+    });
+
+    it("save mode hides the save bar at the root", async () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save" });
+        ctrl.open();
+        await flush();
+        const bar = document.querySelector(".vb-savebar") as HTMLElement;
+        expect(bar && bar.hidden).toBe(true);
+    });
+
+    it("save mode shows the save bar when inside a volume", async () => {
+        const vol = fakeVolume({ list: () => Promise.resolve([]) });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], mode: "save" });
+        ctrl.open();
+        await flush();
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush();
+        await flush();
+        const bar = document.querySelector(".vb-savebar") as HTMLElement;
+        expect(bar && bar.hidden).toBe(false);
+    });
+
+    it("save mode pre-fills the name input with defaultName", () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save", defaultName: "reverb.dsp" });
+        ctrl.open();
+        const input = document.querySelector(".vb-name") as HTMLInputElement;
+        expect(input && input.value).toBe("reverb.dsp");
+    });
+
+    it("'Save here' calls onSave with current volume, folder, and name", async () => {
+        const onSave = vi.fn();
+        const vol = fakeVolume({ list: () => Promise.resolve([]) });
+        const ctrl = new VolumeBrowserController({
+            volumes: [vol], mode: "save", defaultName: "main.dsp", onSave
+        });
+        ctrl.open();
+        await flush();
+        // Enter the volume
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush();
+        await flush();
+        // Click "Save here"
+        const saveBtn = document.querySelector(".vb-save") as HTMLButtonElement;
+        if (saveBtn) saveBtn.click();
+        expect(onSave).toHaveBeenCalledWith(vol, "", "main.dsp");
+        expect(document.getElementById("vb-overlay")).toBeNull();
+    });
+
+    it("Enter key in name input triggers save", async () => {
+        const onSave = vi.fn();
+        const vol = fakeVolume({ list: () => Promise.resolve([]) });
+        const ctrl = new VolumeBrowserController({
+            volumes: [vol], mode: "save", defaultName: "test.dsp", onSave
+        });
+        ctrl.open();
+        await flush();
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush();
+        await flush();
+        const input = document.querySelector(".vb-name") as HTMLInputElement;
+        if (input) input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        expect(onSave).toHaveBeenCalledWith(vol, "", "test.dsp");
+    });
+
+    it("'Save here' is a no-op when name is empty", async () => {
+        const onSave = vi.fn();
+        const vol = fakeVolume({ list: () => Promise.resolve([]) });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], mode: "save", onSave });
+        ctrl.open();
+        await flush();
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush();
+        await flush();
+        const input = document.querySelector(".vb-name") as HTMLInputElement;
+        if (input) input.value = "";
+        const saveBtn = document.querySelector(".vb-save") as HTMLButtonElement;
+        if (saveBtn) saveBtn.click();
+        expect(onSave).not.toHaveBeenCalled();
+        expect(document.getElementById("vb-overlay")).toBeTruthy();
+    });
+
+    it("clicking a file in save mode pre-fills the name input", async () => {
+        const entry = fakeEntry("existing.dsp");
+        const vol = fakeVolume({ list: () => Promise.resolve([entry]) });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], mode: "save" });
+        ctrl.open();
+        await flush();
+        const volBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (volBtn) volBtn.click();
+        await flush();
+        await flush();
+        const fileBtn = document.querySelector(".vb-row:not(.vb-vol-row) .vb-row-name-btn") as HTMLButtonElement;
+        if (fileBtn) fileBtn.click();
+        const input = document.querySelector(".vb-name") as HTMLInputElement;
+        expect(input && input.value).toBe("existing.dsp");
+        // Overlay stays open
+        expect(document.getElementById("vb-overlay")).toBeTruthy();
+    });
+
+    // ── onMountDisk ────────────────────────────────────────────────────────────
+
+    it("shows Mount button when onMountDisk is provided", () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], onMountDisk: vi.fn() });
+        ctrl.open();
+        expect(document.querySelector(".vb-mount-disk")).toBeTruthy();
+    });
+
+    it("Mount button calls onMountDisk", () => {
+        const onMountDisk = vi.fn();
+        const ctrl = new VolumeBrowserController({ volumes: [], onMountDisk });
+        ctrl.open();
+        const btn = document.querySelector(".vb-mount-disk") as HTMLButtonElement;
+        if (btn) btn.click();
+        expect(onMountDisk).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not show Mount button without the callback", () => {
+        const ctrl = new VolumeBrowserController({ volumes: [] });
+        ctrl.open();
+        expect(document.querySelector(".vb-mount-disk")).toBeNull();
+    });
+
+    // ── onReauthorize ──────────────────────────────────────────────────────────
+
+    it("clicking a needs-permission volume calls onReauthorize", async () => {
+        const onReauthorize = vi.fn().mockResolvedValue(true);
+        const vol = fakeVolume({ state: () => Promise.resolve("needs-permission") });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], onReauthorize });
+        ctrl.open();
+        await flush(); // render root + state badge
+        await flush(); // state resolved
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        expect(onReauthorize).toHaveBeenCalledWith(vol);
+    });
+
+    it("navigates into volume after reauthorize resolves true", async () => {
+        const onReauthorize = vi.fn().mockResolvedValue(true);
+        const vol = fakeVolume({
+            state: () => Promise.resolve("needs-permission"),
+            list: () => Promise.resolve([fakeEntry("main.dsp")])
+        });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], onReauthorize });
+        ctrl.open();
+        await flush();
+        await flush();
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush(); // onReauthorize resolves
+        await flush(); // render enters volume, renderList runs
+        await flush(); // vol.list resolves
+        const crumbs = document.querySelectorAll(".vb-crumb");
+        expect(crumbs.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("does not navigate when reauthorize resolves false", async () => {
+        const onReauthorize = vi.fn().mockResolvedValue(false);
+        const vol = fakeVolume({ state: () => Promise.resolve("needs-permission") });
+        const ctrl = new VolumeBrowserController({ volumes: [vol], onReauthorize });
+        ctrl.open();
+        await flush();
+        await flush();
+        const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+        if (nameBtn) nameBtn.click();
+        await flush();
+        // Still at root (vol-rows visible)
+        expect(document.querySelectorAll(".vb-vol-row").length).toBe(1);
+    });
 });

@@ -3,8 +3,21 @@ import type { Volume, VolumeEntry, VolumeState } from "../runtime/fs/Volume";
 
 export type VolumeBrowserOptions = {
     volumes: Volume[];
+    /** "open" (default): pick a file; "save": pick a folder and provide a name. */
+    mode?: "open" | "save";
+    /** Pre-filled name in save mode. */
+    defaultName?: string;
     onOpen?(volume: Volume, entry: VolumeEntry): void;
     onOpenDeviceFile?(): void;
+    /** Save target chosen: volume + current folder + name (save mode). */
+    onSave?(volume: Volume, folderPath: string, name: string): void;
+    /**
+     * Mount a disk folder (Chromium only).  Caller gates on fsAccessAvailable()
+     * before providing this callback — the button is shown iff the hook is set.
+     */
+    onMountDisk?(): void;
+    /** Re-grant RW permission on a lapsed Disk volume (requires a user gesture). */
+    onReauthorize?(volume: Volume): Promise<boolean>;
 };
 
 const OVERLAY_ID = "vb-overlay";
@@ -16,13 +29,17 @@ const KIND_FA: Record<string, string> = {
 };
 
 const STRINGS = {
-    title: "Open a File",
+    titleOpen: "Open a File",
+    titleSave: "Save As",
     close: "Close",
     root: "Volumes",
     loading: "Loading…",
     empty: "No files",
     listFailed: "Failed to load",
     openDevice: "Open a file from disk…",
+    mountDisk: "Mount a disk folder…",
+    saveHere: "Save here",
+    namePlaceholder: "filename.dsp",
     stateNeedsPermission: "needs permission",
     stateOffline: "offline",
     stateError: "error"
@@ -42,18 +59,30 @@ const faIcon = (faClass: string): HTMLElement => {
 };
 
 /**
- * Controls the unified volume browser modal (open mode only, P4).
- * Save mode, disk/repo mounts, and trash management are added in P6/P9.
+ * Controls the unified volume browser modal.
+ * Open mode: pick a file from a volume.
+ * Save mode (P6): pick a folder and provide a name, then call onSave.
+ * Disk mount + trash management deferred to P6.3/P9.
  */
 export class VolumeBrowserController {
     private readonly volumes: Volume[];
+    private readonly mode: "open" | "save";
+    private readonly defaultName: string;
     private readonly onOpen?: (volume: Volume, entry: VolumeEntry) => void;
     private readonly onOpenDeviceFile?: () => void;
+    private readonly onSave?: (volume: Volume, folderPath: string, name: string) => void;
+    private readonly onMountDisk?: () => void;
+    private readonly onReauthorize?: (volume: Volume) => Promise<boolean>;
 
     constructor(options: VolumeBrowserOptions) {
         this.volumes = options.volumes;
+        this.mode = options.mode ?? "open";
+        this.defaultName = options.defaultName ?? "";
         this.onOpen = options.onOpen;
         this.onOpenDeviceFile = options.onOpenDeviceFile;
+        this.onSave = options.onSave;
+        this.onMountDisk = options.onMountDisk;
+        this.onReauthorize = options.onReauthorize;
     }
 
     /** Adds the "Open…" button to the `.filemanager-label` header. */
@@ -84,6 +113,8 @@ export class VolumeBrowserController {
         let current: Volume | null = null;
         let path = "";
 
+        const mode = this.mode;
+
         // ── DOM skeleton ──────────────────────────────────────────────────────
         const overlay = document.createElement("div");
         overlay.id = OVERLAY_ID;
@@ -92,14 +123,14 @@ export class VolumeBrowserController {
         const panel = document.createElement("div");
         panel.className = "vb-panel";
         panel.setAttribute("role", "dialog");
-        panel.setAttribute("aria-label", STRINGS.title);
+        panel.setAttribute("aria-label", mode === "save" ? STRINGS.titleSave : STRINGS.titleOpen);
 
         // Header
         const header = document.createElement("header");
         header.className = "vb-header";
         const titleEl = document.createElement("h2");
         titleEl.className = "vb-title";
-        titleEl.textContent = STRINGS.title;
+        titleEl.textContent = mode === "save" ? STRINGS.titleSave : STRINGS.titleOpen;
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
         closeBtn.className = "vb-close";
@@ -115,10 +146,25 @@ export class VolumeBrowserController {
         listEl.className = "vb-list";
         body.append(crumbs, listEl);
 
+        // Save bar (save mode only)
+        const saveBar = document.createElement("div");
+        saveBar.className = "vb-savebar";
+        saveBar.hidden = true;
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.className = "vb-name";
+        nameInput.value = this.defaultName;
+        nameInput.placeholder = STRINGS.namePlaceholder;
+        const saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "vb-save";
+        saveBtn.textContent = STRINGS.saveHere;
+        saveBar.append(nameInput, saveBtn);
+
         // Footer
         const footer = document.createElement("footer");
         footer.className = "vb-footer";
-        if (this.onOpenDeviceFile) {
+        if (mode === "open" && this.onOpenDeviceFile) {
             const onDevice = this.onOpenDeviceFile;
             const b = document.createElement("button");
             b.type = "button";
@@ -130,8 +176,18 @@ export class VolumeBrowserController {
             });
             footer.append(b);
         }
+        if (this.onMountDisk) {
+            const onMount = this.onMountDisk;
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "vb-mount-disk";
+            b.append(faIcon("fa-hard-drive"), document.createTextNode(` ${STRINGS.mountDisk}`));
+            b.addEventListener("click", () => onMount());
+            footer.append(b);
+        }
 
-        panel.append(header, body, footer);
+        if (mode === "save") panel.append(header, body, saveBar, footer);
+        else panel.append(header, body, footer);
         overlay.appendChild(panel);
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
@@ -148,6 +204,18 @@ export class VolumeBrowserController {
             if (e.target === overlay) close();
         });
         document.addEventListener("keydown", onKey);
+
+        // ── Save bar wiring ───────────────────────────────────────────────────
+        const confirmSave = (): void => {
+            const name = nameInput.value.trim();
+            if (name === "" || !current) return;
+            close();
+            if (this.onSave) this.onSave(current, path, name);
+        };
+        saveBtn.addEventListener("click", confirmSave);
+        nameInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") confirmSave();
+        });
 
         // ── Rendering ─────────────────────────────────────────────────────────
         const crumb = (label: string, go: () => void): HTMLElement => {
@@ -198,7 +266,17 @@ export class VolumeBrowserController {
             }
         };
 
-        const enterVolume = (v: Volume): void => {
+        const enterVolume = (v: Volume, st: VolumeState): void => {
+            if (st === "needs-permission" && this.onReauthorize) {
+                this.onReauthorize(v).then((ok) => {
+                    if (ok) {
+                        current = v;
+                        path = "";
+                        render(); // eslint-disable-line no-use-before-define
+                    }
+                });
+                return;
+            }
             current = v;
             path = "";
             render(); // eslint-disable-line no-use-before-define
@@ -223,9 +301,12 @@ export class VolumeBrowserController {
                 const stEl = document.createElement("span");
                 stEl.className = "vb-vol-state";
                 nameBtn.append(iconEl, nameSpan, stEl);
-                nameBtn.addEventListener("click", () => enterVolume(v));
+
+                let cachedState: VolumeState = "ready";
+                nameBtn.addEventListener("click", () => enterVolume(v, cachedState));
 
                 v.state().then((s) => {
+                    cachedState = s;
                     if (s === "ready") return;
                     stEl.textContent = stateLabel(s);
                 });
@@ -294,6 +375,8 @@ export class VolumeBrowserController {
                     if (entry.type === "dir") {
                         path = entry.path;
                         render(); // eslint-disable-line no-use-before-define
+                    } else if (mode === "save") {
+                        nameInput.value = entry.name;
                     } else {
                         close();
                         if (this.onOpen) this.onOpen(vol, entry);
@@ -307,10 +390,13 @@ export class VolumeBrowserController {
 
         const render = async (): Promise<void> => {
             renderCrumbs();
+            // Save bar is visible only when navigated inside a volume.
+            if (mode === "save") saveBar.hidden = current === null;
             await renderList();
         };
 
         document.body.appendChild(overlay);
         render();
+        if (mode === "save") nameInput.focus();
     }
 }
