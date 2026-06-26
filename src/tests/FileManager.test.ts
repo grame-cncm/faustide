@@ -186,6 +186,18 @@ describe("FileManager", () => {
         expect(onFileRestored).toHaveBeenCalledWith("patch.dsp");
     });
 
+    it("re-persists a restored file via saveHandler so it survives a reload", () => {
+        const { handlers, manager } = createManager({ "main.dsp": "process = _;", "patch.dsp": "process = 1;" });
+
+        manager.softDelete("patch.dsp");
+        expect(handlers.deleteHandler).toHaveBeenCalledWith("patch.dsp", expect.any(String));
+
+        handlers.saveHandler.mockClear();
+        manager.restoreFile("patch.dsp");
+
+        expect(handlers.saveHandler).toHaveBeenCalledWith("patch.dsp", "process = 1;", expect.any(String));
+    });
+
     it("lets onFileRestored re-apply the disk-tracked indicator after a trash round-trip", () => {
         const { manager } = createManager({ "main.dsp": "process = _;", "patch.dsp": "process = _;" });
         manager.setDiskTracked("patch.dsp", true);

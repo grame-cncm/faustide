@@ -394,6 +394,9 @@ export class FileManager {
     restoreFile(fileName: string): boolean {
         if (!this.project.restoreFile(fileName)) return false;
         if (!this.findFileDiv(fileName)) this.divFiles.appendChild(this.createFileDiv(fileName, false));
+        // softDelete() removed the file from persistent storage via deleteHandler;
+        // re-persist it here so it survives a page reload (symmetric to delete).
+        if (this.saveHandler) this.saveHandler(fileName, this.getValue(fileName), this.mainCode);
         // Re-apply the disk-tracked indicator (and write-back link) if the file
         // still has a known disk origin — soft-delete keeps the origin alive.
         if (this.onFileRestored) this.onFileRestored(fileName);
