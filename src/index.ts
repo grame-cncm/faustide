@@ -325,7 +325,7 @@ $(async () => {
     const mountRegistry = new MountRegistry(uiEnv.fileManager.model);
     // Shared mutable volume list — both browsers hold the same reference so
     // pushing a new DiskVolume is visible on the next open() call.
-    const volumes: Volume[] = [mountRegistry.getLibrary()];
+    const volumes: Volume[] = [];
 
     const mountDisk = fsAccessAvailable() ? async () => {
         const dirHandle = await pickDirectory();
@@ -358,11 +358,7 @@ $(async () => {
             uiEnv.fileManager.newFile(handle.name, content);
         },
         onMountDisk: mountDisk,
-        onReauthorize: reauthorize,
-        onDelete: (_vol, entry) => { uiEnv.fileManager.softDelete(entry.name); },
-        onRestore: (_vol, entry) => { uiEnv.fileManager.restoreFile(entry.name); },
-        onPurge: (_vol, entry) => { uiEnv.fileManager.model.purgeFile(entry.name); },
-        onEmptyTrash: () => { uiEnv.fileManager.model.emptyTrash(); }
+        onReauthorize: reauthorize
     });
     openBrowser.bind();
 
