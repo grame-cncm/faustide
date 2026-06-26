@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/runtime/fs/**/*",
+        "src/model/Perimeter.ts",
+        "src/runtime/state/OriginState.ts",
+        "src/ui/VolumeBrowserController.ts",
+        "src/tests/helpers/FakeDirectoryHandle.ts"
+    ]
+}
