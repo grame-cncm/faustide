@@ -246,8 +246,7 @@ export class FileManager {
         btnMain.addEventListener("touchstart", () => this.setMain(this._fileList.indexOf(fileName)));
         btnDelete.addEventListener("click", (e) => {
             e.stopPropagation();
-            const i = this._fileList.indexOf(fileName);
-            this.project.deleteFile(fileName);
+            this.project.softDeleteFile(fileName);
             divFile.remove();
             if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
             const nextSelection = this.project.ensureSelectionAfterDelete();
@@ -307,7 +306,6 @@ export class FileManager {
     rename(oldName: string, newNameIn: string) {
         const newName = ProjectModel.sanitizeFileName(newNameIn);
         if (oldName === newName) return false;
-        const i = this._fileList.indexOf(oldName);
         let spanName: HTMLSpanElement;
         let divFile: HTMLDivElement;
         for (let i = 0; i < this.divFiles.children.length; i++) {
@@ -338,6 +336,36 @@ export class FileManager {
     renameSelected(newName: string) {
         this.rename(this.selected, newName);
     }
+    /**
+     * Soft-deletes a file (moves it to the trash) and updates the DOM.
+     * Equivalent to clicking the × button on the file row.
+     */
+    softDelete(fileName: string): void {
+        if (!this.project.softDeleteFile(fileName)) return;
+        const divFile = this.findFileDiv(fileName);
+        if (divFile) divFile.remove();
+        if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
+        const nextSelection = this.project.ensureSelectionAfterDelete();
+        if (!this.findFileDiv(nextSelection.fileName)) this.divFiles.appendChild(this.createFileDiv(nextSelection.fileName, false));
+        if (nextSelection.createdDefaultFile && this.saveHandler) {
+            this.saveHandler(nextSelection.fileName, this.getValue(nextSelection.fileName), this.mainCode);
+        }
+        this.select(nextSelection.fileName);
+        if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
+        else this.setMain(this.$mainFile);
+    }
+
+    /**
+     * Restores a file from the trash back into the project and adds it to the
+     * DOM.  Returns false when the file is not in the trash or causes a name
+     * collision with an existing project file.
+     */
+    restoreFile(fileName: string): boolean {
+        if (!this.project.restoreFile(fileName)) return false;
+        if (!this.findFileDiv(fileName)) this.divFiles.appendChild(this.createFileDiv(fileName, false));
+        return true;
+    }
+
     newFile(fileNameIn?: string, content?: string | Uint8Array) {
         const fileName = this.project.createFile(fileNameIn, content);
         const divFile = this.createFileDiv(fileName, false);
