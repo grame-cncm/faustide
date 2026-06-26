@@ -1,5 +1,6 @@
 import JSZip from "jszip";
 import type { FaustExportTargets } from "./types";
+import { computeClosure } from "../model/Perimeter";
 
 type ProjectZipOptions = {
     name: string;
@@ -51,20 +52,32 @@ export class ExportService {
     }
 
     /**
-     * Builds the ZIP accepted by faustservice: project libraries and soundfiles
-     * plus a generated main DSP with sanitized export declarations.
+     * Builds the ZIP accepted by faustservice: the computed perimeter of the
+     * main DSP (imported libraries and soundfiles) plus a generated main DSP
+     * with sanitized export declarations.
+     *
+     * Uses computeClosure so only files actually referenced by the main DSP
+     * (transitively) are bundled — not "all .lib + all audio" (plan §7/I6).
      */
     async buildProjectZip(options: ProjectZipOptions): Promise<File> {
+        const mainVirtualName = `${options.name}.dsp`;
+        const fileNameSet = new Set(options.fileNames);
+
+        const readText = (name: string): string | null => {
+            if (name === mainVirtualName) return options.mainCode;
+            const val = options.getValue(name);
+            return typeof val === "string" ? val : null;
+        };
+        const isProjectLocal = (name: string) => name === mainVirtualName || fileNameSet.has(name);
+
+        const { files } = computeClosure(mainVirtualName, readText, isProjectLocal);
+
         const zip = new JSZip();
-        options.fileNames.forEach((fileName) => {
-            if (fileName.endsWith(".lib")) zip.file(fileName, options.getValue(fileName));
+        files.forEach((fileName) => {
+            if (fileName === mainVirtualName) return; // replaced by generated main below
+            zip.file(fileName, options.getValue(fileName));
         });
-        options.fileNames.forEach((fileName) => {
-            if (fileName.endsWith(".wav") || fileName.endsWith(".flac")) {
-                zip.file(fileName, options.getValue(fileName));
-            }
-        });
-        zip.file(`${options.name}.dsp`, `declare filename "${options.name}.dsp";\ndeclare name "${options.name}";\n${options.mainCode}`);
+        zip.file(mainVirtualName, `declare filename "${mainVirtualName}";\ndeclare name "${options.name}";\n${options.mainCode}`);
         const blob = await zip.generateAsync({ type: "blob" });
         return new File([blob], `${options.name}.zip`);
     }

@@ -28,7 +28,10 @@ describe("ExportService", () => {
         vi.restoreAllMocks();
     });
 
-    it("builds a project ZIP with libraries, soundfiles, and generated main DSP", async () => {
+    // Golden updated by P7 commit 7.2: only the computed closure is bundled,
+    // not "all .lib + all audio".  mainCode "process = _;" has no imports, so
+    // the closure = { demo.dsp } only.  Unreferenced libs and audio are excluded.
+    it("builds a project ZIP with only the computed closure of the main DSP", async () => {
         const service = new ExportService();
         const file = await service.buildProjectZip({
             name: "demo",
@@ -40,11 +43,28 @@ describe("ExportService", () => {
         const zip = await JSZip.loadAsync(await readFileAsArrayBuffer(file));
 
         expect(file.name).toBe("demo.zip");
-        expect(await zip.file("lib.lib").async("string")).toBe("lib.lib content");
-        expect(await zip.file("kick.wav").async("uint8array")).toEqual(new Uint8Array([1, 2, 3]));
-        expect(await zip.file("voice.flac").async("string")).toBe("voice.flac content");
+        // Generated main is always present
         expect(await zip.file("demo.dsp").async("string")).toBe("declare filename \"demo.dsp\";\ndeclare name \"demo\";\nprocess = _;");
+        // Unreferenced files are excluded (tighter than the old "all .lib + all audio")
+        expect(zip.file("lib.lib")).toBeNull();
+        expect(zip.file("kick.wav")).toBeNull();
+        expect(zip.file("voice.flac")).toBeNull();
         expect(zip.file("ignored.dsp")).toBeNull();
+    });
+
+    it("builds a project ZIP that includes a referenced library", async () => {
+        const service = new ExportService();
+        const file = await service.buildProjectZip({
+            name: "reverb",
+            fileNames: ["filters.lib", "unreferenced.lib"],
+            getValue: fileName => `${fileName} content`,
+            mainCode: 'import("filters.lib"); process = _;'
+        });
+
+        const zip = await JSZip.loadAsync(await readFileAsArrayBuffer(file));
+
+        expect(await zip.file("filters.lib").async("string")).toBe("filters.lib content");
+        expect(zip.file("unreferenced.lib")).toBeNull();
     });
 
     it("builds the expanded source file used by GUI Builder exports", async () => {

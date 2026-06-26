@@ -3,6 +3,7 @@ import { ProjectFilesController } from "../ui/ProjectFilesController";
 
 const createFileManager = () => ({
     fileNames: ["main.dsp", "lib.lib"],
+    mainFileName: "main.dsp",
     mainFileNameWithoutSuffix: "main",
     mainCode: "process = _;",
     newFile: vi.fn(),
@@ -95,7 +96,10 @@ describe("ProjectFilesController", () => {
         expect(runDsp).toHaveBeenCalledWith("process = _;");
     });
 
-    it("saves all project files to a ZIP download", async () => {
+    // Golden updated by P7 commit 7.2: only the computed closure is bundled.
+    // main.dsp ("process = _;") has no imports, so closure = { main.dsp }.
+    // lib.lib is unreferenced and therefore excluded from the ZIP.
+    it("saves only the computed closure to a ZIP download", async () => {
         const fileManager = createFileManager();
         const zip = createZip();
         const click = vi.fn();
@@ -114,11 +118,38 @@ describe("ProjectFilesController", () => {
         await Promise.resolve();
 
         expect(zip.file).toHaveBeenCalledWith("main.dsp", "process = _;");
-        expect(zip.file).toHaveBeenCalledWith("lib.lib", "foo = _;");
+        expect(zip.file).not.toHaveBeenCalledWith("lib.lib", expect.anything());
         expect(zip.generateAsync).toHaveBeenCalledWith({ type: "blob" });
         expect($("#a-save").attr("href")).toBe("blob:project");
         expect($("#a-save").attr("download")).toBe("main.zip");
         expect(click).toHaveBeenCalledTimes(1);
+    });
+
+    it("saves a referenced library in the closure ZIP", async () => {
+        const fileManager = {
+            ...createFileManager(),
+            getValue: vi.fn((name: string) => {
+                if (name === "main.dsp") return 'import("lib.lib"); process = _;';
+                return "foo = _;";
+            })
+        };
+        const zip = createZip();
+        $("#a-save")[0].click = vi.fn();
+        new ProjectFilesController({
+            fileManager: fileManager as any,
+            compileOptions: { realtimeCompile: false } as any,
+            audioEnv: {} as any,
+            createZip: () => zip as any,
+            readFileAsText: vi.fn(),
+            runDsp: vi.fn(),
+            updateDiagram: vi.fn()
+        }).bind();
+
+        $("#btn-save").trigger("click");
+        await Promise.resolve();
+
+        expect(zip.file).toHaveBeenCalledWith("main.dsp", expect.stringContaining("import"));
+        expect(zip.file).toHaveBeenCalledWith("lib.lib", "foo = _;");
     });
 
     it("imports dropped files through the editor overlay", async () => {
