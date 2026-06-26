@@ -327,6 +327,24 @@ $(async () => {
     // pushing a new DiskVolume is visible on the next open() call.
     const volumes: Volume[] = [];
 
+    // Restore disk mounts persisted in IDB from previous sessions.
+    for (const { id, handle } of await mountRegistry.loadDiskMounts()) {
+        volumes.push(new DiskVolume(handle, id));
+    }
+
+    // Restore disk-origin tracking for files that are still in the project.
+    // This re-establishes the green indicator and write-back path after reload.
+    {
+        const projectFiles = new Set(uiEnv.fileManager.fileNames);
+        for (const [savedName, origin] of DiskOriginTracker.loadPersistedOrigins()) {
+            if (!projectFiles.has(savedName)) continue;
+            const vol = volumes.find(v => v.id === origin.volumeId);
+            if (!vol) continue;
+            diskTracker.restore(savedName, vol as DiskVolume, origin.path);
+            uiEnv.fileManager.setDiskTracked(savedName, true);
+        }
+    }
+
     const mountDisk = fsAccessAvailable() ? async () => {
         const dirHandle = await pickDirectory();
         if (!dirHandle) return;
