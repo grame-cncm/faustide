@@ -93,6 +93,8 @@ body {
                 & > #btn-save {
                     $color: #35a8f0;
                     border-color: $color;
+                    white-space: nowrap;
+                    width: auto;
                     &:hover {
                         background-color: darken($color, 50%);
                         border-color: $color;
