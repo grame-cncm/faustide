@@ -159,6 +159,9 @@
 .vb-open-btn {
     font-size: 13px;
     color: #cccccc;
+    position: absolute;
+    right: 25px; // sits just left of .filemanager-btn-new-file (also 25px, right: 0)
+    &:hover { color: #ffffff; }
 }
 
 .vb-savebar {
