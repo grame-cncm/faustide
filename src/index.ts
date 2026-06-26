@@ -79,7 +79,7 @@ import { TooltipController } from "./ui/TooltipController";
 import { DiskVolume } from "./runtime/fs/DiskVolume";
 import type { Volume } from "./runtime/fs/Volume";
 import { VolumeBrowserController } from "./ui/VolumeBrowserController";
-import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission, openDecision } from "./runtime/fs/FileAccess";
+import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission, openDecision, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 import { MountRegistry } from "./runtime/fs/MountRegistry";
 import { computeClosure } from "./model/Perimeter";
 import { writeBundleToDir } from "./runtime/fs/BundleWriter";
@@ -337,19 +337,18 @@ $(async () => {
         }
     }
 
-    // When a file is dropped from a mounted folder, resolve which volume it belongs
+    // When a file is dropped from a mounted folder, find which volume it belongs
     // to and mark it as disk-tracked (green indicator + write-back on save).
-    // getAsFileSystemHandle / resolve are Chrome-only — gate on fsAccessAvailable.
-    const onDiskDropCallback = fsAccessAvailable()
-        ? async (savedName: string, handle: FileSystemFileHandle) => {
+    // resolvePath relies on the Chromium-only FS Access API — gate on availability.
+    const onDiskDropCallback: DroppedFileHandleCallback | undefined = fsAccessAvailable()
+        ? async (savedName, handle) => {
             for (const vol of volumes) {
                 if (vol.kind !== "disk") continue;
                 const diskVol = vol as DiskVolume;
-                // FileSystemDirectoryHandle.resolve() returns null when handle is
-                // not a descendant of the directory.
-                const rel: string[] | null = await (diskVol.rootHandle as any).resolve?.(handle) ?? null;
-                if (!rel) continue;
-                diskTracker.track(savedName, diskVol, rel.join("/"));
+                // resolvePath() is null unless the handle lives inside this mount.
+                const path = await diskVol.resolvePath(handle);
+                if (path === null) continue;
+                diskTracker.track(savedName, diskVol, path);
                 uiEnv.fileManager.setDiskTracked(savedName, true);
                 break;
             }

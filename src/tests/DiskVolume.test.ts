@@ -123,6 +123,30 @@ describe("DiskVolume", () => {
         expect(vol.rootHandle).toBe(dir);
     });
 
+    // ── resolvePath() ─────────────────────────────────────────────────────────
+
+    it("resolvePath() joins the segments returned by the native resolve()", async () => {
+        const handle = { kind: "file", name: "main.dsp" } as FileSystemFileHandle;
+        const dir = makeFakeDir() as any;
+        dir.resolve = (h: FileSystemHandle) => Promise.resolve(h === handle ? ["sub", "main.dsp"] : null);
+        const vol = new DiskVolume(dir, "disk:1");
+        expect(await vol.resolvePath(handle)).toBe("sub/main.dsp");
+    });
+
+    it("resolvePath() returns null when the handle is outside the mount", async () => {
+        const dir = makeFakeDir() as any;
+        dir.resolve = () => Promise.resolve(null);
+        const vol = new DiskVolume(dir, "disk:1");
+        const outsider = { kind: "file", name: "other.dsp" } as FileSystemFileHandle;
+        expect(await vol.resolvePath(outsider)).toBeNull();
+    });
+
+    it("resolvePath() returns null when resolve() is unavailable (older shim)", async () => {
+        const vol = new DiskVolume(makeFakeDir(), "disk:1");
+        const handle = { kind: "file", name: "main.dsp" } as FileSystemFileHandle;
+        expect(await vol.resolvePath(handle)).toBeNull();
+    });
+
     // ── list() ────────────────────────────────────────────────────────────────
 
     it("list('') returns flat entries for root children", async () => {

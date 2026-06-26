@@ -1,6 +1,7 @@
 import type JSZip from "jszip";
 import type { FileManager } from "../FileManager";
 import type { FaustEditorAudioEnv, FaustEditorCompileOptions } from "../runtime/types";
+import { captureDroppedFileHandle, type DroppedFileHandleCallback } from "../runtime/fs/FileAccess";
 
 type ProjectFilesControllerOptions = {
     fileManager: FileManager;
@@ -11,7 +12,7 @@ type ProjectFilesControllerOptions = {
     runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     updateDiagram: (code: string) => { success: boolean; error?: Error };
     /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
-    onDroppedFileHandle?: (savedName: string, handle: FileSystemFileHandle) => void;
+    onDroppedFileHandle?: DroppedFileHandleCallback;
 };
 
 /**
@@ -101,7 +102,9 @@ export class ProjectFilesController {
     }
 
     /**
-     * Handles a file dropped onto the editor overlay.
+     * Handles a file dropped onto the editor overlay: imports it as a project
+     * file and (Chromium only) flags it as disk-tracked when it came from a
+     * mounted folder.
      */
     private async dropFile(e: JQuery.DropEvent) {
         $(e.currentTarget).hide();
@@ -109,17 +112,10 @@ export class ProjectFilesController {
         if (!event.dataTransfer || !event.dataTransfer.files.length) return;
         e.preventDefault();
         e.stopPropagation();
-        // Capture before first await — DataTransfer items go stale after yield
-        const item = event.dataTransfer.items?.[0] as any;
-        const fsHandlePromise: Promise<FileSystemHandle | null> | null =
-            this.onDroppedFileHandle && item?.getAsFileSystemHandle
-                ? item.getAsFileSystemHandle() as Promise<FileSystemHandle | null>
-                : null;
+        // Must capture the source handle before the first await (see helper).
+        const resolveDiskHandle = captureDroppedFileHandle(event.dataTransfer, this.onDroppedFileHandle);
         const savedName = await this.importFile(event.dataTransfer.files[0]);
-        if (savedName && fsHandlePromise) {
-            const handle = await fsHandlePromise;
-            if (handle?.kind === "file") this.onDroppedFileHandle!(savedName, handle as FileSystemFileHandle);
-        }
+        await resolveDiskHandle(savedName);
     }
 
     /**

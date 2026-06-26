@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     fsAccessAvailable, openDecision, pickImportableFileHandle,
-    pickDirectory, ensureRwPermission, queryRwGranted
+    pickDirectory, ensureRwPermission, queryRwGranted, captureDroppedFileHandle
 } from "../runtime/fs/FileAccess";
+
+/** Builds a DataTransfer-shaped stub whose first item exposes getAsFileSystemHandle. */
+const makeDropTransfer = (handle: FileSystemHandle | null, hasApi = true): DataTransfer => ({
+    items: [{
+        kind: "file",
+        ...(hasApi ? { getAsFileSystemHandle: vi.fn().mockResolvedValue(handle) } : {})
+    }]
+} as unknown as DataTransfer);
 
 const makeFakeDirHandle = (overrides: Record<string, unknown> = {}): FileSystemDirectoryHandle => ({
     kind: "directory" as const,
@@ -139,6 +147,61 @@ describe("ensureRwPermission", () => {
     it("returns true when requestPermission is absent", async () => {
         const handle = makeFakeDirHandle({ requestPermission: undefined });
         expect(await ensureRwPermission(handle)).toBe(true);
+    });
+});
+
+describe("captureDroppedFileHandle", () => {
+    const fileHandle = { kind: "file", name: "src.dsp" } as FileSystemFileHandle;
+
+    it("invokes the callback with the saved name and captured file handle", async () => {
+        const cb = vi.fn();
+        const resolve = captureDroppedFileHandle(makeDropTransfer(fileHandle), cb);
+        await resolve("untitled.dsp");
+        expect(cb).toHaveBeenCalledWith("untitled.dsp", fileHandle);
+    });
+
+    it("calls getAsFileSystemHandle synchronously, before the resolver awaits", () => {
+        const transfer = makeDropTransfer(fileHandle);
+        const getAsFileSystemHandle = (transfer.items[0] as any).getAsFileSystemHandle;
+        captureDroppedFileHandle(transfer, vi.fn());
+        // Captured eagerly so the stale DataTransfer is read before any yield.
+        expect(getAsFileSystemHandle).toHaveBeenCalledTimes(1);
+    });
+
+    it("is a no-op when no callback is registered", () => {
+        const transfer = makeDropTransfer(fileHandle);
+        const getAsFileSystemHandle = (transfer.items[0] as any).getAsFileSystemHandle;
+        captureDroppedFileHandle(transfer, undefined);
+        expect(getAsFileSystemHandle).not.toHaveBeenCalled();
+    });
+
+    it("does not call back when the saved name is undefined", async () => {
+        const cb = vi.fn();
+        const resolve = captureDroppedFileHandle(makeDropTransfer(fileHandle), cb);
+        await resolve(undefined);
+        expect(cb).not.toHaveBeenCalled();
+    });
+
+    it("does not call back when getAsFileSystemHandle is unavailable (non-Chromium)", async () => {
+        const cb = vi.fn();
+        const resolve = captureDroppedFileHandle(makeDropTransfer(null, false), cb);
+        await resolve("untitled.dsp");
+        expect(cb).not.toHaveBeenCalled();
+    });
+
+    it("ignores a directory handle (only file drops are tracked)", async () => {
+        const cb = vi.fn();
+        const dir = { kind: "directory", name: "folder" } as unknown as FileSystemHandle;
+        const resolve = captureDroppedFileHandle(makeDropTransfer(dir), cb);
+        await resolve("untitled.dsp");
+        expect(cb).not.toHaveBeenCalled();
+    });
+
+    it("tolerates a null DataTransfer", async () => {
+        const cb = vi.fn();
+        const resolve = captureDroppedFileHandle(null, cb);
+        await resolve("untitled.dsp");
+        expect(cb).not.toHaveBeenCalled();
     });
 });
 

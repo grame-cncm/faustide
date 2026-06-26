@@ -1,6 +1,7 @@
 import "./FileManager.scss";
 import { ProjectModel } from "./model/ProjectModel";
 import type { TFileSystem } from "./model/ProjectModel";
+import { captureDroppedFileHandle, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 
 type TOptions = {
     container: HTMLDivElement;
@@ -49,7 +50,7 @@ export class FileManager {
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
     /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
-    onDroppedFileHandle?: (savedName: string, handle: FileSystemFileHandle) => void;
+    onDroppedFileHandle?: DroppedFileHandleCallback;
 
     constructor(options: TOptions) {
         this.container = options.container;
@@ -187,27 +188,26 @@ export class FileManager {
             e.preventDefault();
             e.stopPropagation();
         };
+        /**
+         * Drop a file onto the file-manager overlay: read it, add it to the
+         * project, and (Chromium only) flag it as disk-tracked when it came from
+         * a mounted folder.  Audio files are read as binary, everything else as
+         * text; the name is sanitized by newFile() if it clashes or is illegal.
+         */
         const dropHandler = async (e: DragEvent) => {
             this.divOverlay.style.display = "";
             if (!e.dataTransfer || !e.dataTransfer.files.length) return;
             e.preventDefault();
             e.stopPropagation();
             const file = e.dataTransfer.files[0];
-            // Capture before first await — DataTransfer items go stale after yield
-            const item = e.dataTransfer.items[0] as any;
-            const fsHandlePromise: Promise<FileSystemHandle | null> | null =
-                this.onDroppedFileHandle && item?.getAsFileSystemHandle
-                    ? item.getAsFileSystemHandle() as Promise<FileSystemHandle | null>
-                    : null;
+            // Must capture the source handle before the first await (see helper).
+            const resolveDiskHandle = captureDroppedFileHandle(e.dataTransfer, this.onDroppedFileHandle);
             const content: string | Uint8Array = file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)
                 ? new Uint8Array(await file.arrayBuffer())
                 : await file.text();
             const savedName = this.newFile(file.name, content);
             this.select(savedName);
-            if (fsHandlePromise) {
-                const handle = await fsHandlePromise;
-                if (handle?.kind === "file") this.onDroppedFileHandle!(savedName, handle as FileSystemFileHandle);
-            }
+            await resolveDiskHandle(savedName);
         };
         this.container.addEventListener("dragenter", dragenterHandler);
         this.container.addEventListener("dragover", dragenterHandler);
