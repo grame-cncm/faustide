@@ -37,7 +37,12 @@ export class AudioDeviceController {
     async bind() {
         if (!this.mediaDevices) return;
         await this.requestAudioPermission();
-        const devices = await this.mediaDevices.enumerateDevices();
+        let devices: MediaDeviceInfo[];
+        try {
+            devices = await this.mediaDevices.enumerateDevices();
+        } catch (e) {
+            return;
+        }
         $("#input-ui-default").hide();
         const $selectInput = $("#select-audio-input").prop("disabled", false);
         let $selectOutput: JQuery<HTMLElement>;
@@ -96,11 +101,11 @@ export class AudioDeviceController {
         devices.forEach((device) => {
             if (!device.deviceId) return;
             if (device.kind === "audioinput") {
-                if ($selectInput.find(`option[value=${device.deviceId}]`).length) return;
+                if ($selectInput.children("option").filter((_, el) => (el as HTMLOptionElement).value === device.deviceId).length) return;
                 $selectInput.append(new Option(device.label || device.deviceId, device.deviceId));
             }
             if (this.getSupportMediaStreamDestination() && device.kind === "audiooutput") {
-                if ($selectOutput.find(`option[value=${device.deviceId}]`).length) return;
+                if ($selectOutput.children("option").filter((_, el) => (el as HTMLOptionElement).value === device.deviceId).length) return;
                 $selectOutput.append(new Option(device.label || device.deviceId, device.deviceId));
             }
         });
