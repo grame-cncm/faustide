@@ -18,6 +18,11 @@ type ProjectRuntimeControllerOptions = {
     saveEditorParams: () => void;
     runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     updateDiagram: (code: string) => { success: boolean; error?: Error };
+    /**
+     * Called after each BrowserFS write for files that have a known disk
+     * origin (open in-place, invariant I5).  Errors are shown via alertController.
+     */
+    onDiskSave?: (fileName: string, content: string | Uint8Array) => Promise<void>;
 };
 
 /**
@@ -36,6 +41,7 @@ export class ProjectRuntimeController {
     private readonly saveEditorParams: () => void;
     private readonly runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     private readonly updateDiagram: (code: string) => { success: boolean; error?: Error };
+    private readonly onDiskSave?: (fileName: string, content: string | Uint8Array) => Promise<void>;
     private saveTimeout: number;
     private realtimeCompileTimer: number;
 
@@ -47,6 +53,7 @@ export class ProjectRuntimeController {
         this.saveEditorParams = options.saveEditorParams;
         this.runDsp = options.runDsp;
         this.updateDiagram = options.updateDiagram;
+        this.onDiskSave = options.onDiskSave;
     }
 
     /**
@@ -80,9 +87,11 @@ export class ProjectRuntimeController {
      */
     private saveFile(fileName: string, content: string | Uint8Array, mainCode: string) {
         clearTimeout(this.saveTimeout);
+        const diskSave = this.onDiskSave;
         this.saveTimeout = setTimeout(async () => {
             try {
                 await this.projectPersistence.saveFile(fileName, content);
+                if (diskSave) await diskSave(fileName, content);
             } catch (e) {
                 this.alertController.show(e instanceof Error ? e : String(e));
             }
