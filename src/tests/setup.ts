@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
+import "fake-indexeddb/auto";
 import $ from "jquery";
-import { beforeEach, vi } from "vitest";
+import { beforeAll, beforeEach, vi } from "vitest";
 
 Object.assign(window, { $, jQuery: $ });
 Object.assign(globalThis, { $, jQuery: $ });
@@ -46,6 +47,16 @@ class MockAudioContext {
 Object.assign(window, {
     AudioContext: window.AudioContext || MockAudioContext,
     webkitAudioContext: (window as any).webkitAudioContext || MockAudioContext
+});
+
+// WebCrypto: jsdom does not implement crypto.subtle; shim it from Node's
+// built-in WebCrypto (globalThis.crypto on Node 20+).  Needed by MountRegistry
+// (token store) and the git blob-sha helper in P8.
+beforeAll(async () => {
+    if (!window.crypto?.subtle) {
+        const { webcrypto } = await import("node:crypto");
+        Object.assign(window, { crypto: webcrypto });
+    }
 });
 
 beforeEach(() => {
