@@ -1,6 +1,6 @@
 // File System Access API helpers — Chromium-only; callers must gate on
 // fsAccessAvailable().  Unit-testable pure parts: openDecision().
-// I/O functions (pick*) are tested by stubbing window.showOpenFilePicker.
+// I/O functions (pick*) are tested by stubbing window.show*Picker.
 
 import { isNativeFaustFile } from "./Volume";
 
@@ -12,6 +12,12 @@ interface FsPickerWindow {
         types?: { description?: string; accept: Record<string, string[]> }[];
         excludeAcceptAllOption?: boolean;
     }): Promise<FileSystemFileHandle[]>;
+    showDirectoryPicker(opts?: { mode?: "read" | "readwrite" }): Promise<FileSystemDirectoryHandle>;
+}
+
+interface FsPermHandle {
+    queryPermission(d: { mode: "readwrite" }): Promise<PermissionState>;
+    requestPermission(d: { mode: "readwrite" }): Promise<PermissionState>;
 }
 
 // ---- Feature detection -------------------------------------------------------
@@ -63,4 +69,34 @@ export async function pickImportableFileHandle(): Promise<FileSystemFileHandle |
     } catch {
         return null; // user dismissed the picker
     }
+}
+
+/** Prompt for a read-write directory handle; null if the user cancels. */
+export async function pickDirectory(): Promise<FileSystemDirectoryHandle | null> {
+    if (!fsAccessAvailable()) return null;
+    try {
+        return await (window as unknown as FsPickerWindow).showDirectoryPicker({ mode: "readwrite" });
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Re-request RW permission on a persisted handle (requires a user gesture).
+ * Returns whether the permission is now granted.
+ */
+export async function ensureRwPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
+    const h = handle as unknown as FsPermHandle;
+    if (typeof h.requestPermission !== "function") return true;
+    return (await h.requestPermission({ mode: "readwrite" })) === "granted";
+}
+
+/**
+ * Query RW permission silently (no user gesture, no prompt).
+ * Returns true only if already granted — used by background pollers.
+ */
+export async function queryRwGranted(handle: FileSystemDirectoryHandle): Promise<boolean> {
+    const h = handle as unknown as FsPermHandle;
+    if (typeof h.queryPermission !== "function") return true;
+    return (await h.queryPermission({ mode: "readwrite" })) === "granted";
 }
