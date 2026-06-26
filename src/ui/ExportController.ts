@@ -41,12 +41,7 @@ export class ExportController {
         this.onError = options.onError || (() => undefined);
     }
 
-    /**
-     * Wires the export modal, default export button, and initial target list.
-     *
-     * This method is async because the legacy startup path waits for target
-     * discovery before the rest of the UI is considered initialized.
-     */
+    /** Wires the export modal, default export button, and initial target list. */
     async bind() {
         $<HTMLInputElement>("#export-server").val(this.getServer()).on("change", e => this.changeServer(e.currentTarget.value));
         $(".btn-def-exp").prop("disabled", false).on("click", () => this.exportProgram(true));

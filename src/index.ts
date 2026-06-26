@@ -425,7 +425,9 @@ $(async () => {
     // Add a "Save to disk" button in the file manager header (💾, right: 50px).
     // The original #btn-save (zip download) is left unchanged.
     if (fsAccessAvailable()) saveBrowser.bindSave();
-    await new ExportController({
+    // Do not await — target discovery is a background network call that must
+    // not block the rest of startup (Run button, audio device init, etc.).
+    new ExportController({
         compileOptions,
         fileManager: uiEnv.fileManager,
         exportService,
