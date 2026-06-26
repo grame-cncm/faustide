@@ -51,6 +51,8 @@ export class FileManager {
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
     /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
     onDroppedFileHandle?: DroppedFileHandleCallback;
+    /** Called after a file is restored from the trash, so callers can re-apply disk tracking. */
+    onFileRestored?: (fileName: string) => void;
 
     constructor(options: TOptions) {
         this.container = options.container;
@@ -392,6 +394,9 @@ export class FileManager {
     restoreFile(fileName: string): boolean {
         if (!this.project.restoreFile(fileName)) return false;
         if (!this.findFileDiv(fileName)) this.divFiles.appendChild(this.createFileDiv(fileName, false));
+        // Re-apply the disk-tracked indicator (and write-back link) if the file
+        // still has a known disk origin — soft-delete keeps the origin alive.
+        if (this.onFileRestored) this.onFileRestored(fileName);
         this.refreshTrash();
         return true;
     }
