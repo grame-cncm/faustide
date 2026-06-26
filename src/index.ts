@@ -79,10 +79,11 @@ import { TooltipController } from "./ui/TooltipController";
 import { DiskVolume } from "./runtime/fs/DiskVolume";
 import type { Volume } from "./runtime/fs/Volume";
 import { VolumeBrowserController } from "./ui/VolumeBrowserController";
-import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission } from "./runtime/fs/FileAccess";
+import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission, openDecision } from "./runtime/fs/FileAccess";
 import { MountRegistry } from "./runtime/fs/MountRegistry";
 import { computeClosure } from "./model/Perimeter";
 import { writeBundleToDir } from "./runtime/fs/BundleWriter";
+import { DiskOriginTracker } from "./runtime/fs/DiskOriginTracker";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -204,6 +205,7 @@ $(async () => {
      * side effects used by FileManager.
      */
     await projectPersistence.loadProject(compileOptions.saveCode);
+    const diskTracker = new DiskOriginTracker();
     const projectRuntimeController = new ProjectRuntimeController({
         compileOptions,
         audioEnv,
@@ -211,7 +213,8 @@ $(async () => {
         alertController,
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp,
-        updateDiagram
+        updateDiagram,
+        onDiskSave: (fileName, content) => diskTracker.writeToDisk(fileName, content)
     });
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
@@ -341,7 +344,10 @@ $(async () => {
         volumes,
         onOpen: (vol, entry) => {
             vol.readText(entry.path).then((content) => {
-                uiEnv.fileManager.newFile(entry.name, content);
+                const savedName = uiEnv.fileManager.newFile(entry.name, content);
+                if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
+                    diskTracker.track(savedName, vol as DiskVolume, entry.path);
+                }
             });
         },
         onOpenDeviceFile: async () => {
