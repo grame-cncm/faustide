@@ -121,4 +121,49 @@
             outline: none;
         }
     }
+    & > .filemanager-trash {
+        & > .filemanager-trash-label {
+            display: flex;
+            position: relative;
+            flex: 0 0 auto;
+            flex-direction: row;
+            background-color: rgba(128, 128, 128, 0.1);
+            height: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            & > .filemanager-trash-span-label {
+                display: flex;
+                position: relative;
+                flex: 1 1 100%;
+                font-size: 12px;
+                padding-left: 20px;
+                height: 100%;
+                align-items: center;
+                color: rgba(255, 255, 255, 0.4);
+            }
+            & > .filemanager-btn-empty-trash {
+                position: absolute;
+                right: 0;
+                border: 0;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f48771'%3E%3Cpath d='M 10 3 L 9 4 L 5 4 L 5 6 L 19 6 L 19 4 L 15 4 L 14 3 L 10 3 z M 6 7 L 6 20 C 6 21.1 6.9 22 8 22 L 16 22 C 17.1 22 18 21.1 18 20 L 18 7 L 6 7 z M 9 10 L 11 10 L 11 19 L 9 19 L 9 10 z M 13 10 L 15 10 L 15 19 L 13 19 L 13 10 z'/%3E%3C/svg%3E");
+                opacity: 0.6;
+                &:hover { opacity: 1; }
+            }
+        }
+        & > .filemanager-trash-files > .filemanager-file {
+            & > .filemanager-filename {
+                color: rgba(255, 255, 255, 0.4);
+                font-style: italic;
+            }
+            & > .filemanager-btn-restore {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2389d185'%3E%3Cpath d='M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z'/%3E%3C/svg%3E");
+                opacity: 0;
+                .filemanager-file:hover & { opacity: 1; }
+            }
+            & > .filemanager-btn-purge {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f48771'%3E%3Cpath d='M 10 3 L 9 4 L 5 4 L 5 6 L 19 6 L 19 4 L 15 4 L 14 3 L 10 3 z M 6 7 L 6 20 C 6 21.1 6.9 22 8 22 L 16 22 C 17.1 22 18 21.1 18 20 L 18 7 L 6 7 z M 9 10 L 11 10 L 11 19 L 9 19 L 9 10 z M 13 10 L 15 10 L 15 19 L 13 19 L 13 10 z'/%3E%3C/svg%3E');
+                opacity: 0;
+                .filemanager-file:hover & { opacity: 1; }
+            }
+        }
+    }
 }
