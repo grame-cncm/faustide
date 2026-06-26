@@ -43,12 +43,6 @@ export class ProjectFilesController {
      * editor drag-and-drop listeners.
      */
     bind() {
-        $("#btn-upload").on("click", () => {
-            $("#input-upload").click();
-        });
-        $<HTMLInputElement>("#input-upload")
-            .on("input", e => this.importFile(e.currentTarget.files && e.currentTarget.files[0]))
-            .on("click", e => e.stopPropagation());
         $("#btn-save").on("click", () => this.saveZip());
         $("#a-save").on("click", e => e.stopPropagation());
         $("#a-docs").on("click", e => e.stopPropagation());
