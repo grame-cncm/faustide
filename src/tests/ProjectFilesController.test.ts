@@ -17,8 +17,6 @@ const createZip = () => ({
 
 const setupDom = () => {
     document.body.innerHTML = `
-        <button id="btn-upload"></button>
-        <input id="input-upload" type="file" />
         <button id="btn-save"></button>
         <a id="a-save"></a>
         <a id="a-docs"></a>
@@ -37,69 +35,7 @@ describe("ProjectFilesController", () => {
         setupDom();
     });
 
-    it("forwards the upload button to the hidden file input", () => {
-        const click = vi.fn();
-        $("#input-upload")[0].click = click;
-        new ProjectFilesController({
-            fileManager: createFileManager() as any,
-            compileOptions: { realtimeCompile: false } as any,
-            audioEnv: {} as any,
-            createZip: createZip as any,
-            readFileAsText: vi.fn(),
-            runDsp: vi.fn(),
-            updateDiagram: vi.fn()
-        }).bind();
-
-        $("#btn-upload").trigger("click");
-
-        expect(click).toHaveBeenCalledTimes(1);
-    });
-
-    it("imports uploaded files with sanitized names and updates the diagram in realtime mode", async () => {
-        const fileManager = createFileManager();
-        const updateDiagram = vi.fn();
-        new ProjectFilesController({
-            fileManager: fileManager as any,
-            compileOptions: { realtimeCompile: true } as any,
-            audioEnv: { dsp: undefined } as any,
-            createZip: createZip as any,
-            readFileAsText: vi.fn(async () => "imported = _;"),
-            runDsp: vi.fn(),
-            updateDiagram
-        }).bind();
-        const file = new File(["ignored"], "bad name!.dsp");
-        Object.defineProperty($<HTMLInputElement>("#input-upload")[0], "files", { value: [file] });
-
-        $("#input-upload").trigger("input");
-        await Promise.resolve();
-
-        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;");
-        expect(updateDiagram).toHaveBeenCalledWith("process = _;");
-    });
-
-    it("runs DSP after importing when realtime mode has an active DSP", async () => {
-        const runDsp = vi.fn();
-        new ProjectFilesController({
-            fileManager: createFileManager() as any,
-            compileOptions: { realtimeCompile: true } as any,
-            audioEnv: { dsp: {} } as any,
-            createZip: createZip as any,
-            readFileAsText: vi.fn(async () => "process = 1;"),
-            runDsp,
-            updateDiagram: vi.fn()
-        }).bind();
-        Object.defineProperty($<HTMLInputElement>("#input-upload")[0], "files", { value: [new File([""], "main.dsp")] });
-
-        $("#input-upload").trigger("input");
-        await Promise.resolve();
-
-        expect(runDsp).toHaveBeenCalledWith("process = _;");
-    });
-
-    // Golden updated by P7 commit 7.2: only the computed closure is bundled.
-    // main.dsp ("process = _;") has no imports, so closure = { main.dsp }.
-    // lib.lib is unreferenced and therefore excluded from the ZIP.
-    it("saves only the computed closure to a ZIP download", async () => {
+    it("saves all project files to a ZIP download", async () => {
         const fileManager = createFileManager();
         const zip = createZip();
         const click = vi.fn();
@@ -118,38 +54,11 @@ describe("ProjectFilesController", () => {
         await Promise.resolve();
 
         expect(zip.file).toHaveBeenCalledWith("main.dsp", "process = _;");
-        expect(zip.file).not.toHaveBeenCalledWith("lib.lib", expect.anything());
+        expect(zip.file).toHaveBeenCalledWith("lib.lib", "foo = _;");
         expect(zip.generateAsync).toHaveBeenCalledWith({ type: "blob" });
         expect($("#a-save").attr("href")).toBe("blob:project");
         expect($("#a-save").attr("download")).toBe("main.zip");
         expect(click).toHaveBeenCalledTimes(1);
-    });
-
-    it("saves a referenced library in the closure ZIP", async () => {
-        const fileManager = {
-            ...createFileManager(),
-            getValue: vi.fn((name: string) => {
-                if (name === "main.dsp") return 'import("lib.lib"); process = _;';
-                return "foo = _;";
-            })
-        };
-        const zip = createZip();
-        $("#a-save")[0].click = vi.fn();
-        new ProjectFilesController({
-            fileManager: fileManager as any,
-            compileOptions: { realtimeCompile: false } as any,
-            audioEnv: {} as any,
-            createZip: () => zip as any,
-            readFileAsText: vi.fn(),
-            runDsp: vi.fn(),
-            updateDiagram: vi.fn()
-        }).bind();
-
-        $("#btn-save").trigger("click");
-        await Promise.resolve();
-
-        expect(zip.file).toHaveBeenCalledWith("main.dsp", expect.stringContaining("import"));
-        expect(zip.file).toHaveBeenCalledWith("lib.lib", "foo = _;");
     });
 
     it("imports dropped files through the editor overlay", async () => {
@@ -174,5 +83,55 @@ describe("ProjectFilesController", () => {
         await Promise.resolve();
 
         expect(fileManager.newFile).toHaveBeenCalledWith("dropfile.dsp", "dropped = _;");
+    });
+
+    it("runs DSP after importing a dropped file when realtime mode has an active DSP", async () => {
+        const runDsp = vi.fn();
+        new ProjectFilesController({
+            fileManager: createFileManager() as any,
+            compileOptions: { realtimeCompile: true } as any,
+            audioEnv: { dsp: {} } as any,
+            createZip: createZip as any,
+            readFileAsText: vi.fn(async () => "process = 1;"),
+            runDsp,
+            updateDiagram: vi.fn()
+        }).bind();
+        const event = $.Event("drop");
+        event.originalEvent = {
+            dataTransfer: { files: [new File([""], "main.dsp")] },
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
+        } as any;
+
+        $("#editor-overlay").trigger(event);
+        await Promise.resolve();
+
+        expect(runDsp).toHaveBeenCalledWith("process = _;");
+    });
+
+    it("updates diagram after importing a dropped file in realtime mode without active DSP", async () => {
+        const updateDiagram = vi.fn();
+        const fileManager = createFileManager();
+        new ProjectFilesController({
+            fileManager: fileManager as any,
+            compileOptions: { realtimeCompile: true } as any,
+            audioEnv: { dsp: undefined } as any,
+            createZip: createZip as any,
+            readFileAsText: vi.fn(async () => "imported = _;"),
+            runDsp: vi.fn(),
+            updateDiagram
+        }).bind();
+        const event = $.Event("drop");
+        event.originalEvent = {
+            dataTransfer: { files: [new File([""], "bad name!.dsp")] },
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
+        } as any;
+
+        $("#editor-overlay").trigger(event);
+        await Promise.resolve();
+
+        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;");
+        expect(updateDiagram).toHaveBeenCalledWith("process = _;");
     });
 });
