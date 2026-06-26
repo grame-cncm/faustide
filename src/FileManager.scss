@@ -150,6 +150,10 @@
             }
         }
         & > .filemanager-trash-files > .filemanager-file {
+            display: flex;
+            position: relative;
+            flex-direction: row;
+            height: 25px;
             & > .filemanager-filename {
                 color: rgba(255, 255, 255, 0.4);
                 font-style: italic;
