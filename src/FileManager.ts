@@ -419,7 +419,7 @@ export class FileManager {
             });
 
             const spanName = document.createElement("span");
-            spanName.classList.add("filemanager-filename");
+            spanName.classList.add("filemanager-trash-filename");
             spanName.textContent = name;
             spanName.title = name;
 
