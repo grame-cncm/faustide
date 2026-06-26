@@ -546,6 +546,12 @@ export class FileManager {
         this._fs = fsIn;
         if (this.project) this.project.fs = fsIn;
     }
+    /** Marks (or unmarks) a file row as linked to a mounted disk volume. */
+    setDiskTracked(fileName: string, tracked: boolean): void {
+        const div = this.findFileDiv(fileName);
+        if (div) div.classList.toggle("filemanager-file--disk", tracked);
+    }
+
     private findFileDiv(fileName: string) {
         return this.divFiles.querySelector(`[data-filename="${fileName}"]`) as HTMLDivElement;
     }
