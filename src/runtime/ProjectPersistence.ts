@@ -63,7 +63,7 @@ export class ProjectPersistence {
      * Removes a persisted project file from BrowserFS.
      */
     async deleteFile(fileName: string) {
-        await this.browserFS.unlink(fileName);
+        if (await this.browserFS.exists(fileName)) await this.browserFS.unlink(fileName);
     }
 
     /**
