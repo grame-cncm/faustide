@@ -108,7 +108,7 @@ export class VolumeBrowserController {
         this.onEmptyTrash = options.onEmptyTrash;
     }
 
-    /** Adds the "Open…" button to the `.filemanager-label` header. */
+    /** Adds the "Open…" button to the `.filemanager-label` header (open mode). */
     bind(): void {
         const header = document.querySelector(".filemanager-label");
         if (!header) return;
@@ -116,8 +116,25 @@ export class VolumeBrowserController {
         btn.id = "btn-open-volume";
         btn.type = "button";
         btn.className = "filemanager-btn-icon vb-open-btn";
-        btn.title = "Open a file…";
+        btn.title = "Open a file from a volume…";
         btn.appendChild(faIcon("fa-folder-open"));
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.open();
+        });
+        header.appendChild(btn);
+    }
+
+    /** Adds the "Save to disk…" button to the `.filemanager-label` header (save mode). */
+    bindSave(): void {
+        const header = document.querySelector(".filemanager-label");
+        if (!header) return;
+        const btn = document.createElement("button");
+        btn.id = "btn-save-to-disk";
+        btn.type = "button";
+        btn.className = "filemanager-btn-icon vb-save-disk-btn";
+        btn.title = "Save project to disk…";
+        btn.appendChild(faIcon("fa-save"));
         btn.addEventListener("click", (e) => {
             e.stopPropagation();
             this.open();

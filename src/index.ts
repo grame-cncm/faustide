@@ -385,8 +385,9 @@ $(async () => {
         onReauthorize: reauthorize
     });
 
-    // Wire the Save As button to open the save browser
-    $("#btn-save").off("click").on("click", () => saveBrowser.open());
+    // Add a "Save to disk" button in the file manager header (💾, right: 50px).
+    // The original #btn-save (zip download) is left unchanged.
+    saveBrowser.bindSave();
     await new ExportController({
         compileOptions,
         fileManager: uiEnv.fileManager,
