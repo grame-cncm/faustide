@@ -76,6 +76,9 @@ import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 import { DiagramController } from "./ui/DiagramController";
 import { AnalyserScopeController } from "./ui/AnalyserScopeController";
 import { TooltipController } from "./ui/TooltipController";
+import { LibraryVolume } from "./runtime/fs/LibraryVolume";
+import { VolumeBrowserController } from "./ui/VolumeBrowserController";
+import { pickImportableFileHandle } from "./runtime/fs/FileAccess";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -311,6 +314,21 @@ $(async () => {
         createZip: () => new JSZip(),
         runDsp,
         updateDiagram
+    }).bind();
+    new VolumeBrowserController({
+        volumes: [new LibraryVolume(uiEnv.fileManager.model)],
+        onOpen: (vol, entry) => {
+            vol.readText(entry.path).then((content) => {
+                uiEnv.fileManager.newFile(entry.name, content);
+            });
+        },
+        onOpenDeviceFile: async () => {
+            const handle = await pickImportableFileHandle();
+            if (!handle) return;
+            const file = await handle.getFile();
+            const content = await file.text();
+            uiEnv.fileManager.newFile(handle.name, content);
+        }
     }).bind();
     await new ExportController({
         compileOptions,
