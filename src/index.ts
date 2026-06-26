@@ -347,6 +347,7 @@ $(async () => {
                 const savedName = uiEnv.fileManager.newFile(entry.name, content);
                 if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
                     diskTracker.track(savedName, vol as DiskVolume, entry.path);
+                    uiEnv.fileManager.setDiskTracked(savedName, true);
                 }
             });
         },
