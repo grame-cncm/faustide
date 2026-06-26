@@ -1,9 +1,17 @@
 import type { DiskVolume } from "./DiskVolume";
 import { openDecision } from "./FileAccess";
 
+const ORIGINS_LS_KEY = "faust:fs:origins";
+
 interface DiskOrigin {
     vol: DiskVolume;
     /** Path within the volume (e.g. "patches/kick.dsp" or "kick.dsp"). */
+    path: string;
+}
+
+/** Serialisable record stored in localStorage. */
+export interface PersistedOrigin {
+    volumeId: string;
     path: string;
 }
 
@@ -16,6 +24,11 @@ interface DiskOrigin {
  *
  * Keyed by the Library file name (the name FileManager uses internally).
  * Binary audio files are never tracked — they are import-copy only.
+ *
+ * The mapping is also persisted to localStorage (`faust:fs:origins`) so that
+ * the green disk-tracked indicator survives a page reload.  On startup callers
+ * read `loadPersistedOrigins()`, match volumeIds to the restored DiskVolume
+ * instances, and call `restore()` for each file still present in the project.
  */
 export class DiskOriginTracker {
     private readonly origins = new Map<string, DiskOrigin>();
@@ -27,11 +40,21 @@ export class DiskOriginTracker {
     track(libraryName: string, vol: DiskVolume, path: string): void {
         if (openDecision(libraryName) !== "open-in-place") return;
         this.origins.set(libraryName, { vol, path });
+        this.persist();
+    }
+
+    /**
+     * Restore an origin without the openDecision guard.
+     * Used at startup to re-establish disk tracking from a previous session.
+     */
+    restore(libraryName: string, vol: DiskVolume, path: string): void {
+        this.origins.set(libraryName, { vol, path });
     }
 
     /** Remove the origin when the file is deleted or renamed. */
     forget(libraryName: string): void {
         this.origins.delete(libraryName);
+        this.persist();
     }
 
     /** Returns true when `libraryName` has a known disk origin. */
@@ -54,5 +77,24 @@ export class DiskOriginTracker {
         const writable = await handle.createWritable();
         await writable.write(content);
         await writable.close();
+    }
+
+    /** Load the persisted origin map written by a previous session. */
+    static loadPersistedOrigins(): Map<string, PersistedOrigin> {
+        try {
+            const raw = localStorage.getItem(ORIGINS_LS_KEY);
+            if (!raw) return new Map();
+            return new Map(Object.entries(JSON.parse(raw) as Record<string, PersistedOrigin>));
+        } catch {
+            return new Map();
+        }
+    }
+
+    private persist(): void {
+        const obj: Record<string, PersistedOrigin> = {};
+        for (const [name, { vol, path }] of this.origins) {
+            obj[name] = { volumeId: vol.id, path };
+        }
+        localStorage.setItem(ORIGINS_LS_KEY, JSON.stringify(obj));
     }
 }
