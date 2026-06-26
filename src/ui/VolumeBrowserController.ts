@@ -204,7 +204,7 @@ export class VolumeBrowserController {
             const b = document.createElement("button");
             b.type = "button";
             b.className = "vb-mount-disk";
-            b.append(faIcon("fa-hard-drive"), document.createTextNode(` ${STRINGS.mountDisk}`));
+            b.append(faIcon("fa-hdd"), document.createTextNode(` ${STRINGS.mountDisk}`));
             b.addEventListener("click", () => onMount());
             footer.append(b);
         }
@@ -217,7 +217,7 @@ export class VolumeBrowserController {
             emptyTrashBtn.type = "button";
             emptyTrashBtn.className = "vb-empty-trash";
             emptyTrashBtn.hidden = true;
-            emptyTrashBtn.append(faIcon("fa-trash-can"), document.createTextNode(` ${STRINGS.emptyTrash}`));
+            emptyTrashBtn.append(faIcon("fa-trash-alt"), document.createTextNode(` ${STRINGS.emptyTrash}`));
             emptyTrashBtn.addEventListener("click", () => {
                 if (!current) return;
                 onEmpty(current);
@@ -469,7 +469,7 @@ export class VolumeBrowserController {
                         btn.type = "button";
                         btn.className = "vb-row-delete";
                         btn.title = STRINGS.delete;
-                        btn.append(faIcon("fa-xmark"));
+                        btn.append(faIcon("fa-times"));
                         btn.addEventListener("click", (e) => {
                             e.stopPropagation();
                             onDel(vol, entry);
