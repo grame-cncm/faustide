@@ -314,14 +314,6 @@ $(async () => {
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         setServer: value => runtimeConfig.setServer(value)
     });
-    new ProjectFilesController({
-        fileManager: uiEnv.fileManager,
-        compileOptions,
-        audioEnv,
-        createZip: () => new JSZip(),
-        runDsp,
-        updateDiagram
-    }).bind();
     const mountRegistry = new MountRegistry(uiEnv.fileManager.model);
     // Shared mutable volume list — both browsers hold the same reference so
     // pushing a new DiskVolume is visible on the next open() call.
@@ -344,6 +336,35 @@ $(async () => {
             uiEnv.fileManager.setDiskTracked(savedName, true);
         }
     }
+
+    // When a file is dropped from a mounted folder, resolve which volume it belongs
+    // to and mark it as disk-tracked (green indicator + write-back on save).
+    // getAsFileSystemHandle / resolve are Chrome-only — gate on fsAccessAvailable.
+    const onDiskDropCallback = fsAccessAvailable()
+        ? async (savedName: string, handle: FileSystemFileHandle) => {
+            for (const vol of volumes) {
+                if (vol.kind !== "disk") continue;
+                const diskVol = vol as DiskVolume;
+                // FileSystemDirectoryHandle.resolve() returns null when handle is
+                // not a descendant of the directory.
+                const rel: string[] | null = await (diskVol.rootHandle as any).resolve?.(handle) ?? null;
+                if (!rel) continue;
+                diskTracker.track(savedName, diskVol, rel.join("/"));
+                uiEnv.fileManager.setDiskTracked(savedName, true);
+                break;
+            }
+        }
+        : undefined;
+    uiEnv.fileManager.onDroppedFileHandle = onDiskDropCallback;
+    new ProjectFilesController({
+        fileManager: uiEnv.fileManager,
+        compileOptions,
+        audioEnv,
+        createZip: () => new JSZip(),
+        runDsp,
+        updateDiagram,
+        onDroppedFileHandle: onDiskDropCallback
+    }).bind();
 
     const mountDisk = fsAccessAvailable() ? async () => {
         const dirHandle = await pickDirectory();

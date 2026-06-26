@@ -48,6 +48,8 @@ export class FileManager {
     saveHandler: (name: string, content: string | Uint8Array, mainCode: string) => any = () => undefined;
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
+    /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
+    onDroppedFileHandle?: (savedName: string, handle: FileSystemFileHandle) => void;
 
     constructor(options: TOptions) {
         this.container = options.container;
@@ -185,27 +187,26 @@ export class FileManager {
             e.preventDefault();
             e.stopPropagation();
         };
-        /**
-         * Drop a new file into file manager
-         * if the filename exists or has illegal name, replace it by `untitled\d*.dsp`
-         *
-         * @param {DragEvent} e
-         */
-        const dropHandler = (e: DragEvent) => {
+        const dropHandler = async (e: DragEvent) => {
             this.divOverlay.style.display = "";
-            if (e.dataTransfer && e.dataTransfer.files.length) {
-                e.preventDefault();
-                e.stopPropagation();
-                const file = e.dataTransfer.files[0];
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const content = typeof reader.result === "string" ? reader.result.toString() : new Uint8Array(reader.result);
-                    const fileName = this.newFile(file.name, content);
-                    this.select(fileName);
-                };
-                reader.onerror = () => undefined;
-                if (file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)) reader.readAsArrayBuffer(file);
-                else reader.readAsText(file);
+            if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const file = e.dataTransfer.files[0];
+            // Capture before first await — DataTransfer items go stale after yield
+            const item = e.dataTransfer.items[0] as any;
+            const fsHandlePromise: Promise<FileSystemHandle | null> | null =
+                this.onDroppedFileHandle && item?.getAsFileSystemHandle
+                    ? item.getAsFileSystemHandle() as Promise<FileSystemHandle | null>
+                    : null;
+            const content: string | Uint8Array = file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)
+                ? new Uint8Array(await file.arrayBuffer())
+                : await file.text();
+            const savedName = this.newFile(file.name, content);
+            this.select(savedName);
+            if (fsHandlePromise) {
+                const handle = await fsHandlePromise;
+                if (handle?.kind === "file") this.onDroppedFileHandle!(savedName, handle as FileSystemFileHandle);
             }
         };
         this.container.addEventListener("dragenter", dragenterHandler);

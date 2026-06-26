@@ -10,6 +10,8 @@ type ProjectFilesControllerOptions = {
     readFileAsText?: (file: File) => Promise<string>;
     runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     updateDiagram: (code: string) => { success: boolean; error?: Error };
+    /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
+    onDroppedFileHandle?: (savedName: string, handle: FileSystemFileHandle) => void;
 };
 
 /**
@@ -27,6 +29,7 @@ export class ProjectFilesController {
     private readonly readFileAsText: (file: File) => Promise<string>;
     private readonly runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     private readonly updateDiagram: (code: string) => { success: boolean; error?: Error };
+    private readonly onDroppedFileHandle?: (savedName: string, handle: FileSystemFileHandle) => void;
 
     constructor(options: ProjectFilesControllerOptions) {
         this.fileManager = options.fileManager;
@@ -36,6 +39,7 @@ export class ProjectFilesController {
         this.readFileAsText = options.readFileAsText || ProjectFilesController.readFileAsText;
         this.runDsp = options.runDsp;
         this.updateDiagram = options.updateDiagram;
+        this.onDroppedFileHandle = options.onDroppedFileHandle;
     }
 
     /**
@@ -50,13 +54,14 @@ export class ProjectFilesController {
     }
 
     /**
-     * Reads a browser File and creates a sanitized project file from it.
+     * Reads a browser File, creates a sanitized project file, and returns the saved name.
      */
-    private async importFile(file?: File) {
-        if (!file) return;
+    private async importFile(file?: File): Promise<string | undefined> {
+        if (!file) return undefined;
         const code = await this.readFileAsText(file);
-        this.fileManager.newFile(this.sanitizeFileName(file.name), code);
+        const savedName = this.fileManager.newFile(this.sanitizeFileName(file.name), code);
         this.recompileIfNeeded();
+        return savedName;
     }
 
     /**
@@ -104,7 +109,17 @@ export class ProjectFilesController {
         if (!event.dataTransfer || !event.dataTransfer.files.length) return;
         e.preventDefault();
         e.stopPropagation();
-        await this.importFile(event.dataTransfer.files[0]);
+        // Capture before first await — DataTransfer items go stale after yield
+        const item = event.dataTransfer.items?.[0] as any;
+        const fsHandlePromise: Promise<FileSystemHandle | null> | null =
+            this.onDroppedFileHandle && item?.getAsFileSystemHandle
+                ? item.getAsFileSystemHandle() as Promise<FileSystemHandle | null>
+                : null;
+        const savedName = await this.importFile(event.dataTransfer.files[0]);
+        if (savedName && fsHandlePromise) {
+            const handle = await fsHandlePromise;
+            if (handle?.kind === "file") this.onDroppedFileHandle!(savedName, handle as FileSystemFileHandle);
+        }
     }
 
     /**
