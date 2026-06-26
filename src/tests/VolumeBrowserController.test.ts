@@ -464,4 +464,233 @@ describe("VolumeBrowserController", () => {
         // Still at root (vol-rows visible)
         expect(document.querySelectorAll(".vb-vol-row").length).toBe(1);
     });
+
+    // ── trash UI (P9.2) ───────────────────────────────────────────────────────
+
+    describe("trash: onDelete on Library file rows", () => {
+        it("shows a delete button on library file rows when onDelete is provided", async () => {
+            const onDelete = vi.fn();
+            const entry = fakeEntry("main.dsp");
+            const vol = fakeVolume({ list: () => Promise.resolve([entry]) });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onDelete });
+            ctrl.open();
+            await flush();
+            // enter the library volume
+            const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+            nameBtn.click();
+            await flush();
+            await flush();
+            expect(document.querySelector(".vb-row-delete")).not.toBeNull();
+        });
+
+        it("does NOT show a delete button for non-library volumes", async () => {
+            const onDelete = vi.fn();
+            const entry = fakeEntry("notes.dsp");
+            const vol = fakeVolume({ kind: "disk" as any, list: () => Promise.resolve([entry]) });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onDelete });
+            ctrl.open();
+            await flush();
+            const nameBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+            nameBtn.click();
+            await flush();
+            await flush();
+            expect(document.querySelector(".vb-row-delete")).toBeNull();
+        });
+
+        it("calls onDelete with the volume and entry when the delete button is clicked", async () => {
+            const onDelete = vi.fn();
+            const entry = fakeEntry("main.dsp");
+            const vol = fakeVolume({ list: () => Promise.resolve([entry]) });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onDelete });
+            ctrl.open();
+            await flush();
+            const rootBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+            rootBtn.click();
+            await flush();
+            await flush();
+            const deleteBtn = document.querySelector(".vb-row-delete") as HTMLButtonElement;
+            deleteBtn.click();
+            await flush();
+            await flush();
+            expect(onDelete).toHaveBeenCalledWith(vol, entry);
+        });
+
+        it("re-renders after delete (re-calls vol.list)", async () => {
+            const onDelete = vi.fn();
+            const list = vi.fn().mockResolvedValue([fakeEntry("main.dsp")]);
+            const vol = fakeVolume({ list });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onDelete });
+            ctrl.open();
+            await flush();
+            const rootBtn = document.querySelector(".vb-row-name-btn") as HTMLButtonElement;
+            rootBtn.click();
+            await flush();
+            await flush();
+            const listCallsBefore = list.mock.calls.length;
+            const deleteBtn = document.querySelector(".vb-row-delete") as HTMLButtonElement;
+            deleteBtn.click();
+            await flush();
+            await flush();
+            expect(list.mock.calls.length).toBeGreaterThan(listCallsBefore);
+        });
+    });
+
+    describe("trash: restore and purge in TRASH_DIR context", () => {
+        const trashEntry = (name: string): VolumeEntry => ({
+            name,
+            path: `__trash__/${name}`,
+            type: "file",
+            isNative: false
+        });
+        const trashDir: VolumeEntry = { name: "Trash", path: "__trash__", type: "dir", isNative: false };
+
+        it("shows Restore button for files inside the trash folder", async () => {
+            const onRestore = vi.fn();
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([trashEntry("old.dsp")])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onRestore });
+            ctrl.open();
+            await flush();
+            // enter library
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            // enter Trash dir
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            expect(document.querySelector(".vb-row-restore")).not.toBeNull();
+        });
+
+        it("calls onRestore with the volume and entry when Restore is clicked", async () => {
+            const onRestore = vi.fn();
+            const entry = trashEntry("old.dsp");
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([entry])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onRestore });
+            ctrl.open();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-restore") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            expect(onRestore).toHaveBeenCalledWith(vol, entry);
+        });
+
+        it("shows Purge button for files inside the trash folder when onPurge is provided", async () => {
+            const onPurge = vi.fn();
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([trashEntry("old.dsp")])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onPurge });
+            ctrl.open();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            expect(document.querySelector(".vb-row-purge")).not.toBeNull();
+        });
+
+        it("calls onPurge with the volume and entry when Purge is clicked", async () => {
+            const onPurge = vi.fn();
+            const entry = trashEntry("old.dsp");
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([entry])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onPurge });
+            ctrl.open();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-purge") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            expect(onPurge).toHaveBeenCalledWith(vol, entry);
+        });
+    });
+
+    describe("trash: Empty Trash button", () => {
+        const trashEntry = (name: string): VolumeEntry => ({
+            name, path: `__trash__/${name}`, type: "file", isNative: false
+        });
+        const trashDir: VolumeEntry = { name: "Trash", path: "__trash__", type: "dir", isNative: false };
+
+        it("shows the Empty Trash button only when inside the Library trash folder", async () => {
+            const onEmptyTrash = vi.fn();
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([trashEntry("old.dsp")])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onEmptyTrash });
+            ctrl.open();
+            await flush();
+            // At root — Empty Trash is hidden
+            expect((document.querySelector(".vb-empty-trash") as HTMLButtonElement).hidden).toBe(true);
+            // Enter library
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            // Inside library root — still hidden (not in trash folder)
+            expect((document.querySelector(".vb-empty-trash") as HTMLButtonElement).hidden).toBe(true);
+            // Enter Trash folder
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            // Now inside __trash__ — button visible
+            expect((document.querySelector(".vb-empty-trash") as HTMLButtonElement).hidden).toBe(false);
+        });
+
+        it("calls onEmptyTrash with the current volume when clicked", async () => {
+            const onEmptyTrash = vi.fn();
+            const vol = fakeVolume({
+                list: (p) => (p === "__trash__"
+                    ? Promise.resolve([trashEntry("old.dsp")])
+                    : Promise.resolve([trashDir]))
+            });
+            const ctrl = new VolumeBrowserController({ volumes: [vol], onEmptyTrash });
+            ctrl.open();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-row-name-btn") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            (document.querySelector(".vb-empty-trash") as HTMLButtonElement).click();
+            await flush();
+            await flush();
+            expect(onEmptyTrash).toHaveBeenCalledWith(vol);
+        });
+
+        it("does not render an Empty Trash button when onEmptyTrash is not provided", async () => {
+            const vol = fakeVolume({ list: () => Promise.resolve([trashDir]) });
+            const ctrl = new VolumeBrowserController({ volumes: [vol] });
+            ctrl.open();
+            await flush();
+            expect(document.querySelector(".vb-empty-trash")).toBeNull();
+        });
+    });
 });

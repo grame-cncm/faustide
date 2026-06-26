@@ -352,7 +352,11 @@ $(async () => {
             uiEnv.fileManager.newFile(handle.name, content);
         },
         onMountDisk: mountDisk,
-        onReauthorize: reauthorize
+        onReauthorize: reauthorize,
+        onDelete: (_vol, entry) => { uiEnv.fileManager.softDelete(entry.name); },
+        onRestore: (_vol, entry) => { uiEnv.fileManager.restoreFile(entry.name); },
+        onPurge: (_vol, entry) => { uiEnv.fileManager.model.purgeFile(entry.name); },
+        onEmptyTrash: () => { uiEnv.fileManager.model.emptyTrash(); }
     });
     openBrowser.bind();
 
