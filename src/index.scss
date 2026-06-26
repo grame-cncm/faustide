@@ -94,7 +94,9 @@ body {
                     $color: #35a8f0;
                     border-color: $color;
                     white-space: nowrap;
-                    width: auto;
+                    font-size: 1rem;
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
                     &:hover {
                         background-color: darken($color, 50%);
                         border-color: $color;
