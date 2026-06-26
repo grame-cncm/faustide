@@ -407,6 +407,10 @@ export class FileManager {
     get fileNames() {
         return this.project.fileList;
     }
+    /** The underlying ProjectModel (needed by LibraryVolume and similar adapters). */
+    get model() {
+        return this.project;
+    }
     get selectedCode() {
         return this.project.selectedCode;
     }
