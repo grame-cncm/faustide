@@ -160,3 +160,46 @@
     font-size: 13px;
     color: #cccccc;
 }
+
+.vb-savebar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.vb-name {
+    flex: 1;
+    background: #1e1e1e;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: #cccccc;
+    font-size: 13px;
+    padding: 4px 8px;
+    &:focus { outline: 1px solid #4fc3f7; }
+}
+
+.vb-save {
+    background: #0e639c;
+    border: none;
+    border-radius: 3px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 14px;
+    &:hover { background: #1177bb; }
+}
+
+.vb-mount-disk {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: #cccccc;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 10px;
+    &:hover { background: rgba(255, 255, 255, 0.08); }
+}

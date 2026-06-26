@@ -76,9 +76,13 @@ import { ProjectRuntimeController } from "./ui/ProjectRuntimeController";
 import { DiagramController } from "./ui/DiagramController";
 import { AnalyserScopeController } from "./ui/AnalyserScopeController";
 import { TooltipController } from "./ui/TooltipController";
-import { LibraryVolume } from "./runtime/fs/LibraryVolume";
+import { DiskVolume } from "./runtime/fs/DiskVolume";
+import type { Volume } from "./runtime/fs/Volume";
 import { VolumeBrowserController } from "./ui/VolumeBrowserController";
-import { pickImportableFileHandle } from "./runtime/fs/FileAccess";
+import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission } from "./runtime/fs/FileAccess";
+import { MountRegistry } from "./runtime/fs/MountRegistry";
+import { computeClosure } from "./model/Perimeter";
+import { writeBundleToDir } from "./runtime/fs/BundleWriter";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -239,7 +243,7 @@ $(async () => {
         webmidi,
         keyMap: navigator.language === "fr-FR" ? MidiController.KEY_MAP_FR : MidiController.KEY_MAP,
         hasEditorFocus: () => faustEnv.editor && faustEnv.editor.hasTextFocus(),
-        sendToDsp: data => {
+        sendToDsp: (data) => {
             if (audioEnv.dsp) audioEnv.dsp.midiMessage(data);
         }
     });
@@ -315,8 +319,26 @@ $(async () => {
         runDsp,
         updateDiagram
     }).bind();
-    new VolumeBrowserController({
-        volumes: [new LibraryVolume(uiEnv.fileManager.model)],
+    const mountRegistry = new MountRegistry(uiEnv.fileManager.model);
+    // Shared mutable volume list — both browsers hold the same reference so
+    // pushing a new DiskVolume is visible on the next open() call.
+    const volumes: Volume[] = [mountRegistry.getLibrary()];
+
+    const mountDisk = fsAccessAvailable() ? async () => {
+        const dirHandle = await pickDirectory();
+        if (!dirHandle) return;
+        const id = await mountRegistry.mountDisk(dirHandle);
+        volumes.push(new DiskVolume(dirHandle, id));
+    } : undefined;
+
+    const reauthorize = async (vol: Volume): Promise<boolean> => {
+        const diskVol = vol as DiskVolume;
+        if (!diskVol.rootHandle) return false;
+        return ensureRwPermission(diskVol.rootHandle);
+    };
+
+    const openBrowser = new VolumeBrowserController({
+        volumes,
         onOpen: (vol, entry) => {
             vol.readText(entry.path).then((content) => {
                 uiEnv.fileManager.newFile(entry.name, content);
@@ -328,8 +350,39 @@ $(async () => {
             const file = await handle.getFile();
             const content = await file.text();
             uiEnv.fileManager.newFile(handle.name, content);
-        }
-    }).bind();
+        },
+        onMountDisk: mountDisk,
+        onReauthorize: reauthorize
+    });
+    openBrowser.bind();
+
+    const saveBrowser = new VolumeBrowserController({
+        volumes,
+        mode: "save",
+        onSave: async (vol, folderPath, name) => {
+            const diskVol = vol as DiskVolume;
+            if (!diskVol.createFileHandle) return; // Library volumes not yet supported for Save As
+            const mainFile = uiEnv.fileManager.mainFileName;
+            const fileNameSet = new Set(uiEnv.fileManager.fileNames);
+            const readText = (n: string): string | null => {
+                const val = uiEnv.fileManager.getValue(n);
+                return typeof val === "string" ? val : null;
+            };
+            const isLocal = (n: string) => fileNameSet.has(n);
+            const { files } = computeClosure(mainFile, readText, isLocal);
+            const bundle = new Map<string, string>();
+            files.forEach((f) => {
+                const text = readText(f);
+                if (text !== null) bundle.set(name.endsWith(".dsp") && f === mainFile ? name : f, text);
+            });
+            await writeBundleToDir(diskVol, folderPath, bundle);
+        },
+        onMountDisk: mountDisk,
+        onReauthorize: reauthorize
+    });
+
+    // Wire the Save As button to open the save browser
+    $("#btn-save").off("click").on("click", () => saveBrowser.open());
     await new ExportController({
         compileOptions,
         fileManager: uiEnv.fileManager,
@@ -361,14 +414,14 @@ $(async () => {
         waveSurferFactory: WaveSurfer,
         initAudioCtx: deviceId => initializeAudioContext(deviceId),
         showError: error => alertController.show(error),
-        onWaveSurferCreated: value => { wavesurfer = value; }
+        onWaveSurferCreated: (value) => { wavesurfer = value; }
     }).bind();
     new AudioOutputController({
         audioEnv,
         getSupportMediaStreamDestination: () => runtimeConfig.getSupportMediaStreamDestination(),
         initAudioCtx: () => initializeAudioContext(),
         initAnalysersUI: () => analyserScopeController.initialize(),
-        setRecorderSampleRate: sampleRate => { faustEnv.recorder.sampleRate = sampleRate; }
+        setRecorderSampleRate: (sampleRate) => { faustEnv.recorder.sampleRate = sampleRate; }
     }).bind();
     await new AudioDeviceController({
         audioEnv,
