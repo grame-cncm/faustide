@@ -37,6 +37,28 @@ describe("VolumeBrowserController", () => {
         removeOverlay();
     });
 
+    // ── bindSave ───────────────────────────────────────────────────────────────
+
+    it("bindSave adds a #btn-save-to-disk button to the filemanager-label", () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save" });
+        ctrl.bindSave();
+        expect(document.getElementById("btn-save-to-disk")).not.toBeNull();
+    });
+
+    it("bindSave button opens the volume browser on click", async () => {
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save" });
+        ctrl.bindSave();
+        (document.getElementById("btn-save-to-disk") as HTMLButtonElement).click();
+        await flush();
+        expect(document.getElementById("vb-overlay")).not.toBeNull();
+    });
+
+    it("bindSave does nothing when filemanager-label is absent", () => {
+        document.body.innerHTML = "<div></div>"; // no .filemanager-label
+        const ctrl = new VolumeBrowserController({ volumes: [], mode: "save" });
+        expect(() => ctrl.bindSave()).not.toThrow();
+    });
+
     // ── bind ───────────────────────────────────────────────────────────────────
 
     it("bind() adds an Open button to the filemanager header", () => {

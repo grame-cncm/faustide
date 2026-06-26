@@ -156,11 +156,24 @@
     &:hover { background: rgba(255, 255, 255, 0.08); }
 }
 
+// Both volume-browser header buttons are absolutely positioned so they
+// don't push the flex label span.  Stack order (right→left):
+//   right:  0px  .filemanager-btn-new-file  (new file, pre-existing)
+//   right: 25px  .vb-open-btn               (open from volume 📂)
+//   right: 50px  .vb-save-disk-btn          (save to disk 💾)
 .vb-open-btn {
     font-size: 13px;
     color: #cccccc;
     position: absolute;
-    right: 25px; // sits just left of .filemanager-btn-new-file (also 25px, right: 0)
+    right: 25px;
+    &:hover { color: #ffffff; }
+}
+
+.vb-save-disk-btn {
+    font-size: 13px;
+    color: #cccccc;
+    position: absolute;
+    right: 50px;
     &:hover { color: #ffffff; }
 }
 
