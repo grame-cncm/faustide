@@ -2,7 +2,7 @@
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 1050; // above Bootstrap modals (1040)
+    z-index: 1050; /* above Bootstrap modals (1040) */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,11 +156,11 @@
     &:hover { background: rgba(255, 255, 255, 0.08); }
 }
 
-// Both volume-browser header buttons are absolutely positioned so they
-// don't push the flex label span.  Stack order (right→left):
-//   right:  0px  .filemanager-btn-new-file  (new file, pre-existing)
-//   right: 25px  .vb-open-btn               (open from volume 📂)
-//   right: 50px  .vb-save-disk-btn          (save to disk 💾)
+/* Both volume-browser header buttons are absolutely positioned so they
+   don't push the flex label span.  Stack order (right to left):
+     right:  0px  .filemanager-btn-new-file  (new file, pre-existing)
+     right: 25px  .vb-open-btn               (open from volume)
+     right: 50px  .vb-save-disk-btn          (save to disk) */
 .vb-open-btn {
     font-size: 13px;
     color: #cccccc;
