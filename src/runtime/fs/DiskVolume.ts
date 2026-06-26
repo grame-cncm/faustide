@@ -11,6 +11,7 @@ interface FsDirHandle {
     requestPermission?(d: { mode: "readwrite" }): Promise<PermissionState>;
     getDirectoryHandle(name: string, opts?: { create?: boolean }): Promise<FileSystemDirectoryHandle>;
     getFileHandle(name: string, opts?: { create?: boolean }): Promise<FileSystemFileHandle>;
+    resolve?(handle: FileSystemHandle): Promise<string[] | null>;
 }
 
 /**
@@ -52,6 +53,18 @@ export class DiskVolume implements Volume {
     /** The mounted root directory handle (for persistence and re-grant). */
     get rootHandle(): FileSystemDirectoryHandle {
         return this.root;
+    }
+
+    /**
+     * Resolves `handle`'s path relative to this volume's root, or null when the
+     * handle is not a descendant of the mounted folder.  Used to recognise a
+     * drag-and-dropped file as originating from this disk mount.
+     */
+    async resolvePath(handle: FileSystemHandle): Promise<string | null> {
+        const h = this.root as FsDirHandle;
+        if (!h.resolve) return null;
+        const segs = await h.resolve(handle);
+        return segs ? segs.join("/") : null;
     }
 
     private async dirAt(path: string): Promise<FileSystemDirectoryHandle> {

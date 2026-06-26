@@ -81,6 +81,50 @@ export async function pickDirectory(): Promise<FileSystemDirectoryHandle | null>
     }
 }
 
+// ---- Drag-and-drop handle capture -------------------------------------------
+
+/** A DataTransferItem augmented with the Chromium-only handle accessor. */
+type FsDataTransferItem = DataTransferItem & {
+    getAsFileSystemHandle?(): Promise<FileSystemHandle | null>;
+};
+
+/** Invoked once a dropped file has been saved, with the source file's FS handle. */
+export type DroppedFileHandleCallback = (savedName: string, handle: FileSystemFileHandle) => void;
+
+/**
+ * Captures the source FileSystemHandle of a drag-and-drop, bridging the event's
+ * synchronous lifetime and the asynchronous save that follows.
+ *
+ * A DataTransfer's items are only valid synchronously inside the drop event;
+ * they go stale as soon as the handler yields at its first `await`.  This helper
+ * calls the Chromium-only `getAsFileSystemHandle()` immediately (keeping only the
+ * returned promise) and hands back a deferred resolver to await later, once the
+ * dropped file has been saved under its final name.
+ *
+ * The resolver invokes `callback(savedName, handle)` only when a real file handle
+ * was captured.  When `getAsFileSystemHandle` is unavailable (non-Chromium), no
+ * callback is registered, or no name was saved, both capture and resolve are
+ * no-ops.
+ *
+ * @param dataTransfer the drop event's DataTransfer (may be null)
+ * @param callback     invoked with the resolved handle after the save
+ * @returns a resolver to call with the saved file name (or undefined on failure)
+ */
+export function captureDroppedFileHandle(
+    dataTransfer: DataTransfer | null,
+    callback?: DroppedFileHandleCallback
+): (savedName: string | undefined) => Promise<void> {
+    const item = dataTransfer?.items?.[0] as FsDataTransferItem | undefined;
+    const handlePromise = callback && item?.getAsFileSystemHandle
+        ? item.getAsFileSystemHandle()
+        : null;
+    return async (savedName) => {
+        if (!savedName || !callback || !handlePromise) return;
+        const handle = await handlePromise;
+        if (handle?.kind === "file") callback(savedName, handle as FileSystemFileHandle);
+    };
+}
+
 /**
  * Re-request RW permission on a persisted handle (requires a user gesture).
  * Returns whether the permission is now granted.
