@@ -1,7 +1,6 @@
 import type JSZip from "jszip";
 import type { FileManager } from "../FileManager";
 import type { FaustEditorAudioEnv, FaustEditorCompileOptions } from "../runtime/types";
-import { computeClosure } from "../model/Perimeter";
 
 type ProjectFilesControllerOptions = {
     fileManager: FileManager;
@@ -67,24 +66,11 @@ export class ProjectFilesController {
     }
 
     /**
-     * Serializes the computed perimeter of the main DSP into a downloadable
-     * project ZIP.  Only files actually referenced by the main (transitively)
-     * are included — not all project files (plan §7/I6 closed-perimeter rule).
+     * Serializes all FileManager entries into a downloadable project ZIP.
      */
     private async saveZip() {
-        const mainFile = this.fileManager.mainFileName;
-        const fileNameSet = new Set<string>(this.fileManager.fileNames);
-
-        const readText = (name: string): string | null => {
-            const val = this.fileManager.getValue(name);
-            return typeof val === "string" ? val : null;
-        };
-        const isLocal = (name: string) => fileNameSet.has(name);
-
-        const { files } = computeClosure(mainFile, readText, isLocal);
-
         const zip = this.createZip();
-        files.forEach(n => zip.file(n, this.fileManager.getValue(n)));
+        this.fileManager.fileNames.forEach(n => zip.file(n, this.fileManager.getValue(n)));
         const blob = await zip.generateAsync({ type: "blob" });
         const uri = URL.createObjectURL(blob);
         $("#a-save").attr({ href: uri, download: `${this.fileManager.mainFileNameWithoutSuffix}.zip` })[0].click();
