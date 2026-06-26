@@ -352,11 +352,27 @@ $(async () => {
             });
         },
         onOpenDeviceFile: async () => {
-            const handle = await pickImportableFileHandle();
-            if (!handle) return;
-            const file = await handle.getFile();
-            const content = await file.text();
-            uiEnv.fileManager.newFile(handle.name, content);
+            if (fsAccessAvailable()) {
+                const handle = await pickImportableFileHandle();
+                if (!handle) return;
+                const file = await handle.getFile();
+                const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(handle.name)
+                    ? new Uint8Array(await file.arrayBuffer())
+                    : await file.text();
+                uiEnv.fileManager.newFile(handle.name, content);
+            } else {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.addEventListener("change", async () => {
+                    const file = input.files?.[0];
+                    if (!file) return;
+                    const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(file.name)
+                        ? new Uint8Array(await file.arrayBuffer())
+                        : await file.text();
+                    uiEnv.fileManager.newFile(file.name, content);
+                });
+                input.click();
+            }
         },
         onMountDisk: mountDisk,
         onReauthorize: reauthorize
