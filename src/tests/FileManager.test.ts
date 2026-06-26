@@ -169,4 +169,36 @@ describe("FileManager", () => {
         expect(handlers.deleteHandler).toHaveBeenCalledWith("main.dsp", expect.any(String));
         expect(handlers.mainFileChangeHandler).toHaveBeenCalledWith("other.dsp", "process = 2;");
     });
+
+    const diskClass = (manager: FileManager, name: string) => {
+        const div = manager.divFiles.querySelector(`[data-filename="${name}"]`) as HTMLDivElement;
+        return div.classList.contains("filemanager-file--disk");
+    };
+
+    it("invokes onFileRestored with the file name when restoring from the trash", () => {
+        const { manager } = createManager({ "main.dsp": "process = _;", "patch.dsp": "process = _;" });
+        const onFileRestored = vi.fn();
+        manager.onFileRestored = onFileRestored;
+
+        manager.softDelete("patch.dsp");
+        manager.restoreFile("patch.dsp");
+
+        expect(onFileRestored).toHaveBeenCalledWith("patch.dsp");
+    });
+
+    it("lets onFileRestored re-apply the disk-tracked indicator after a trash round-trip", () => {
+        const { manager } = createManager({ "main.dsp": "process = _;", "patch.dsp": "process = _;" });
+        manager.setDiskTracked("patch.dsp", true);
+        expect(diskClass(manager, "patch.dsp")).toBe(true);
+
+        // Simulate the index.ts wiring: restore tracking for files with an origin.
+        const tracked = new Set(["patch.dsp"]);
+        manager.onFileRestored = (name) => { if (tracked.has(name)) manager.setDiskTracked(name, true); };
+
+        manager.softDelete("patch.dsp");
+        manager.restoreFile("patch.dsp");
+
+        // The restored row is a fresh element, yet keeps its green status.
+        expect(diskClass(manager, "patch.dsp")).toBe(true);
+    });
 });
