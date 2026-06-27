@@ -110,6 +110,12 @@ describe("LibraryVolume", () => {
         it("returns [] for any non-root path", async () => {
             expect(await vol.list("samples")).toHaveLength(0);
             expect(await vol.list("sub/dir")).toHaveLength(0);
+            expect(await vol.list("__trash__")).toHaveLength(0);
+        });
+
+        it("does not expose a virtual Trash directory", async () => {
+            const entries = await vol.list("");
+            expect(entries.find(e => e.name === "Trash")).toBeUndefined();
         });
     });
 

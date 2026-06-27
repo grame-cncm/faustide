@@ -6,7 +6,7 @@ The project has two distinct levels of tests, with three styles within the first
 
 ## Level 1 — Unit / integration tests (`src/tests/`) — Vitest + jsdom
 
-These 68 files run in Node.js with a simulated DOM (jsdom). They cover three styles:
+These tests run in Node.js with a simulated DOM (jsdom). They cover three styles:
 
 ### a) Pure logic tests
 

@@ -128,6 +128,20 @@ describe("ProjectModel", () => {
         expect(model.getValue("next.dsp")).toBe("process = 1;");
         expect(model.deleteFile("next.dsp")).toBe(true);
         expect(model.fileList).toEqual([]);
+        expect(fs.files.has("next.dsp")).toBe(false);
+        expect(fs.files.has("__trash__/next.dsp")).toBe(false);
+    });
+
+    it("deleteFile is permanent and cannot restore from a secondary lifecycle", () => {
+        const fs = new MemoryFs({ "main.dsp": "process = _;", "other.dsp": "process = 1;" });
+        const model = new ProjectModel({ fs: fs as any });
+        model.listFiles();
+
+        expect(model.deleteFile("other.dsp")).toBe(true);
+
+        expect(model.fileList).toEqual(["main.dsp"]);
+        expect(fs.files.has("other.dsp")).toBe(false);
+        expect(fs.files.has("__trash__/other.dsp")).toBe(false);
     });
 
     it("chooses the next selection after deletion and recreates defaults when empty", () => {

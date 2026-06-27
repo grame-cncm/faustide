@@ -33,10 +33,10 @@ the DOM projection. Most fragile behavior comes from these stores drifting apart
 | **`DiskOriginTracker.origins`** | No | active origins for write-back | partially restored at startup |
 | **DOM** `filemanager-file--disk` | No | the green "mounted" indicator | re-applied by startup wiring |
 
-The implementation at this point also has a transient `__trash__` directory in
-faustFS. That directory is deliberately excluded from the target model here:
-browserFS is flat, `loadProject` only restores project files, and a non-durable
-trash creates a misleading recovery promise.
+The earlier implementation at this point also had a transient `__trash__`
+directory in faustFS. That directory is deliberately excluded from the target
+model here: browserFS is flat, `loadProject` only restores project files, and a
+non-durable trash creates a misleading recovery promise.
 
 ### A file's mounted status is two coupled facts
 
@@ -73,7 +73,7 @@ that project name immediately.
 
 ## 3. Why removing trash is safer
 
-The current trash implementation is a local UI/runtime feature, not a durable
+The removed trash implementation was a local UI/runtime feature, not a durable
 storage concept:
 
 - `ProjectModel.softDeleteFile` moves the file inside faustFS.

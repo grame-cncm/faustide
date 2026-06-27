@@ -328,9 +328,9 @@ $(async () => {
     const persistedOrigins = DiskOriginTracker.loadPersistedOrigins();
 
     // Re-establish disk tracking for a single file: green indicator + write-back
-    // link.  Reuses the in-memory origin when present (e.g. a file soft-deleted
-    // and then restored in the same session), otherwise falls back to the origin
-    // persisted by a previous session.  No-op when the file has no known origin.
+    // link. Reuses the in-memory origin when present, otherwise falls back to
+    // the origin persisted by a previous session. No-op when the file has no
+    // known origin.
     const restoreDiskTracking = (savedName: string): void => {
         if (!diskTracker.has(savedName)) {
             const origin = persistedOrigins.get(savedName);
@@ -342,13 +342,8 @@ $(async () => {
         uiEnv.fileManager.setDiskTracked(savedName, true);
     };
 
-    // On startup, re-apply tracking to every project file (skips trashed files,
-    // which are not in fileNames until restored — see onFileRestored below).
+    // On startup, re-apply tracking to every project file.
     uiEnv.fileManager.fileNames.forEach(restoreDiskTracking);
-
-    // Restoring a file from the trash brings back a fresh row with no indicator;
-    // re-apply tracking so a mounted file keeps its green status and write-back.
-    uiEnv.fileManager.onFileRestored = restoreDiskTracking;
 
     // When a file is dropped from a mounted folder, find which volume it belongs
     // to and mark it as disk-tracked (green indicator + write-back on save).

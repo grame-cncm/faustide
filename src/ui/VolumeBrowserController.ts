@@ -18,14 +18,8 @@ export type VolumeBrowserOptions = {
     onMountDisk?(): void;
     /** Re-grant RW permission on a lapsed Disk volume (requires a user gesture). */
     onReauthorize?(volume: Volume): Promise<boolean>;
-    /** Soft-delete a file from the Library (move to trash).  Library open mode only. */
+    /** Delete a file from the Library. Library open mode only. */
     onDelete?(volume: Volume, entry: VolumeEntry): void;
-    /** Restore a trashed file back into the Library. */
-    onRestore?(volume: Volume, entry: VolumeEntry): void;
-    /** Permanently delete a file from the trash. */
-    onPurge?(volume: Volume, entry: VolumeEntry): void;
-    /** Permanently delete all files in the trash. */
-    onEmptyTrash?(volume: Volume): void;
 };
 
 const OVERLAY_ID = "vb-overlay";
@@ -51,14 +45,8 @@ const STRINGS = {
     stateNeedsPermission: "needs permission",
     stateOffline: "offline",
     stateError: "error",
-    delete: "Delete",
-    restore: "Restore",
-    purgePermanently: "Delete permanently",
-    emptyTrash: "Empty Trash"
+    delete: "Delete"
 };
-
-// Path used by LibraryVolume for its virtual trash folder.
-const LIBRARY_TRASH_PATH = "__trash__";
 
 const stateLabel = (s: VolumeState): string => {
     if (s === "needs-permission") return STRINGS.stateNeedsPermission;
@@ -77,7 +65,7 @@ const faIcon = (faClass: string): HTMLElement => {
  * Controls the unified volume browser modal.
  * Open mode: pick a file from a volume.
  * Save mode (P6): pick a folder and provide a name, then call onSave.
- * Disk mount + trash management deferred to P6.3/P9.
+ * Disk mount management is supplied by the composition root when available.
  */
 export class VolumeBrowserController {
     private readonly volumes: Volume[];
@@ -89,9 +77,6 @@ export class VolumeBrowserController {
     private readonly onMountDisk?: () => void;
     private readonly onReauthorize?: (volume: Volume) => Promise<boolean>;
     private readonly onDelete?: (volume: Volume, entry: VolumeEntry) => void;
-    private readonly onRestore?: (volume: Volume, entry: VolumeEntry) => void;
-    private readonly onPurge?: (volume: Volume, entry: VolumeEntry) => void;
-    private readonly onEmptyTrash?: (volume: Volume) => void;
 
     constructor(options: VolumeBrowserOptions) {
         this.volumes = options.volumes;
@@ -103,9 +88,6 @@ export class VolumeBrowserController {
         this.onMountDisk = options.onMountDisk;
         this.onReauthorize = options.onReauthorize;
         this.onDelete = options.onDelete;
-        this.onRestore = options.onRestore;
-        this.onPurge = options.onPurge;
-        this.onEmptyTrash = options.onEmptyTrash;
     }
 
     /** Adds the "Open…" button to the `.filemanager-label` header (open mode). */
@@ -224,23 +206,6 @@ export class VolumeBrowserController {
             b.append(faIcon("fa-hdd"), document.createTextNode(` ${STRINGS.mountDisk}`));
             b.addEventListener("click", () => onMount());
             footer.append(b);
-        }
-
-        // Empty Trash button — shown only when viewing the Library trash folder.
-        let emptyTrashBtn: HTMLButtonElement | null = null;
-        if (mode === "open" && this.onEmptyTrash) {
-            const onEmpty = this.onEmptyTrash;
-            emptyTrashBtn = document.createElement("button");
-            emptyTrashBtn.type = "button";
-            emptyTrashBtn.className = "vb-empty-trash";
-            emptyTrashBtn.hidden = true;
-            emptyTrashBtn.append(faIcon("fa-trash-alt"), document.createTextNode(` ${STRINGS.emptyTrash}`));
-            emptyTrashBtn.addEventListener("click", () => {
-                if (!current) return;
-                onEmpty(current);
-                render(); // eslint-disable-line no-use-before-define
-            });
-            footer.append(emptyTrashBtn);
         }
 
         if (mode === "save") panel.append(header, body, saveBar, footer);
@@ -428,14 +393,10 @@ export class VolumeBrowserController {
                 nameSpan.textContent = entry.name;
                 nameBtn.append(iconEl, nameSpan);
 
-                const inTrash = vol.kind === "library" && path === LIBRARY_TRASH_PATH;
-
                 nameBtn.addEventListener("click", () => {
                     if (entry.type === "dir") {
                         path = entry.path;
                         render(); // eslint-disable-line no-use-before-define
-                    } else if (inTrash) {
-                        // clicking a trash file name is a no-op — use action buttons
                     } else if (mode === "save") {
                         nameInput.value = entry.name;
                     } else {
@@ -451,36 +412,7 @@ export class VolumeBrowserController {
                     const actions = document.createElement("div");
                     actions.className = "vb-row-actions";
 
-                    if (inTrash) {
-                        if (this.onRestore) {
-                            const onRst = this.onRestore;
-                            const btn = document.createElement("button");
-                            btn.type = "button";
-                            btn.className = "vb-row-restore";
-                            btn.title = STRINGS.restore;
-                            btn.textContent = STRINGS.restore;
-                            btn.addEventListener("click", (e) => {
-                                e.stopPropagation();
-                                onRst(vol, entry);
-                                render(); // eslint-disable-line no-use-before-define
-                            });
-                            actions.append(btn);
-                        }
-                        if (this.onPurge) {
-                            const onPg = this.onPurge;
-                            const btn = document.createElement("button");
-                            btn.type = "button";
-                            btn.className = "vb-row-purge";
-                            btn.title = STRINGS.purgePermanently;
-                            btn.textContent = STRINGS.purgePermanently;
-                            btn.addEventListener("click", (e) => {
-                                e.stopPropagation();
-                                onPg(vol, entry);
-                                render(); // eslint-disable-line no-use-before-define
-                            });
-                            actions.append(btn);
-                        }
-                    } else if (vol.kind === "library" && this.onDelete) {
+                    if (vol.kind === "library" && this.onDelete) {
                         const onDel = this.onDelete;
                         const btn = document.createElement("button");
                         btn.type = "button";
@@ -506,8 +438,6 @@ export class VolumeBrowserController {
             renderCrumbs();
             // Save bar is visible only when navigated inside a volume.
             if (mode === "save") saveBar.hidden = current === null;
-            // Empty Trash button shown only when viewing the Library trash folder.
-            if (emptyTrashBtn) emptyTrashBtn.hidden = !(current?.kind === "library" && path === LIBRARY_TRASH_PATH);
             await renderList();
         };
 
