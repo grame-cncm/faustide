@@ -108,21 +108,40 @@ export type DroppedFileHandleCallback = (savedName: string, handle: FileSystemFi
  *
  * @param dataTransfer the drop event's DataTransfer (may be null)
  * @param callback     invoked with the resolved handle after the save
- * @returns a resolver to call with the saved file name (or undefined on failure)
+ * @returns a resolver to call with each saved file name, in drop order
+ */
+export function captureDroppedFileHandles(
+    dataTransfer: DataTransfer | null,
+    callback?: DroppedFileHandleCallback
+): (savedNames: Array<string | undefined>) => Promise<void> {
+    const handlePromises = callback && dataTransfer?.items
+        ? Array.from(dataTransfer.items)
+            .filter(item => item.kind === "file")
+            .map((item) => {
+                const fsItem = item as FsDataTransferItem;
+                return fsItem.getAsFileSystemHandle ? fsItem.getAsFileSystemHandle() : null;
+            })
+        : [];
+    return async (savedNames) => {
+        if (!callback || handlePromises.length === 0) return;
+        await Promise.all(handlePromises.map(async (handlePromise, index) => {
+            const savedName = savedNames[index];
+            if (!savedName || !handlePromise) return;
+            const handle = await handlePromise;
+            if (handle?.kind === "file") callback(savedName, handle as FileSystemFileHandle);
+        }));
+    };
+}
+
+/**
+ * Single-file compatibility wrapper around `captureDroppedFileHandles`.
  */
 export function captureDroppedFileHandle(
     dataTransfer: DataTransfer | null,
     callback?: DroppedFileHandleCallback
 ): (savedName: string | undefined) => Promise<void> {
-    const item = dataTransfer?.items?.[0] as FsDataTransferItem | undefined;
-    const handlePromise = callback && item?.getAsFileSystemHandle
-        ? item.getAsFileSystemHandle()
-        : null;
-    return async (savedName) => {
-        if (!savedName || !callback || !handlePromise) return;
-        const handle = await handlePromise;
-        if (handle?.kind === "file") callback(savedName, handle as FileSystemFileHandle);
-    };
+    const resolve = captureDroppedFileHandles(dataTransfer, callback);
+    return savedName => resolve([savedName]);
 }
 
 /**

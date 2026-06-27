@@ -6,7 +6,7 @@ const createFileManager = () => ({
     mainFileName: "main.dsp",
     mainFileNameWithoutSuffix: "main",
     mainCode: "process = _;",
-    newFile: vi.fn(),
+    newFile: vi.fn((name: string) => name),
     getValue: vi.fn((name: string) => name === "main.dsp" ? "process = _;" : "foo = _;")
 });
 
@@ -23,6 +23,12 @@ const setupDom = () => {
         <div id="top"></div>
         <div id="editor-overlay"></div>
     `;
+};
+
+const flush = async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
 };
 
 describe("ProjectFilesController", () => {
@@ -80,9 +86,78 @@ describe("ProjectFilesController", () => {
         } as any;
 
         $("#editor-overlay").trigger(event);
-        await Promise.resolve();
+        await flush();
 
         expect(fileManager.newFile).toHaveBeenCalledWith("dropfile.dsp", "dropped = _;");
+    });
+
+    it("imports every file dropped through the editor overlay", async () => {
+        const fileManager = createFileManager();
+        const readFileAsText = vi.fn(async (file: File) => `${file.name} content`);
+        new ProjectFilesController({
+            fileManager: fileManager as any,
+            compileOptions: { realtimeCompile: false } as any,
+            audioEnv: {} as any,
+            createZip: createZip as any,
+            readFileAsText,
+            runDsp: vi.fn(),
+            updateDiagram: vi.fn()
+        }).bind();
+        const event = $.Event("drop");
+        event.originalEvent = {
+            dataTransfer: {
+                files: [
+                    new File([""], "first file.dsp"),
+                    new File([""], "second.lib")
+                ]
+            },
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
+        } as any;
+
+        $("#editor-overlay").trigger(event);
+        await flush();
+
+        expect(fileManager.newFile).toHaveBeenCalledWith("firstfile.dsp", "first file.dsp content");
+        expect(fileManager.newFile).toHaveBeenCalledWith("second.lib", "second.lib content");
+    });
+
+    it("passes each dropped file handle to disk tracking after import", async () => {
+        const fileManager = createFileManager();
+        const onDroppedFileHandle = vi.fn();
+        const handleA = { kind: "file", name: "first.dsp" } as FileSystemFileHandle;
+        const handleB = { kind: "file", name: "second.lib" } as FileSystemFileHandle;
+        new ProjectFilesController({
+            fileManager: fileManager as any,
+            compileOptions: { realtimeCompile: false } as any,
+            audioEnv: {} as any,
+            createZip: createZip as any,
+            readFileAsText: vi.fn(async () => "content"),
+            runDsp: vi.fn(),
+            updateDiagram: vi.fn(),
+            onDroppedFileHandle
+        }).bind();
+        const event = $.Event("drop");
+        event.originalEvent = {
+            dataTransfer: {
+                files: [
+                    new File([""], "first file.dsp"),
+                    new File([""], "second.lib")
+                ],
+                items: [
+                    { kind: "file", getAsFileSystemHandle: vi.fn().mockResolvedValue(handleA) },
+                    { kind: "file", getAsFileSystemHandle: vi.fn().mockResolvedValue(handleB) }
+                ]
+            },
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn()
+        } as any;
+
+        $("#editor-overlay").trigger(event);
+        await flush();
+
+        expect(onDroppedFileHandle).toHaveBeenCalledWith("firstfile.dsp", handleA);
+        expect(onDroppedFileHandle).toHaveBeenCalledWith("second.lib", handleB);
     });
 
     it("runs DSP after importing a dropped file when realtime mode has an active DSP", async () => {
@@ -104,7 +179,7 @@ describe("ProjectFilesController", () => {
         } as any;
 
         $("#editor-overlay").trigger(event);
-        await Promise.resolve();
+        await flush();
 
         expect(runDsp).toHaveBeenCalledWith("process = _;");
     });
@@ -129,7 +204,7 @@ describe("ProjectFilesController", () => {
         } as any;
 
         $("#editor-overlay").trigger(event);
-        await Promise.resolve();
+        await flush();
 
         expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;");
         expect(updateDiagram).toHaveBeenCalledWith("process = _;");

@@ -1,7 +1,7 @@
 import "./FileManager.scss";
 import { ProjectModel } from "./model/ProjectModel";
 import type { TFileSystem } from "./model/ProjectModel";
-import { captureDroppedFileHandle, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
+import { captureDroppedFileHandles, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 
 type TOptions = {
     container: HTMLDivElement;
@@ -174,15 +174,16 @@ export class FileManager {
             if (!e.dataTransfer || !e.dataTransfer.files.length) return;
             e.preventDefault();
             e.stopPropagation();
-            const file = e.dataTransfer.files[0];
             // Must capture the source handle before the first await (see helper).
-            const resolveDiskHandle = captureDroppedFileHandle(e.dataTransfer, this.onDroppedFileHandle);
-            const content: string | Uint8Array = file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)
-                ? new Uint8Array(await file.arrayBuffer())
-                : await file.text();
-            const savedName = this.newFile(file.name, content);
-            this.select(savedName);
-            await resolveDiskHandle(savedName);
+            const resolveDiskHandles = captureDroppedFileHandles(e.dataTransfer, this.onDroppedFileHandle);
+            const importedFiles = await Promise.all(Array.from(e.dataTransfer.files).map(async file => ({
+                file,
+                content: await FileManager.readDroppedFile(file)
+            })));
+            const savedNames = importedFiles.map(({ file, content }) => this.newFile(file.name, content));
+            const lastSavedName = savedNames[savedNames.length - 1];
+            if (lastSavedName) this.select(lastSavedName);
+            await resolveDiskHandles(savedNames);
         };
         this.container.addEventListener("dragenter", dragenterHandler);
         this.container.addEventListener("dragover", dragenterHandler);
@@ -191,6 +192,31 @@ export class FileManager {
         this.divOverlay.addEventListener("dragleave", dragendHandler);
         this.divOverlay.addEventListener("dragend", dragendHandler);
         this.divOverlay.addEventListener("drop", dropHandler);
+    }
+
+    /**
+     * Reads dropped text/audio files while tolerating browsers or tests that do
+     * not expose the newer `File.text()` / `File.arrayBuffer()` helpers.
+     */
+    private static readDroppedFile(file: File): Promise<string | Uint8Array> {
+        if (file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)) {
+            if (typeof file.arrayBuffer === "function") {
+                return file.arrayBuffer().then(buffer => new Uint8Array(buffer));
+            }
+            return new Promise<Uint8Array>((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+                reader.onerror = () => resolve(new Uint8Array());
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        if (typeof file.text === "function") return file.text();
+        return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result ? reader.result.toString() : "");
+            reader.onerror = () => resolve("");
+            reader.readAsText(file);
+        });
     }
     /**
      * create a new file container with buttons

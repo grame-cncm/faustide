@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     fsAccessAvailable, openDecision, pickImportableFileHandle,
-    pickDirectory, ensureRwPermission, queryRwGranted, captureDroppedFileHandle
+    pickDirectory, ensureRwPermission, queryRwGranted, captureDroppedFileHandle, captureDroppedFileHandles
 } from "../runtime/fs/FileAccess";
 
 /** Builds a DataTransfer-shaped stub whose first item exposes getAsFileSystemHandle. */
@@ -10,6 +10,13 @@ const makeDropTransfer = (handle: FileSystemHandle | null, hasApi = true): DataT
         kind: "file",
         ...(hasApi ? { getAsFileSystemHandle: vi.fn().mockResolvedValue(handle) } : {})
     }]
+} as unknown as DataTransfer);
+
+const makeDropTransferWithHandles = (handles: Array<FileSystemHandle | null>): DataTransfer => ({
+    items: handles.map(handle => ({
+        kind: "file",
+        getAsFileSystemHandle: vi.fn().mockResolvedValue(handle)
+    }))
 } as unknown as DataTransfer);
 
 const makeFakeDirHandle = (overrides: Record<string, unknown> = {}): FileSystemDirectoryHandle => ({
@@ -202,6 +209,41 @@ describe("captureDroppedFileHandle", () => {
         const resolve = captureDroppedFileHandle(null, cb);
         await resolve("untitled.dsp");
         expect(cb).not.toHaveBeenCalled();
+    });
+});
+
+describe("captureDroppedFileHandles", () => {
+    const fileA = { kind: "file", name: "a.dsp" } as FileSystemFileHandle;
+    const fileB = { kind: "file", name: "b.lib" } as FileSystemFileHandle;
+
+    it("invokes the callback for each saved name and captured file handle", async () => {
+        const cb = vi.fn();
+        const resolve = captureDroppedFileHandles(makeDropTransferWithHandles([fileA, fileB]), cb);
+
+        await resolve(["saved-a.dsp", "saved-b.lib"]);
+
+        expect(cb).toHaveBeenCalledWith("saved-a.dsp", fileA);
+        expect(cb).toHaveBeenCalledWith("saved-b.lib", fileB);
+    });
+
+    it("calls every getAsFileSystemHandle synchronously before resolving", () => {
+        const transfer = makeDropTransferWithHandles([fileA, fileB]);
+        captureDroppedFileHandles(transfer, vi.fn());
+
+        expect((transfer.items[0] as any).getAsFileSystemHandle).toHaveBeenCalledTimes(1);
+        expect((transfer.items[1] as any).getAsFileSystemHandle).toHaveBeenCalledTimes(1);
+    });
+
+    it("skips missing saved names and directory handles", async () => {
+        const cb = vi.fn();
+        const dir = { kind: "directory", name: "folder" } as unknown as FileSystemHandle;
+        const resolve = captureDroppedFileHandles(makeDropTransferWithHandles([fileA, dir, fileB]), cb);
+
+        await resolve(["saved-a.dsp", undefined, "saved-b.lib"]);
+
+        expect(cb).toHaveBeenCalledTimes(2);
+        expect(cb).toHaveBeenCalledWith("saved-a.dsp", fileA);
+        expect(cb).toHaveBeenCalledWith("saved-b.lib", fileB);
     });
 });
 
