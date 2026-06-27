@@ -226,6 +226,19 @@ describe("captureDroppedFileHandles", () => {
         expect(cb).toHaveBeenCalledWith("saved-b.lib", fileB);
     });
 
+    it("waits for async callbacks before resolving", async () => {
+        const completed: string[] = [];
+        const cb = vi.fn(async (savedName: string) => {
+            await Promise.resolve();
+            completed.push(savedName);
+        });
+        const resolve = captureDroppedFileHandles(makeDropTransferWithHandles([fileA, fileB]), cb);
+
+        await resolve(["saved-a.dsp", "saved-b.lib"]);
+
+        expect(completed).toEqual(["saved-a.dsp", "saved-b.lib"]);
+    });
+
     it("calls every getAsFileSystemHandle synchronously before resolving", () => {
         const transfer = makeDropTransferWithHandles([fileA, fileB]);
         captureDroppedFileHandles(transfer, vi.fn());
