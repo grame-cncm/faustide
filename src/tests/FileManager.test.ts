@@ -225,7 +225,7 @@ describe("FileManager", () => {
         fireEvent.click(deleteButton);
 
         expect(handlers.selectHandler).toHaveBeenCalledWith("main.dsp", "process = 1;", expect.any(String));
-        expect(handlers.saveHandler).toHaveBeenCalledWith("main.dsp", "process = 1;", expect.any(String));
+        expect(handlers.saveHandler).toHaveBeenCalledWith("main.dsp", "process = 1;", expect.any(String), {});
         expect(handlers.deleteHandler).toHaveBeenCalledWith("main.dsp", expect.any(String));
         expect(handlers.mainFileChangeHandler).toHaveBeenCalledWith("other.dsp", "process = 2;");
     });

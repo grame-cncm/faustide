@@ -7,6 +7,7 @@ const createFileManager = () => ({
     mainFileNameWithoutSuffix: "main",
     mainCode: "process = _;",
     newFile: vi.fn((name: string) => name),
+    persistFile: vi.fn(async () => undefined),
     getValue: vi.fn((name: string) => name === "main.dsp" ? "process = _;" : "foo = _;")
 });
 
@@ -88,7 +89,8 @@ describe("ProjectFilesController", () => {
         $("#editor-overlay").trigger(event);
         await flush();
 
-        expect(fileManager.newFile).toHaveBeenCalledWith("dropfile.dsp", "dropped = _;");
+        expect(fileManager.newFile).toHaveBeenCalledWith("dropfile.dsp", "dropped = _;", { persist: "manual" });
+        expect(fileManager.persistFile).toHaveBeenCalledWith("dropfile.dsp", "dropped = _;", { immediate: true });
     });
 
     it("imports every file dropped through the editor overlay", async () => {
@@ -118,8 +120,10 @@ describe("ProjectFilesController", () => {
         $("#editor-overlay").trigger(event);
         await flush();
 
-        expect(fileManager.newFile).toHaveBeenCalledWith("firstfile.dsp", "first file.dsp content");
-        expect(fileManager.newFile).toHaveBeenCalledWith("second.lib", "second.lib content");
+        expect(fileManager.newFile).toHaveBeenCalledWith("firstfile.dsp", "first file.dsp content", { persist: "manual" });
+        expect(fileManager.newFile).toHaveBeenCalledWith("second.lib", "second.lib content", { persist: "manual" });
+        expect(fileManager.persistFile).toHaveBeenCalledWith("firstfile.dsp", "first file.dsp content", { immediate: true });
+        expect(fileManager.persistFile).toHaveBeenCalledWith("second.lib", "second.lib content", { immediate: true });
     });
 
     it("passes each dropped file handle to disk tracking after import", async () => {
@@ -206,7 +210,7 @@ describe("ProjectFilesController", () => {
         $("#editor-overlay").trigger(event);
         await flush();
 
-        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;");
+        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;", { persist: "manual" });
         expect(updateDiagram).toHaveBeenCalledWith("process = _;");
     });
 });

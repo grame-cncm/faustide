@@ -57,6 +57,26 @@ describe("ProjectRuntimeController", () => {
         expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("second.lib", "foo = _;");
     });
 
+    it("persists immediate saves without waiting for the debounce", async () => {
+        const { handlers, options } = bindController();
+
+        await handlers.saveHandler("drop.dsp", "process = _;", "main code", { immediate: true });
+
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("drop.dsp", "process = _;");
+    });
+
+    it("immediate saves cancel a pending debounced save for the same file", async () => {
+        const { handlers, options } = bindController();
+
+        handlers.saveHandler("drop.dsp", "old = _;", "main code");
+        await handlers.saveHandler("drop.dsp", "process = _;", "main code", { immediate: true });
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledTimes(1);
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("drop.dsp", "process = _;");
+    });
+
     it("shows persistence errors through the alert controller", async () => {
         const error = new Error("storage failed");
         const { handlers, options } = bindController({
@@ -70,6 +90,7 @@ describe("ProjectRuntimeController", () => {
 
         handlers.saveHandler("main.dsp", "process = _;", "main code");
         vi.advanceTimersByTime(1000);
+        await Promise.resolve();
         await Promise.resolve();
 
         expect(options.alertController.show).toHaveBeenCalledWith(error);

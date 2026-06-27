@@ -96,8 +96,9 @@ export class ExampleLoaderController {
         if (path) {
             this.fetchResource(path)
                 .then(response => response.text())
-                .then((code) => {
-                    this.fileManager.newFile(this.sanitizeFileName(name), code);
+                .then(async (code) => {
+                    const savedName = this.fileManager.newFile(this.sanitizeFileName(name), code, { persist: "manual" });
+                    await this.fileManager.persistFile(savedName, code, { immediate: true });
                     this.recompileIfNeeded();
                 });
         }

@@ -10,7 +10,8 @@ const setupDom = () => {
 
 const createFileManager = () => ({
     mainCode: "process = _;",
-    newFile: vi.fn()
+    newFile: vi.fn((name: string) => name),
+    persistFile: vi.fn(async () => undefined)
 });
 
 const createFetch = () => vi.fn(async (path: string) => {
@@ -82,7 +83,8 @@ describe("ExampleLoaderController", () => {
         await flushPromises();
 
         expect(fetchResource).toHaveBeenCalledWith("examples/synths/bad.dsp");
-        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;");
+        expect(fileManager.newFile).toHaveBeenCalledWith("badname.dsp", "imported = _;", { persist: "manual" });
+        expect(fileManager.persistFile).toHaveBeenCalledWith("badname.dsp", "imported = _;", { immediate: true });
     });
 
     it("runs DSP after loading an example when realtime mode has an active DSP", async () => {
