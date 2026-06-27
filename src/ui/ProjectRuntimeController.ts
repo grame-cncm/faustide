@@ -45,8 +45,7 @@ export class ProjectRuntimeController {
     private readonly updateDiagram: (code: string) => { success: boolean; error?: Error };
     private readonly onDiskSave?: (fileName: string, content: string | Uint8Array) => Promise<void>;
     private readonly onFileDelete?: (fileName: string) => void;
-    private saveTimeout: number;
-    private pendingSaveFileName: string;
+    private readonly saveTimeouts = new Map<string, number>();
     private realtimeCompileTimer: number;
 
     constructor(options: ProjectRuntimeControllerOptions) {
@@ -91,19 +90,19 @@ export class ProjectRuntimeController {
      * main file code.
      */
     private saveFile(fileName: string, content: string | Uint8Array, mainCode: string) {
-        clearTimeout(this.saveTimeout);
+        clearTimeout(this.saveTimeouts.get(fileName));
         const diskSave = this.onDiskSave;
-        this.pendingSaveFileName = fileName;
-        this.saveTimeout = setTimeout(async () => {
+        const timeout = setTimeout(async () => {
             try {
                 await this.projectPersistence.saveFile(fileName, content);
                 if (diskSave) await diskSave(fileName, content);
             } catch (e) {
                 this.alertController.show(e instanceof Error ? e : String(e));
             } finally {
-                if (this.pendingSaveFileName === fileName) this.pendingSaveFileName = undefined;
+                if (this.saveTimeouts.get(fileName) === timeout) this.saveTimeouts.delete(fileName);
             }
         }, 1000);
+        this.saveTimeouts.set(fileName, timeout);
         this.scheduleRealtimeCompile(mainCode, 1000);
     }
 
@@ -112,10 +111,8 @@ export class ProjectRuntimeController {
      */
     private async deleteFile(fileName: string) {
         try {
-            if (this.pendingSaveFileName === fileName) {
-                clearTimeout(this.saveTimeout);
-                this.pendingSaveFileName = undefined;
-            }
+            clearTimeout(this.saveTimeouts.get(fileName));
+            this.saveTimeouts.delete(fileName);
             await this.projectPersistence.deleteFile(fileName);
             if (this.onFileDelete) this.onFileDelete(fileName);
         } catch (e) {
