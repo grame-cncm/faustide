@@ -23,6 +23,8 @@ type ProjectRuntimeControllerOptions = {
      * origin (open in-place, invariant I5).  Errors are shown via alertController.
      */
     onDiskSave?: (fileName: string, content: string | Uint8Array) => Promise<void>;
+    /** Called after a file has been removed from durable project storage. */
+    onFileDelete?: (fileName: string) => void;
 };
 
 /**
@@ -42,7 +44,9 @@ export class ProjectRuntimeController {
     private readonly runDsp: (code: string) => Promise<{ success: boolean; error?: Error }>;
     private readonly updateDiagram: (code: string) => { success: boolean; error?: Error };
     private readonly onDiskSave?: (fileName: string, content: string | Uint8Array) => Promise<void>;
+    private readonly onFileDelete?: (fileName: string) => void;
     private saveTimeout: number;
+    private pendingSaveFileName: string;
     private realtimeCompileTimer: number;
 
     constructor(options: ProjectRuntimeControllerOptions) {
@@ -54,6 +58,7 @@ export class ProjectRuntimeController {
         this.runDsp = options.runDsp;
         this.updateDiagram = options.updateDiagram;
         this.onDiskSave = options.onDiskSave;
+        this.onFileDelete = options.onFileDelete;
     }
 
     /**
@@ -88,12 +93,15 @@ export class ProjectRuntimeController {
     private saveFile(fileName: string, content: string | Uint8Array, mainCode: string) {
         clearTimeout(this.saveTimeout);
         const diskSave = this.onDiskSave;
+        this.pendingSaveFileName = fileName;
         this.saveTimeout = setTimeout(async () => {
             try {
                 await this.projectPersistence.saveFile(fileName, content);
                 if (diskSave) await diskSave(fileName, content);
             } catch (e) {
                 this.alertController.show(e instanceof Error ? e : String(e));
+            } finally {
+                if (this.pendingSaveFileName === fileName) this.pendingSaveFileName = undefined;
             }
         }, 1000);
         this.scheduleRealtimeCompile(mainCode, 1000);
@@ -104,7 +112,12 @@ export class ProjectRuntimeController {
      */
     private async deleteFile(fileName: string) {
         try {
+            if (this.pendingSaveFileName === fileName) {
+                clearTimeout(this.saveTimeout);
+                this.pendingSaveFileName = undefined;
+            }
             await this.projectPersistence.deleteFile(fileName);
+            if (this.onFileDelete) this.onFileDelete(fileName);
         } catch (e) {
             this.alertController.show(e instanceof Error ? e : String(e));
         }

@@ -106,9 +106,9 @@ UX/debt.
 
 ### High - stale origins can overwrite unrelated disk files
 
-`DiskOriginTracker.forget()` exists, but the current delete and rename flows do
-not consistently call it. A stale localStorage origin can be restored on startup
-for a later local file with the same name:
+Before the cleanup, `DiskOriginTracker.forget()` existed but delete and rename
+flows did not consistently call it. A stale localStorage origin could be
+restored on startup for a later local file with the same name:
 
 1. Open `synth.dsp` from a mounted folder.
 2. Delete `synth.dsp`.
@@ -119,24 +119,26 @@ for a later local file with the same name:
 
 Common names such as `main.dsp` and `untitled.dsp` make this plausible.
 
-Target fix: every permanent delete must call `diskTracker.forget(name)`, and
-startup should prune persisted origins whose project file is not present.
+Status: fixed in the no-trash cleanup. `ProjectRuntimeController` exposes an
+`onFileDelete` hook wired by `index.ts` to `diskTracker.forget(name)`, and
+startup uses `DiskOriginTracker.prunePersistedOrigins(fileNames)` before
+restoring green rows.
 
 ### Medium - renaming a mounted file loses or stales mounted status
 
-`FileManager.rename` saves the new name and deletes the old durable copy, but the
-disk origin remains keyed by the old name. The renamed row is no longer green or
-write-back-active, while the old origin can later collide with a new file.
+Before the cleanup, `FileManager.rename` saved the new name and deleted the old
+durable copy, but the disk origin remained keyed by the old name. The renamed
+row could stay visually green without write-back being active, while the old
+origin could later collide with a new file.
 
-Target fix: choose one explicit rename policy and implement it consistently:
+Policy: **unlink-on-rename**. Renaming a mounted file makes the renamed Library
+file local: `FileManager.rename` removes the green disk class from the renamed
+row, and its existing `deleteHandler(oldName)` path forgets the old origin.
 
-- **unlink-on-rename**: `forget(oldName)` and the renamed file becomes a local
-  Library file; or
-- **move-origin-on-rename**: move the origin key from `oldName` to `newName`,
-  keeping the same disk path and green status.
-
-The first policy is simpler and avoids writing a renamed Library file back to a
-disk path with a different basename. The second policy is closer to "same
+The rejected alternative is **move-origin-on-rename**: move the origin key from
+`oldName` to `newName`, keeping the same disk path and green status. The unlink
+policy is simpler and avoids writing a renamed Library file back to a disk path
+with a different basename. Moving the origin key would be closer to "same
 document, new project name" but needs clearer UI language.
 
 ### Medium - mounted-file reload behavior still needs characterization
