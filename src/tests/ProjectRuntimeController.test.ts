@@ -108,6 +108,39 @@ describe("ProjectRuntimeController", () => {
         expect(options.projectPersistence.deleteFile).toHaveBeenCalledWith("old.dsp");
     });
 
+    it("notifies after a file is deleted so disk origins can be forgotten", async () => {
+        const onFileDelete = vi.fn();
+        const { handlers } = bindController({ options: { onFileDelete } });
+
+        await handlers.deleteHandler("old.dsp");
+
+        expect(onFileDelete).toHaveBeenCalledWith("old.dsp");
+    });
+
+    it("cancels a pending save when the same file is deleted", async () => {
+        const { handlers, options } = bindController();
+
+        handlers.saveHandler("doomed.dsp", "process = _;", "main code");
+        await handlers.deleteHandler("doomed.dsp");
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+
+        expect(options.projectPersistence.deleteFile).toHaveBeenCalledWith("doomed.dsp");
+        expect(options.projectPersistence.saveFile).not.toHaveBeenCalled();
+    });
+
+    it("keeps a pending save for a different file when another file is deleted", async () => {
+        const { handlers, options } = bindController();
+
+        handlers.saveHandler("kept.dsp", "process = _;", "main code");
+        await handlers.deleteHandler("other.dsp");
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+
+        expect(options.projectPersistence.deleteFile).toHaveBeenCalledWith("other.dsp");
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("kept.dsp", "process = _;");
+    });
+
     it("binds editor content changes back into FileManager", () => {
         const { controller } = bindController();
         let listener!: () => void;

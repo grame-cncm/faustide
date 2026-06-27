@@ -319,6 +319,7 @@ export class FileManager {
         spanName.innerText = renamedName;
         spanName.contentEditable = "false";
         divFile.dataset.filename = renamedName;
+        this.setDiskTracked(renamedName, false);
         if (this.saveHandler) this.saveHandler(renamedName, this.getValue(renamedName), this.mainCode);
         this.select(renamedName);
         this.deleteHandler(oldName, this.mainCode);

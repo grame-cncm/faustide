@@ -449,8 +449,8 @@ faustFS trash model and the restore/purge/empty UI/API.
   virtual Trash directory; the volume browser only exposes Library delete.
 
 **Commit 9.2 — clear stale mounted origins.** Wire delete and rename to forget
-old disk origins, and prune persisted origins on startup when the project file is
-missing.
+old disk origins, cancel any pending debounced save for the deleted file, and
+prune persisted origins on startup when the project file is missing.
 - *Tests:* unit — delete/rename callbacks forget the old name; startup pruning
   removes stale origins and keeps reachable ones.
 - *Risks:* mounted file UX after reload still needs a focused follow-up analysis

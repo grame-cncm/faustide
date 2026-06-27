@@ -9,6 +9,7 @@ function makeFakeVol(writeSpy: (content: string) => void): DiskVolume {
         close: vi.fn(() => Promise.resolve()),
     };
     return {
+        id: "disk:test",
         kind: "disk",
         fileHandle: vi.fn(() => Promise.resolve({
             createWritable: vi.fn(() => Promise.resolve(writable)),
@@ -71,6 +72,30 @@ describe("DiskOriginTracker", () => {
             tracker.track("b.lib", vol, "b.lib");
             expect(tracker.has("a.dsp")).toBe(true);
             expect(tracker.has("b.lib")).toBe(true);
+        });
+
+        it("prunes persisted origins whose project file is missing", () => {
+            const tracker = new DiskOriginTracker();
+            const vol = makeFakeVol(vi.fn());
+            tracker.track("kept.dsp", vol, "kept.dsp");
+            tracker.track("deleted.dsp", vol, "deleted.dsp");
+
+            const pruned = DiskOriginTracker.prunePersistedOrigins(["kept.dsp"]);
+
+            expect([...pruned.keys()]).toEqual(["kept.dsp"]);
+            expect([...DiskOriginTracker.loadPersistedOrigins().keys()]).toEqual(["kept.dsp"]);
+        });
+
+        it("keeps persisted origins for every reachable project file", () => {
+            const tracker = new DiskOriginTracker();
+            const vol = makeFakeVol(vi.fn());
+            tracker.track("a.dsp", vol, "a.dsp");
+            tracker.track("b.lib", vol, "b.lib");
+
+            const pruned = DiskOriginTracker.prunePersistedOrigins(["a.dsp", "b.lib"]);
+
+            expect([...pruned.keys()]).toEqual(["a.dsp", "b.lib"]);
+            expect([...DiskOriginTracker.loadPersistedOrigins().keys()]).toEqual(["a.dsp", "b.lib"]);
         });
     });
 

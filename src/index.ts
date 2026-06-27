@@ -214,7 +214,8 @@ $(async () => {
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp,
         updateDiagram,
-        onDiskSave: (fileName, content) => diskTracker.writeToDisk(fileName, content)
+        onDiskSave: (fileName, content) => diskTracker.writeToDisk(fileName, content),
+        onFileDelete: fileName => diskTracker.forget(fileName)
     });
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
@@ -324,8 +325,9 @@ $(async () => {
         volumes.push(new DiskVolume(handle, id));
     }
 
-    // Origins persisted by a previous session, keyed by saved file name.
-    const persistedOrigins = DiskOriginTracker.loadPersistedOrigins();
+    // Origins persisted by a previous session, keyed by saved file name. Prune
+    // names no longer present in the project before re-applying green status.
+    const persistedOrigins = DiskOriginTracker.prunePersistedOrigins(uiEnv.fileManager.fileNames);
 
     // Re-establish disk tracking for a single file: green indicator + write-back
     // link. Reuses the in-memory origin when present, otherwise falls back to

@@ -15,6 +15,12 @@ export interface PersistedOrigin {
     path: string;
 }
 
+function savePersistedOrigins(origins: Map<string, PersistedOrigin>): void {
+    const obj: Record<string, PersistedOrigin> = {};
+    for (const [name, origin] of origins) obj[name] = origin;
+    localStorage.setItem(ORIGINS_LS_KEY, JSON.stringify(obj));
+}
+
 /**
  * Per-file disk origin registry for open-in-place editing (invariant I5).
  *
@@ -26,9 +32,10 @@ export interface PersistedOrigin {
  * Binary audio files are never tracked — they are import-copy only.
  *
  * The mapping is also persisted to localStorage (`faust:fs:origins`) so that
- * the green disk-tracked indicator survives a page reload.  On startup callers
- * read `loadPersistedOrigins()`, match volumeIds to the restored DiskVolume
- * instances, and call `restore()` for each file still present in the project.
+ * the green disk-tracked indicator survives a page reload. On startup callers
+ * prune origins for missing project files, match remaining volumeIds to the
+ * restored DiskVolume instances, and call `restore()` for each file still
+ * present in the project.
  */
 export class DiskOriginTracker {
     private readonly origins = new Map<string, DiskOrigin>();
@@ -90,11 +97,29 @@ export class DiskOriginTracker {
         }
     }
 
-    private persist(): void {
-        const obj: Record<string, PersistedOrigin> = {};
-        for (const [name, { vol, path }] of this.origins) {
-            obj[name] = { volumeId: vol.id, path };
+    /**
+     * Drops persisted origins whose Library file is no longer present.
+     *
+     * Startup uses this before re-applying green disk indicators. It prevents a
+     * deleted mounted file's stale origin from attaching to a later local file
+     * with the same name after reload.
+     */
+    static prunePersistedOrigins(reachableNames: Iterable<string>): Map<string, PersistedOrigin> {
+        const reachable = new Set(reachableNames);
+        const origins = DiskOriginTracker.loadPersistedOrigins();
+        let changed = false;
+        for (const name of origins.keys()) {
+            if (reachable.has(name)) continue;
+            origins.delete(name);
+            changed = true;
         }
-        localStorage.setItem(ORIGINS_LS_KEY, JSON.stringify(obj));
+        if (changed) savePersistedOrigins(origins);
+        return origins;
+    }
+
+    private persist(): void {
+        const origins = new Map<string, PersistedOrigin>();
+        for (const [name, { vol, path }] of this.origins) origins.set(name, { volumeId: vol.id, path });
+        savePersistedOrigins(origins);
     }
 }

@@ -86,6 +86,11 @@ const createManager = (files: Record<string, StoredFile> = {}, options: Partial<
 
 const fileNames = (manager: FileManager) => Array.from(manager.divFiles.querySelectorAll(".filemanager-file")).map(element => (element as HTMLDivElement).dataset.filename);
 
+const diskClass = (manager: FileManager, name: string) => {
+    const div = manager.divFiles.querySelector(`[data-filename="${name}"]`) as HTMLDivElement;
+    return div.classList.contains("filemanager-file--disk");
+};
+
 describe("FileManager", () => {
     it("creates and selects untitled.dsp when the filesystem is empty", () => {
         const { fs, handlers, manager } = createManager();
@@ -121,6 +126,16 @@ describe("FileManager", () => {
 
         expect(fileNames(manager)).toContain("renamed_file.dsp");
         expect(manager.selected).toBe("renamed_file.dsp");
+    });
+
+    it("renaming a disk-tracked file unlinks the green disk status", () => {
+        const { handlers, manager } = createManager({ "mounted.dsp": "process = _;" });
+        manager.setDiskTracked("mounted.dsp", true);
+
+        manager.rename("mounted.dsp", "renamed.dsp");
+
+        expect(diskClass(manager, "renamed.dsp")).toBe(false);
+        expect(handlers.deleteHandler).toHaveBeenCalledWith("mounted.dsp", expect.any(String));
     });
 
     it("does not select audio files as editable code files", () => {
