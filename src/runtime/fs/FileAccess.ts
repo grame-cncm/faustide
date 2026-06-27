@@ -89,7 +89,7 @@ type FsDataTransferItem = DataTransferItem & {
 };
 
 /** Invoked once a dropped file has been saved, with the source file's FS handle. */
-export type DroppedFileHandleCallback = (savedName: string, handle: FileSystemFileHandle) => void;
+export type DroppedFileHandleCallback = (savedName: string, handle: FileSystemFileHandle) => void | Promise<void>;
 
 /**
  * Captures the source FileSystemHandle of a drag-and-drop, bridging the event's
@@ -128,7 +128,7 @@ export function captureDroppedFileHandles(
             const savedName = savedNames[index];
             if (!savedName || !handlePromise) return;
             const handle = await handlePromise;
-            if (handle?.kind === "file") callback(savedName, handle as FileSystemFileHandle);
+            if (handle?.kind === "file") await callback(savedName, handle as FileSystemFileHandle);
         }));
     };
 }
