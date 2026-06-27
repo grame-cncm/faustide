@@ -1,5 +1,4 @@
 import type { ProjectModel } from "../../model/ProjectModel";
-import { TRASH_DIR } from "../../model/ProjectModel";
 import type { Volume, VolumeEntry, VolumeState } from "./Volume";
 import { isNativeFaustFile, sortEntries } from "./Volume";
 
@@ -33,23 +32,13 @@ export class LibraryVolume implements Volume {
     /**
      * List the project's files.
      *
-     * path="" → project root files + a virtual "Trash" dir when non-empty.
-     * path=TRASH_DIR → trashed files.
+     * path="" returns project root files.
      * Any other path returns [].
      *
      * listFiles() is called on every root list() to pick up changes made via
      * ProjectModel since the last call.
      */
     list(path: string): Promise<VolumeEntry[]> {
-        if (path === TRASH_DIR) {
-            const entries: VolumeEntry[] = this.model.listTrash().map(name => ({
-                name,
-                path: `${TRASH_DIR}/${name}`,
-                type: "file" as const,
-                isNative: false
-            }));
-            return Promise.resolve(sortEntries(entries));
-        }
         if (path !== "") return Promise.resolve([]);
         this.model.listFiles();
         const entries: VolumeEntry[] = this.model.fileList.map(name => ({
@@ -58,9 +47,6 @@ export class LibraryVolume implements Volume {
             type: "file" as const,
             isNative: isNativeFaustFile(name)
         }));
-        if (this.model.listTrash().length > 0) {
-            entries.push({ name: "Trash", path: TRASH_DIR, type: "dir", isNative: false });
-        }
         return Promise.resolve(sortEntries(entries));
     }
 

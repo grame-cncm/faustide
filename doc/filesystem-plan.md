@@ -191,8 +191,8 @@ or modifies none):
 | yes | yes | **Fork** (`foo-<sha>.dsp`, never overwrite) |
 
 **Reload / Unlink / Delete.** *Reload* = manual pull from origin. *Unlink* =
-drop the origin, leave backend content intact. *Delete* = **soft** delete to a
-**Trash** in the Library, restorable until emptied.
+drop the origin, leave backend content intact. *Delete* = permanent project
+delete: remove the Library copy and forget any origin for that project name.
 
 ---
 
@@ -227,8 +227,8 @@ folders, no history, and **no way to keep the work as real files on the machine*
 
 The new model keeps that easy path intact and adds a desktop-like spine on top:
 a single **Open** surface, **places** (volumes) where files actually live, an
-**origin** so *Save* knows where to write, and a **Trash** so delete is no longer
-final.
+**origin** so *Save* knows where to write. Delete remains permanent and must
+clear any associated origin immediately.
 
 | Action | Today | Tomorrow |
 | :-- | :-- | :-- |
@@ -237,7 +237,7 @@ final.
 | Where it's stored | Invisible browser storage | A named **volume**: **Library** (browser), **Disk** (a real folder, Chrome), optionally **Repo** |
 | Save | Autosave only | **Save** rewrites the **origin**; **Save As** picks `(volume, folder, name)` |
 | Keep as real files | Only via a downloaded zip | **Save As → Disk** writes real files you see in Finder/Explorer (Chrome) |
-| Delete | Hard, irreversible | **Soft** → **Trash**, restore until emptied |
+| Delete | Hard, irreversible | Hard, irreversible; also clears any origin |
 | Share / Export | Unchanged | Unchanged (still single-file share + faustservice export) |
 
 **Concrete journeys:**
@@ -254,8 +254,10 @@ final.
 - **C — "Someone sent me a `.dsp`" / "it's in Downloads".** *Open → Open a file…*
   On Chrome from a mounted folder it opens **in place**; otherwise it opens as a
   **copy** in the Library. Replaces today's Upload-as-copy with one command.
-- **D — "I deleted a file by mistake."** It went to the **Trash**; restore it.
-  A safety net that does not exist today.
+- **D — "I deleted a file."** It is removed from the Library project and is not
+  recoverable through the app. If the file came from a mounted disk origin,
+  deleting the Library copy does **not** delete the disk file; it only unlinks
+  the origin.
 
 **Continuity guarantee.** On first launch of the new version, today's implicit
 project **becomes a project in the Library** — same files, same autosave, nothing
@@ -330,7 +332,7 @@ surgical** — most controls keep their place; two change meaning, one is added.
 | Element (today) | Change | New behavior |
 | :-- | :-- | :-- |
 | `#filemanager` "Project Files" panel | **Kept; gains a header action + origin line** | Still lists the open project's files (`+` / rename / set-main stay). Header gains an **Open** button (folder icon) that launches the volume browser. A small **origin line** under the title shows where the project lives (e.g. `Library` or `Disk ▸ ~/patches`), with a sync hint for Disk/Repo. |
-| Per-file **delete** (`×`) | **Soft delete** | Sends the file to **Trash** instead of unlinking; the browser's Library view exposes restore/purge. |
+| Per-file **delete** (`×`) | **Hard delete** | Removes the Library project file and clears any origin/write-back link for that project name. |
 | **Upload** (`#btn-upload`) | **Repurposed → "Open"** | Becomes the entry to the unified **Open** browser; the old "pick one file and copy it in" survives as **"Open a file…"** *inside* that browser (native picker on Chromium, `<input>` fallback elsewhere). |
 | **Save As** (`#btn-save`, today = zip download) | **Repurposed → real Save As** | Opens the browser in **save mode** to pick `(volume, folder, name)`. The plain **zip download** does not disappear — it moves under Export/“Download .zip”. |
 | *(none today)* | **New: Save** | An explicit **Save** (Ctrl/Cmd-S) that rewrites the **origin**. For a Library origin it stays effectively autosave (a confirming no-op); for a Disk/Repo origin it writes the perimeter back. |
@@ -340,11 +342,10 @@ surgical** — most controls keep their place; two change meaning, one is added.
 `#modal-share` / `#modal-export`, built the same way (Bootstrap overlay + SCSS, or
 ported vanilla — open decision #6). It has: a **breadcrumb** (`root ▸ volume ▸
 folders`), a **list pane** with loading / empty / error states (volumes are
-async), an **"Open a file…"** action, **mount actions** in the footer (**"Mount a
-disk folder…"**, and **"Add a repository…"** if Phase 8 ships), and — in the
-Library — the **Trash** with restore / purge / empty. In **save mode** it adds a
-**name field + "Save here"** button. This is exactly `ui/volume-browser.ts` (§5b),
-re-skinned.
+async), an **"Open a file…"** action, and **mount actions** in the footer
+(**"Mount a disk folder…"**, and **"Add a repository…"** if Phase 8 ships). In
+**save mode** it adds a **name field + "Save here"** button. This is exactly
+`ui/volume-browser.ts` (§5b), re-skinned without its former trash actions.
 
 **Origin & permission indicators (new, small).** Near the file-manager header:
 the **origin** (volume + path) and, for Disk/Repo, a state chip — `synced`,
@@ -366,7 +367,7 @@ TODAY                              TOMORROW
 │  ● reverb.dsp            │       │  Library ▸ (origin)  ◍ synced │
 │    filters.lib           │       │  ● reverb.dsp               │
 │    kick.wav              │       │    filters.lib              │
-├───────────────────────────┤      │    kick.wav    (× → Trash)  │
+├───────────────────────────┤      │    kick.wav    (× delete)   │
 │ Run  Export  Share        │      ├──────────────────────────────┤
 │ Upload  SaveAs  Docs  🚚  │      │ Run  Export  Share           │
 └───────────────────────────┘      │ Open  Save  SaveAs  Docs  🚚 │
@@ -407,8 +408,7 @@ DOM-free logic in `src/runtime/`, DOM in `src/ui/`. Names are suggestions.
 | **Perimeter closure** | Parse `import("…")` + `soundfile("…")`, resolve project-local closure | `src/model/Perimeter.ts` |
 | **Origin state** | Current document's origin (volume+path) or content-addressed session origin | `src/runtime/state/OriginState.ts` |
 | **Remote sync** *(optional)* | Blob sha on raw bytes, 2×2 state machine, fork-on-divergence | `src/runtime/fs/RemoteSync.ts` |
-| **Trash** | Soft delete / restore / purge in the Library | extend `ProjectModel` + `LibraryVolume` |
-| **Unified browser** | Modal: root → volume → folders; open/save modes; "Open a file…"; trash | `src/ui/VolumeBrowserController.ts` |
+| **Unified browser** | Modal: root → volume → folders; open/save modes; "Open a file…" | `src/ui/VolumeBrowserController.ts` |
 | **Orchestration** | Wire Open/Save/Reload/Unlink, origin indicator, polling | `src/index.ts` (wiring only) + existing controllers |
 
 Minimal volume interface to reproduce (illustrative TypeScript):
@@ -450,7 +450,7 @@ blueprint. Three categories: **port** (lift almost verbatim — domain-agnostic)
 | `volumes.ts` | `Volume`/`VolumeEntry` types + `LibraryVolume`/`DiskVolume`/`RepoVolume` adapters + pure helpers `childrenFromTree`, `sortEntries` | **Port** (types + helpers + Disk/Repo); **adapt** Library | Rename `isMarkdown`→`isNative` (`.dsp`/`.lib`). `childrenFromTree`/`sortEntries` are pure → unit-test verbatim. `LibraryVolume` rewires to `ProjectPersistence` instead of `docs.ts`. |
 | `volume-registry.ts` | mount/unmount + persistence (disk handles → IndexedDB with `isSameEntry` idempotency; repo coords → localStorage); `listVolumes()` | **Port verbatim** | Just rename DB/keys (`markpage-volumes`→`faust-volumes`, etc.). The `isSameEntry` "already mounted" check and the `disk:`/`repo:` id scheme are exactly what Phase 3 needs. |
 | `disk-link.ts` | File System Access wrappers: `fsAccessAvailable`, `pickDirectory`, `pickImportableFileHandle`, `ensureRwPermission`, **`queryRwGranted`** (query-only, for the silent poller), handle persistence, **mtime baseline** (`saveSyncedMtime`/`loadSyncedMtime`), single-file & bundle I/O | **Port**, re-skin the bundle | Keep the FS-Access + handle-persistence + mtime machinery as-is. Replace the `content.md` + `assets/<sha>.<ext>` **bundle layout** with a Faust perimeter written under real names (`main.dsp` + `*.lib` + soundfiles). |
-| `ui/volume-browser.ts` | The unified browser modal: root→volume→folders, open/save modes, "Open a file…", trash actions, breadcrumb, loading/empty/error, `needs-permission` re-auth on click | **Port the logic; re-skin the chrome** | It's framework-free DOM and maps 1:1 to our `VolumeBrowserController`. Decide: keep vanilla DOM, or rebuild on Bootstrap modal + SCSS to match faustide (open decision #6). Replace `t()` i18n + `makeIcon` with our strings/icons. |
+| `ui/volume-browser.ts` | The unified browser modal: root→volume→folders, open/save modes, "Open a file…", breadcrumb, loading/empty/error, `needs-permission` re-auth on click | **Port the logic; re-skin the chrome** | It's framework-free DOM and maps 1:1 to our `VolumeBrowserController`. Decide: keep vanilla DOM, or rebuild on Bootstrap modal + SCSS to match faustide (open decision #6). Replace `t()` i18n + `makeIcon` with our strings/icons; do not port markpage's trash actions. |
 | `github.ts` | Thin GitHub REST + **Git Data API** client (blob→tree→commit→ref), `getTreeRecursive`, **`gitBlobSha`** (git SHA on **raw bytes**), token in IndexedDB | **Port verbatim** *(Phase 8 only)* | Fully pure over `fetch` (unit-testable by mocking `globalThis.fetch`). `gitBlobSha` on bytes (not strings) is the anti-overwrite key — note the `"é".length===1` but 2-byte caveat in its docstring. |
 | `github-sync.ts` | The **I6 engine**: `saveToGithub` 2×2 state machine (No-op/Reload/Fast-forward/**Fork**), atomic commit with **422-retry that re-evaluates**, fork-path hash-lengthening, `importFromGithub` | **Port; swap the perimeter** *(Phase 8 only)* | The only Faust coupling is the resource closure: replace `extractExternalRefs`/`resolveRepoPath` (Markdown image refs) with our `import`/`soundfile` closure (§7). The state machine, retry loop, and fork logic transfer unchanged. |
 | `resource-mapping.ts` | Markdown ref scanner: `extractExternalRefs`, `rewriteExternalRefs`, **`opaqueCodeRanges`** (mask code-fences + inline-code so refs inside literals are ignored) | **Adapt — this is the template for `Perimeter`** | The *technique* is what transfers: scan for refs, **mask comments/strings** before matching. For Faust, mask `//` line + `/* */` block comments and string literals, then match all four primitives: `import("…")` / `library("…")` / `component("…")` / `soundfile("…")`. markpage's SHA-pool + `img://` rewriting is **not** needed for the Library (we keep real filenames); it only resurfaces when bundling to disk/repo with collision avoidance. |
@@ -576,12 +576,15 @@ Both are pure over `fetch` → unit-test by mocking `globalThis.fetch`. Note:
 markpage stores the PAT in **IndexedDB**, not localStorage — prefer that.
 *Verify (manual):* edit the same origin from two tabs → divergence must fork.
 
-**Phase 9 — Trash.** Soft delete to a Library Trash; restore / purge / empty.
-Replaces the hard `ProjectModel.deleteFile` `unlink`.
-*Lift:* `ui/volume-browser.ts` already wires the trash UX (`onDelete`/`onRestore`/
-`onPurge`/`onEmptyTrash`, the virtual `TRASH_DIR` folder shown at the volume
-root); mirror that, backing it with a Trash subtree in BrowserFS.
-*Verify:* a deleted document is restorable until the trash is emptied.
+**Phase 9 — Delete/origin cleanup.** Keep delete permanent and make it safe
+under mounted-file origins. One delete path removes the Library project file,
+updates selection/main-file state, and forgets any disk origin for that project
+name. Startup prunes persisted origins whose project file is no longer present.
+*Lift:* none from markpage's trash UX; its restore/purge/empty actions are
+outside this target model.
+*Verify:* deleting a mounted file removes the green indicator and write-back
+origin; reloading after delete does not resurrect stale tracking for a new
+same-named local file.
 
 > **Cross-cutting (keyboard).** Faust IDE uses Monaco, not contentEditable, so the
 > Firefox `Ctrl/Cmd`-bubbling trap is less acute — but `GlobalShortcutsController`
@@ -592,8 +595,8 @@ root); mirror that, backing it with a Trash subtree in BrowserFS.
 ### Recommended slice
 
 Phases **0–7 + 9** deliver the desktop-like UX (volumes, origin, format-driven
-open, disk Save As, closed-perimeter export/share, trash) **without** standing up
-a git backend. Phase **8** (remote repo) is genuinely larger (auth, tokens,
+open, disk Save As, closed-perimeter export/share, safe permanent delete)
+**without** standing up a git backend. Phase **8** (remote repo) is genuinely larger (auth, tokens,
 conflict UX) and is marked optional — pick it up only if a remote story is
 actually wanted. This realizes the blueprint's advice: **aim for Path B as the
 mental model, ship via Path A**, and say the debt out loud so "link" and

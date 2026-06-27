@@ -27,8 +27,6 @@ export class FileManager {
     divFiles: HTMLDivElement;
     divOverlay: HTMLDivElement;
     container: HTMLDivElement;
-    private divTrash: HTMLDivElement;
-    private divTrashFiles: HTMLDivElement;
     /**
      * Root path in Emscripten FS
      *
@@ -51,8 +49,6 @@ export class FileManager {
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
     /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
     onDroppedFileHandle?: DroppedFileHandleCallback;
-    /** Called after a file is restored from the trash, so callers can re-apply disk tracking. */
-    onFileRestored?: (fileName: string) => void;
 
     constructor(options: TOptions) {
         this.container = options.container;
@@ -120,29 +116,6 @@ export class FileManager {
             this.container.appendChild(divOverlap);
             this.divOverlay = divOverlap;
         }
-        // Trash section — always created fresh; sits below divFiles in flex flow.
-        const divTrash = document.createElement("div");
-        divTrash.classList.add("filemanager-trash");
-        divTrash.hidden = true;
-        const divTrashLabel = document.createElement("div");
-        divTrashLabel.classList.add("filemanager-trash-label");
-        const spanTrashLabel = document.createElement("span");
-        spanTrashLabel.classList.add("filemanager-trash-span-label");
-        spanTrashLabel.textContent = "Trash";
-        const btnEmptyTrash = document.createElement("button");
-        btnEmptyTrash.classList.add("filemanager-btn-empty-trash", "filemanager-btn-icon");
-        btnEmptyTrash.title = "Empty Trash";
-        btnEmptyTrash.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.emptyTrash();
-        });
-        divTrashLabel.append(spanTrashLabel, btnEmptyTrash);
-        const divTrashFiles = document.createElement("div");
-        divTrashFiles.classList.add("filemanager-trash-files");
-        divTrash.append(divTrashLabel, divTrashFiles);
-        this.container.appendChild(divTrash);
-        this.divTrash = divTrash;
-        this.divTrashFiles = divTrashFiles;
     }
     bind() {
         this.divLabel.addEventListener("click", () => {
@@ -274,18 +247,7 @@ export class FileManager {
         btnMain.addEventListener("touchstart", () => this.setMain(this._fileList.indexOf(fileName)));
         btnDelete.addEventListener("click", (e) => {
             e.stopPropagation();
-            this.project.softDeleteFile(fileName);
-            divFile.remove();
-            if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
-            const nextSelection = this.project.ensureSelectionAfterDelete();
-            if (!this.findFileDiv(nextSelection.fileName)) this.divFiles.appendChild(this.createFileDiv(nextSelection.fileName, false));
-            if (nextSelection.createdDefaultFile && this.saveHandler) {
-                this.saveHandler(nextSelection.fileName, this.getValue(nextSelection.fileName), this.mainCode);
-            }
-            this.select(nextSelection.fileName);
-            if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
-            else this.setMain(this.$mainFile);
-            this.refreshTrash();
+            this.deleteFile(fileName);
         });
         const handlePointerDown = () => this.select(fileName);
         divFile.addEventListener("mousedown", handlePointerDown);
@@ -331,7 +293,6 @@ export class FileManager {
         if (createdDefaultFile && this.saveHandler) this.saveHandler(this._fileList[0], this.getValue(this._fileList[0]), this.mainCode);
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
-        this.refreshTrash();
     }
     rename(oldName: string, newNameIn: string) {
         const newName = ProjectModel.sanitizeFileName(newNameIn);
@@ -367,11 +328,11 @@ export class FileManager {
         this.rename(this.selected, newName);
     }
     /**
-     * Soft-deletes a file (moves it to the trash) and updates the DOM.
-     * Equivalent to clicking the × button on the file row.
+     * Permanently deletes a file and updates selection, main-file state, DOM,
+     * and durable persistence through the configured delete handler.
      */
-    softDelete(fileName: string): void {
-        if (!this.project.softDeleteFile(fileName)) return;
+    deleteFile(fileName: string): void {
+        if (!this.project.deleteFile(fileName)) return;
         const divFile = this.findFileDiv(fileName);
         if (divFile) divFile.remove();
         if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
@@ -383,67 +344,6 @@ export class FileManager {
         this.select(nextSelection.fileName);
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
-        this.refreshTrash();
-    }
-
-    /**
-     * Restores a file from the trash back into the project and adds it to the
-     * DOM.  Returns false when the file is not in the trash or causes a name
-     * collision with an existing project file.
-     */
-    restoreFile(fileName: string): boolean {
-        if (!this.project.restoreFile(fileName)) return false;
-        if (!this.findFileDiv(fileName)) this.divFiles.appendChild(this.createFileDiv(fileName, false));
-        // softDelete() removed the file from persistent storage via deleteHandler;
-        // re-persist it here so it survives a page reload (symmetric to delete).
-        if (this.saveHandler) this.saveHandler(fileName, this.getValue(fileName), this.mainCode);
-        // Re-apply the disk-tracked indicator (and write-back link) if the file
-        // still has a known disk origin — soft-delete keeps the origin alive.
-        if (this.onFileRestored) this.onFileRestored(fileName);
-        this.refreshTrash();
-        return true;
-    }
-
-    /** Permanently deletes every file in the trash and hides the trash section. */
-    emptyTrash(): void {
-        this.project.emptyTrash();
-        this.refreshTrash();
-    }
-
-    private refreshTrash(): void {
-        const names = this.project.listTrash();
-        this.divTrash.hidden = names.length === 0;
-        this.divTrashFiles.innerHTML = "";
-        names.forEach((name) => {
-            const divFile = document.createElement("div");
-            divFile.classList.add("filemanager-file", "filemanager-trash-file");
-            divFile.dataset.filename = name;
-
-            const btnRestore = document.createElement("button");
-            btnRestore.classList.add("filemanager-btn-restore", "filemanager-btn-icon");
-            btnRestore.title = "Restore";
-            btnRestore.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.restoreFile(name);
-            });
-
-            const spanName = document.createElement("span");
-            spanName.classList.add("filemanager-trash-filename");
-            spanName.textContent = name;
-            spanName.title = name;
-
-            const btnPurge = document.createElement("button");
-            btnPurge.classList.add("filemanager-btn-purge", "filemanager-btn-icon");
-            btnPurge.title = "Delete permanently";
-            btnPurge.addEventListener("click", (e) => {
-                e.stopPropagation();
-                this.project.purgeFile(name);
-                this.refreshTrash();
-            });
-
-            divFile.append(btnRestore, spanName, btnPurge);
-            this.divTrashFiles.appendChild(divFile);
-        });
     }
 
     newFile(fileNameIn?: string, content?: string | Uint8Array) {

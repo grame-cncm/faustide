@@ -436,26 +436,25 @@ file-watching).
 
 ---
 
-## P9 — Trash (soft delete)
+## P9 — Delete/origin cleanup (no trash)
 
-*Goal:* delete becomes restorable. *(plan P9, §5b the trash UX already in
-`ui/volume-browser.ts`.)*
+*Goal:* keep delete permanent and make it safe with mounted-file origins.
 
-**Commit 9.1 — model (characterize first).** `ProjectModel.deleteFile` currently
-hard-`unlink`s, and `FileManager`'s "delete last file recreates default" is pinned
-by an e2e test — confirm it, then change. Add a **Trash subtree** in BrowserFS;
-soft-delete (move), `restore`, `purge`, `emptyTrash`. `LibraryVolume.list` surfaces
-a virtual Trash folder when non-empty (mirror markpage's `TRASH_DIR`).
-- *Tests:* unit — soft-delete then restore round-trips; purge removes; name
-  collision on restore is handled; the "recreate default on empty project" behavior
-  is preserved.
+**Commit 9.1 — remove the transient trash lifecycle.** Characterize that
+`ProjectModel.deleteFile` hard-`unlink`s, `FileManager` repairs selection/main
+state, and `LibraryVolume` exposes only root project files. Remove the transient
+faustFS trash model and the restore/purge/empty UI/API.
+- *Tests:* unit — delete removes the project file without creating `__trash__`;
+  deleting the last file still recreates the default DSP; Library root has no
+  virtual Trash directory; the volume browser only exposes Library delete.
 
-**Commit 9.2 — UI.** Wire `onDelete`/`onRestore`/`onPurge`/`onEmptyTrash` in the
-browser (Library, open mode) and route the file-manager `×` to soft-delete.
-- *Tests (e2e):* delete a file → it leaves the list and appears under Trash →
-  restore brings it back; empty-trash purges.
-- *Risks:* changing a long-standing destructive behavior — the characterization
-  test is the guard; Trash storage growth (offer empty-trash).
+**Commit 9.2 — clear stale mounted origins.** Wire delete and rename to forget
+old disk origins, and prune persisted origins on startup when the project file is
+missing.
+- *Tests:* unit — delete/rename callbacks forget the old name; startup pruning
+  removes stale origins and keeps reachable ones.
+- *Risks:* mounted file UX after reload still needs a focused follow-up analysis
+  for permission loss, external moves/deletes, and external edits.
 
 ---
 
@@ -490,7 +489,7 @@ browser (Library, open mode) and route the file-manager `×` to soft-delete.
   `doc/testing.md`.
 - **E2E (Playwright vs built `dist/`)** — only the browser-visible, non-picker
   parts: the volume-browser modal (open/navigate/Esc), `<input>` import as a Library
-  copy, Trash delete→restore, and the Chromium-gating of "Mount a disk folder…"
+  copy, Library delete, and the Chromium-gating of "Mount a disk folder…"
   (stub `showDirectoryPicker` on/off). Reuse `openApp`/`runDsp`/`setEditorCode`.
 - **Manual (Chromium, human)** — every File-System-Access pick→write→read flow:
   Save As to a folder, reload re-grant, external-edit mtime, two-tab git divergence.

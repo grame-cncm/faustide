@@ -1,6 +1,3 @@
-/** Sub-directory inside the project root used for soft-deleted files. */
-export const TRASH_DIR = "__trash__";
-
 export type TFileSystem = {
     rename: (oldName: string, newName: string) => any;
     unlink: (name: string) => any;
@@ -144,74 +141,6 @@ export class ProjectModel {
         if (this.selectedFile === fileName) this.selectedFile = null;
         return true;
     }
-
-    // ── Trash helpers ──────────────────────────────────────────────────────
-
-    private trashDir(): string { return `${this.path}${TRASH_DIR}`; }
-
-    private trashFilePath(name: string): string { return `${this.trashDir()}/${name}`; }
-
-    private ensureTrashDir(): void {
-        try { this.fs.mkdir(this.trashDir()); } catch { /* already exists */ }
-    }
-
-    private trashHas(name: string): boolean {
-        try { this.fs.stat(this.trashFilePath(name)); return true; } catch { return false; }
-    }
-
-    // ── Trash public API ───────────────────────────────────────────────────
-
-    /**
-     * Moves a file into the __trash__ sub-directory (soft delete).
-     * If a file with the same name is already in the trash, it is overwritten.
-     * Returns false when the file is not in the project.
-     */
-    softDeleteFile(fileName: string): boolean {
-        const index = this.fileList.indexOf(fileName);
-        if (index === -1) return false;
-        this.ensureTrashDir();
-        if (this.trashHas(fileName)) this.fs.unlink(this.trashFilePath(fileName));
-        this.fs.rename(this.path + fileName, this.trashFilePath(fileName));
-        this.fileList.splice(index, 1);
-        if (this.selectedFile === fileName) this.selectedFile = null;
-        return true;
-    }
-
-    /** Returns the names of files currently in the trash. */
-    listTrash(): string[] {
-        try {
-            return this.fs.readdir(this.trashDir()).filter(
-                name => name !== "." && name !== ".." && this.fs.isFile(this.fs.stat(this.trashFilePath(name)).mode)
-            );
-        } catch { return []; }
-    }
-
-    /**
-     * Moves a trashed file back into the project.
-     * Returns false when the file is not in trash, or when the same name
-     * already exists in the project (caller should rename first).
-     */
-    restoreFile(name: string): boolean {
-        if (!this.trashHas(name)) return false;
-        if (this.fileList.includes(name)) return false;
-        this.fs.rename(this.trashFilePath(name), this.path + name);
-        this.fileList.push(name);
-        return true;
-    }
-
-    /** Permanently deletes one file from the trash. Returns false when not found. */
-    purgeFile(name: string): boolean {
-        if (!this.trashHas(name)) return false;
-        this.fs.unlink(this.trashFilePath(name));
-        return true;
-    }
-
-    /** Permanently deletes all files in the trash. */
-    emptyTrash(): void {
-        this.listTrash().forEach((name) => { this.purgeFile(name); });
-    }
-
-    // ──────────────────────────────────────────────────────────────────────
 
     /**
      * Selects an editable non-audio project file.

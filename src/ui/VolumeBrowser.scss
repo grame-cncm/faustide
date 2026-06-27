@@ -220,17 +220,6 @@
     &:hover { background: rgba(255, 255, 255, 0.08); }
 }
 
-.vb-empty-trash {
-    background: transparent;
-    border: 1px solid #f48771;
-    border-radius: 3px;
-    color: #f48771;
-    cursor: pointer;
-    font-size: 12px;
-    padding: 4px 10px;
-    &:hover { background: rgba(244, 135, 113, 0.12); }
-}
-
 .vb-row-actions {
     display: flex;
     align-items: center;
@@ -250,26 +239,4 @@
     opacity: 0;
     .vb-row:hover & { opacity: 1; }
     &:hover { color: #f48771; background: rgba(244, 135, 113, 0.12); }
-}
-
-.vb-row-restore {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-    color: #cccccc;
-    cursor: pointer;
-    font-size: 11px;
-    padding: 2px 7px;
-    &:hover { background: rgba(255, 255, 255, 0.08); }
-}
-
-.vb-row-purge {
-    background: transparent;
-    border: 1px solid #f48771;
-    border-radius: 3px;
-    color: #f48771;
-    cursor: pointer;
-    font-size: 11px;
-    padding: 2px 7px;
-    &:hover { background: rgba(244, 135, 113, 0.12); }
 }
