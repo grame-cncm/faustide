@@ -1,165 +1,186 @@
-# Filesystem status analysis — mounted origin, delete, restore, reload
+# Filesystem status analysis - mounted origin, delete, reload
 
-This document is a **characterization** (not a plan, not an implementation) of how
-a file's *status* — in particular whether it is tracked back to a mounted disk
-folder — behaves across its lifecycle: create, open from a volume, soft-delete to
-the trash, restore, and page reload.
+This document is a **characterization** (not an implementation) of how a file's
+*status* behaves across create, open from a mounted volume, delete, rename, and
+page reload.
 
-It exists to make the current behavior and its gaps explicit before any further
-change, per [`AGENTS.md`](../AGENTS.md): characterize first. Companion documents:
-[`doc/filesystem-plan.md`](filesystem-plan.md) (the *what/why* of the target
-model) and [`doc/filesystem-porting-plan.md`](filesystem-porting-plan.md) (the
-commit-by-commit *how*).
+It updates the earlier trash-oriented analysis with the current design decision:
+the Faust IDE does **not** need a trash model. Delete should be a permanent
+project delete. The remaining correctness issue is the status of mounted files
+(the green disk indicator and write-back origin), especially across reload.
 
-> Scope: the **status / delete / restore / reload** axis only. It does not
-> re-describe the volume browser, Save-As, or permission flows except where they
-> bear on file status.
+Companion documents: [`doc/filesystem-plan.md`](filesystem-plan.md) (target
+model) and [`doc/filesystem-porting-plan.md`](filesystem-porting-plan.md)
+(commit-by-commit work plan).
+
+> Scope: the **status / delete / reload** axis only. It does not re-describe the
+> volume browser, Save-As, or permission flows except where they bear on file
+> status.
 
 ---
 
-## 1. The five storage layers
+## 1. Storage layers
 
-A file's state is spread across five backing stores — two **transient** (rebuilt
-from scratch on every page load) and three **durable** — plus the DOM as the
-visible projection. Most of the subtle behavior below comes from this split.
+A file's state is spread across two transient stores, three durable stores, and
+the DOM projection. Most fragile behavior comes from these stores drifting apart.
 
 | Layer | Durable? | Holds | Rebuilt on reload from |
 |---|---|---|---|
-| **faustFS** (`libFaust.fs()`) | ❌ transient | project files `${DIR}<name>` **and the trash** `${DIR}__trash__/<name>` | populated by `loadProject` |
-| **browserFS** (ZenFS / IndexedDB) | ✅ durable | project files only, **flat** root `/<name>` (no trash, no sub-dirs) | — |
-| **localStorage** `faust:fs:origins` | ✅ durable | `Map<name, {volumeId, path}>` — disk origins | — |
-| **IndexedDB** `faust-volumes` | ✅ durable | mounted directory handles | — |
-| **`DiskOriginTracker.origins`** | ❌ transient (in-memory) | active origins → drives write-back | partially from localStorage at startup |
-| **DOM** `filemanager-file--disk` | ❌ (view) | the green "mounted" indicator | re-applied by the startup wiring |
+| **faustFS** (`libFaust.fs()`) | No | live project files `${DIR}<name>` | populated by `loadProject` |
+| **browserFS** (ZenFS / IndexedDB) | Yes | durable project files, flat root `/<name>` | source of `loadProject` |
+| **localStorage** `faust:fs:origins` | Yes | `Map<name, {volumeId, path}>` disk origins | read by startup wiring |
+| **IndexedDB** `faust-volumes` | Yes | mounted directory handles | read by `MountRegistry` |
+| **`DiskOriginTracker.origins`** | No | active origins for write-back | partially restored at startup |
+| **DOM** `filemanager-file--disk` | No | the green "mounted" indicator | re-applied by startup wiring |
 
-**Key fact:** the trash lives **only inside faustFS**
-([`ProjectModel.ts:150`](../src/model/ProjectModel.ts#L150)), while
-[`loadProject`](../src/runtime/ProjectPersistence.ts#L38) reads only the **flat
-root** of browserFS and never writes the trash there.
+The implementation at this point also has a transient `__trash__` directory in
+faustFS. That directory is deliberately excluded from the target model here:
+browserFS is flat, `loadProject` only restores project files, and a non-durable
+trash creates a misleading recovery promise.
 
-### A file's "mounted" status is two coupled facts
+### A file's mounted status is two coupled facts
 
-1. **Functional** — an entry in `DiskOriginTracker.origins` ⇒ every debounced save
-   is also written back to the original disk file
-   ([`onDiskSave`](../src/index.ts#L217) → `writeToDisk`).
-2. **Visual** — the `filemanager-file--disk` CSS class on the file row
-   (`setDiskTracked`).
+1. **Functional** - an entry in `DiskOriginTracker.origins` means saves write
+   back to the original disk file.
+2. **Visual** - the `filemanager-file--disk` CSS class means the row is shown in
+   green as disk-backed.
 
-These two must be kept in lockstep by the call sites; nothing enforces it
-structurally.
+These facts must stay in lockstep. Today this is a call-site convention, not a
+structural invariant.
 
 ---
 
-## 2. Lifecycle — what actually survives
+## 2. Lifecycle with no trash requirement
 
-Reads as: after the operation, is the file in durable storage? is its origin
-persisted? is it green and write-back-active after a reload?
+Reads as: after the operation, is the project copy durable? is its disk origin
+durable? is it green and write-back-active after a reload?
 
-| Operation | In browserFS? | Origin in localStorage? | Green after reload? | Survives reload? |
+| Operation | In browserFS? | Origin in localStorage? | Green after reload? | Target behavior |
 |---|---|---|---|---|
-| Open from mounted folder | ✅ | ✅ `track()` | ✅ | ✅ |
-| Drop from mounted folder | ✅ | ✅ `track()` | ✅ | ✅ |
-| New file / local drop | ✅ | — | — | ✅ |
-| **Soft-delete** (to trash) | ❌ `deleteHandler` unlink | ✅ **kept** (`forget` never called) | — | ❌ **trash is lost** |
-| **Restore** (after the two recent fixes) | ✅ re-`saveHandler` | re-`restore` / already present | ✅ `onFileRestored` | ✅ |
-| Rename a mounted file | ✅ (new name) | ❌ origin stays on the **old** name | ❌ | partial |
+| Open from mounted folder | Yes | Yes, via `track()` | Yes | keep |
+| Drop from mounted folder | Yes | Yes, via `track()` | Yes | keep |
+| New file / local drop | Yes | No | No | keep |
+| Delete | No | No, via `forget()` | No | hard delete |
+| Rename local file | Yes, under new name | No | No | keep |
+| Rename mounted file | Yes, under new name | Either moved or forgotten explicitly | consistent with origin policy | fix |
 
-The two recent fixes referenced above:
-
-- `restoreFile` re-applies the disk-tracked indicator via the `onFileRestored`
-  hook ([`FileManager.ts`](../src/FileManager.ts), wired in
-  [`index.ts` `restoreDiskTracking`](../src/index.ts#L335)).
-- `restoreFile` re-persists the file via `saveHandler` so it survives a reload
-  (symmetric to the `deleteHandler` call in soft-delete).
+The important change is the delete row: deleting a file should not move it into a
+recoverable lifecycle. It should remove the project copy from faustFS and
+browserFS, clear selection/main-file state as today, and drop any disk origin for
+that project name immediately.
 
 ---
 
-## 3. Bugs and risks
+## 3. Why removing trash is safer
 
-Severity: 🔴 data loss / corruption · 🟠 silent feature loss · 🟡 UX / minor.
+The current trash implementation is a local UI/runtime feature, not a durable
+storage concept:
 
-### 🔴 B1 — The trash is lost on every reload (silent data loss)
+- `ProjectModel.softDeleteFile` moves the file inside faustFS.
+- `FileManager` then calls `deleteHandler`, which removes the durable browserFS
+  project copy.
+- `loadProject` rebuilds faustFS from browserFS on reload, so the transient trash
+  disappears.
+- Disk origins are keyed by project filename in localStorage, so a deleted file's
+  origin can outlive the file unless every delete path calls `forget()`.
 
-`softDeleteFile` moves the file *within faustFS* and `deleteHandler` removes it
-from browserFS. faustFS is rebuilt empty on reload and the trash is never
-persisted to browserFS, so **any file soft-deleted and not restored before a
-reload is unrecoverable**. The trash effectively empties itself on reload —
-inconsistent with the mental model of a trash bin.
-([`ProjectModel.ts:169`](../src/model/ProjectModel.ts#L169),
-[`ProjectPersistence.ts:38`](../src/runtime/ProjectPersistence.ts#L38))
+Persisting the trash would require adding a second durable namespace, restore
+semantics, name collision policy, origin quarantine, purge/empty behavior, and
+new reload invariants. That extra lifecycle is not needed for the current goal,
+and it has already made mounted-file status harder to reason about.
 
-### 🔴 B2 — localStorage origins are never pruned ⇒ name collision ⇒ overwrite of an unrelated disk file
+The simpler invariant is:
 
-`DiskOriginTracker.forget()`
-([`DiskOriginTracker.ts:55`](../src/runtime/fs/DiskOriginTracker.ts#L55)) is
-**never called** (dead code). So `purgeFile`, `emptyTrash`, soft-delete and
-rename all leave the origin in localStorage forever. Corruption scenario:
+> If a project filename is absent from browserFS after delete, no durable origin
+> for that same project filename may remain.
 
-1. Open `synth.dsp` from a mounted folder (origin persisted).
-2. Delete it, reload (trash lost — B1 — but the `synth.dsp` origin lingers).
-3. Create a new **local** `synth.dsp`.
-4. Reload → startup matches the stale origin → marks the file green + write-back
-   active → **any edit overwrites the real disk file** (or raises an error alert
-   if that disk file is gone, since `writeToDisk` uses `getFileHandle` without
-   `create` — [`DiskOriginTracker.ts:72`](../src/runtime/fs/DiskOriginTracker.ts#L72)
-   / [`DiskVolume.ts:106`](../src/runtime/fs/DiskVolume.ts#L106)).
-
-Common names (`main.dsp`, `untitled.dsp`) make the collision plausible.
-
-### 🟠 B3 — Renaming a mounted file drops its "mounted" status
-
-[`rename`](../src/FileManager.ts#L336) does `renameFile` + `saveHandler(new)` +
-`deleteHandler(old)` but **never touches the tracker**. The origin stays keyed on
-the old name: the new name is neither green nor write-back-active, and the old
-origin becomes stale (feeds B2).
-
-### 🟠 B4 — Two divergent soft-delete code paths (debt)
-
-Delete logic is duplicated between the inline ✕-button handler
-([`FileManager.ts:275-289`](../src/FileManager.ts#L275)) and the public
-[`softDelete`](../src/FileManager.ts#L371) method. They are equivalent today but
-must be maintained in parallel. The ✕ button should just call
-`this.softDelete(fileName)`.
-
-### 🟡 B5 — Restore name-collision fails silently
-
-[`ProjectModel.restoreFile`](../src/model/ProjectModel.ts#L194) returns `false`
-when a project file of the same name already exists ("caller should rename
-first") — but **no caller handles it**: the Restore button ignores the return,
-the row stays in the trash, with no user feedback.
-
-### 🟡 B6 — Soft-delete overwrites a same-named trashed file
-
-`softDeleteFile` silently overwrites a homonym already in the trash
-([`ProjectModel.ts:173`](../src/model/ProjectModel.ts#L173)). Documented, but a
-possible data loss (no timestamp / unique trash name).
+That invariant directly protects mounted disk files from stale-origin write-back
+after a reload.
 
 ---
 
-## 4. Recommendations (by priority)
+## 4. Bugs and risks to fix under the no-trash model
 
-1. **Wire `forget()`** (fixes B2/B3 — the most dangerous):
-   - `purgeFile` / `emptyTrash` → `diskTracker.forget(name)`;
-   - `rename` → `forget(oldName)` (and optionally re-`track` under the new name);
-   - plus **startup pruning**: drop any localStorage origin whose file is neither
-     in the project nor in the trash.
-2. **Decide the trash's fate on reload** (B1): either persist it in browserFS
-   (a `__trash__/` prefix, loaded back by `loadProject`), or accept and
-   **document** that it is volatile (and at least clear the associated origins).
-3. **Factor the soft-delete** (B4): ✕ button → `this.softDelete()`.
-4. **Handle restore failure** (B5): restore under a de-duplicated name, or show
-   an alert.
+Severity: high = data loss/corruption risk; medium = silent feature loss; low =
+UX/debt.
+
+### High - stale origins can overwrite unrelated disk files
+
+`DiskOriginTracker.forget()` exists, but the current delete and rename flows do
+not consistently call it. A stale localStorage origin can be restored on startup
+for a later local file with the same name:
+
+1. Open `synth.dsp` from a mounted folder.
+2. Delete `synth.dsp`.
+3. Create a new local `synth.dsp`.
+4. Reload.
+5. Startup finds the old origin for `synth.dsp`, marks the new local file green,
+   and writes future saves to the old disk path.
+
+Common names such as `main.dsp` and `untitled.dsp` make this plausible.
+
+Target fix: every permanent delete must call `diskTracker.forget(name)`, and
+startup should prune persisted origins whose project file is not present.
+
+### Medium - renaming a mounted file loses or stales mounted status
+
+`FileManager.rename` saves the new name and deletes the old durable copy, but the
+disk origin remains keyed by the old name. The renamed row is no longer green or
+write-back-active, while the old origin can later collide with a new file.
+
+Target fix: choose one explicit rename policy and implement it consistently:
+
+- **unlink-on-rename**: `forget(oldName)` and the renamed file becomes a local
+  Library file; or
+- **move-origin-on-rename**: move the origin key from `oldName` to `newName`,
+  keeping the same disk path and green status.
+
+The first policy is simpler and avoids writing a renamed Library file back to a
+disk path with a different basename. The second policy is closer to "same
+document, new project name" but needs clearer UI language.
+
+### Medium - mounted-file reload behavior still needs characterization
+
+Startup restores a green row by matching `localStorage` origins with restored
+disk mounts and project filenames. The analysis still needs a focused pass on
+what should happen when, after reload:
+
+- the mounted directory handle exists but read-write permission is not granted;
+- the mounted disk file was moved or deleted externally;
+- the Library copy exists but the origin file changed externally;
+- the origin volume cannot be restored.
+
+This is the next useful analysis target once the trash lifecycle is removed from
+the problem space.
+
+### Low - duplicate delete paths
+
+The row delete button and public delete helper should share one hard-delete path
+so persistence, selection repair, main-file repair, DOM refresh, and origin
+cleanup cannot drift.
 
 ---
 
-## 5. Source map (quick reference)
+## 5. Recommendations
+
+1. Remove the trash requirement from the filesystem target model and stop adding
+   fixes whose only purpose is to make trash durable.
+2. Convert delete semantics back to one permanent delete path:
+   `ProjectModel.deleteFile` + durable `deleteHandler` + `diskTracker.forget`.
+3. Add startup pruning for persisted origins that no longer have a corresponding
+   project file.
+4. Decide and document the mounted-file rename policy before changing code.
+5. Follow with a dedicated reload analysis for mounted files shown in green.
+
+---
+
+## 6. Source map
 
 | Concern | Location |
 |---|---|
-| Trash model (soft-delete / restore / purge / empty) | [`ProjectModel.ts:148-212`](../src/model/ProjectModel.ts#L148) |
+| Project create / rename / hard delete rules | [`ProjectModel.ts`](../src/model/ProjectModel.ts) |
 | Durable load / save / delete | [`ProjectPersistence.ts`](../src/runtime/ProjectPersistence.ts) |
-| FileManager delete (inline ✕) / `softDelete` / `restoreFile` | [`FileManager.ts:275`](../src/FileManager.ts#L275), [`:371`](../src/FileManager.ts#L371), [`:394`](../src/FileManager.ts#L394) |
-| FileManager rename | [`FileManager.ts:336`](../src/FileManager.ts#L336) |
+| FileManager delete / rename / selection repair | [`FileManager.ts`](../src/FileManager.ts) |
 | Disk origin tracker (`track`/`restore`/`forget`/`writeToDisk`) | [`DiskOriginTracker.ts`](../src/runtime/fs/DiskOriginTracker.ts) |
-| Startup re-tracking / drop-tracking / open-in-place | [`index.ts:327-431`](../src/index.ts#L327) |
+| Startup re-tracking / open-in-place wiring | [`index.ts`](../src/index.ts) |
 | Disk volume handle resolution / write-back path | [`DiskVolume.ts`](../src/runtime/fs/DiskVolume.ts) |
