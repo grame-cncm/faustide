@@ -27,6 +27,8 @@ type ProjectRuntimeControllerOptions = {
     onFileDelete?: (fileName: string) => void;
 };
 
+type SaveOptions = { immediate?: boolean };
+
 /**
  * Coordinates project persistence callbacks around FileManager.
  *
@@ -69,7 +71,7 @@ export class ProjectRuntimeController {
     createFileManagerHandlers(selectHandler: (fileName: string, content: string) => void) {
         return {
             selectHandler,
-            saveHandler: (fileName: string, content: string | Uint8Array, mainCode: string) => this.saveFile(fileName, content, mainCode),
+            saveHandler: (fileName: string, content: string | Uint8Array, mainCode: string, options?: SaveOptions) => this.saveFile(fileName, content, mainCode, options),
             deleteHandler: (fileName: string) => this.deleteFile(fileName),
             mainFileChangeHandler: (filename: string, mainCode: string) => this.changeMainFile(filename, mainCode)
         };
@@ -89,13 +91,23 @@ export class ProjectRuntimeController {
      * Debounces project file writes and schedules realtime work for the latest
      * main file code.
      */
-    private saveFile(fileName: string, content: string | Uint8Array, mainCode: string) {
+    private async persistFileNow(fileName: string, content: string | Uint8Array): Promise<void> {
+        await this.projectPersistence.saveFile(fileName, content);
+        if (this.onDiskSave) await this.onDiskSave(fileName, content);
+    }
+
+    private saveFile(fileName: string, content: string | Uint8Array, mainCode: string, options: SaveOptions = {}) {
         clearTimeout(this.saveTimeouts.get(fileName));
-        const diskSave = this.onDiskSave;
+        if (options.immediate) {
+            this.saveTimeouts.delete(fileName);
+            this.scheduleRealtimeCompile(mainCode, 1000);
+            return this.persistFileNow(fileName, content).catch((e) => {
+                this.alertController.show(e instanceof Error ? e : String(e));
+            });
+        }
         const timeout = setTimeout(async () => {
             try {
-                await this.projectPersistence.saveFile(fileName, content);
-                if (diskSave) await diskSave(fileName, content);
+                await this.persistFileNow(fileName, content);
             } catch (e) {
                 this.alertController.show(e instanceof Error ? e : String(e));
             } finally {

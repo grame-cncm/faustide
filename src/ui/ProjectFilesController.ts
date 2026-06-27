@@ -62,11 +62,13 @@ export class ProjectFilesController {
             file,
             code: await this.readFileAsText(file)
         })));
-        return imports.map(({ file, code }) => {
-            const savedName = this.fileManager.newFile(this.sanitizeFileName(file.name), code);
+        const savedNames = imports.map(({ file, code }) => {
+            const savedName = this.fileManager.newFile(this.sanitizeFileName(file.name), code, { persist: "manual" });
             this.recompileIfNeeded();
             return savedName;
         });
+        await Promise.all(imports.map(({ code }, index) => this.fileManager.persistFile(savedNames[index], code, { immediate: true })));
+        return savedNames;
     }
 
     /**

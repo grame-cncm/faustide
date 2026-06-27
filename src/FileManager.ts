@@ -3,13 +3,16 @@ import { ProjectModel } from "./model/ProjectModel";
 import type { TFileSystem } from "./model/ProjectModel";
 import { captureDroppedFileHandles, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 
+type SaveOptions = { immediate?: boolean };
+type SaveHandler = (name: string, content: string | Uint8Array, mainCode: string, options?: SaveOptions) => Promise<void> | void;
+
 type TOptions = {
     container: HTMLDivElement;
     fs: TFileSystem;
     path?: string;
     mainFile?: string;
     selectHandler?: (name: string, content: string, mainCode: string) => any;
-    saveHandler?: (name: string, content: string | Uint8Array, mainCode: string) => any;
+    saveHandler?: SaveHandler;
     deleteHandler?: (name: string, mainCode: string) => any;
     mainFileChangeHandler?: (name: string, mainCode: string) => any;
 };
@@ -44,7 +47,7 @@ export class FileManager {
     private _fs: TFileSystem;
     private project: ProjectModel;
     selectHandler: (name: string, content: string, mainCode: string) => any = () => undefined;
-    saveHandler: (name: string, content: string | Uint8Array, mainCode: string) => any = () => undefined;
+    saveHandler: SaveHandler = () => undefined;
     deleteHandler?: (name: string, mainCode: string) => any = () => undefined;
     mainFileChangeHandler?: (name: string, mainCode: string) => any = () => undefined;
     /** Called after a drag-and-drop save with the FS handle of the source file (Chrome only). */
@@ -134,7 +137,7 @@ export class FileManager {
             this.project.createFile(fileName, "");
             const divFile = this.createFileDiv(fileName, true);
             this.divFiles.appendChild(divFile);
-            if (this.saveHandler) this.saveHandler(fileName, "", this.mainCode);
+            void this.persistFile(fileName, "", { immediate: true });
             this.select(fileName);
             if (fileName.endsWith(".dsp")) this.setMain(this._fileList.length - 1);
             const spanName = divFile.getElementsByClassName("filemanager-filename")[0] as HTMLSpanElement;
@@ -180,9 +183,10 @@ export class FileManager {
                 file,
                 content: await FileManager.readDroppedFile(file)
             })));
-            const savedNames = importedFiles.map(({ file, content }) => this.newFile(file.name, content));
+            const savedNames = importedFiles.map(({ file, content }) => this.newFile(file.name, content, { persist: "manual" }));
             const lastSavedName = savedNames[savedNames.length - 1];
             if (lastSavedName) this.select(lastSavedName);
+            await Promise.all(importedFiles.map(({ content }, index) => this.persistFile(savedNames[index], content, { immediate: true })));
             await resolveDiskHandles(savedNames);
         };
         this.container.addEventListener("dragenter", dragenterHandler);
@@ -316,7 +320,7 @@ export class FileManager {
             this.divFiles.appendChild(divFile);
         });
         this.select(this._fileList[0]);
-        if (createdDefaultFile && this.saveHandler) this.saveHandler(this._fileList[0], this.getValue(this._fileList[0]), this.mainCode);
+        if (createdDefaultFile) void this.persistFile(this._fileList[0], this.getValue(this._fileList[0]), { immediate: true });
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
     }
@@ -346,7 +350,7 @@ export class FileManager {
         spanName.contentEditable = "false";
         divFile.dataset.filename = renamedName;
         this.setDiskTracked(renamedName, false);
-        if (this.saveHandler) this.saveHandler(renamedName, this.getValue(renamedName), this.mainCode);
+        void this.persistFile(renamedName, this.getValue(renamedName), { immediate: true });
         this.select(renamedName);
         this.deleteHandler(oldName, this.mainCode);
         return true;
@@ -365,22 +369,33 @@ export class FileManager {
         if (this.deleteHandler) this.deleteHandler(fileName, this.mainCode);
         const nextSelection = this.project.ensureSelectionAfterDelete();
         if (!this.findFileDiv(nextSelection.fileName)) this.divFiles.appendChild(this.createFileDiv(nextSelection.fileName, false));
-        if (nextSelection.createdDefaultFile && this.saveHandler) {
-            this.saveHandler(nextSelection.fileName, this.getValue(nextSelection.fileName), this.mainCode);
+        if (nextSelection.createdDefaultFile) {
+            void this.persistFile(nextSelection.fileName, this.getValue(nextSelection.fileName), { immediate: true });
         }
         this.select(nextSelection.fileName);
         if (this.$mainFile >= this._fileList.length) this.setMain(this._fileList.length - 1);
         else this.setMain(this.$mainFile);
     }
 
-    newFile(fileNameIn?: string, content?: string | Uint8Array) {
+    newFile(fileNameIn?: string, content?: string | Uint8Array, options: { persist?: "immediate" | "debounced" | "manual" } = {}) {
         const fileName = this.project.createFile(fileNameIn, content);
         const divFile = this.createFileDiv(fileName, false);
         this.divFiles.appendChild(divFile);
-        if (this.saveHandler) this.saveHandler(fileName, content || "", this.mainCode);
+        const persist = options.persist || "immediate";
+        if (persist !== "manual") void this.persistFile(fileName, content || "", { immediate: persist === "immediate" });
         this.select(fileName);
         if (fileName.endsWith(".dsp")) this.setMain(this._fileList.length - 1);
         return fileName;
+    }
+    /**
+     * Persists a project file through the runtime save handler.
+     *
+     * Structural changes pass `immediate` so reload sees the new project shape.
+     * Editor text changes keep the debounced path through `save()`.
+     */
+    persistFile(fileName: string, content: string | Uint8Array, options: SaveOptions = {}): Promise<void> {
+        if (!this.saveHandler) return Promise.resolve();
+        return Promise.resolve(this.saveHandler(fileName, content, this.mainCode, options));
     }
     select(fileName: string) {
         if (!this.project.selectFile(fileName)) return;
@@ -393,13 +408,13 @@ export class FileManager {
     }
     save(fileName: string, content: string) {
         if (!this.project.saveFile(fileName, content)) return;
-        if (this.saveHandler) this.saveHandler(fileName, content, this.mainCode);
+        void this.persistFile(fileName, content);
     }
     saveAll() {
         if (!this.saveHandler) return;
         this._fileList.forEach((fileName) => {
             const content = this.getValue(fileName);
-            if (this.selectHandler && content) this.saveHandler(fileName, content, this.mainCode);
+            if (this.selectHandler && content) void this.persistFile(fileName, content);
         });
     }
     setValue(value: string, useSelectHandler?: boolean) {

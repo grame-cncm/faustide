@@ -391,8 +391,9 @@ $(async () => {
     const openBrowser = new VolumeBrowserController({
         volumes,
         onOpen: (vol, entry) => {
-            vol.readText(entry.path).then((content) => {
-                const savedName = uiEnv.fileManager.newFile(entry.name, content);
+            vol.readText(entry.path).then(async (content) => {
+                const savedName = uiEnv.fileManager.newFile(entry.name, content, { persist: "manual" });
+                await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
                 if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
                     diskTracker.track(savedName, vol as DiskVolume, entry.path);
                     uiEnv.fileManager.setDiskTracked(savedName, true);
@@ -407,7 +408,8 @@ $(async () => {
                 const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(handle.name)
                     ? new Uint8Array(await file.arrayBuffer())
                     : await file.text();
-                uiEnv.fileManager.newFile(handle.name, content);
+                const savedName = uiEnv.fileManager.newFile(handle.name, content, { persist: "manual" });
+                await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
             } else {
                 const input = document.createElement("input");
                 input.type = "file";
@@ -417,7 +419,8 @@ $(async () => {
                     const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(file.name)
                         ? new Uint8Array(await file.arrayBuffer())
                         : await file.text();
-                    uiEnv.fileManager.newFile(file.name, content);
+                    const savedName = uiEnv.fileManager.newFile(file.name, content, { persist: "manual" });
+                    await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
                 });
                 input.click();
             }

@@ -141,6 +141,25 @@ policy is simpler and avoids writing a renamed Library file back to a disk path
 with a different basename. Moving the origin key would be closer to "same
 document, new project name" but needs clearer UI language.
 
+### High - structural imports must be durable before reload
+
+The project file list is rebuilt from browserFS on startup. If a structural
+operation updates only faustFS and leaves browserFS to the edit debounce, a
+reload in that debounce window can drop the new project files. This is especially
+visible with multi-file drag/drop: all files appear in the UI, but only files
+already written to browserFS can come back after reload.
+
+Policy: **structural file changes are persisted immediately**. New/import/open
+paths create the faustFS entry, then call the runtime save handler with
+`{ immediate: true }`; drag/drop and example import paths wait for that
+immediate BrowserFS write before resolving the import. Monaco text edits keep
+the debounced path.
+
+Status: fixed for file-manager drop, editor-overlay drop, example import,
+Open-from-volume, Open-from-device, default-file creation, and rename/new-file
+paths. Unit coverage pins both immediate runtime saves and multi-file import
+calls that wait for `persistFile(..., { immediate: true })`.
+
 ### Medium - mounted-file reload behavior still needs characterization
 
 Startup restores a green row by matching `localStorage` origins with restored
@@ -172,7 +191,9 @@ cleanup cannot drift.
 3. Add startup pruning for persisted origins that no longer have a corresponding
    project file.
 4. Decide and document the mounted-file rename policy before changing code.
-5. Follow with a dedicated reload analysis for mounted files shown in green.
+5. Keep structural imports on the immediate persistence path; reserve debounced
+   saves for editor text changes only.
+6. Follow with a dedicated reload analysis for mounted files shown in green.
 
 ---
 
