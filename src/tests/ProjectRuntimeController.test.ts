@@ -44,6 +44,19 @@ describe("ProjectRuntimeController", () => {
         expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("main.dsp", "process = 1;");
     });
 
+    it("keeps independent pending saves for different files", async () => {
+        const { handlers, options } = bindController();
+
+        handlers.saveHandler("first.dsp", "process = _;", "main code");
+        handlers.saveHandler("second.lib", "foo = _;", "main code");
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledTimes(2);
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("first.dsp", "process = _;");
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("second.lib", "foo = _;");
+    });
+
     it("shows persistence errors through the alert controller", async () => {
         const error = new Error("storage failed");
         const { handlers, options } = bindController({
