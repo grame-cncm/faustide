@@ -91,6 +91,18 @@ const diskClass = (manager: FileManager, name: string) => {
     return div.classList.contains("filemanager-file--disk");
 };
 
+const droppedTextFile = (name: string, content: string): File => {
+    const file = new File([content], name);
+    Object.defineProperty(file, "text", { value: vi.fn(async () => content) });
+    return file;
+};
+
+const flush = async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise(resolve => setTimeout(resolve, 0));
+};
+
 describe("FileManager", () => {
     it("creates and selects untitled.dsp when the filesystem is empty", () => {
         const { fs, handlers, manager } = createManager();
@@ -179,6 +191,27 @@ describe("FileManager", () => {
         expect(fs.files.has("__trash__/patch.dsp")).toBe(false);
         expect(handlers.deleteHandler).toHaveBeenCalledWith("patch.dsp", expect.any(String));
         expect(document.querySelector(".filemanager-trash")).toBeNull();
+    });
+
+    it("imports every file dropped on the file manager overlay", async () => {
+        const { fs, manager } = createManager({ "main.dsp": "process = _;" });
+
+        const event = new Event("drop", { bubbles: true });
+        Object.defineProperty(event, "dataTransfer", {
+            value: {
+                files: [
+                    droppedTextFile("helper lib.lib", "foo = _;"),
+                    droppedTextFile("patch.dsp", "process = foo;")
+                ]
+            }
+        });
+        manager.divOverlay.dispatchEvent(event);
+        await flush();
+
+        expect(fs.files.get("helperlib.lib")).toBe("foo = _;");
+        expect(fs.files.get("patch.dsp")).toBe("process = foo;");
+        expect(fileNames(manager)).toEqual(["main.dsp", "helperlib.lib", "patch.dsp"]);
+        expect(manager.selected).toBe("patch.dsp");
     });
 
     it("calls select, save, delete, and main-file-change handlers with current behavior", () => {

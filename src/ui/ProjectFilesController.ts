@@ -1,7 +1,7 @@
 import type JSZip from "jszip";
 import type { FileManager } from "../FileManager";
 import type { FaustEditorAudioEnv, FaustEditorCompileOptions } from "../runtime/types";
-import { captureDroppedFileHandle, type DroppedFileHandleCallback } from "../runtime/fs/FileAccess";
+import { captureDroppedFileHandles, type DroppedFileHandleCallback } from "../runtime/fs/FileAccess";
 
 type ProjectFilesControllerOptions = {
     fileManager: FileManager;
@@ -55,14 +55,18 @@ export class ProjectFilesController {
     }
 
     /**
-     * Reads a browser File, creates a sanitized project file, and returns the saved name.
+     * Reads dropped files concurrently, then appends them in drop order.
      */
-    private async importFile(file?: File): Promise<string | undefined> {
-        if (!file) return undefined;
-        const code = await this.readFileAsText(file);
-        const savedName = this.fileManager.newFile(this.sanitizeFileName(file.name), code);
-        this.recompileIfNeeded();
-        return savedName;
+    private async importFiles(files: File[]): Promise<string[]> {
+        const imports = await Promise.all(files.map(async file => ({
+            file,
+            code: await this.readFileAsText(file)
+        })));
+        return imports.map(({ file, code }) => {
+            const savedName = this.fileManager.newFile(this.sanitizeFileName(file.name), code);
+            this.recompileIfNeeded();
+            return savedName;
+        });
     }
 
     /**
@@ -113,9 +117,9 @@ export class ProjectFilesController {
         e.preventDefault();
         e.stopPropagation();
         // Must capture the source handle before the first await (see helper).
-        const resolveDiskHandle = captureDroppedFileHandle(event.dataTransfer, this.onDroppedFileHandle);
-        const savedName = await this.importFile(event.dataTransfer.files[0]);
-        await resolveDiskHandle(savedName);
+        const resolveDiskHandles = captureDroppedFileHandles(event.dataTransfer, this.onDroppedFileHandle);
+        const savedNames = await this.importFiles(Array.from(event.dataTransfer.files));
+        await resolveDiskHandles(savedNames);
     }
 
     /**
