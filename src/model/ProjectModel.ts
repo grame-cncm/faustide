@@ -62,9 +62,13 @@ export class ProjectModel {
 
     /**
      * Audio files can be part of a project but are not editable code or main DSP.
+     *
+     * The single source of truth for audio-extension detection across the app
+     * (FileManager drops, device imports, volume opens). Case-insensitive so
+     * uppercase extensions (e.g. `.WAV`) from disk are recognized too.
      */
     static isAudioFile(fileName: string) {
-        return !!fileName && !!fileName.match(/\.(wav|mp3|ogg|flac|aac)$/);
+        return !!fileName && /\.(wav|mp3|ogg|flac|aac)$/i.test(fileName);
     }
 
     /**
