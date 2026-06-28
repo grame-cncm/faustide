@@ -21,6 +21,25 @@
  * controllers, or views; `index.ts` should only load browser dependencies,
  * construct shared objects, connect callbacks between them, run startup, and
  * expose legacy compatibility globals.
+ *
+ * Startup is deliberately linear:
+ *
+ * 1. Load browser-only runtimes: Faust WASM/compiler, BrowserFS, Monaco, and
+ *    large UI libraries that must not be pulled into tests or runtime services.
+ * 2. Create long-lived stores/services before DOM controllers so state,
+ *    persistence, compilation, export/share, diagram, and audio dependencies
+ *    are injected explicitly.
+ * 3. Build the editor/runtime environment and the core audio/DSP/diagram graph.
+ *    The single late-bound reference is `dspCompileController`: several early
+ *    controllers need a `runDsp` callback, while the compiler controller itself
+ *    needs the FileManager created later.
+ * 4. Load persisted project files before constructing FileManager, then bind
+ *    project/file controllers and optional disk-origin tracking.
+ * 5. Bind UI controllers. `bind()` calls stay in this file to make side-effect
+ *    order visible and auditable.
+ * 6. Run `ApplicationStartupController.apply()`, which unlocks audio,
+ *    initializes analysers, applies URL/startup options, and finally exposes
+ *    `window.faustEnv` for compatibility.
  */
 
 import webmidi from "webmidi";
@@ -105,9 +124,24 @@ $(async () => {
     /*
      * Long-lived stores and runtime services.
      *
-     * These objects are shared by several controllers. They are created before
-     * DOM controllers so every controller receives explicit dependencies
-     * instead of importing storage, Faust runtime, or service globals directly.
+     * These objects are shared by several controllers and remain alive for the
+     * browser session. They are created before DOM controllers so every
+     * controller receives explicit dependencies instead of importing storage,
+     * Faust runtime, or service globals directly.
+     *
+     * - EditorSettingsStore owns localStorage compatibility keys and versioned
+     *   editor/DSP options.
+     * - ProjectPersistence bridges BrowserFS and the Faust virtual FS so the
+     *   file manager starts from the persisted project snapshot.
+     * - DiagramService is the DOM-free Faust SVG generation/read boundary.
+     * - ExportService and ShareUrlService isolate faustservice upload/target
+     *   behavior and query-string compatibility.
+     * - RuntimeSettingsController translates saved settings into the runtime
+     *   compile/DSP option records used by controllers.
+     * - AppRuntimeConfig keeps mutable feature flags and the selected
+     *   faustservice endpoint in one place.
+     * - BrowserAudioEngineBindings adapts browser audio state changes to the UI
+     *   without letting AudioEngine know about DOM elements.
      */
     const settingsStore = new EditorSettingsStore(VERSION as string);
     const projectPersistence = new ProjectPersistence({
@@ -165,10 +199,17 @@ $(async () => {
     /*
      * Core runtime graph.
      *
-     * AudioEngine owns the base Web Audio graph, DspRunner owns Faust DSP node
-     * creation/replacement, and AnalyserScopeController owns analyser/plot
-     * scope startup. The composition root only supplies browser adapters and
-     * callbacks between those pieces.
+     * AudioEngine owns the base Web Audio graph and must be constructed before
+     * controllers that can request audio input/output. DspRunner owns Faust DSP
+     * node creation/replacement and depends on the already-created compile
+     * environment. AnalyserScopeController owns analyser/plot scope startup and
+     * is initialized in two stages: lightweight plot setup here, full analyser
+     * initialization later when audio is unlocked.
+     *
+     * DiagramController can be constructed immediately because it depends only
+     * on the editor, Monaco, compile options, and DiagramService. The
+     * composition root only supplies browser adapters and callbacks between
+     * these pieces.
      */
     const audioEngine = new AudioEngine({
         env: audioEnv,
@@ -203,7 +244,9 @@ $(async () => {
      * Persistent files are loaded into the Faust virtual filesystem before
      * FileManager is constructed, so FileManager can render the current project
      * immediately. ProjectRuntimeController supplies the save/delete/main-file
-     * side effects used by FileManager.
+     * side effects used by FileManager. It is built before FileManager because
+     * it provides the handlers, but it is bound to editor content after all file
+     * and example controllers are registered.
      */
     await projectPersistence.loadProject(compileOptions.saveCode);
     const diskTracker = new DiskOriginTracker();
@@ -230,10 +273,13 @@ $(async () => {
     /*
      * DSP compilation and UI surface.
      *
-     * DspControlsController owns run/build options, FaustUiController owns the
-     * generated Faust UI and popup synchronization, and DspCompileController
-     * connects editor code, Faust compilation, DSP node replacement, analyser
-     * initialization, recorder state, and diagram refresh.
+     * DspControlsController owns run/build options and therefore needs the
+     * late-bound `runDsp` action. MidiController is constructed before
+     * FaustUiController because the generated UI can send MIDI through a getter.
+     * FaustUiController owns the generated Faust UI and popup synchronization.
+     * DspCompileController closes the dependency cycle by connecting editor
+     * code, Faust compilation, DSP node replacement, analyser initialization,
+     * recorder state, and diagram refresh.
      */
     const dspControlsController = new DspControlsController({
         compileOptions,
@@ -284,7 +330,9 @@ $(async () => {
      *
      * These controllers bind existing DOM controls to settings, plot, file,
      * export, share URL, and URL-parameter services. Bind calls are kept here
-     * so startup order remains explicit.
+     * so startup order remains explicit: generic alerts/tooltips first, then
+     * settings and plot controls, then URL/project/file controls that can call
+     * run/diagram actions.
      */
     alertController.bind();
     new TooltipController().bind();
@@ -482,10 +530,14 @@ $(async () => {
     /*
      * Audio, MIDI, recorder, examples, and panel controls.
      *
-     * MidiController is constructed earlier (FaustUiController reads it through a
-     * getter); here it only binds its DOM and Web MIDI listeners. WaveSurfer is
-     * captured after AudioInputController creates it, then passed to panel
-     * resizing.
+     * MidiController is constructed earlier (FaustUiController reads it through
+     * a getter); here it only binds its DOM and Web MIDI listeners. Audio input
+     * binds before output/device enumeration so a selected input can initialize
+     * the audio context and create WaveSurfer. Device binding is awaited because
+     * later startup reads the populated input selector. DSP UI refresh then
+     * reconciles any saved DSP parameters before run controls and recorder
+     * controls become interactive. WaveSurfer is captured after
+     * AudioInputController creates it, then passed to panel resizing.
      */
     midiController.bind();
     let wavesurfer: WaveSurfer;
@@ -536,9 +588,20 @@ $(async () => {
     /*
      * Final startup sequence and compatibility bridge.
      *
-     * ApplicationStartupController preserves the historical startup order:
-     * unlock audio, initialize analyser state, apply URL/startup controls, then
-     * expose `window.faustEnv` for integrations that still depend on it.
+     * ApplicationStartupController preserves the historical startup order after
+     * all controllers are bound:
+     *
+     * 1. initialize/unlock the audio context and copy its sample rate into the
+     *    recorder;
+     * 2. initialize analyser state and hide the output display until the user
+     *    enables it;
+     * 3. trigger the audio-input selector so saved/default input state is
+     *    reflected in the audio graph;
+     * 4. load URL parameters, which may update files/options and optionally run
+     *    DSP;
+     * 5. apply startup controls from saved compile options;
+     * 6. expose `window.faustEnv` last, once the compatibility object reflects
+     *    the initialized editor, filesystem, audio, UI, and recorder state.
      */
     await new ApplicationStartupController({
         audioEnv,

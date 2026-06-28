@@ -21,6 +21,17 @@ The final shape keeps `src/index.ts` as a composition root:
 - keep `window.faustEnv` only as a compatibility bridge;
 - call `initialize()` methods.
 
+`src/index.ts` now documents the concrete startup sequence in the file header
+and at each wiring block. The order is: load browser-only runtimes, create
+long-lived stores/services, create the editor/runtime environment, build the
+audio/DSP/diagram graph, load persisted project files, construct FileManager and
+project controllers, bind UI controllers, then run `ApplicationStartupController`
+to unlock audio, initialize analysers, apply URL/startup options, and expose the
+legacy `window.faustEnv` bridge last. The one remaining late-bound reference is
+`dspCompileController`, because early controllers need a `runDsp` callback while
+the compiler controller needs the FileManager that is constructed after project
+persistence is loaded.
+
 The runtime is split into:
 
 - model: project files, selected file, main DSP file, compile options, DSP parameter state;
