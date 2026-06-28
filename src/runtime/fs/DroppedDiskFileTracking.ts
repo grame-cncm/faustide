@@ -8,6 +8,7 @@ type DiskOriginRegistry = {
 };
 
 type DiskTrackingFileManager = {
+    readonly fileNames: string[];
     deleteFile(fileName: string): void;
     select(fileName: string): void;
     setDiskTracked(fileName: string, tracked: boolean): void;
@@ -17,26 +18,38 @@ type DroppedDiskFileTrackerOptions = {
     volumes: Volume[];
     diskTracker: DiskOriginRegistry;
     fileManager: DiskTrackingFileManager;
+    onLocalConflict?: (fileName: string) => void;
 };
 
+export type ExistingDiskFileResult = "tracked" | "local-conflict" | null;
+
 /**
- * Selects the Library file already linked to `path` in `diskVol`.
+ * Handles a disk open whose target may already be represented in the Library.
  *
- * Returns null when this is the first open of that disk origin. Callers use
- * this to make both volume-browser open and drag/drop idempotent for mounted
- * files.
+ * Already tracked origins are selected. Local white copies with the same name
+ * are treated as conflicts so their possibly edited content is not overwritten
+ * or silently linked to disk.
  */
-export function selectExistingDiskOrigin(
+export function handleExistingDiskFile(
     fileManager: DiskTrackingFileManager,
     diskTracker: DiskOriginRegistry,
     diskVol: DiskVolume,
-    path: string
-): string | null {
+    path: string,
+    libraryName: string,
+    options: { ignoreLocalName?: string; onLocalConflict?: (fileName: string) => void } = {}
+): ExistingDiskFileResult {
     const existingName = diskTracker.findLibraryName(diskVol, path);
-    if (!existingName) return null;
-    fileManager.select(existingName);
-    fileManager.setDiskTracked(existingName, true);
-    return existingName;
+    if (existingName) {
+        fileManager.select(existingName);
+        fileManager.setDiskTracked(existingName, true);
+        return "tracked";
+    }
+    if (options.ignoreLocalName !== libraryName && fileManager.fileNames.includes(libraryName)) {
+        fileManager.select(libraryName);
+        options.onLocalConflict?.(libraryName);
+        return "local-conflict";
+    }
+    return null;
 }
 
 /**
@@ -47,7 +60,7 @@ export function selectExistingDiskOrigin(
  * is removed and the existing disk-backed file stays selected/tracked.
  */
 export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOptions): DroppedFileHandleCallback {
-    const { volumes, diskTracker, fileManager } = options;
+    const { volumes, diskTracker, fileManager, onLocalConflict } = options;
     return async (savedName, handle) => {
         for (const vol of volumes) {
             if (vol.kind !== "disk") continue;
@@ -55,9 +68,12 @@ export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOpti
             // resolvePath() is null unless the handle lives inside this mount.
             const path = await diskVol.resolvePath(handle);
             if (path === null) continue;
-            const existingName = selectExistingDiskOrigin(fileManager, diskTracker, diskVol, path);
-            if (existingName && existingName !== savedName) {
-                fileManager.deleteFile(savedName);
+            const result = handleExistingDiskFile(fileManager, diskTracker, diskVol, path, handle.name, {
+                ignoreLocalName: savedName,
+                onLocalConflict
+            });
+            if (result) {
+                if (savedName !== handle.name) fileManager.deleteFile(savedName);
                 return;
             }
             diskTracker.track(savedName, diskVol, path);

@@ -84,7 +84,7 @@ import { MountRegistry } from "./runtime/fs/MountRegistry";
 import { computeClosure } from "./model/Perimeter";
 import { writeBundleToDir } from "./runtime/fs/BundleWriter";
 import { DiskOriginTracker } from "./runtime/fs/DiskOriginTracker";
-import { createDroppedDiskFileTracker, selectExistingDiskOrigin } from "./runtime/fs/DroppedDiskFileTracking";
+import { createDroppedDiskFileTracker, handleExistingDiskFile } from "./runtime/fs/DroppedDiskFileTracking";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -351,8 +351,16 @@ $(async () => {
     // When a file is dropped from a mounted folder, find which volume it belongs
     // to and mark it as disk-tracked (green indicator + write-back on save).
     // resolvePath relies on the Chromium-only FS Access API — gate on availability.
+    const warnLocalDiskConflict = (fileName: string) => alertController.show(
+        `${fileName} already exists as a local copy. Rename or delete it before opening the mounted disk file.`
+    );
     const onDiskDropCallback: DroppedFileHandleCallback | undefined = fsAccessAvailable()
-        ? createDroppedDiskFileTracker({ volumes, diskTracker, fileManager: uiEnv.fileManager })
+        ? createDroppedDiskFileTracker({
+            volumes,
+            diskTracker,
+            fileManager: uiEnv.fileManager,
+            onLocalConflict: warnLocalDiskConflict
+        })
         : undefined;
     uiEnv.fileManager.onDroppedFileHandle = onDiskDropCallback;
     new ProjectFilesController({
@@ -383,7 +391,9 @@ $(async () => {
         onOpen: (vol, entry) => {
             if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
                 const diskVol = vol as DiskVolume;
-                if (selectExistingDiskOrigin(uiEnv.fileManager, diskTracker, diskVol, entry.path)) return;
+                if (handleExistingDiskFile(uiEnv.fileManager, diskTracker, diskVol, entry.path, entry.name, {
+                    onLocalConflict: warnLocalDiskConflict
+                })) return;
             }
             vol.readText(entry.path).then(async (content) => {
                 const savedName = uiEnv.fileManager.newFile(entry.name, content, { persist: "manual" });
