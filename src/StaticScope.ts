@@ -5,7 +5,6 @@ import {
     getStaticScopeModeName
 } from "./scope/ScopeModes";
 import { drawCanvasBackground } from "./scope/CanvasDrawing";
-import { clampZoomOffset } from "./scope/FrequencyScale";
 import { fillStaticScopeDataTable } from "./scope/static/DataTableRenderer";
 import { drawStaticInterleaved, drawStaticOscilloscope } from "./scope/static/TimeDomainRenderer";
 import { drawStaticSpectroscope } from "./scope/static/FrequencyRenderer";
@@ -28,6 +27,7 @@ import {
     drawStaticScopeStats
 } from "./scope/static/StaticScopeOverlays";
 import type { TDrawOptions, TOptions, TStatsToDraw } from "./scope/static/StaticScopeTypes";
+import { ScopeViewState, type ScopeZoomType } from "./scope/static/ScopeViewState";
 import { buildScopeCsv } from "./scope/static/ScopeCsvExport";
 import { downloadTextFile } from "./scope/DownloadFile";
 import "./StaticScope.scss";
@@ -73,12 +73,8 @@ export class StaticScope {
     private _mode = EScopeMode.Oscilloscope;
     /** The current frequency scale mode */
     private _freqScaleMode = EFreqScaleMode.Logarithmic;
-    /** Horizontal zoom levels for different modes */
-    private _zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-    /** Vertical zoom levels for different modes */
-    private _vzoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-    /** Horizontal zoom offsets for different modes */
-    private _zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
+    /** Per-mode horizontal/vertical zoom and pan state with its clamping rules. */
+    private viewState = new ScopeViewState();
     /** The current data and options for drawing */
     data: TDrawOptions = { drawMode: "manual", timeDomainData: undefined, startSampleIndex: 0, startBufferIndex: 0, bufferSize: 128, fftSize: 256, fftOverlap: 2 };
     /** Current cursor position on the canvas */
@@ -415,7 +411,7 @@ export class StaticScope {
      * Gets the zoom type string based on the current mode.
      * @type {("spectroscope" | "spectrogram" | "oscilloscope")}
      */
-    get zoomType() {
+    get zoomType(): ScopeZoomType {
         return this.mode === EScopeMode.Spectroscope
             ? "spectroscope"
             : this.mode === EScopeMode.Spectrogram
@@ -427,22 +423,21 @@ export class StaticScope {
      * @type {number}
      */
     get vzoom() {
-        return this._vzoom[this.zoomType];
+        return this.viewState.getVerticalZoom(this.zoomType);
     }
     /**
      * Sets the vertical zoom level for the active mode.
      * @type {number}
      */
     set vzoom(newZoom: number) {
-        const maxZoom = 16;
-        this._vzoom[this.zoomType] = Math.min(maxZoom, Math.max(1, newZoom));
+        this.viewState.setVerticalZoom(this.zoomType, newZoom);
     }
     /**
      * Gets the current horizontal zoom level for the active mode.
      * @type {number}
      */
     get zoom() {
-        return this._zoom[this.zoomType];
+        return this.viewState.getZoom(this.zoomType);
     }
     /**
      * Sets the horizontal zoom level, adjusting the offset to zoom towards the cursor.
@@ -457,10 +452,7 @@ export class StaticScope {
         const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
         if (this.cursor) cursorPositionRatio = Math.max(0, this.cursor.x - leftMargin) / (canvasWidth - leftMargin);
 
-        const cursorPositionInData = this.zoomOffset + cursorPositionRatio / this.zoom;
-        this._zoom[this.zoomType] = Math.min(maxZoom, Math.max(1, newZoom));
-        this.zoomOffset = cursorPositionInData - cursorPositionRatio / this.zoom;
-
+        this.viewState.zoomTo(this.zoomType, newZoom, maxZoom, cursorPositionRatio);
         this.btnZoom.innerHTML = this.zoom.toFixed(1) + "x";
     }
     /**
@@ -468,21 +460,20 @@ export class StaticScope {
      * @type {number}
      */
     get zoomOffset() {
-        return this._zoomOffset[this.zoomType];
+        return this.viewState.getZoomOffset(this.zoomType);
     }
     /**
      * Sets the horizontal zoom offset, clamped between 0 and `1 - 1/zoom`.
      * @type {number}
      */
     set zoomOffset(newZoomOffset: number) {
-        this._zoomOffset[this.zoomType] = clampZoomOffset(this.zoom, newZoomOffset);
+        this.viewState.setZoomOffset(this.zoomType, newZoomOffset);
     }
     /**
      * Resets zoom and offset for all modes to their default values.
      */
     resetZoom() {
-        this._zoom = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-        this._zoomOffset = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
+        this.viewState.reset();
     }
     /**
      * Gets the current frequency scale mode.
