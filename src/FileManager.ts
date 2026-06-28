@@ -2,6 +2,7 @@ import "./FileManager.scss";
 import { ProjectModel } from "./model/ProjectModel";
 import type { TFileSystem } from "./model/ProjectModel";
 import { captureDroppedFileHandles, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
+import { readPickedFileContent } from "./runtime/fs/VolumeFileActions";
 
 type SaveOptions = { immediate?: boolean };
 type SaveHandler = (name: string, content: string | Uint8Array, mainCode: string, options?: SaveOptions) => Promise<void> | void;
@@ -181,7 +182,7 @@ export class FileManager {
             const resolveDiskHandles = captureDroppedFileHandles(e.dataTransfer, this.onDroppedFileHandle);
             const importedFiles = await Promise.all(Array.from(e.dataTransfer.files).map(async file => ({
                 file,
-                content: await FileManager.readDroppedFile(file)
+                content: await readPickedFileContent(file)
             })));
             const savedNames = importedFiles.map(({ file, content }) => this.newFile(file.name, content, { persist: "manual" }));
             const lastSavedName = savedNames[savedNames.length - 1];
@@ -198,30 +199,6 @@ export class FileManager {
         this.divOverlay.addEventListener("drop", dropHandler);
     }
 
-    /**
-     * Reads dropped text/audio files while tolerating browsers or tests that do
-     * not expose the newer `File.text()` / `File.arrayBuffer()` helpers.
-     */
-    private static readDroppedFile(file: File): Promise<string | Uint8Array> {
-        if (file.name.match(/\.(wav|mp3|ogg|flac|aac)$/)) {
-            if (typeof file.arrayBuffer === "function") {
-                return file.arrayBuffer().then(buffer => new Uint8Array(buffer));
-            }
-            return new Promise<Uint8Array>((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
-                reader.onerror = () => resolve(new Uint8Array());
-                reader.readAsArrayBuffer(file);
-            });
-        }
-        if (typeof file.text === "function") return file.text();
-        return new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result ? reader.result.toString() : "");
-            reader.onerror = () => resolve("");
-            reader.readAsText(file);
-        });
-    }
     /**
      * create a new file container with buttons
      *

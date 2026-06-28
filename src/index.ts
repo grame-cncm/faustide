@@ -98,12 +98,11 @@ import { TooltipController } from "./ui/TooltipController";
 import { DiskVolume } from "./runtime/fs/DiskVolume";
 import type { Volume } from "./runtime/fs/Volume";
 import { VolumeBrowserController } from "./ui/VolumeBrowserController";
-import { pickImportableFileHandle, pickDirectory, fsAccessAvailable, ensureRwPermission, openDecision, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
+import { pickDirectory, fsAccessAvailable, ensureRwPermission, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 import { MountRegistry } from "./runtime/fs/MountRegistry";
-import { computeClosure } from "./model/Perimeter";
-import { writeBundleToDir } from "./runtime/fs/BundleWriter";
 import { DiskOriginTracker } from "./runtime/fs/DiskOriginTracker";
-import { createDroppedDiskFileTracker, handleExistingDiskFile } from "./runtime/fs/DroppedDiskFileTracking";
+import { createDroppedDiskFileTracker } from "./runtime/fs/DroppedDiskFileTracking";
+import { openFromVolume, pickAndImportDeviceFile, saveBundleToVolume } from "./runtime/fs/VolumeFileActions";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -437,46 +436,13 @@ $(async () => {
     const openBrowser = new VolumeBrowserController({
         volumes,
         onOpen: (vol, entry) => {
-            if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
-                const diskVol = vol as DiskVolume;
-                if (handleExistingDiskFile(uiEnv.fileManager, diskTracker, diskVol, entry.path, entry.name, {
-                    onLocalConflict: warnLocalDiskConflict
-                })) return;
-            }
-            vol.readText(entry.path).then(async (content) => {
-                const savedName = uiEnv.fileManager.newFile(entry.name, content, { persist: "manual" });
-                await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
-                if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
-                    diskTracker.track(savedName, vol as DiskVolume, entry.path);
-                    uiEnv.fileManager.setDiskTracked(savedName, true);
-                }
-            });
+            void openFromVolume(
+                { fileManager: uiEnv.fileManager, diskTracker, onLocalConflict: warnLocalDiskConflict },
+                vol,
+                entry
+            );
         },
-        onOpenDeviceFile: async () => {
-            if (fsAccessAvailable()) {
-                const handle = await pickImportableFileHandle();
-                if (!handle) return;
-                const file = await handle.getFile();
-                const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(handle.name)
-                    ? new Uint8Array(await file.arrayBuffer())
-                    : await file.text();
-                const savedName = uiEnv.fileManager.newFile(handle.name, content, { persist: "manual" });
-                await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
-            } else {
-                const input = document.createElement("input");
-                input.type = "file";
-                input.addEventListener("change", async () => {
-                    const file = input.files?.[0];
-                    if (!file) return;
-                    const content = /\.(wav|mp3|ogg|flac|aac)$/i.test(file.name)
-                        ? new Uint8Array(await file.arrayBuffer())
-                        : await file.text();
-                    const savedName = uiEnv.fileManager.newFile(file.name, content, { persist: "manual" });
-                    await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });
-                });
-                input.click();
-            }
-        },
+        onOpenDeviceFile: () => pickAndImportDeviceFile({ fileManager: uiEnv.fileManager }),
         onMountDisk: mountDisk,
         onReauthorize: reauthorize
     });
@@ -485,23 +451,8 @@ $(async () => {
     const saveBrowser = new VolumeBrowserController({
         volumes,
         mode: "save",
-        onSave: async (vol, folderPath, name) => {
-            const diskVol = vol as DiskVolume;
-            if (!diskVol.createFileHandle) return; // Library volumes not yet supported for Save As
-            const mainFile = uiEnv.fileManager.mainFileName;
-            const fileNameSet = new Set(uiEnv.fileManager.fileNames);
-            const readText = (n: string): string | null => {
-                const val = uiEnv.fileManager.getValue(n);
-                return typeof val === "string" ? val : null;
-            };
-            const isLocal = (n: string) => fileNameSet.has(n);
-            const { files } = computeClosure(mainFile, readText, isLocal);
-            const bundle = new Map<string, string>();
-            files.forEach((f) => {
-                const text = readText(f);
-                if (text !== null) bundle.set(name.endsWith(".dsp") && f === mainFile ? name : f, text);
-            });
-            await writeBundleToDir(diskVol, folderPath, bundle);
+        onSave: (vol, folderPath, name) => {
+            void saveBundleToVolume({ fileManager: uiEnv.fileManager }, vol, folderPath, name);
         },
         onMountDisk: mountDisk,
         onReauthorize: reauthorize
