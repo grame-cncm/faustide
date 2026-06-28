@@ -21,7 +21,19 @@ The Monaco Editor supports an optional mode for Vim users. To enable it, open th
 #### Project Files
 
 Several DSP files can be added in the top-left *Project Files* section and edited independently. Any non standard library, like a *foo.lib* file, can simply be added by drag/drop, then used in the DSP code with `import("foo.lib");`. 
-DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column. 
+DSP files or libraries can also be loaded or saved with the *Upload* and *Save As* buttons in the left column.
+
+The project file list is stored in the browser, so files remain available after a reload. Drag/drop supports several files at once, both on the editor overlay and on the *Project Files* panel. Structural imports are saved immediately before the import finishes, so a reload right after a multi-file drop keeps the imported files.
+
+On Chrome and other Chromium-based browsers, Faust IDE can also use the browser [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) to work with local folders:
+
+- Use *Mount a disk folder...* to authorize a local folder. Mounted folders are remembered by the browser, although Chrome may ask for permission again after a reload or a browser restart.
+- Native Faust files (`.dsp` and `.lib`) opened or dropped from a mounted folder are edited *in place*: after the project copy is saved, changes are also written back to the original disk file.
+- Disk-backed project files are shown in green in *Project Files*. A green row means Faust IDE knows the original mounted disk file and will write text edits back to it.
+- White rows are local browser copies only. They are saved in the browser project storage but are not linked to a real disk file.
+- Audio files and other non-Faust formats are imported as local copies, not opened in place.
+- Opening or dropping the same mounted file more than once selects the existing green row instead of creating a duplicate `untitledN` file.
+- If a local white file named `foo.dsp` already exists and you later open/drop a mounted disk file with the same name, Faust IDE keeps the local copy untouched and reports a conflict. Rename or delete the local copy before opening the mounted disk file if you want the disk-backed version.
 
 #### Auto-Compiling
 
