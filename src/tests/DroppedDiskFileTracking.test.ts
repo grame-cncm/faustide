@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createDroppedDiskFileTracker, selectExistingDiskOrigin } from "../runtime/fs/DroppedDiskFileTracking";
+import { createDroppedDiskFileTracker, handleExistingDiskFile } from "../runtime/fs/DroppedDiskFileTracking";
 import type { DiskVolume } from "../runtime/fs/DiskVolume";
 
 const makeDiskVolume = (id: string, path: string | null) => ({
@@ -13,7 +13,8 @@ const makeTracker = () => ({
     track: vi.fn()
 });
 
-const makeFileManager = () => ({
+const makeFileManager = (fileNames: string[] = []) => ({
+    fileNames,
     deleteFile: vi.fn(),
     select: vi.fn(),
     setDiskTracked: vi.fn()
@@ -26,11 +27,27 @@ describe("createDroppedDiskFileTracker", () => {
         tracker.findLibraryName.mockReturnValue("main.dsp");
         const fileManager = makeFileManager();
 
-        const selectedName = selectExistingDiskOrigin(fileManager, tracker, volume, "main.dsp");
+        const result = handleExistingDiskFile(fileManager, tracker, volume, "main.dsp", "main.dsp");
 
-        expect(selectedName).toBe("main.dsp");
+        expect(result).toBe("tracked");
         expect(fileManager.select).toHaveBeenCalledWith("main.dsp");
         expect(fileManager.setDiskTracked).toHaveBeenCalledWith("main.dsp", true);
+        expect(tracker.track).not.toHaveBeenCalled();
+    });
+
+    it("reports a conflict for a matching local Library copy when its disk folder is mounted later", () => {
+        const volume = makeDiskVolume("disk:1", "main.dsp") as unknown as DiskVolume;
+        const tracker = makeTracker();
+        const fileManager = makeFileManager(["main.dsp"]);
+        const onLocalConflict = vi.fn();
+
+        const result = handleExistingDiskFile(fileManager, tracker, volume, "main.dsp", "main.dsp", { onLocalConflict });
+
+        expect(result).toBe("local-conflict");
+        expect(tracker.track).not.toHaveBeenCalled();
+        expect(fileManager.select).toHaveBeenCalledWith("main.dsp");
+        expect(fileManager.setDiskTracked).not.toHaveBeenCalled();
+        expect(onLocalConflict).toHaveBeenCalledWith("main.dsp");
     });
 
     it("reports null when a disk origin is not already tracked", () => {
@@ -38,9 +55,9 @@ describe("createDroppedDiskFileTracker", () => {
         const tracker = makeTracker();
         const fileManager = makeFileManager();
 
-        const selectedName = selectExistingDiskOrigin(fileManager, tracker, volume, "main.dsp");
+        const result = handleExistingDiskFile(fileManager, tracker, volume, "main.dsp", "main.dsp");
 
-        expect(selectedName).toBeNull();
+        expect(result).toBeNull();
         expect(fileManager.select).not.toHaveBeenCalled();
         expect(fileManager.setDiskTracked).not.toHaveBeenCalled();
     });
@@ -48,7 +65,7 @@ describe("createDroppedDiskFileTracker", () => {
     it("tracks a newly dropped mounted file under its saved Library name", async () => {
         const volume = makeDiskVolume("disk:1", "main.dsp") as unknown as DiskVolume;
         const tracker = makeTracker();
-        const fileManager = makeFileManager();
+        const fileManager = makeFileManager(["main.dsp"]);
         const callback = createDroppedDiskFileTracker({
             volumes: [volume],
             diskTracker: tracker,
@@ -60,6 +77,27 @@ describe("createDroppedDiskFileTracker", () => {
         expect(tracker.track).toHaveBeenCalledWith("main.dsp", volume, "main.dsp");
         expect(fileManager.setDiskTracked).toHaveBeenCalledWith("main.dsp", true);
         expect(fileManager.deleteFile).not.toHaveBeenCalled();
+    });
+
+    it("removes a collision copy and reports a conflict when a matching local file exists", async () => {
+        const volume = makeDiskVolume("disk:1", "main.dsp") as unknown as DiskVolume;
+        const tracker = makeTracker();
+        const fileManager = makeFileManager(["main.dsp", "untitled1.dsp"]);
+        const onLocalConflict = vi.fn();
+        const callback = createDroppedDiskFileTracker({
+            volumes: [volume],
+            diskTracker: tracker,
+            fileManager,
+            onLocalConflict
+        });
+
+        await callback("untitled1.dsp", { kind: "file", name: "main.dsp" } as FileSystemFileHandle);
+
+        expect(tracker.track).not.toHaveBeenCalled();
+        expect(fileManager.deleteFile).toHaveBeenCalledWith("untitled1.dsp");
+        expect(fileManager.select).toHaveBeenCalledWith("main.dsp");
+        expect(fileManager.setDiskTracked).not.toHaveBeenCalled();
+        expect(onLocalConflict).toHaveBeenCalledWith("main.dsp");
     });
 
     it("removes a collision copy when the same mounted file is dropped again", async () => {
