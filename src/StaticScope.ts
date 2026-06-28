@@ -115,6 +115,19 @@ export class StaticScope {
         handleStaticScopePointerLeave(this);
     }
     /**
+     * The shared overlay callbacks (background, grid, event markers, stats) that
+     * every static renderer receives. Centralized so the four draw* wrappers do
+     * not each rebuild the same bound bundle.
+     */
+    private static overlayCallbacks() {
+        return {
+            drawBackground: this.drawBackground.bind(this),
+            drawGrid: this.drawGrid.bind(this),
+            drawEvent: this.drawEvent.bind(this),
+            drawStats: this.drawStats.bind(this)
+        };
+    }
+    /**
      * Draws the scope in interleaved mode.
      * The core principle is to display each channel's waveform in its own horizontal strip.
      * The y-axis within each strip represents amplitude, and the x-axis represents time (in samples).
@@ -130,12 +143,7 @@ export class StaticScope {
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
     static drawInterleaved(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        drawStaticInterleaved({
-            drawBackground: this.drawBackground.bind(this),
-            drawGrid: this.drawGrid.bind(this),
-            drawEvent: this.drawEvent.bind(this),
-            drawStats: this.drawStats.bind(this)
-        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
+        drawStaticInterleaved(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
     }
     /**
      * Draws the scope in oscilloscope mode.
@@ -152,12 +160,7 @@ export class StaticScope {
      * @param {{ x: number; y: number }} [cursor] The current cursor position.
      */
     static drawOscilloscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, verticalZoom: number, cursor?: { x: number; y: number }) {
-        drawStaticOscilloscope({
-            drawBackground: this.drawBackground.bind(this),
-            drawGrid: this.drawGrid.bind(this),
-            drawEvent: this.drawEvent.bind(this),
-            drawStats: this.drawStats.bind(this)
-        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
+        drawStaticOscilloscope(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, verticalZoom, cursor);
     }
     /**
      * Draws the scope in spectroscope mode.
@@ -175,12 +178,7 @@ export class StaticScope {
      * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
      */
     static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
-        drawStaticSpectroscope({
-            drawBackground: this.drawBackground.bind(this),
-            drawGrid: this.drawGrid.bind(this),
-            drawEvent: this.drawEvent.bind(this),
-            drawStats: this.drawStats.bind(this)
-        }, ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
+        drawStaticSpectroscope(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
     }
     /**
      * Draws the scope in spectrogram mode.
@@ -200,12 +198,7 @@ export class StaticScope {
      * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
      */
     static drawSpectrogram(ctx: CanvasRenderingContext2D, spectrogramCacheContext: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
-        drawStaticSpectrogram({
-            drawBackground: this.drawBackground.bind(this),
-            drawGrid: this.drawGrid.bind(this),
-            drawEvent: this.drawEvent.bind(this),
-            drawStats: this.drawStats.bind(this)
-        }, ctx, spectrogramCacheContext, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
+        drawStaticSpectrogram(this.overlayCallbacks(), ctx, spectrogramCacheContext, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
     }
     /**
      * Renders new spectrogram data to the temporary cache canvas.
