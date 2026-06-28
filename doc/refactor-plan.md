@@ -68,7 +68,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 68 files, 286 tests; ~76% statement coverage after the MeterNode/monaco-faust passes |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 79 files, 510 tests |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 68 tests against the built `dist/` at the latest Phase 11 pass |
 
 ### Unit and integration layer (Vitest)
@@ -79,7 +79,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
   - `requestAnimationFrame` / `cancelAnimationFrame` and `URL.createObjectURL` / `URL.revokeObjectURL` polyfills;
   - Web Audio mocks (`MockAudioContext`, `MockGainNode`, `MockAudioNode`);
   - DOM (`document.body.innerHTML`) and `localStorage` reset in `beforeEach`.
-- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, etc.), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), and utilities (`utils`, `Key2Midi`, `Recorder`).
+- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, etc.), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), filesystem helpers (`DroppedDiskFileTracking`, `DiskOriginTracker`), and utilities (`utils`, `Key2Midi`, `Recorder`).
 - Mocking approach: prefer `vi.mock` over network mocking. For example `DspRunner.test.ts` replaces `@grame/faustwasm` with small factory doubles and asserts only the audio-graph effects. MSW is used in only a few tests (`AudioEngine`, `DspRunner`, `Recorder`). For the file system, use an in-memory fake FS implementing the `TFileSystem` contract rather than real BrowserFS.
 
 ### End-to-end layer (Playwright)

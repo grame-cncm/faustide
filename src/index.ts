@@ -84,6 +84,7 @@ import { MountRegistry } from "./runtime/fs/MountRegistry";
 import { computeClosure } from "./model/Perimeter";
 import { writeBundleToDir } from "./runtime/fs/BundleWriter";
 import { DiskOriginTracker } from "./runtime/fs/DiskOriginTracker";
+import { createDroppedDiskFileTracker, selectExistingDiskOrigin } from "./runtime/fs/DroppedDiskFileTracking";
 
 const PROJECT_DIR = "/usr/share/project/";
 
@@ -351,18 +352,7 @@ $(async () => {
     // to and mark it as disk-tracked (green indicator + write-back on save).
     // resolvePath relies on the Chromium-only FS Access API — gate on availability.
     const onDiskDropCallback: DroppedFileHandleCallback | undefined = fsAccessAvailable()
-        ? async (savedName, handle) => {
-            for (const vol of volumes) {
-                if (vol.kind !== "disk") continue;
-                const diskVol = vol as DiskVolume;
-                // resolvePath() is null unless the handle lives inside this mount.
-                const path = await diskVol.resolvePath(handle);
-                if (path === null) continue;
-                diskTracker.track(savedName, diskVol, path);
-                uiEnv.fileManager.setDiskTracked(savedName, true);
-                break;
-            }
-        }
+        ? createDroppedDiskFileTracker({ volumes, diskTracker, fileManager: uiEnv.fileManager })
         : undefined;
     uiEnv.fileManager.onDroppedFileHandle = onDiskDropCallback;
     new ProjectFilesController({
@@ -391,6 +381,10 @@ $(async () => {
     const openBrowser = new VolumeBrowserController({
         volumes,
         onOpen: (vol, entry) => {
+            if (vol.kind === "disk" && openDecision(entry.name) === "open-in-place") {
+                const diskVol = vol as DiskVolume;
+                if (selectExistingDiskOrigin(uiEnv.fileManager, diskTracker, diskVol, entry.path)) return;
+            }
             vol.readText(entry.path).then(async (content) => {
                 const savedName = uiEnv.fileManager.newFile(entry.name, content, { persist: "manual" });
                 await uiEnv.fileManager.persistFile(savedName, content, { immediate: true });

@@ -70,6 +70,21 @@ export class DiskOriginTracker {
     }
 
     /**
+     * Finds the Library file currently linked to a disk origin.
+     *
+     * Drag/drop uses this to make repeated drops from a mounted folder
+     * idempotent: if the same disk file is already open in the Library, the
+     * freshly imported collision copy is discarded instead of becoming another
+     * green disk-tracked row.
+     */
+    findLibraryName(vol: DiskVolume, path: string): string | null {
+        for (const [libraryName, origin] of this.origins) {
+            if (origin.vol.id === vol.id && origin.path === path) return libraryName;
+        }
+        return null;
+    }
+
+    /**
      * Write `content` back to the original disk file.
      * No-op when there is no tracked origin or content is binary.
      *

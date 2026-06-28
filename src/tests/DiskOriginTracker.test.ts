@@ -74,6 +74,15 @@ describe("DiskOriginTracker", () => {
             expect(tracker.has("b.lib")).toBe(true);
         });
 
+        it("finds the Library name for an existing disk origin", () => {
+            const tracker = new DiskOriginTracker();
+            const vol = makeFakeVol(vi.fn());
+            tracker.track("kick.dsp", vol, "patches/kick.dsp");
+
+            expect(tracker.findLibraryName(vol, "patches/kick.dsp")).toBe("kick.dsp");
+            expect(tracker.findLibraryName(vol, "other.dsp")).toBeNull();
+        });
+
         it("prunes persisted origins whose project file is missing", () => {
             const tracker = new DiskOriginTracker();
             const vol = makeFakeVol(vi.fn());
