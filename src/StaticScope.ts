@@ -1,4 +1,3 @@
-import { wrap } from "./utils";
 import {
     FrequencyScaleMode as EFreqScaleMode,
     StaticScopeMode as EScopeMode,
@@ -29,6 +28,8 @@ import {
     drawStaticScopeStats
 } from "./scope/static/StaticScopeOverlays";
 import type { TDrawOptions, TOptions, TStatsToDraw } from "./scope/static/StaticScopeTypes";
+import { buildScopeCsv } from "./scope/static/ScopeCsvExport";
+import { downloadTextFile } from "./scope/DownloadFile";
 import "./StaticScope.scss";
 
 // Re-exported so existing importers (e.g. Analyser.ts) keep using "./StaticScope".
@@ -342,63 +343,8 @@ export class StaticScope {
             this.freqScaleMode = (this.freqScaleMode + 1) % 2;
         });
         this.btnDownload.addEventListener("click", () => {
-            let data = "";
-            if (this.mode === EScopeMode.Data || this.mode === EScopeMode.Interleaved || this.mode === EScopeMode.Oscilloscope) {
-                if (this.data.timeDomainData) {
-                    const { timeDomainData, startSampleIndex } = this.data;
-                    if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
-                    const bufferLength = timeDomainData[0].length;
-                    data += new Array(timeDomainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
-                    for (let j = 0; j < bufferLength; j++) {
-                        for (let i = 0; i < timeDomainData.length; i++) {
-                            const wrappedSampleIndex = wrap(j, startSampleIndex, bufferLength);
-                            const sampleValue = timeDomainData[i][wrappedSampleIndex];
-                            data += sampleValue + (i === timeDomainData.length - 1 ? "\n" : ",");
-                        }
-                    }
-                }
-            } else if (this.mode === EScopeMode.Spectroscope) {
-                const { startSampleIndex, freqDomainData, fftSize, fftOverlap } = this.data;
-                if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-                const frequencyBinCount = fftSize / 2;
-                let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-                startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-                const freqBufferLength = freqDomainData[0].length;
-                data += new Array(freqDomainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
-                for (let j = freqBufferLength - frequencyBinCount; j < freqBufferLength; j++) {
-                    for (let i = 0; i < freqDomainData.length; i++) {
-                        const wrappedBinIndex = wrap(j, startFreqDataIndex, freqBufferLength);
-                        const magnitude = freqDomainData[i][wrappedBinIndex];
-                        data += magnitude + (i === freqDomainData.length - 1 ? "\n" : ",");
-                    }
-                }
-            } else if (this.mode === EScopeMode.Spectrogram) {
-                const { startSampleIndex, freqDomainData, fftSize, fftOverlap } = this.data;
-                if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return;
-                const frequencyBinCount = fftSize / 2;
-                let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
-                startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-                const freqBufferLength = freqDomainData[0].length;
-                const frameCount = freqBufferLength / frequencyBinCount;
-                data += new Array(frameCount).fill(null).map((v, i) => new Array(freqDomainData.length).fill(null).map((v, j) => `frame${i + 1}_channel${j + 1}`).join(",")).join(",") + "\n";
-                for (let binIndex = 0; binIndex < frequencyBinCount; binIndex++) {
-                    for (let frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-                        for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
-                            const dataIndex = wrap(frameIndex * frequencyBinCount + binIndex, startFreqDataIndex, freqBufferLength);
-                            const magnitude = freqDomainData[channelIndex][dataIndex];
-                            data += magnitude + (channelIndex === freqDomainData.length - 1 && frameIndex === frameCount - 1 ? "\n" : ",");
-                        }
-                    }
-                }
-            }
-            if (!data) return;
-            const blob = new Blob([data]);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "data.csv";
-            a.target = "_blank";
-            a.click();
+            const csv = buildScopeCsv(this.mode, this.data);
+            if (csv) downloadTextFile(csv, "data.csv");
         });
         this.canvas.addEventListener("mousedown", this.handleMouseDown);
         this.canvas.addEventListener("touchstart", this.handleMouseDown);
