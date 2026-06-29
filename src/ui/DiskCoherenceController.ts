@@ -23,17 +23,21 @@ export class DiskCoherenceController {
     private keepCopyButton: HTMLButtonElement;
     private activeConflict: string | null = null;
     private polling = false;
+    private intervalHandle: number | null = null;
+    private readonly pollIntervalMs: number;
 
     constructor(options: {
         fileManager: FileManager;
         diskTracker: DiskOriginTracker;
         diskCoherence: DiskCoherenceService;
         alertController: AlertController;
+        pollIntervalMs?: number;
     }) {
         this.fileManager = options.fileManager;
         this.diskTracker = options.diskTracker;
         this.diskCoherence = options.diskCoherence;
         this.alertController = options.alertController;
+        this.pollIntervalMs = options.pollIntervalMs ?? 30000;
     }
 
     /** Attach focus/visibility listeners used to catch external editor saves. */
@@ -46,6 +50,11 @@ export class DiskCoherenceController {
         this.reloadButton.addEventListener("click", () => { void this.reloadFromDisk(); });
         this.overwriteButton.addEventListener("click", () => { void this.overwriteDisk(); });
         this.keepCopyButton.addEventListener("click", () => { void this.keepLocalCopy(); });
+        if (this.pollIntervalMs > 0) {
+            this.intervalHandle = window.setInterval(() => {
+                if (document.visibilityState === "visible") void this.pollAll();
+            }, this.pollIntervalMs);
+        }
     }
 
     /** Poll every currently tracked mounted file once. */
@@ -60,20 +69,47 @@ export class DiskCoherenceController {
         }
     }
 
-    private async pollFile(fileName: string): Promise<void> {
+    /**
+     * Poll the main mounted file before compile/run.
+     *
+     * @returns false when a disk conflict or read problem should block compile
+     */
+    async ensureFreshBeforeRun(): Promise<boolean> {
+        const fileName = this.fileManager.mainFileName;
+        if (!fileName) return true;
+        const result = await this.pollFile(fileName);
+        return result !== "blocked";
+    }
+
+    /** Stop periodic polling; mainly used by unit tests and future teardown. */
+    dispose(): void {
+        if (this.intervalHandle === null) return;
+        window.clearInterval(this.intervalHandle);
+        this.intervalHandle = null;
+    }
+
+    private async pollFile(fileName: string): Promise<"ok" | "blocked"> {
         const result = await this.diskCoherence.poll(fileName, this.fileManager.getValue(fileName));
         if (result.status === "reload") {
             await this.fileManager.replaceExternalText(fileName, result.content);
-            return;
+            return "ok";
         }
         if (result.status === "conflict") {
             this.conflicts.set(fileName, result.diskContent);
             this.showConflict(fileName);
-            return;
+            return "blocked";
         }
         if (result.status === "unread") {
-            this.alertController.show(`${fileName} could not be checked on disk. Re-authorize the mounted folder before saving.`);
+            this.alertController.show(this.unreadMessage(fileName, result.reason));
+            return "blocked";
         }
+        return "ok";
+    }
+
+    private unreadMessage(fileName: string, reason: "not-found" | "permission" | "unknown"): string {
+        if (reason === "not-found") return `${fileName} no longer exists on disk. Keep a local copy or restore the mounted file before compiling or saving.`;
+        if (reason === "permission") return `${fileName} could not be checked on disk. Re-authorize the mounted folder before compiling or saving.`;
+        return `${fileName} could not be checked on disk before compiling or saving.`;
     }
 
     private async reloadFromDisk(): Promise<void> {

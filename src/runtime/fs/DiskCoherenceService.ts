@@ -14,7 +14,9 @@ export type DiskCoherencePollResult =
     | { status: "unchanged" }
     | { status: "reload"; content: string }
     | { status: "conflict"; diskContent: string }
-    | { status: "unread"; error: unknown };
+    | { status: "unread"; reason: DiskCoherenceReadFailureReason; error: unknown };
+
+export type DiskCoherenceReadFailureReason = "not-found" | "permission" | "unknown";
 
 /**
  * Detects external edits to mounted disk files before Faust IDE writes back.
@@ -121,7 +123,7 @@ export class DiskCoherenceService {
         try {
             current = await this.readSnapshot(origin);
         } catch (error) {
-            return { status: "unread", error };
+            return { status: "unread", reason: classifyReadFailure(error), error };
         }
 
         const accepted = this.snapshots.get(libraryName);
@@ -170,6 +172,13 @@ export class DiskCoherenceService {
             size: file.size
         };
     }
+}
+
+function classifyReadFailure(error: unknown): DiskCoherenceReadFailureReason {
+    const name = typeof error === "object" && error !== null && "name" in error ? String((error as { name?: unknown }).name) : "";
+    if (name === "NotFoundError") return "not-found";
+    if (name === "NotAllowedError" || name === "SecurityError") return "permission";
+    return "unknown";
 }
 
 /** Error raised when a mounted file changed outside Faust IDE. */

@@ -235,7 +235,9 @@ $(async () => {
         runDsp: code => dspCompileController.run(code),
         updateDiagram: code => diagramController.update(code)
     };
-    const { runDsp, updateDiagram } = runtimeActions;
+    let runDspAction = runtimeActions.runDsp;
+    const runDsp: RuntimeActions["runDsp"] = code => runDspAction(code);
+    const { updateDiagram } = runtimeActions;
     runtimeSettings.saveVersion();
     analyserScopeController.initializePlotScope();
 
@@ -428,6 +430,12 @@ $(async () => {
         diskCoherence,
         alertController
     });
+    runDspAction = async (code) => {
+        if (!await diskCoherenceController.ensureFreshBeforeRun()) {
+            return { success: false, error: new Error("Mounted file is not fresh enough to compile") };
+        }
+        return runtimeActions.runDsp(code);
+    };
     diskCoherenceController.bind();
     new ProjectFilesController({
         fileManager: uiEnv.fileManager,

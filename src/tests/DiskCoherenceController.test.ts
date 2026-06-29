@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiskCoherenceController } from "../ui/DiskCoherenceController";
 
 const flush = async () => {
@@ -9,6 +9,7 @@ const flush = async () => {
 function makeController(overrides: any = {}) {
     const fileManager = {
         getValue: vi.fn(() => "local"),
+        mainFileName: "main.dsp",
         newFile: vi.fn(),
         replaceExternalText: vi.fn(async () => undefined),
         ...overrides.fileManager
@@ -33,12 +34,18 @@ function makeController(overrides: any = {}) {
         fileManager,
         diskTracker,
         diskCoherence,
-        alertController
+        alertController,
+        pollIntervalMs: 0,
+        ...overrides.controller
     } as any);
     return { alertController, controller, diskCoherence, diskTracker, fileManager };
 }
 
 describe("DiskCoherenceController", () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it("reloads clean files when polling reports disk content changed", async () => {
         const { controller, diskCoherence, fileManager } = makeController({
             diskCoherence: {
@@ -70,13 +77,25 @@ describe("DiskCoherenceController", () => {
     it("shows an alert when polling cannot read a mounted file", async () => {
         const { alertController, controller } = makeController({
             diskCoherence: {
-                poll: vi.fn(async () => ({ status: "unread", error: new Error("denied") }))
+                poll: vi.fn(async () => ({ status: "unread", reason: "permission", error: new Error("denied") }))
             }
         });
 
         await controller.pollAll();
 
-        expect(alertController.show).toHaveBeenCalledWith(expect.stringContaining("could not be checked on disk"));
+        expect(alertController.show).toHaveBeenCalledWith(expect.stringContaining("Re-authorize the mounted folder"));
+    });
+
+    it("shows a missing-file alert when a mounted file was deleted externally", async () => {
+        const { alertController, controller } = makeController({
+            diskCoherence: {
+                poll: vi.fn(async () => ({ status: "unread", reason: "not-found", error: new Error("missing") }))
+            }
+        });
+
+        await controller.pollAll();
+
+        expect(alertController.show).toHaveBeenCalledWith(expect.stringContaining("no longer exists on disk"));
     });
 
     it("reloads from disk when the conflict modal reload action is clicked", async () => {
@@ -137,5 +156,43 @@ describe("DiskCoherenceController", () => {
         await Promise.resolve();
 
         expect(diskCoherence.poll).toHaveBeenCalledWith("main.dsp", "local");
+    });
+
+    it("reloads a clean main file before compile/run and allows the run", async () => {
+        const { controller, fileManager } = makeController({
+            diskCoherence: {
+                poll: vi.fn(async () => ({ status: "reload", content: "disk" }))
+            }
+        });
+
+        await expect(controller.ensureFreshBeforeRun()).resolves.toBe(true);
+
+        expect(fileManager.replaceExternalText).toHaveBeenCalledWith("main.dsp", "disk");
+    });
+
+    it("blocks compile/run when the main file has a disk conflict", async () => {
+        const { alertController, controller } = makeController({
+            diskCoherence: {
+                poll: vi.fn(async () => ({ status: "conflict", diskContent: "disk" }))
+            }
+        });
+
+        await expect(controller.ensureFreshBeforeRun()).resolves.toBe(false);
+
+        expect(alertController.show).toHaveBeenCalledWith(expect.stringContaining("main.dsp changed on disk"));
+    });
+
+    it("polls periodically while the document is visible", async () => {
+        vi.useFakeTimers();
+        const { controller, diskCoherence } = makeController({
+            controller: { pollIntervalMs: 1000 }
+        });
+        controller.bind();
+
+        vi.advanceTimersByTime(1000);
+        await Promise.resolve();
+
+        expect(diskCoherence.poll).toHaveBeenCalledWith("main.dsp", "local");
+        controller.dispose();
     });
 });
