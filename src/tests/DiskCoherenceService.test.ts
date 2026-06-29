@@ -107,7 +107,10 @@ describe("DiskCoherenceService", () => {
 
         setText("disk = _;");
 
-        await expect(service.poll("main.dsp", "local = _;")).resolves.toEqual({ status: "conflict" });
+        await expect(service.poll("main.dsp", "local = _;")).resolves.toEqual({
+            status: "conflict",
+            diskContent: "disk = _;"
+        });
     });
 
     it("polls unchanged when local content already matches disk", async () => {

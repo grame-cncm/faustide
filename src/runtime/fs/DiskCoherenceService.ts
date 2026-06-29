@@ -13,7 +13,7 @@ interface CoherenceSnapshot {
 export type DiskCoherencePollResult =
     | { status: "unchanged" }
     | { status: "reload"; content: string }
-    | { status: "conflict" }
+    | { status: "conflict"; diskContent: string }
     | { status: "unread"; error: unknown };
 
 /**
@@ -130,7 +130,7 @@ export class DiskCoherenceService {
                 this.snapshots.set(libraryName, current);
                 return { status: "unchanged" };
             }
-            return { status: "conflict" };
+            return { status: "conflict", diskContent: current.text };
         }
 
         if (current.text === accepted.text) return { status: "unchanged" };
@@ -142,7 +142,7 @@ export class DiskCoherenceService {
             this.snapshots.set(libraryName, current);
             return { status: "reload", content: current.text };
         }
-        return { status: "conflict" };
+        return { status: "conflict", diskContent: current.text };
     }
 
     /**
