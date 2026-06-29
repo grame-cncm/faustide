@@ -15,7 +15,9 @@ export type VolumeBrowserOptions = {
      * Mount a disk folder (Chromium only).  Caller gates on fsAccessAvailable()
      * before providing this callback — the button is shown iff the hook is set.
      */
-    onMountDisk?(): void;
+    onMountDisk?(): void | Promise<void>;
+    /** Unmount a disk volume from the root volume list. */
+    onUnmountDisk?(volume: Volume): void;
     /** Re-grant RW permission on a lapsed Disk volume (requires a user gesture). */
     onReauthorize?(volume: Volume): Promise<boolean>;
     /** Delete a file from the Library. Library open mode only. */
@@ -40,6 +42,7 @@ const STRINGS = {
     listFailed: "Failed to load",
     openDevice: "Open a file from disk…",
     mountDisk: "Mount a disk folder…",
+    unmountDisk: "Unmount",
     saveHere: "Save here",
     namePlaceholder: "filename.dsp",
     stateNeedsPermission: "needs permission",
@@ -74,7 +77,8 @@ export class VolumeBrowserController {
     private readonly onOpen?: (volume: Volume, entry: VolumeEntry) => void;
     private readonly onOpenDeviceFile?: () => void;
     private readonly onSave?: (volume: Volume, folderPath: string, name: string) => void;
-    private readonly onMountDisk?: () => void;
+    private readonly onMountDisk?: () => void | Promise<void>;
+    private readonly onUnmountDisk?: (volume: Volume) => void;
     private readonly onReauthorize?: (volume: Volume) => Promise<boolean>;
     private readonly onDelete?: (volume: Volume, entry: VolumeEntry) => void;
 
@@ -86,6 +90,7 @@ export class VolumeBrowserController {
         this.onOpenDeviceFile = options.onOpenDeviceFile;
         this.onSave = options.onSave;
         this.onMountDisk = options.onMountDisk;
+        this.onUnmountDisk = options.onUnmountDisk;
         this.onReauthorize = options.onReauthorize;
         this.onDelete = options.onDelete;
     }
@@ -204,7 +209,10 @@ export class VolumeBrowserController {
             b.type = "button";
             b.className = "vb-mount-disk";
             b.append(faIcon("fa-hdd"), document.createTextNode(` ${STRINGS.mountDisk}`));
-            b.addEventListener("click", () => onMount());
+            b.addEventListener("click", async () => {
+                await onMount();
+                render(); // eslint-disable-line no-use-before-define
+            });
             footer.append(b);
         }
 
@@ -334,6 +342,27 @@ export class VolumeBrowserController {
                 });
 
                 row.append(nameBtn);
+
+                if (v.kind === "disk" && this.onUnmountDisk) {
+                    const actions = document.createElement("div");
+                    actions.className = "vb-row-actions";
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "vb-row-unmount";
+                    btn.title = STRINGS.unmountDisk;
+                    btn.append(faIcon("fa-eject"));
+                    btn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        this.onUnmountDisk?.(v);
+                        if (current === v) {
+                            current = null;
+                            path = "";
+                        }
+                        render(); // eslint-disable-line no-use-before-define
+                    });
+                    actions.append(btn);
+                    row.append(actions);
+                }
                 listEl.append(row);
             });
         };

@@ -228,7 +228,8 @@
     flex-shrink: 0;
 }
 
-.vb-row-delete {
+.vb-row-delete,
+.vb-row-unmount {
     background: transparent;
     border: none;
     color: #888;
@@ -239,4 +240,8 @@
     opacity: 0;
     .vb-row:hover & { opacity: 1; }
     &:hover { color: #f48771; background: rgba(244, 135, 113, 0.12); }
+}
+
+.vb-row-unmount {
+    opacity: 1;
 }

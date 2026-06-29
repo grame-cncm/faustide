@@ -64,6 +64,22 @@ export class DiskOriginTracker {
         this.persist();
     }
 
+    /**
+     * Remove every origin attached to a disk volume.
+     *
+     * @returns Library file names that used to be linked to the volume.
+     */
+    forgetVolume(volumeId: string): string[] {
+        const forgotten: string[] = [];
+        for (const [libraryName, origin] of this.origins) {
+            if (origin.vol.id !== volumeId) continue;
+            this.origins.delete(libraryName);
+            forgotten.push(libraryName);
+        }
+        if (forgotten.length > 0) this.persist();
+        return forgotten;
+    }
+
     /** Returns true when `libraryName` has a known disk origin. */
     has(libraryName: string): boolean {
         return this.origins.has(libraryName);

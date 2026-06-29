@@ -434,10 +434,52 @@ describe("VolumeBrowserController", () => {
         expect(onMountDisk).toHaveBeenCalledTimes(1);
     });
 
+    it("Mount button re-renders the root volume list after mounting", async () => {
+        const volumes: ReturnType<typeof fakeVolume>[] = [];
+        const onMountDisk = vi.fn(async () => {
+            volumes.push(fakeVolume({ id: "disk:1", kind: "disk", label: "Patches" }));
+        });
+        const ctrl = new VolumeBrowserController({ volumes, onMountDisk, onUnmountDisk: vi.fn() });
+        ctrl.open();
+        const btn = document.querySelector(".vb-mount-disk") as HTMLButtonElement;
+        if (btn) btn.click();
+        await flush();
+        await flush();
+        expect(document.querySelector(".vb-row-unmount")).toBeTruthy();
+    });
+
     it("does not show Mount button without the callback", () => {
         const ctrl = new VolumeBrowserController({ volumes: [] });
         ctrl.open();
         expect(document.querySelector(".vb-mount-disk")).toBeNull();
+    });
+
+    // ── onUnmountDisk ──────────────────────────────────────────────────────────
+
+    it("shows an Unmount button for disk volumes when onUnmountDisk is provided", async () => {
+        const disk = fakeVolume({ id: "disk:1", kind: "disk", label: "Patches" });
+        const ctrl = new VolumeBrowserController({ volumes: [disk], onUnmountDisk: vi.fn() });
+        ctrl.open();
+        await flush();
+        expect(document.querySelector(".vb-row-unmount")).toBeTruthy();
+    });
+
+    it("does not show an Unmount button for the Library volume", async () => {
+        const ctrl = new VolumeBrowserController({ volumes: [fakeVolume()], onUnmountDisk: vi.fn() });
+        ctrl.open();
+        await flush();
+        expect(document.querySelector(".vb-row-unmount")).toBeNull();
+    });
+
+    it("Unmount button calls onUnmountDisk with the disk volume", async () => {
+        const onUnmountDisk = vi.fn();
+        const disk = fakeVolume({ id: "disk:1", kind: "disk", label: "Patches" });
+        const ctrl = new VolumeBrowserController({ volumes: [disk], onUnmountDisk });
+        ctrl.open();
+        await flush();
+        const btn = document.querySelector(".vb-row-unmount") as HTMLButtonElement;
+        if (btn) btn.click();
+        expect(onUnmountDisk).toHaveBeenCalledWith(disk);
     });
 
     // ── onReauthorize ──────────────────────────────────────────────────────────
