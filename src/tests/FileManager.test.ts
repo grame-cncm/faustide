@@ -230,4 +230,17 @@ describe("FileManager", () => {
         expect(handlers.mainFileChangeHandler).toHaveBeenCalledWith("other.dsp", "process = 2;");
     });
 
+    it("replaces external text and persists it without disk write-back", async () => {
+        const { fs, handlers, manager } = createManager({ "main.dsp": "process = _;" });
+
+        await manager.replaceExternalText("main.dsp", "process = 1;");
+
+        expect(fs.files.get("main.dsp")).toBe("process = 1;");
+        expect(handlers.selectHandler).toHaveBeenLastCalledWith("main.dsp", "process = 1;", "process = 1;");
+        expect(handlers.saveHandler).toHaveBeenCalledWith("main.dsp", "process = 1;", "process = 1;", {
+            immediate: true,
+            skipDiskSave: true
+        });
+    });
+
 });

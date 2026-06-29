@@ -87,6 +87,7 @@ import { DspControlsController } from "./ui/DspControlsController";
 import { FaustUiController } from "./ui/FaustUiController";
 import { UrlParamsController } from "./ui/UrlParamsController";
 import { AlertController } from "./ui/AlertController";
+import { DiskCoherenceController } from "./ui/DiskCoherenceController";
 import { DspCompileController } from "./ui/DspCompileController";
 import { StartupControlsController } from "./ui/StartupControlsController";
 import { ApplicationStartupController } from "./ui/ApplicationStartupController";
@@ -421,6 +422,13 @@ $(async () => {
         })
         : undefined;
     uiEnv.fileManager.onDroppedFileHandle = onDiskDropCallback;
+    const diskCoherenceController = new DiskCoherenceController({
+        fileManager: uiEnv.fileManager,
+        diskTracker,
+        diskCoherence,
+        alertController
+    });
+    diskCoherenceController.bind();
     new ProjectFilesController({
         fileManager: uiEnv.fileManager,
         compileOptions,

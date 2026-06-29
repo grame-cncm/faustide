@@ -4,7 +4,7 @@ import type { TFileSystem } from "./model/ProjectModel";
 import { captureDroppedFileHandles, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 import { readPickedFileContent } from "./runtime/fs/VolumeFileActions";
 
-type SaveOptions = { immediate?: boolean };
+type SaveOptions = { immediate?: boolean; skipDiskSave?: boolean };
 type SaveHandler = (name: string, content: string | Uint8Array, mainCode: string, options?: SaveOptions) => Promise<void> | void;
 
 type TOptions = {
@@ -386,6 +386,21 @@ export class FileManager {
     save(fileName: string, content: string) {
         if (!this.project.saveFile(fileName, content)) return;
         void this.persistFile(fileName, content);
+    }
+
+    /**
+     * Replace a project text file from a trusted external source.
+     *
+     * Used when a mounted disk file changes outside Faust IDE and the local
+     * buffer is still clean. BrowserFS is updated, Monaco is refreshed if the
+     * file is selected, and disk write-back is skipped because the content
+     * already came from that disk origin.
+     */
+    replaceExternalText(fileName: string, content: string): Promise<void> {
+        const changed = this.project.saveFile(fileName, content);
+        if (this.selected === fileName && this.selectHandler) this.selectHandler(fileName, content, this.mainCode);
+        if (!changed) return Promise.resolve();
+        return this.persistFile(fileName, content, { immediate: true, skipDiskSave: true });
     }
     saveAll() {
         if (!this.saveHandler) return;

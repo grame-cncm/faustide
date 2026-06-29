@@ -86,4 +86,37 @@ describe("DiskCoherenceService", () => {
         await expect(service.checkBeforeWrite("ghost.dsp", "process = _;")).resolves.toBeUndefined();
         await expect(service.checkBeforeWrite("sample.wav", new Uint8Array([0, 1]))).resolves.toBeUndefined();
     });
+
+    it("polls reload when disk changed and local content is still clean", async () => {
+        const { origin, setText } = makeOrigin("process = _;");
+        const service = makeService(origin);
+        await service.captureDiskSnapshot("main.dsp");
+
+        setText("process = 1;");
+
+        await expect(service.poll("main.dsp", "process = _;")).resolves.toEqual({
+            status: "reload",
+            content: "process = 1;"
+        });
+    });
+
+    it("polls conflict when disk and local content both changed", async () => {
+        const { origin, setText } = makeOrigin("process = _;");
+        const service = makeService(origin);
+        await service.captureDiskSnapshot("main.dsp");
+
+        setText("disk = _;");
+
+        await expect(service.poll("main.dsp", "local = _;")).resolves.toEqual({ status: "conflict" });
+    });
+
+    it("polls unchanged when local content already matches disk", async () => {
+        const { origin, setText } = makeOrigin("process = _;");
+        const service = makeService(origin);
+        await service.captureDiskSnapshot("main.dsp");
+
+        setText("process = 1;");
+
+        await expect(service.poll("main.dsp", "process = 1;")).resolves.toEqual({ status: "unchanged" });
+    });
 });

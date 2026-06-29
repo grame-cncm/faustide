@@ -34,6 +34,10 @@ handles and mounted volumes. They do not use the real File System Access API or 
 real directory. `DiskCoherenceService.test.ts` mutates fake `getFile().text()`
 results to characterize external disk edits before write-back.
 
+`DiskCoherenceController.test.ts` keeps focus/visibility polling testable by
+injecting fake tracker/service/file-manager objects and dispatching jsdom
+`focus` events instead of using a real mounted directory.
+
 ### c) DOM controller tests
 
 UI controllers are tested by injecting a real jsdom DOM. The test creates the required HTML elements, invokes the controller, then asserts DOM mutations.

@@ -65,6 +65,16 @@ describe("ProjectRuntimeController", () => {
         expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("drop.dsp", "process = _;");
     });
 
+    it("can persist BrowserFS content without disk write-back", async () => {
+        const onDiskSave = vi.fn(async () => undefined);
+        const { handlers, options } = bindController({ options: { onDiskSave } });
+
+        await handlers.saveHandler("main.dsp", "process = _;", "main code", { immediate: true, skipDiskSave: true });
+
+        expect(options.projectPersistence.saveFile).toHaveBeenCalledWith("main.dsp", "process = _;");
+        expect(onDiskSave).not.toHaveBeenCalled();
+    });
+
     it("immediate saves cancel a pending debounced save for the same file", async () => {
         const { handlers, options } = bindController();
 
