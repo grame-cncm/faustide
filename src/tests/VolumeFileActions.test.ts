@@ -74,12 +74,14 @@ describe("openFromVolume", () => {
         const fileManager = makeFileManager();
         const diskTracker = makeTracker();
         const vol = { kind: "disk", id: "disk:1", readText: vi.fn(async () => "import(\"x.lib\");") } as unknown as DiskVolume;
+        const onDiskTracked = vi.fn();
 
-        await openFromVolume({ fileManager, diskTracker }, vol, entry({ name: "main.dsp", path: "sub/main.dsp", isNative: true }));
+        await openFromVolume({ fileManager, diskTracker, onDiskTracked }, vol, entry({ name: "main.dsp", path: "sub/main.dsp", isNative: true }));
 
         expect(fileManager.newFile).toHaveBeenCalledWith("main.dsp", "import(\"x.lib\");", { persist: "manual" });
         expect(diskTracker.track).toHaveBeenCalledWith("main.dsp", vol, "sub/main.dsp");
         expect(fileManager.setDiskTracked).toHaveBeenCalledWith("main.dsp", true);
+        expect(onDiskTracked).toHaveBeenCalledWith("main.dsp");
     });
 
     it("short-circuits when the disk origin is already open (no re-read)", async () => {

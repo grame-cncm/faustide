@@ -66,16 +66,19 @@ describe("createDroppedDiskFileTracker", () => {
         const volume = makeDiskVolume("disk:1", "main.dsp") as unknown as DiskVolume;
         const tracker = makeTracker();
         const fileManager = makeFileManager(["main.dsp"]);
+        const onDiskTracked = vi.fn();
         const callback = createDroppedDiskFileTracker({
             volumes: [volume],
             diskTracker: tracker,
-            fileManager
+            fileManager,
+            onDiskTracked
         });
 
         await callback("main.dsp", { kind: "file", name: "main.dsp" } as FileSystemFileHandle);
 
         expect(tracker.track).toHaveBeenCalledWith("main.dsp", volume, "main.dsp");
         expect(fileManager.setDiskTracked).toHaveBeenCalledWith("main.dsp", true);
+        expect(onDiskTracked).toHaveBeenCalledWith("main.dsp");
         expect(fileManager.deleteFile).not.toHaveBeenCalled();
     });
 

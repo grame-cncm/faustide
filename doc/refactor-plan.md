@@ -8,6 +8,9 @@ This document records the `src/index.ts` refactor plan and the current post-refa
 - Runtime behavior formerly embedded in `index.ts` has been moved into model, runtime service, and UI controller modules.
 - `src/FileManager.ts` delegates project/file decision rules to `src/model/ProjectModel.ts` while preserving the public API used by controllers.
 - Runtime types are explicit in `src/runtime/types.ts`; the old hidden global type coupling has been removed for the refactored runtime surface.
+- Mounted disk-file write-back now has a runtime coherence guard:
+  `DiskCoherenceService` captures accepted disk snapshots and blocks write-back
+  when the mounted file changed externally before Faust IDE's next save.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
 - The shared mutable runtime environment (`FaustEditor*Env`) is no longer written by reference from many sites: Phase 12 routed every audio/scope mutation and the DSP graph connect/disconnect through `AudioGraphState`/`ScopeState`, and named the run/diagram seam (`RuntimeActions`). The composition root has a single remaining late binding (`dspCompileController`), a genuine initialization cycle.
 - The planned structural extraction work is complete through Phase 11 (scope rendering factorization). Remaining work is manual validation and normal maintenance, not another large extraction pass.
@@ -47,7 +50,7 @@ The refactor split the original runtime responsibilities as follows.
 |----------------|--------------|
 | Explicit runtime shape | `src/runtime/types.ts`, `src/runtime/EditorRuntimeEnvironment.ts`, `src/runtime/CompileOptionsFactory.ts` |
 | Settings and persistence | `src/runtime/EditorSettingsStore.ts`, `src/runtime/ProjectPersistence.ts` |
-| Project/file rules | `src/model/ProjectModel.ts`, `src/FileManager.ts`, `src/ui/ProjectRuntimeController.ts`, `src/ui/ProjectFilesController.ts` |
+| Project/file rules | `src/model/ProjectModel.ts`, `src/FileManager.ts`, `src/ui/ProjectRuntimeController.ts`, `src/ui/ProjectFilesController.ts`, `src/runtime/fs/DiskCoherenceService.ts` |
 | Faust runtime loading | `src/runtime/BootstrapLoaders.ts`, `src/runtime/FaustCompatibilityGlobals.ts` |
 | Audio graph and DSP execution | `src/runtime/AudioEngine.ts`, `src/runtime/DspRunner.ts`, `src/ui/BrowserAudioEngineBindings.ts` |
 | Diagram generation and interaction | `src/runtime/DiagramService.ts`, `src/ui/DiagramController.ts`, `src/ui/DiagramView.ts` |
@@ -79,7 +82,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 79 files, 512 tests |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 83 files, 546 tests |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 68 tests against the built `dist/` at the latest Phase 11 pass |
 
 ### Unit and integration layer (Vitest)
@@ -90,7 +93,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
   - `requestAnimationFrame` / `cancelAnimationFrame` and `URL.createObjectURL` / `URL.revokeObjectURL` polyfills;
   - Web Audio mocks (`MockAudioContext`, `MockGainNode`, `MockAudioNode`);
   - DOM (`document.body.innerHTML`) and `localStorage` reset in `beforeEach`.
-- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, etc.), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), filesystem helpers (`DroppedDiskFileTracking`, `DiskOriginTracker`), and utilities (`utils`, `Key2Midi`, `Recorder`).
+- Tests live in `src/tests/` and cover each module extracted from the monolith: controllers (`DspCompileController`, `MidiController`, `ExportController`, etc.), services (`DiagramService`, `ShareUrlService`, `ExportService`), models (`ProjectModel`, `ProjectPersistence`), filesystem helpers (`DroppedDiskFileTracking`, `DiskOriginTracker`, `DiskCoherenceService`), and utilities (`utils`, `Key2Midi`, `Recorder`).
 - Mocking approach: prefer `vi.mock` over network mocking. For example `DspRunner.test.ts` replaces `@grame/faustwasm` with small factory doubles and asserts only the audio-graph effects. MSW is used in only a few tests (`AudioEngine`, `DspRunner`, `Recorder`). For the file system, use an in-memory fake FS implementing the `TFileSystem` contract rather than real BrowserFS.
 
 ### End-to-end layer (Playwright)

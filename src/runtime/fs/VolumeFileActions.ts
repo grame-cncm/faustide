@@ -85,6 +85,8 @@ export interface OpenFromVolumeDeps {
     diskTracker: VolumeActionsDiskTracker;
     /** Invoked when a local Library copy clashes with the mounted file. */
     onLocalConflict?: (fileName: string) => void;
+    /** Invoked after a mounted disk file has been linked to a Library file. */
+    onDiskTracked?: (fileName: string) => void | Promise<void>;
 }
 
 /**
@@ -96,7 +98,7 @@ export interface OpenFromVolumeDeps {
  * files are import-copied into the Library.
  */
 export async function openFromVolume(deps: OpenFromVolumeDeps, vol: Volume, entry: VolumeEntry): Promise<void> {
-    const { fileManager, diskTracker, onLocalConflict } = deps;
+    const { fileManager, diskTracker, onLocalConflict, onDiskTracked } = deps;
     const inPlace = vol.kind === "disk" && openDecision(entry.name) === "open-in-place";
     if (inPlace && handleExistingDiskFile(fileManager, diskTracker, vol as DiskVolume, entry.path, entry.name, {
         onLocalConflict
@@ -107,6 +109,7 @@ export async function openFromVolume(deps: OpenFromVolumeDeps, vol: Volume, entr
     if (inPlace) {
         diskTracker.track(savedName, vol as DiskVolume, entry.path);
         fileManager.setDiskTracked(savedName, true);
+        await onDiskTracked?.(savedName);
     }
 }
 

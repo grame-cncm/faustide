@@ -3,7 +3,7 @@ import { openDecision } from "./FileAccess";
 
 const ORIGINS_LS_KEY = "faust:fs:origins";
 
-interface DiskOrigin {
+export interface DiskOriginRef {
     vol: DiskVolume;
     /** Path within the volume (e.g. "patches/kick.dsp" or "kick.dsp"). */
     path: string;
@@ -38,7 +38,7 @@ function savePersistedOrigins(origins: Map<string, PersistedOrigin>): void {
  * present in the project.
  */
 export class DiskOriginTracker {
-    private readonly origins = new Map<string, DiskOrigin>();
+    private readonly origins = new Map<string, DiskOriginRef>();
 
     /**
      * Record that `libraryName` mirrors `path` inside `vol`.
@@ -83,6 +83,11 @@ export class DiskOriginTracker {
     /** Returns true when `libraryName` has a known disk origin. */
     has(libraryName: string): boolean {
         return this.origins.has(libraryName);
+    }
+
+    /** Return the active disk origin for `libraryName`, if one is tracked. */
+    getOrigin(libraryName: string): DiskOriginRef | undefined {
+        return this.origins.get(libraryName);
     }
 
     /**
