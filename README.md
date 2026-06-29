@@ -28,6 +28,7 @@ The project file list is stored in the browser, so files remain available after 
 On Chrome and other Chromium-based browsers, Faust IDE can also use the browser [File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) to work with local folders:
 
 - Use *Mount a disk folder...* to authorize a local folder. Mounted folders are remembered by the browser, although Chrome may ask for permission again after a reload or a browser restart.
+- Use the eject button next to a mounted disk volume in the file browser to unmount it. Files already copied into the project stay available as local browser copies, but they stop writing back to the disk folder.
 - Native Faust files (`.dsp` and `.lib`) opened or dropped from a mounted folder are edited *in place*: after the project copy is saved, changes are also written back to the original disk file. **Do not edit mounted files at the same time in another text editor: external edits are not reflected inside Faust IDE.**
 - Disk-backed project files are shown in green in *Project Files*. A green row means Faust IDE knows the original mounted disk file and will write text edits back to it.
 - White rows are local browser copies only. They are saved in the browser project storage but are not linked to a real disk file.

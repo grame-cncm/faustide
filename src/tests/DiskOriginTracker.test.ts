@@ -17,6 +17,13 @@ function makeFakeVol(writeSpy: (content: string) => void): DiskVolume {
     } as unknown as DiskVolume;
 }
 
+function makeFakeVolWithId(id: string): DiskVolume {
+    return {
+        ...makeFakeVol(vi.fn()),
+        id,
+    } as DiskVolume;
+}
+
 describe("DiskOriginTracker", () => {
     describe("track / has / forget", () => {
         it("starts empty", () => {
@@ -192,6 +199,24 @@ describe("DiskOriginTracker", () => {
 
             expect(writtenA).toEqual(["A"]);
             expect(writtenB).toEqual(["B"]);
+        });
+    });
+
+    describe("forgetVolume", () => {
+        it("removes and returns origins attached to a volume", () => {
+            const tracker = new DiskOriginTracker();
+            const volA = makeFakeVolWithId("disk:a");
+            const volB = makeFakeVolWithId("disk:b");
+
+            tracker.track("a.dsp", volA, "a.dsp");
+            tracker.track("b.lib", volA, "b.lib");
+            tracker.track("c.dsp", volB, "c.dsp");
+
+            expect(tracker.forgetVolume("disk:a").sort()).toEqual(["a.dsp", "b.lib"]);
+            expect(tracker.has("a.dsp")).toBe(false);
+            expect(tracker.has("b.lib")).toBe(false);
+            expect(tracker.has("c.dsp")).toBe(true);
+            expect([...DiskOriginTracker.loadPersistedOrigins().keys()]).toEqual(["c.dsp"]);
         });
     });
 });

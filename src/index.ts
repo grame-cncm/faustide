@@ -424,7 +424,16 @@ $(async () => {
         const dirHandle = await pickDirectory();
         if (!dirHandle) return;
         const id = await mountRegistry.mountDisk(dirHandle);
+        if (volumes.some(vol => vol.id === id)) return;
         volumes.push(new DiskVolume(dirHandle, id));
+    } : undefined;
+
+    const unmountDisk = fsAccessAvailable() ? (vol: Volume) => {
+        const index = volumes.findIndex(existing => existing.id === vol.id);
+        if (index === -1 || vol.kind !== "disk") return;
+        volumes.splice(index, 1);
+        void mountRegistry.unmountDisk(vol.id);
+        diskTracker.forgetVolume(vol.id).forEach(fileName => uiEnv.fileManager.setDiskTracked(fileName, false));
     } : undefined;
 
     const reauthorize = async (vol: Volume): Promise<boolean> => {
@@ -444,6 +453,7 @@ $(async () => {
         },
         onOpenDeviceFile: () => pickAndImportDeviceFile({ fileManager: uiEnv.fileManager }),
         onMountDisk: mountDisk,
+        onUnmountDisk: unmountDisk,
         onReauthorize: reauthorize
     });
     openBrowser.bind();
@@ -455,6 +465,7 @@ $(async () => {
             void saveBundleToVolume({ fileManager: uiEnv.fileManager }, vol, folderPath, name);
         },
         onMountDisk: mountDisk,
+        onUnmountDisk: unmountDisk,
         onReauthorize: reauthorize
     });
 
