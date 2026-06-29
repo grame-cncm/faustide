@@ -57,7 +57,8 @@ persisted origin. Before write-back, `DiskCoherenceService.checkBeforeWrite()`
 compares the current disk text with that accepted base and reports a conflict if
 another tool changed the file first. Faust IDE also polls mounted files when the
 window regains focus or the document becomes visible: clean external edits reload
-automatically; dirty local buffers report a conflict alert.
+automatically; dirty local buffers open a conflict modal with explicit reload,
+overwrite, and keep-local-copy actions.
 
 ## 3. Browser constraints
 
@@ -141,8 +142,8 @@ Focus-time polling is implemented by `DiskCoherenceController`:
    and current Library content.
 4. If the disk changed and the local content is clean, `FileManager` reloads the
    text and persists it to BrowserFS with disk write-back skipped.
-5. If both disk and local content changed, Faust IDE shows a conflict alert and
-   leaves both versions untouched.
+5. If both disk and local content changed, Faust IDE shows a conflict modal and
+   leaves both versions untouched until the user chooses an action.
 
 This does not provide a live filesystem watcher. It catches the common workflow:
 the user edits a file in another tool, returns to Faust IDE, and expects the app
@@ -222,8 +223,7 @@ When the tab becomes active again, poll disk-backed files. If a selected file is
 clean and changed on disk, reload it into `FileManager`, BrowserFS, and Monaco.
 If it is dirty, surface a conflict state.
 
-Status: done for alert-based conflict reporting. A later UI pass should replace
-the generic alert with explicit reload/overwrite/keep-local-copy actions.
+Status: done with explicit reload/overwrite/keep-local-copy actions.
 
 ### Step 4 - Add conflict UI
 
@@ -262,9 +262,10 @@ E2E or integration coverage should focus on user-visible behavior:
 - overwrite-disk clears the conflict and updates the snapshot;
 - keep-local-copy removes the green disk-backed origin.
 
-Status: focus-time polling is currently unit-covered with fake handles and a
-jsdom focus event. Real Chrome mounted-folder interaction remains manual until
-the conflict UI has explicit buttons.
+Status: focus-time polling and conflict actions are currently unit-covered with
+fake handles and jsdom events. Real Chrome mounted-folder interaction remains
+manual because it depends on native file picker permissions and a real directory
+handle.
 
 ## 11. Feasibility conclusion
 
@@ -275,6 +276,6 @@ merge behavior.
 
 The first two milestones are implemented: a pre-write disk-version check now
 protects the mounted-file save path, and focus-time polling notices external
-edits when the user returns to Faust IDE. The remaining work is user-facing
-conflict resolution, optional periodic polling, compile-time freshness checks,
-and manual Chrome validation with real mounted folders.
+edits when the user returns to Faust IDE. Basic conflict resolution is also in
+place. The remaining work is optional periodic polling, compile-time freshness
+checks, and manual Chrome validation with real mounted folders.

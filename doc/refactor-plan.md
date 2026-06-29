@@ -13,7 +13,7 @@ This document records the `src/index.ts` refactor plan and the current post-refa
   when the mounted file changed externally before Faust IDE's next save.
   `DiskCoherenceController` also polls mounted files on focus/visibility return:
   clean external edits reload into the Library, while dirty local buffers surface
-  a conflict alert.
+  a conflict modal with reload, overwrite, and keep-local-copy actions.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
 - The shared mutable runtime environment (`FaustEditor*Env`) is no longer written by reference from many sites: Phase 12 routed every audio/scope mutation and the DSP graph connect/disconnect through `AudioGraphState`/`ScopeState`, and named the run/diagram seam (`RuntimeActions`). The composition root has a single remaining late binding (`dspCompileController`), a genuine initialization cycle.
 - The planned structural extraction work is complete through Phase 11 (scope rendering factorization). Remaining work is manual validation and normal maintenance, not another large extraction pass.
@@ -85,7 +85,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 84 files, 555 tests |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 84 files, 558 tests |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 68 tests against the built `dist/` at the latest Phase 11 pass |
 
 ### Unit and integration layer (Vitest)
