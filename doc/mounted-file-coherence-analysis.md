@@ -55,7 +55,9 @@ Status: the direct silent-overwrite path is now guarded. Faust IDE captures an
 accepted snapshot when a mounted file is opened, dropped, or restored from a
 persisted origin. Before write-back, `DiskCoherenceService.checkBeforeWrite()`
 compares the current disk text with that accepted base and reports a conflict if
-another tool changed the file first.
+another tool changed the file first. Faust IDE also polls mounted files when the
+window regains focus or the document becomes visible: clean external edits reload
+automatically; dirty local buffers report a conflict alert.
 
 ## 3. Browser constraints
 
@@ -128,7 +130,25 @@ could still change between the check and the browser write stream. The web
 platform does not currently provide the conditional write primitive needed to
 close that final race for local files.
 
-## 6. Where to check for external changes next
+## 6. Focus-time polling
+
+Focus-time polling is implemented by `DiskCoherenceController`:
+
+1. `window.focus` and `document.visibilitychange` trigger `pollAll()`.
+2. The controller asks `DiskOriginTracker.trackedNames()` for mounted Library
+   files.
+3. `DiskCoherenceService.poll()` compares the current disk text, accepted base,
+   and current Library content.
+4. If the disk changed and the local content is clean, `FileManager` reloads the
+   text and persists it to BrowserFS with disk write-back skipped.
+5. If both disk and local content changed, Faust IDE shows a conflict alert and
+   leaves both versions untouched.
+
+This does not provide a live filesystem watcher. It catches the common workflow:
+the user edits a file in another tool, returns to Faust IDE, and expects the app
+to notice before compiling or saving stale content.
+
+## 7. Where to check for external changes next
 
 The next safety improvements should reuse the same service and add more
 checkpoints around the pre-write guard:
@@ -137,7 +157,7 @@ Recommended checkpoints:
 
 1. **Before disk write-back**: implemented; prevents silent overwrite of
    external edits.
-2. **On window focus / `visibilitychange`**: still useful; catches changes made while
+2. **On window focus / `visibilitychange`**: implemented; catches changes made while
    the user was in another editor.
 3. **Before compile/run for disk-backed main files**: useful; avoids compiling a
    stale buffer when the disk file changed externally.
@@ -149,7 +169,7 @@ file can change externally during the debounce window, so the coherence check
 must be performed at the time of the actual disk write, not only when the user
 types.
 
-## 7. Suggested implementation shape
+## 8. Suggested implementation shape
 
 The new behavior stays out of `index.ts` except for composition wiring. The
 runtime service is:
@@ -164,18 +184,18 @@ Current responsibilities:
   forgets an origin through explicit composition callbacks;
 - capture the initial disk snapshot when a file is opened, dropped, or restored;
 - expose `checkBeforeWrite(libraryName, content)`;
-- record successful writes as the next accepted base.
+- expose `poll(libraryName, content)` for focus-time checks;
+- record successful writes and clean reloads as the next accepted base.
 
 Future responsibilities:
 
-- expose `poll(libraryName)` or `pollAll()`;
 - report reload/conflict outcomes as structured results, not DOM actions.
 
 The UI/controller layer can then decide how to present reload and conflict
 actions. This keeps disk metadata and File System Access calls in runtime code,
 while DOM and Monaco updates stay in controllers/views.
 
-## 8. Incremental plan
+## 9. Incremental plan
 
 ### Step 1 - Characterize the current risk
 
@@ -202,6 +222,9 @@ When the tab becomes active again, poll disk-backed files. If a selected file is
 clean and changed on disk, reload it into `FileManager`, BrowserFS, and Monaco.
 If it is dirty, surface a conflict state.
 
+Status: done for alert-based conflict reporting. A later UI pass should replace
+the generic alert with explicit reload/overwrite/keep-local-copy actions.
+
 ### Step 4 - Add conflict UI
 
 Add explicit actions for reload, overwrite, and keep-local-copy. The conflict
@@ -214,7 +237,7 @@ Playwright can exercise the controller behavior with mocked handles. Real
 external-editor interaction remains a manual Chrome test because it depends on
 native file picker permissions and a real directory handle.
 
-## 9. Testing requirements
+## 10. Testing requirements
 
 Minimum unit coverage:
 
@@ -239,15 +262,19 @@ E2E or integration coverage should focus on user-visible behavior:
 - overwrite-disk clears the conflict and updates the snapshot;
 - keep-local-copy removes the green disk-backed origin.
 
-## 10. Feasibility conclusion
+Status: focus-time polling is currently unit-covered with fake handles and a
+jsdom focus event. Real Chrome mounted-folder interaction remains manual until
+the conflict UI has explicit buttons.
+
+## 11. Feasibility conclusion
 
 Maintaining coherence between Faust IDE and other editors is feasible, but the
 right goal is divergence detection plus explicit conflict resolution. Browser
 APIs do not provide a cross-browser real-time watcher suitable for invisible
 merge behavior.
 
-The first milestone is implemented: a pre-write disk-version check now protects
-the mounted-file save path. Faust IDE stops before silently overwriting external
-edits with a stale Monaco buffer. The remaining work is user-facing conflict
-resolution, focus-time polling, and manual Chrome validation with real mounted
-folders.
+The first two milestones are implemented: a pre-write disk-version check now
+protects the mounted-file save path, and focus-time polling notices external
+edits when the user returns to Faust IDE. The remaining work is user-facing
+conflict resolution, optional periodic polling, compile-time freshness checks,
+and manual Chrome validation with real mounted folders.

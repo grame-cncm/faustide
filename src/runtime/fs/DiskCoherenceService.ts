@@ -10,6 +10,12 @@ interface CoherenceSnapshot {
     size: number;
 }
 
+export type DiskCoherencePollResult =
+    | { status: "unchanged" }
+    | { status: "reload"; content: string }
+    | { status: "conflict" }
+    | { status: "unread"; error: unknown };
+
 /**
  * Detects external edits to mounted disk files before Faust IDE writes back.
  *
@@ -98,6 +104,45 @@ export class DiskCoherenceService {
             throw new DiskCoherenceConflictError(libraryName);
         }
         if (current.text === content) this.snapshots.set(libraryName, current);
+    }
+
+    /**
+     * Check whether a mounted disk file changed since the accepted base.
+     *
+     * A clean local buffer can be reloaded automatically. A dirty local buffer
+     * reports conflict so UI code can block write-back and ask the user.
+     */
+    async poll(libraryName: string, localContent: string | Uint8Array): Promise<DiskCoherencePollResult> {
+        if (typeof localContent !== "string") return { status: "unchanged" };
+        const origin = this.origins.getOrigin(libraryName);
+        if (!origin) return { status: "unchanged" };
+
+        let current: CoherenceSnapshot;
+        try {
+            current = await this.readSnapshot(origin);
+        } catch (error) {
+            return { status: "unread", error };
+        }
+
+        const accepted = this.snapshots.get(libraryName);
+        if (!accepted) {
+            if (current.text === localContent) {
+                this.snapshots.set(libraryName, current);
+                return { status: "unchanged" };
+            }
+            return { status: "conflict" };
+        }
+
+        if (current.text === accepted.text) return { status: "unchanged" };
+        if (localContent === current.text) {
+            this.snapshots.set(libraryName, current);
+            return { status: "unchanged" };
+        }
+        if (localContent === accepted.text) {
+            this.snapshots.set(libraryName, current);
+            return { status: "reload", content: current.text };
+        }
+        return { status: "conflict" };
     }
 
     /**

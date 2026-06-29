@@ -90,6 +90,11 @@ export class DiskOriginTracker {
         return this.origins.get(libraryName);
     }
 
+    /** Return every Library file name currently linked to a mounted disk file. */
+    trackedNames(): string[] {
+        return [...this.origins.keys()];
+    }
+
     /**
      * Finds the Library file currently linked to a disk origin.
      *

@@ -27,7 +27,7 @@ type ProjectRuntimeControllerOptions = {
     onFileDelete?: (fileName: string) => void;
 };
 
-type SaveOptions = { immediate?: boolean };
+type SaveOptions = { immediate?: boolean; skipDiskSave?: boolean };
 
 /**
  * Coordinates project persistence callbacks around FileManager.
@@ -91,9 +91,9 @@ export class ProjectRuntimeController {
      * Debounces project file writes and schedules realtime work for the latest
      * main file code.
      */
-    private async persistFileNow(fileName: string, content: string | Uint8Array): Promise<void> {
+    private async persistFileNow(fileName: string, content: string | Uint8Array, options: SaveOptions = {}): Promise<void> {
         await this.projectPersistence.saveFile(fileName, content);
-        if (this.onDiskSave) await this.onDiskSave(fileName, content);
+        if (!options.skipDiskSave && this.onDiskSave) await this.onDiskSave(fileName, content);
     }
 
     private saveFile(fileName: string, content: string | Uint8Array, mainCode: string, options: SaveOptions = {}) {
@@ -101,13 +101,13 @@ export class ProjectRuntimeController {
         if (options.immediate) {
             this.saveTimeouts.delete(fileName);
             this.scheduleRealtimeCompile(mainCode, 1000);
-            return this.persistFileNow(fileName, content).catch((e) => {
+            return this.persistFileNow(fileName, content, options).catch((e) => {
                 this.alertController.show(e instanceof Error ? e : String(e));
             });
         }
         const timeout = setTimeout(async () => {
             try {
-                await this.persistFileNow(fileName, content);
+                await this.persistFileNow(fileName, content, options);
             } catch (e) {
                 this.alertController.show(e instanceof Error ? e : String(e));
             } finally {
