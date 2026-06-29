@@ -29,12 +29,15 @@ On Chrome and other Chromium-based browsers, Faust IDE can also use the browser 
 
 - Use *Mount a disk folder...* to authorize a local folder. Mounted folders are remembered by the browser, although Chrome may ask for permission again after a reload or a browser restart.
 - Use the eject button next to a mounted disk volume in the file browser to unmount it. Files already copied into the project stay available as local browser copies, but they stop writing back to the disk folder.
-- Native Faust files (`.dsp` and `.lib`) opened or dropped from a mounted folder are edited *in place*: after the project copy is saved, changes are also written back to the original disk file. **Do not edit mounted files at the same time in another text editor: external edits are not reflected inside Faust IDE.**
+- Native Faust files (`.dsp` and `.lib`) opened or dropped from a mounted folder are edited *in place*: after the project copy is saved, changes are also written back to the original disk file.
+- Faust IDE checks mounted files before writing them back to disk, before compiling the main file, when the tab regains focus, and periodically while the tab is visible. If another editor changed a mounted file and the Faust IDE copy is still clean, the disk version is reloaded automatically. If both Faust IDE and the disk file changed, Faust IDE blocks automatic write-back and shows conflict actions: reload from disk, overwrite disk, or keep a local copy.
+- If a mounted file was deleted, moved, or no longer has browser permission, Faust IDE blocks compile/save for that file and asks the user to restore the file or re-authorize the mounted folder. Browser permission prompts still require an explicit user action; background polling only detects the problem.
 - Disk-backed project files are shown in green in *Project Files*. A green row means Faust IDE knows the original mounted disk file and will write text edits back to it.
 - White rows are local browser copies only. They are saved in the browser project storage but are not linked to a real disk file.
 - Audio files and other non-Faust formats are imported as local copies, not opened in place.
 - Opening or dropping the same mounted file more than once selects the existing green row instead of creating a duplicate `untitledN` file.
 - If a local white file named `foo.dsp` already exists and you later open/drop a mounted disk file with the same name, Faust IDE keeps the local copy untouched and reports a conflict. Rename or delete the local copy before opening the mounted disk file if you want the disk-backed version.
+- The remaining platform limitation is that browsers do not provide a true atomic compare-and-swap write for local files, so a file could still change in the very small interval between Faust IDE's final check and the browser write operation.
 
 #### Auto-Compiling
 
