@@ -101,6 +101,7 @@ import { VolumeBrowserController } from "./ui/VolumeBrowserController";
 import { pickDirectory, fsAccessAvailable, ensureRwPermission, type DroppedFileHandleCallback } from "./runtime/fs/FileAccess";
 import { MountRegistry } from "./runtime/fs/MountRegistry";
 import { DiskOriginTracker } from "./runtime/fs/DiskOriginTracker";
+import { DiskCoherenceService } from "./runtime/fs/DiskCoherenceService";
 import { createDroppedDiskFileTracker } from "./runtime/fs/DroppedDiskFileTracking";
 import { openFromVolume, pickAndImportDeviceFile, saveBundleToVolume } from "./runtime/fs/VolumeFileActions";
 
@@ -249,6 +250,7 @@ $(async () => {
      */
     await projectPersistence.loadProject(compileOptions.saveCode);
     const diskTracker = new DiskOriginTracker();
+    const diskCoherence = new DiskCoherenceService(diskTracker);
     const projectRuntimeController = new ProjectRuntimeController({
         compileOptions,
         audioEnv,
@@ -257,8 +259,15 @@ $(async () => {
         saveEditorParams: () => runtimeSettings.saveCompileOptions(compileOptions),
         runDsp,
         updateDiagram,
-        onDiskSave: (fileName, content) => diskTracker.writeToDisk(fileName, content),
-        onFileDelete: fileName => diskTracker.forget(fileName)
+        onDiskSave: async (fileName, content) => {
+            await diskCoherence.checkBeforeWrite(fileName, content);
+            await diskTracker.writeToDisk(fileName, content);
+            diskCoherence.acceptWrittenContent(fileName, content);
+        },
+        onFileDelete: (fileName) => {
+            diskTracker.forget(fileName);
+            diskCoherence.forget(fileName);
+        }
     });
     uiEnv.fileManager = new FileManager({
         container: $<HTMLDivElement>("#filemanager")[0],
@@ -390,6 +399,7 @@ $(async () => {
             diskTracker.restore(savedName, vol as DiskVolume, origin.path);
         }
         uiEnv.fileManager.setDiskTracked(savedName, true);
+        void diskCoherence.acceptKnownContent(savedName, uiEnv.fileManager.getValue(savedName));
     };
 
     // On startup, re-apply tracking to every project file.
@@ -406,7 +416,8 @@ $(async () => {
             volumes,
             diskTracker,
             fileManager: uiEnv.fileManager,
-            onLocalConflict: warnLocalDiskConflict
+            onLocalConflict: warnLocalDiskConflict,
+            onDiskTracked: fileName => diskCoherence.captureDiskSnapshot(fileName)
         })
         : undefined;
     uiEnv.fileManager.onDroppedFileHandle = onDiskDropCallback;
@@ -433,7 +444,10 @@ $(async () => {
         if (index === -1 || vol.kind !== "disk") return;
         volumes.splice(index, 1);
         void mountRegistry.unmountDisk(vol.id);
-        diskTracker.forgetVolume(vol.id).forEach(fileName => uiEnv.fileManager.setDiskTracked(fileName, false));
+        diskTracker.forgetVolume(vol.id).forEach((fileName) => {
+            uiEnv.fileManager.setDiskTracked(fileName, false);
+            diskCoherence.forget(fileName);
+        });
     } : undefined;
 
     const reauthorize = async (vol: Volume): Promise<boolean> => {
@@ -446,7 +460,12 @@ $(async () => {
         volumes,
         onOpen: (vol, entry) => {
             void openFromVolume(
-                { fileManager: uiEnv.fileManager, diskTracker, onLocalConflict: warnLocalDiskConflict },
+                {
+                    fileManager: uiEnv.fileManager,
+                    diskTracker,
+                    onLocalConflict: warnLocalDiskConflict,
+                    onDiskTracked: fileName => diskCoherence.captureDiskSnapshot(fileName)
+                },
                 vol,
                 entry
             );

@@ -27,6 +27,13 @@ Classes that depend on `AudioContext`, `AudioWorklet`, `faustwasm`, etc. receive
 
 `src/tests/setup.ts` installs shared global mocks (`MockAudioContext`, `URL.createObjectURL`, `requestAnimationFrame`) before every test file.
 
+### b2) Filesystem coherence tests
+
+Filesystem-origin services are tested with structural fakes for browser file
+handles and mounted volumes. They do not use the real File System Access API or a
+real directory. `DiskCoherenceService.test.ts` mutates fake `getFile().text()`
+results to characterize external disk edits before write-back.
+
 ### c) DOM controller tests
 
 UI controllers are tested by injecting a real jsdom DOM. The test creates the required HTML elements, invokes the controller, then asserts DOM mutations.

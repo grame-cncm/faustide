@@ -19,6 +19,7 @@ type DroppedDiskFileTrackerOptions = {
     diskTracker: DiskOriginRegistry;
     fileManager: DiskTrackingFileManager;
     onLocalConflict?: (fileName: string) => void;
+    onDiskTracked?: (fileName: string) => void | Promise<void>;
 };
 
 export type ExistingDiskFileResult = "tracked" | "local-conflict" | null;
@@ -60,7 +61,7 @@ export function handleExistingDiskFile(
  * is removed and the existing disk-backed file stays selected/tracked.
  */
 export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOptions): DroppedFileHandleCallback {
-    const { volumes, diskTracker, fileManager, onLocalConflict } = options;
+    const { volumes, diskTracker, fileManager, onLocalConflict, onDiskTracked } = options;
     return async (savedName, handle) => {
         for (const vol of volumes) {
             if (vol.kind !== "disk") continue;
@@ -78,6 +79,7 @@ export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOpti
             }
             diskTracker.track(savedName, diskVol, path);
             fileManager.setDiskTracked(savedName, true);
+            await onDiskTracked?.(savedName);
             return;
         }
     };
