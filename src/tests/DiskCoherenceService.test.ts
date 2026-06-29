@@ -28,6 +28,17 @@ function makeService(origin?: DiskOriginRef) {
     });
 }
 
+function makeFailingOrigin(errorName: string): DiskOriginRef {
+    return {
+        path: "main.dsp",
+        vol: {
+            fileHandle: vi.fn(async () => {
+                throw { name: errorName };
+            })
+        } as unknown as DiskVolume
+    };
+}
+
 describe("DiskCoherenceService", () => {
     it("allows writes when the disk text still matches the accepted snapshot", async () => {
         const { origin } = makeOrigin("process = _;");
@@ -121,5 +132,23 @@ describe("DiskCoherenceService", () => {
         setText("process = 1;");
 
         await expect(service.poll("main.dsp", "process = 1;")).resolves.toEqual({ status: "unchanged" });
+    });
+
+    it("classifies missing mounted disk files during polling", async () => {
+        const service = makeService(makeFailingOrigin("NotFoundError"));
+
+        await expect(service.poll("main.dsp", "process = _;")).resolves.toMatchObject({
+            status: "unread",
+            reason: "not-found"
+        });
+    });
+
+    it("classifies permission failures during polling", async () => {
+        const service = makeService(makeFailingOrigin("NotAllowedError"));
+
+        await expect(service.poll("main.dsp", "process = _;")).resolves.toMatchObject({
+            status: "unread",
+            reason: "permission"
+        });
     });
 });

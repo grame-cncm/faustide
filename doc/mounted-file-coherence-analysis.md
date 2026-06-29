@@ -144,6 +144,8 @@ Focus-time polling is implemented by `DiskCoherenceController`:
    text and persists it to BrowserFS with disk write-back skipped.
 5. If both disk and local content changed, Faust IDE shows a conflict modal and
    leaves both versions untouched until the user chooses an action.
+6. A conservative visible-tab interval repeats the same poll so an external
+   save can be noticed even when Faust IDE remains focused.
 
 This does not provide a live filesystem watcher. It catches the common workflow:
 the user edits a file in another tool, returns to Faust IDE, and expects the app
@@ -160,10 +162,12 @@ Recommended checkpoints:
    external edits.
 2. **On window focus / `visibilitychange`**: implemented; catches changes made while
    the user was in another editor.
-3. **Before compile/run for disk-backed main files**: useful; avoids compiling a
-   stale buffer when the disk file changed externally.
-4. **Periodic polling while visible**: optional; keep it conservative, for
-   example every few seconds and only for mounted text files.
+3. **Before compile/run for disk-backed main files**: implemented; the runtime
+   `runDsp` action first asks `DiskCoherenceController.ensureFreshBeforeRun()`
+   to reload clean external edits or block on conflicts/read errors.
+4. **Periodic polling while visible**: implemented with a conservative interval
+   in `DiskCoherenceController`; it reuses the same reload/conflict/read-error
+   decisions as focus-time polling.
 
 The save debounce in `ProjectRuntimeController` is the critical race point. A
 file can change externally during the debounce window, so the coherence check
@@ -186,11 +190,9 @@ Current responsibilities:
 - capture the initial disk snapshot when a file is opened, dropped, or restored;
 - expose `checkBeforeWrite(libraryName, content)`;
 - expose `poll(libraryName, content)` for focus-time checks;
+- classify unread mounted-file states as missing-file, permission, or unknown
+  read failures;
 - record successful writes and clean reloads as the next accepted base.
-
-Future responsibilities:
-
-- report reload/conflict outcomes as structured results, not DOM actions.
 
 The UI/controller layer can then decide how to present reload and conflict
 actions. This keeps disk metadata and File System Access calls in runtime code,
@@ -231,11 +233,17 @@ Add explicit actions for reload, overwrite, and keep-local-copy. The conflict
 state should be visible in the file row and should block automatic write-back
 until resolved.
 
+Status: done for the blocking modal and explicit actions. A per-file row badge
+is still a polish item, not required for data-loss prevention.
+
 ### Step 5 - Add browser e2e coverage where possible
 
 Playwright can exercise the controller behavior with mocked handles. Real
 external-editor interaction remains a manual Chrome test because it depends on
 native file picker permissions and a real directory handle.
+
+Status: covered with focused jsdom controller tests and service-level fake
+handles. The real mounted-directory flow remains a manual Chrome test.
 
 ## 10. Testing requirements
 
@@ -250,9 +258,9 @@ Minimum unit coverage:
 - permission lost externally;
 - binary/audio files ignored by coherence tracking.
 
-Status: these cases are covered at the service level, except the deleted and
-permission-lost cases which currently surface as read errors and still need
-dedicated UX policy.
+Status: these cases are covered at the service level. Deleted and
+permission-lost files now surface as classified read failures so the controller
+can show targeted messages while keeping background polls query-only.
 
 E2E or integration coverage should focus on user-visible behavior:
 
@@ -274,8 +282,9 @@ right goal is divergence detection plus explicit conflict resolution. Browser
 APIs do not provide a cross-browser real-time watcher suitable for invisible
 merge behavior.
 
-The first two milestones are implemented: a pre-write disk-version check now
-protects the mounted-file save path, and focus-time polling notices external
-edits when the user returns to Faust IDE. Basic conflict resolution is also in
-place. The remaining work is optional periodic polling, compile-time freshness
-checks, and manual Chrome validation with real mounted folders.
+The implemented milestones now cover the practical safety path: a pre-write
+disk-version check protects mounted-file save, focus-time and visible-tab
+polling notice external edits, compile/run is gated by a freshness check for the
+main file, unread disk states are classified, and basic conflict resolution is
+in place. The main remaining work is manual Chrome validation with real mounted
+folders and optional UI polish such as a per-file conflict badge.
