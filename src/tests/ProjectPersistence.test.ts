@@ -84,13 +84,15 @@ describe("ProjectPersistence", () => {
         expect(Array.from(faustFS.files.get("/project/main.dsp") as Uint8Array)).toEqual(Array.from(new TextEncoder().encode("process = _;")));
     });
 
-    it("clears BrowserFS when saveCode is disabled", async () => {
+    it("leaves BrowserFS untouched when saveCode is disabled", async () => {
         const browserFS = new BrowserFs({ "main.dsp": "process = _;" });
-        const persistence = new ProjectPersistence({ browserFS: browserFS as any, faustFS: new FaustFs() as any, projectDir: "/project/" });
+        const faustFS = new FaustFs();
+        const persistence = new ProjectPersistence({ browserFS: browserFS as any, faustFS: faustFS as any, projectDir: "/project/" });
 
         await persistence.loadProject(false);
 
-        expect(browserFS.files.size).toBe(0);
+        expect(browserFS.files.get("main.dsp")).toBe("process = _;");
+        expect(faustFS.files.size).toBe(0);
     });
 
     it("saves by replacing existing BrowserFS files", async () => {
