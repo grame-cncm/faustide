@@ -32,17 +32,14 @@ export class ProjectPersistence {
 
     /**
      * Loads all persisted project files into Faust FS when code saving is
-     * enabled. When saving is disabled, it clears BrowserFS to preserve the
-     * previous runtime behavior.
+     * enabled. When saving is disabled, durable BrowserFS content is left
+     * untouched so users do not lose saved files just by opening the IDE.
      */
     async loadProject(saveCode: boolean) {
         this.faustFS.mkdir(this.projectDir);
         let files = await this.browserFS.readdir("/");
         files = files.filter(n => n !== "." && n !== "..");
-        if (!saveCode) {
-            await this.clearProject(files);
-            return;
-        }
+        if (!saveCode) return;
         await Promise.all(files.map(async (filename) => {
             const data = await this.browserFS.readFile(filename);
             this.faustFS.writeFile(this.projectDir + filename, new Uint8Array(data.buffer));

@@ -268,7 +268,7 @@ Create:
 - `src/runtime/ProjectPersistence.ts`
   - BrowserFS to LibFaust FS synchronization;
   - save/delete file persistence;
-  - clear project when `saveCode` is disabled.
+  - preserve durable BrowserFS files when `saveCode` is disabled at startup.
 
 Keep storage keys exactly the same:
 
