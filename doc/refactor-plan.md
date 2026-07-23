@@ -16,6 +16,8 @@ This document records the `src/index.ts` refactor plan and the current post-refa
   a conflict modal with reload, overwrite, and keep-local-copy actions.
 - The remaining dense code in `index.ts` is deliberate wiring: cross-controller callback bridges, late-bound controller references, browser globals such as `navigator.mediaDevices`, and compatibility exposure.
 - The shared mutable runtime environment (`FaustEditor*Env`) is no longer written by reference from many sites: Phase 12 routed every audio/scope mutation and the DSP graph connect/disconnect through `AudioGraphState`/`ScopeState`, and named the run/diagram seam (`RuntimeActions`). The composition root has a single remaining late binding (`dspCompileController`), a genuine initialization cycle.
+- Static plots now retain magnitude and phase from one FFT pass, support automatic/rectangular/Hann/Blackman FFT windows, default offline analysis to an unscaled rectangular FFT so a unit impulse is flat at 0 dB with zero phase, retain the reference plotter's symmetric-Hann plus `N/4` convention, support dBFS/linear-amplitude magnitude views, expose a phase mode, use zoom-aware linear/log frequency ticks, and keep cursor-anchored zoom state over a wider horizontal and vertical range. Waveform plots add sample-rate-derived second ticks, drag selection with sample/time duration and clipboard CSV export, axis-specific double-click zoom reset, and a column-major Data view.
+- Generated Faust UI messages use the native browser event boundary, and remembered parameters are resent after iframe readiness so the control display matches the values restored into a newly compiled DSP.
 - The planned structural extraction work is complete through Phase 11 (scope rendering factorization). Remaining work is manual validation and normal maintenance, not another large extraction pass.
 
 ## Target architecture
@@ -56,6 +58,7 @@ The refactor split the original runtime responsibilities as follows.
 | Project/file rules | `src/model/ProjectModel.ts`, `src/FileManager.ts`, `src/ui/ProjectRuntimeController.ts`, `src/ui/ProjectFilesController.ts`, `src/runtime/fs/DiskCoherenceService.ts` |
 | Faust runtime loading | `src/runtime/BootstrapLoaders.ts`, `src/runtime/FaustCompatibilityGlobals.ts` |
 | Audio graph and DSP execution | `src/runtime/AudioEngine.ts`, `src/runtime/DspRunner.ts`, `src/ui/BrowserAudioEngineBindings.ts` |
+| Static analysis and plot rendering | `src/Analyser.ts`, `src/StaticScope.ts`, `src/scope/FrequencyScale.ts`, `src/scope/static/` |
 | Diagram generation and interaction | `src/runtime/DiagramService.ts`, `src/ui/DiagramController.ts`, `src/ui/DiagramView.ts` |
 | Export and sharing | `src/runtime/ExportService.ts`, `src/runtime/ShareUrlService.ts`, `src/ui/ExportController.ts`, `src/ui/ShareModalController.ts`, `src/ui/UrlParamsController.ts` |
 | UI controls | `src/ui/SettingsPanelController.ts`, `src/ui/PlotController.ts`, `src/ui/MidiController.ts`, `src/ui/AudioInputController.ts`, `src/ui/AudioOutputController.ts`, `src/ui/AudioDeviceController.ts`, `src/ui/RecorderController.ts`, `src/ui/DspControlsController.ts`, `src/ui/FaustUiController.ts` |
@@ -85,8 +88,8 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 84 files, 558 tests |
-| Browser end-to-end | Playwright | `npm run test:e2e` | 68 tests against the built `dist/` at the latest Phase 11 pass |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 85 files, 596 tests |
+| Browser end-to-end | Playwright | `npm run test:e2e` | 74 tests against the built `dist/` |
 
 ### Unit and integration layer (Vitest)
 
@@ -396,6 +399,7 @@ Current Phase 11 status:
 - Phase 11.7 has extracted `src/scope/static/DataTableRenderer.ts`, `src/scope/static/TimeDomainRenderer.ts`, `src/scope/static/FrequencyRenderer.ts`, `src/scope/static/SpectrogramRenderer.ts`, `src/scope/static/StaticScopeControls.ts`, `src/scope/static/StaticScopeInteractions.ts`, and `src/scope/static/StaticScopeLayout.ts`; the corresponding `StaticScope` static methods are retained as compatibility wrappers.
 - Phase 11.8 has extracted `src/scope/realtime/RealtimeScopeRenderer.ts`, `src/scope/realtime/RealtimeScopeControls.ts`, `src/scope/realtime/AnalyserFrameReader.ts`, `src/scope/realtime/ScopeChannelRouter.ts`, and `src/scope/realtime/ScopeDrawLoop.ts`; `Scope` keeps its public wrapper methods and properties for compatibility.
 - Phase 11.9 has completed the final code cleanup by centralizing static scope canvas layout constants and documenting their shared renderer/interaction contract.
+- The latest plot maintenance pass added cursor-anchored extended zoom, axis-specific double-click reset, sample-rate-derived waveform time ticks, drag selection with sample/time length and clipboard CSV export, column-major Data layout, zoom-aware linear/log frequency ticks, pixel-bounded logarithmic spectrum rendering, dBFS/linear-amplitude switching, a phase view computed alongside magnitude, and selectable FFT windows whose automatic mode uses raw rectangular FFT output offline and Blackman for captured signals.
 - The latest validation pass ran `npm run test:unit`, `npm run build`, and `npm run test:e2e` after the final cleanup.
 
 ### Phase 11.1: canvas and DOM test harness
@@ -437,7 +441,7 @@ Cover shared drawing primitives:
 - `drawStats` draws the stats panel, zoom labels, sample label, frequency label, RMS label, and respects optional min/max labels;
 - `drawEvent` groups simultaneous event payloads at the same x position and draws stable labels;
 - `drawGrid` draws expected grid lines for time-domain modes;
-- `drawGrid` draws expected frequency labels for linear and logarithmic spectroscope/spectrogram modes.
+- `drawGrid` draws zoom-aware frequency labels for linear and logarithmic magnitude, phase, and spectrogram modes.
 
 Cover data rendering:
 
@@ -455,8 +459,9 @@ Cover time-domain rendering:
 
 Cover frequency-domain rendering:
 
-- `drawSpectroscope` draws one filled spectrum per channel in linear mode;
-- `drawSpectroscope` maps logarithmic cursor position to frequency and dB stats;
+- `drawSpectroscope` draws one filled dBFS or linear-amplitude spectrum per channel;
+- `drawSpectroscope` maps logarithmic cursor position to frequency and bounds logarithmic work by canvas width;
+- `drawPhase` renders wrapped phase with discontinuity breaks and frequency cursor stats;
 - `drawSpectrogram` renders the wrapped cache split when the visible source range crosses the cache end;
 - `drawSpectrogram` renders a contiguous cache range when no wrap is needed;
 - `drawOfflineSpectrogram` initializes/resizes the cache canvas to the expected frame count;
@@ -717,8 +722,9 @@ Manual validation specific to scopes:
 - cycle oscilloscope, spectroscope, and spectrogram modes;
 - change FFT size and channel on multi-output DSPs;
 - verify pause/disable behavior for output scope before and after running a DSP;
-- run offline plot and verify Data, Interleaved, Oscilloscope, Spectroscope, and Spectrogram modes;
-- test wheel zoom, drag pan, cursor stats, and frequency scale switching;
+- run offline plot and verify Data, Interleaved, Oscilloscope, Spectroscope, Spectrogram, and Phase modes;
+- test dBFS/linear-amplitude switching in Spectroscope mode;
+- test wheel zoom anchoring, extended horizontal/vertical ranges, axis-specific double-click reset, Alt-drag pan, waveform range selection/copy, cursor stats, and frequency scale switching;
 - verify spectrogram cache behavior after changing plot data shape and frequency scale;
 - verify narrow and wide layouts do not break scope controls.
 

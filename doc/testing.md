@@ -23,7 +23,16 @@ logarithmicPositionToFrequency(0.5, 100, 10000) ≈ 1000 Hz ✓
 
 Classes that depend on `AudioContext`, `AudioWorklet`, `faustwasm`, etc. receive injected doubles via `vi.mock()`. Observable behaviour is asserted (audio graph built, methods called) without touching a real browser.
 
-**Examples:** `AudioEngine.test.ts`, `DspRunner.test.ts`, `MeterNode.test.ts`
+**Examples:** `Analyser.test.ts`, `AudioEngine.test.ts`, `DspRunner.test.ts`, `MeterNode.test.ts`
+
+`Analyser.test.ts` verifies that magnitude and phase are retained from the same
+FFT frame, automatic window selection keeps offline impulses rectangular, and
+the data reaches the static plot renderer. The impulse-response regression pins
+every retained bin to 0 dB and zero phase. `utils.test.ts` exercises the real
+KissFFT path and the reference plotter's symmetric-Hann plus `N/4` convention.
+The `StaticScope` rendering, interaction, and instance tests cover second-based
+waveform ticks, axis-specific double-click reset, drag selection and its
+sample/time label, clipboard CSV serialization, and top-to-bottom Data columns.
 
 `src/tests/setup.ts` installs shared global mocks (`MockAudioContext`, `URL.createObjectURL`, `requestAnimationFrame`) before every test file.
 
@@ -73,11 +82,13 @@ These tests run the compiled app in a real Chromium browser. They are the **only
 | `panels.spec.ts` | Panel resize behaviour |
 | `files.spec.ts` | File manager operations (add, rename, delete) |
 | `midi.spec.ts` | MIDI input wiring |
-| `plot.spec.ts` | Plot panel rendering |
+| `plot.spec.ts` | Plot rendering, FFT windows, magnitude/phase modes, waveform selection/copy, axis reset, and Data layout |
 | `recorder.spec.ts` | Audio recorder workflow |
-| `settings.spec.ts` | Settings panel persistence |
+| `settings.spec.ts` | Settings persistence, including parameter state after recompilation |
 
-`tests/e2e/helpers.ts` intercepts the network (`faustservice.inria.fr`) so tests remain deterministic without external dependencies.
+`tests/e2e/helpers.ts` intercepts the network (`faustservice.inria.fr`) and
+rejects microphone permission during startup so tests do not wait on an
+operating-system prompt. Real microphone and speaker checks remain manual.
 
 ---
 
@@ -103,4 +114,4 @@ These tests run the compiled app in a real Chromium browser. They are the **only
 
 Files at 0% or low coverage require the E2E level to be exercised — `index.ts`, `FaustEditorFactory.ts`, `BootstrapLoaders.ts` — they are out of reach for jsdom by design, as they depend on a real browser environment (AudioWorklet, full DOM lifecycle, network asset loading).
 
-Coverage thresholds are configured in `vitest.config.ts` as anti-regression floors (currently statements ≥ 73%, branches ≥ 58%, functions ≥ 72%, lines ≥ 76%). They sit just below the current measured values so the suite cannot silently backslide; raise them whenever coverage improves.
+Coverage thresholds are configured in `vitest.config.ts` as anti-regression floors (currently statements ≥ 78%, branches ≥ 64%, functions ≥ 77%, lines ≥ 81%). They sit just below the current measured values so the suite cannot silently backslide; raise them whenever coverage improves.
