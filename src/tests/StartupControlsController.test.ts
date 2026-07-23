@@ -8,6 +8,7 @@ const setupDom = () => {
         <select id="select-plot-mode"><option value="offline"></option><option value="continuous"></option></select>
         <select id="select-plot-fftsize"><option value="256"></option><option value="512"></option></select>
         <select id="select-plot-fftoverlap"><option value="2"></option><option value="4"></option></select>
+        <select id="select-plot-fftwindow"><option value="auto"></option><option value="blackman"></option></select>
         <input id="input-plot-samps" />
         <input id="check-draw-spectrogram" type="checkbox" />
         <input id="check-realtime-compile" type="checkbox" />
@@ -22,6 +23,7 @@ const bindController = (overrides: any = {}) => {
         plotMode: "continuous",
         plotFFT: 512,
         plotFFTOverlap: 4,
+        plotFFTWindow: "blackman",
         realtimeCompile: false,
         ...overrides.compileOptions
     };
@@ -54,6 +56,7 @@ describe("StartupControlsController", () => {
         expect($("#select-plot-mode").val()).toBe("continuous");
         expect($("#select-plot-fftsize").val()).toBe("512");
         expect($("#select-plot-fftoverlap").val()).toBe("4");
+        expect($("#select-plot-fftwindow").val()).toBe("blackman");
         expect($<HTMLInputElement>("#check-realtime-compile")[0].checked).toBe(false);
     });
 

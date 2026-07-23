@@ -15,6 +15,7 @@ describe("ScopeModes", () => {
         expect(StaticScopeMode.Oscilloscope).toBe(2);
         expect(StaticScopeMode.Spectroscope).toBe(3);
         expect(StaticScopeMode.Spectrogram).toBe(4);
+        expect(StaticScopeMode.Phase).toBe(5);
         expect(FrequencyScaleMode.Linear).toBe(0);
         expect(FrequencyScaleMode.Logarithmic).toBe(1);
     });
@@ -25,9 +26,11 @@ describe("ScopeModes", () => {
         expect(getStaticScopeModeName(StaticScopeMode.Oscilloscope)).toBe("Oscilloscope");
         expect(getStaticScopeModeName(StaticScopeMode.Spectroscope)).toBe("Spectroscope");
         expect(getStaticScopeModeName(StaticScopeMode.Spectrogram)).toBe("Spectrogram");
+        expect(getStaticScopeModeName(StaticScopeMode.Phase)).toBe("Phase");
         expect(getStaticScopeIconClassName(StaticScopeMode.Data)).toBe("fas fa-sm fa-table");
         expect(getStaticScopeIconClassName(StaticScopeMode.Interleaved)).toBe("fas fa-sm fa-water");
         expect(getStaticScopeIconClassName(StaticScopeMode.Spectrogram)).toBe("fas fa-sm fa-align-justify");
+        expect(getStaticScopeIconClassName(StaticScopeMode.Phase)).toBe("fas fa-sm fa-chart-line");
     });
 
     it("keeps stable real-time scope values and icons", () => {

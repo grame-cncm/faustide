@@ -19,7 +19,14 @@ export function buildScopeCsv(mode: EScopeMode, drawOptions: TDrawOptions): stri
     if (mode === EScopeMode.Data || mode === EScopeMode.Interleaved || mode === EScopeMode.Oscilloscope) {
         return buildTimeDomainCsv(drawOptions);
     }
-    if (mode === EScopeMode.Spectroscope) return buildSpectroscopeCsv(drawOptions);
+    if (mode === EScopeMode.Spectroscope || mode === EScopeMode.Phase) {
+        return buildFrequencyDomainCsv(
+            drawOptions,
+            mode === EScopeMode.Phase
+                ? drawOptions.phaseDomainData
+                : drawOptions.freqDomainData
+        );
+    }
     if (mode === EScopeMode.Spectrogram) return buildSpectrogramCsv(drawOptions);
     return "";
 }
@@ -40,20 +47,23 @@ function buildTimeDomainCsv(drawOptions: TDrawOptions): string {
     return data;
 }
 
-/** One column per channel, one row per frequency bin of the latest FFT frame. */
-function buildSpectroscopeCsv(drawOptions: TDrawOptions): string {
-    const { startSampleIndex, freqDomainData, fftSize, fftOverlap } = drawOptions;
-    if (!freqDomainData || !freqDomainData.length || !freqDomainData[0].length) return "";
+/** One column per channel, one row per bin of the selected FFT-domain frame. */
+function buildFrequencyDomainCsv(
+    drawOptions: TDrawOptions,
+    domainData?: Float32Array[]
+): string {
+    const { startSampleIndex, fftSize, fftOverlap } = drawOptions;
+    if (!domainData || !domainData.length || !domainData[0].length) return "";
     const frequencyBinCount = fftSize / 2;
     let startFreqDataIndex = startSampleIndex * fftOverlap / 2;
     startFreqDataIndex -= startFreqDataIndex % frequencyBinCount;
-    const freqBufferLength = freqDomainData[0].length;
-    let data = new Array(freqDomainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
+    const freqBufferLength = domainData[0].length;
+    let data = new Array(domainData.length).fill(null).map((v, i) => `channel${i + 1}`).join(",") + "\n";
     for (let j = freqBufferLength - frequencyBinCount; j < freqBufferLength; j++) {
-        for (let i = 0; i < freqDomainData.length; i++) {
+        for (let i = 0; i < domainData.length; i++) {
             const wrappedBinIndex = wrap(j, startFreqDataIndex, freqBufferLength);
-            const magnitude = freqDomainData[i][wrappedBinIndex];
-            data += magnitude + (i === freqDomainData.length - 1 ? "\n" : ",");
+            const value = domainData[i][wrappedBinIndex];
+            data += value + (i === domainData.length - 1 ? "\n" : ",");
         }
     }
     return data;

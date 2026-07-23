@@ -40,6 +40,7 @@ export type FaustEditorCompileOptions = {
     plotSR: number;
     plotFFT: 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 | 65536;
     plotFFTOverlap: 1 | 2 | 4 | 8;
+    plotFFTWindow: "auto" | "rectangular" | "hann" | "blackman";
     drawSpectrogram: boolean;
     args: string[];
     enableGuiBuilder: boolean;

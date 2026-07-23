@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { getRms, mod, safeStorage, setWrap, sliceWrap, wrap } from "../utils";
+import { FFTR } from "kissfft-js";
+import { getFrequencyDomainFrame, getRms, mod, safeStorage, setWrap, sliceWrap, wrap } from "../utils";
 
 describe("utils", () => {
     it("wraps modulo for positive and negative values", () => {
@@ -26,6 +27,48 @@ describe("utils", () => {
 
     it("computes RMS", () => {
         expect(getRms(new Float32Array([3, 4]))).toBeCloseTo(Math.sqrt(12.5));
+    });
+
+    it("derives magnitude and phase from one FFT result", () => {
+        const fft = {
+            forward: vi.fn(() => new Float32Array([1, 0, 0, 1]))
+        };
+
+        const frame = getFrequencyDomainFrame(new Float32Array(4), fft);
+
+        expect(frame.magnitudeDb).toHaveLength(2);
+        expect(frame.phase[0]).toBeCloseTo(0);
+        expect(frame.phase[1]).toBeCloseTo(Math.PI / 2);
+        expect(fft.forward).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+        { windowMode: "hann", precision: 1, label: "reference Hann scaling" },
+        { windowMode: "blackman", precision: 2, label: "Blackman coherent-gain scaling" }
+    ] as const)("matches $label for a bin-centred full-scale sine", ({ windowMode, precision }) => {
+        const fftSize = 256;
+        const binIndex = 16;
+        const signal = Float32Array.from(
+            { length: fftSize },
+            (_, sampleIndex) => Math.sin(2 * Math.PI * binIndex * sampleIndex / fftSize)
+        );
+        const fft = new FFTR(fftSize);
+
+        const frame = getFrequencyDomainFrame(signal, fft, windowMode);
+
+        expect(frame.magnitudeDb[binIndex]).toBeCloseTo(0, precision);
+        fft.dispose();
+    });
+
+    it("does not taper samples when the rectangular window is selected", () => {
+        const fft = {
+            forward: vi.fn(() => new Float32Array([0, 0, 0, 0]))
+        };
+        const signal = new Float32Array([1, 1, 1, 1]);
+
+        getFrequencyDomainFrame(signal, fft, "rectangular");
+
+        expect(Array.from(fft.forward.mock.calls[0][0])).toEqual([1, 1, 1, 1]);
     });
 
     it("uses localStorage when available", () => {

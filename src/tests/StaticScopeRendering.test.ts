@@ -1,19 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { StaticScope, type TDrawOptions } from "../StaticScope";
+import { FrequencyScaleMode as FreqScaleMode, StaticScopeMode as ScopeMode } from "../scope/ScopeModes";
 import { createMockCanvasContext } from "./helpers/canvasContext";
-
-const ScopeMode = {
-    Data: 0,
-    Interleaved: 1,
-    Oscilloscope: 2,
-    Spectroscope: 3,
-    Spectrogram: 4
-} as const;
-
-const FreqScaleMode = {
-    Linear: 0,
-    Logarithmic: 1
-} as const;
 
 const createDrawOptions = (overrides: Partial<TDrawOptions> = {}): TDrawOptions => ({
     drawMode: "manual",
@@ -21,6 +9,7 @@ const createDrawOptions = (overrides: Partial<TDrawOptions> = {}): TDrawOptions 
     startBufferIndex: 0,
     timeDomainData: [new Float32Array([0, 0.25, -0.25, 0.5])],
     freqDomainData: [new Float32Array([-90, -60, -30, -12, -24, -48, -72, -96])],
+    phaseDomainData: [new Float32Array([0, Math.PI / 4, Math.PI / 2, Math.PI, -Math.PI, -Math.PI / 2, -Math.PI / 4, 0])],
     events: [],
     bufferSize: 4,
     fftSize: 8,
@@ -32,25 +21,28 @@ const createDrawOptions = (overrides: Partial<TDrawOptions> = {}): TDrawOptions 
 describe("StaticScope rendering helpers", () => {
     it("keeps stable labels and icons for all display modes", () => {
         expect([
-            StaticScope.getModeName(ScopeMode.Data as any),
-            StaticScope.getModeName(ScopeMode.Interleaved as any),
-            StaticScope.getModeName(ScopeMode.Oscilloscope as any),
-            StaticScope.getModeName(ScopeMode.Spectroscope as any),
-            StaticScope.getModeName(ScopeMode.Spectrogram as any)
-        ]).toEqual(["Data", "Interleaved", "Oscilloscope", "Spectroscope", "Spectrogram"]);
+            StaticScope.getModeName(ScopeMode.Data),
+            StaticScope.getModeName(ScopeMode.Interleaved),
+            StaticScope.getModeName(ScopeMode.Oscilloscope),
+            StaticScope.getModeName(ScopeMode.Spectroscope),
+            StaticScope.getModeName(ScopeMode.Spectrogram),
+            StaticScope.getModeName(ScopeMode.Phase)
+        ]).toEqual(["Data", "Interleaved", "Oscilloscope", "Spectroscope", "Spectrogram", "Phase"]);
 
         expect([
-            StaticScope.getIconClassName(ScopeMode.Data as any),
-            StaticScope.getIconClassName(ScopeMode.Interleaved as any),
-            StaticScope.getIconClassName(ScopeMode.Oscilloscope as any),
-            StaticScope.getIconClassName(ScopeMode.Spectroscope as any),
-            StaticScope.getIconClassName(ScopeMode.Spectrogram as any)
+            StaticScope.getIconClassName(ScopeMode.Data),
+            StaticScope.getIconClassName(ScopeMode.Interleaved),
+            StaticScope.getIconClassName(ScopeMode.Oscilloscope),
+            StaticScope.getIconClassName(ScopeMode.Spectroscope),
+            StaticScope.getIconClassName(ScopeMode.Spectrogram),
+            StaticScope.getIconClassName(ScopeMode.Phase)
         ]).toEqual([
             "fas fa-sm fa-table",
             "fas fa-sm fa-water",
             "fas fa-sm fa-wave-square",
             "fas fa-sm fa-chart-bar",
-            "fas fa-sm fa-align-justify"
+            "fas fa-sm fa-align-justify",
+            "fas fa-sm fa-chart-line"
         ]);
     });
 
@@ -120,10 +112,15 @@ describe("StaticScope rendering helpers", () => {
             0,
             1,
             drawOptions,
-            ScopeMode.Oscilloscope as any
+            ScopeMode.Oscilloscope
         );
 
-        expect(context.fillText).toHaveBeenCalledWith("lvl/samp", 45, 170, 40);
+        expect(context.fillText).toHaveBeenCalledWith("lvl/s", 45, 170, 40);
+        const timeLabels = context.fillText.mock.calls
+            .filter(([, , y]) => y === 170)
+            .map(([label]) => label);
+        expect(timeLabels).toContain("0 s");
+        expect(timeLabels.some(label => /^\d+(?:\.\d+)? s$/.test(label))).toBe(true);
         expect(context.moveTo).toHaveBeenCalledWith(50, 0);
         expect(context.lineTo).toHaveBeenCalledWith(50, 160);
         expect(eventsToDraw.length).toBeGreaterThan(0);
@@ -142,14 +139,39 @@ describe("StaticScope rendering helpers", () => {
             0,
             1,
             createDrawOptions(),
-            ScopeMode.Spectroscope as any,
-            FreqScaleMode.Logarithmic as any
+            ScopeMode.Spectroscope,
+            FreqScaleMode.Logarithmic
         );
 
         expect(context.fillText).toHaveBeenCalledWith("dB/Hz", 45, 170, 40);
         expect(context.fillText).toHaveBeenCalledWith("100", expect.any(Number), 170);
-        expect(context.fillText).toHaveBeenCalledWith("1.0k", expect.any(Number), 170);
-        expect(context.fillText).toHaveBeenCalledWith("10.0k", expect.any(Number), 170);
+        expect(context.fillText).toHaveBeenCalledWith("1k", expect.any(Number), 170);
+        expect(context.fillText).toHaveBeenCalledWith("10k", expect.any(Number), 170);
+    });
+
+    it("draws linear frequency ticks from the visible zoom window", () => {
+        const { context } = createMockCanvasContext();
+        const drawOptions = createDrawOptions({ fftSize: 1024, bufferSize: 128, sampleRate: 48000 });
+
+        StaticScope.drawGrid(
+            context,
+            320,
+            180,
+            6000,
+            12000,
+            0,
+            1,
+            drawOptions,
+            ScopeMode.Spectroscope,
+            FreqScaleMode.Linear
+        );
+
+        const xAxisLabels = context.fillText.mock.calls
+            .filter(([, , y]) => y === 170)
+            .map(([label]) => label);
+        expect(xAxisLabels).toContain("6k");
+        expect(xAxisLabels).toContain("12k");
+        expect(xAxisLabels).not.toContain("0");
     });
 
     it("draws oscilloscope traces and cursor stats", () => {
@@ -216,11 +238,31 @@ describe("StaticScope rendering helpers", () => {
             1,
             0,
             { x: 160, y: 60 },
-            FreqScaleMode.Linear as any
+            FreqScaleMode.Linear
         );
 
         expect(context.closePath).toHaveBeenCalled();
         expect(context.fill).toHaveBeenCalled();
+        expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
+    });
+
+    it("draws phase with radian ticks and cursor values", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawPhase(
+            context,
+            320,
+            180,
+            createDrawOptions(),
+            1,
+            0,
+            { x: 160, y: 60 },
+            FreqScaleMode.Logarithmic
+        );
+
+        expect(context.stroke).toHaveBeenCalled();
+        expect(context.fillText).toHaveBeenCalledWith("rad/Hz", 45, 170, 40);
+        expect(context.fillText).toHaveBeenCalledWith("π", 45, 10);
         expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
     });
 
@@ -243,7 +285,7 @@ describe("StaticScope rendering helpers", () => {
             2,
             0,
             { x: 160, y: 60 },
-            FreqScaleMode.Linear as any
+            FreqScaleMode.Linear
         );
         expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 0, 0, 2, 64, 50, 0, 270, 160);
 
@@ -256,7 +298,7 @@ describe("StaticScope rendering helpers", () => {
             1,
             0,
             { x: 160, y: 60 },
-            FreqScaleMode.Linear as any
+            FreqScaleMode.Linear
         );
         expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 2, 0, 2, 64, 50, 0, 135, 160);
         expect(main.context.drawImage).toHaveBeenCalledWith(cache.canvas, 0, 0, 1.99, 64, 185, 0, 135, 160);

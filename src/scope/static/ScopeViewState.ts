@@ -1,7 +1,7 @@
 import { clampZoomOffset } from "../FrequencyScale";
 
-/** The three independent zoom contexts, one per family of static scope modes. */
-export type ScopeZoomType = "oscilloscope" | "spectroscope" | "spectrogram";
+/** Independent zoom contexts for each family of static scope modes. */
+export type ScopeZoomType = "oscilloscope" | "spectroscope" | "spectrogram" | "phase";
 
 const MAX_VERTICAL_ZOOM = 16;
 
@@ -12,9 +12,9 @@ const MAX_VERTICAL_ZOOM = 16;
  * DOM/cursor/data orchestration around it.
  */
 export class ScopeViewState {
-    private zoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-    private vzoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-    private zoomOffsetByType = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
+    private zoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1, phase: 1 };
+    private vzoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1, phase: 1 };
+    private zoomOffsetByType = { oscilloscope: 0, spectroscope: 0, spectrogram: 0, phase: 0 };
 
     getVerticalZoom(type: ScopeZoomType): number {
         return this.vzoomByType[type];
@@ -53,7 +53,7 @@ export class ScopeViewState {
 
     /** Resets horizontal zoom and offset for all modes (vertical zoom is kept). */
     reset(): void {
-        this.zoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1 };
-        this.zoomOffsetByType = { oscilloscope: 0, spectroscope: 0, spectrogram: 0 };
+        this.zoomByType = { oscilloscope: 1, spectroscope: 1, spectrogram: 1, phase: 1 };
+        this.zoomOffsetByType = { oscilloscope: 0, spectroscope: 0, spectrogram: 0, phase: 0 };
     }
 }

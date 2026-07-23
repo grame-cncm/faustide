@@ -1,4 +1,10 @@
-import { FrequencyScaleMode, StaticScopeMode, getStaticScopeIconClassName, getStaticScopeModeName } from "../ScopeModes";
+import {
+    FrequencyScaleMode,
+    MagnitudeScaleMode,
+    StaticScopeMode,
+    getStaticScopeIconClassName,
+    getStaticScopeModeName
+} from "../ScopeModes";
 
 export type StaticScopeControls = {
     /** Main drawing canvas displayed for all non-data modes. */
@@ -21,6 +27,8 @@ export type StaticScopeControls = {
     btnZoomIn: HTMLButtonElement;
     /** Frequency scale toggle button. */
     btnScale: HTMLButtonElement;
+    /** Magnitude scale toggle button. */
+    btnMagnitude: HTMLButtonElement;
     /** CSV download button. */
     btnDownload: HTMLButtonElement;
     /** Icon inside the mode cycling button. */
@@ -42,6 +50,7 @@ type ModeControlUpdate = {
     btnZoomIn: HTMLButtonElement;
     btnZoomOut: HTMLButtonElement;
     btnScale: HTMLButtonElement;
+    btnMagnitude: HTMLButtonElement;
 };
 
 const enableTooltip = (element: HTMLElement) => {
@@ -106,6 +115,8 @@ export const createStaticScopeControls = (container: HTMLDivElement): StaticScop
         canvas.classList.add("static-scope-canvas");
         container.appendChild(canvas);
     }
+    canvas.tabIndex = 0;
+    canvas.title = "Double-click an axis to reset it. Drag a waveform to select samples, Alt-drag to pan, then copy the selection as CSV.";
     if (!divData) {
         divData = document.createElement("div");
         divData.classList.add("static-scope-data");
@@ -124,6 +135,7 @@ export const createStaticScopeControls = (container: HTMLDivElement): StaticScop
     let btnZoom: HTMLButtonElement;
     let btnZoomIn: HTMLButtonElement;
     let btnScale: HTMLButtonElement;
+    let btnMagnitude: HTMLButtonElement;
     let btnDownload: HTMLButtonElement;
 
     for (let index = 0; index < controllerDiv.children.length; index++) {
@@ -133,6 +145,7 @@ export const createStaticScopeControls = (container: HTMLDivElement): StaticScop
         if (element.classList.contains("static-scope-ui-zoom")) btnZoom = element as HTMLButtonElement;
         if (element.classList.contains("static-scope-ui-zoomin")) btnZoomIn = element as HTMLButtonElement;
         if (element.classList.contains("static-scope-ui-scale")) btnScale = element as HTMLButtonElement;
+        if (element.classList.contains("static-scope-ui-magnitude")) btnMagnitude = element as HTMLButtonElement;
         if (element.classList.contains("static-scope-ui-download")) btnDownload = element as HTMLButtonElement;
     }
 
@@ -144,6 +157,7 @@ export const createStaticScopeControls = (container: HTMLDivElement): StaticScop
     }
     if (!btnZoomIn) btnZoomIn = createTooltipButton("static-scope-ui-zoomin btn btn-outline-light btn-sm btn-overlay btn-overlay-icon", "Zoom In", controllerDiv, '<i class="fas fa-plus"></i>');
     if (!btnScale) btnScale = createTooltipButton("static-scope-ui-scale btn btn-outline-light btn-sm btn-overlay btn-overlay-icon", "", controllerDiv);
+    if (!btnMagnitude) btnMagnitude = createTooltipButton("static-scope-ui-magnitude btn btn-outline-light btn-sm btn-overlay", "Switch to Linear Amplitude", controllerDiv, "dB");
     if (!btnDownload) btnDownload = createTooltipButton("static-scope-ui-download btn btn-outline-light btn-sm btn-overlay btn-overlay-icon", "Download Data", controllerDiv, '<i class="fas fa-download"></i>');
 
     let iSwitch: HTMLElement;
@@ -185,11 +199,27 @@ export const createStaticScopeControls = (container: HTMLDivElement): StaticScop
         btnZoom,
         btnZoomIn,
         btnScale,
+        btnMagnitude,
         btnDownload,
         iSwitch,
         spanSwitch,
         iScale
     };
+};
+
+/** Updates the magnitude scale button text and target tooltip. */
+export const updateStaticScopeMagnitudeButton = (
+    btnMagnitude: HTMLButtonElement,
+    mode: MagnitudeScaleMode
+) => {
+    if (mode === MagnitudeScaleMode.Decibels) {
+        btnMagnitude.innerText = "dB";
+        btnMagnitude.setAttribute("title", "Switch to Linear Amplitude");
+    } else {
+        btnMagnitude.innerText = "amp";
+        btnMagnitude.setAttribute("title", "Switch to Decibels");
+    }
+    refreshTooltip(btnMagnitude);
 };
 
 /**
@@ -223,7 +253,8 @@ export const updateStaticScopeModeControls = ({
     btnZoom,
     btnZoomIn,
     btnZoomOut,
-    btnScale
+    btnScale,
+    btnMagnitude
 }: ModeControlUpdate) => {
     iSwitch.className = getStaticScopeIconClassName(mode);
     spanSwitch.innerText = getStaticScopeModeName(mode);
@@ -231,7 +262,7 @@ export const updateStaticScopeModeControls = ({
     if (mode === StaticScopeMode.Data) {
         divData.style.display = "block";
         canvas.style.display = "none";
-        [btnZoom, btnZoomIn, btnZoomOut, btnScale].forEach(button => button.style.display = "none");
+        [btnZoom, btnZoomIn, btnZoomOut, btnScale, btnMagnitude].forEach(button => button.style.display = "none");
         return;
     }
 
@@ -239,4 +270,5 @@ export const updateStaticScopeModeControls = ({
     canvas.style.display = "block";
     [btnZoom, btnZoomIn, btnZoomOut].forEach(button => button.style.display = "");
     btnScale.style.display = inFrequencyDomain ? "" : "none";
+    btnMagnitude.style.display = mode === StaticScopeMode.Spectroscope ? "" : "none";
 };

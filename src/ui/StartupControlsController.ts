@@ -43,6 +43,7 @@ export class StartupControlsController {
         $("#select-plot-mode").children(`option[value=${this.compileOptions.plotMode}]`).prop("selected", true).change();
         $("#select-plot-fftsize").children(`option[value=${this.compileOptions.plotFFT}]`).prop("selected", true).change();
         $("#select-plot-fftoverlap").children(`option[value=${this.compileOptions.plotFFTOverlap}]`).prop("selected", true).change();
+        $("#select-plot-fftwindow").children(`option[value=${this.compileOptions.plotFFTWindow}]`).prop("selected", true).change();
         $("#input-plot-samps").change();
         $("#check-draw-spectrogram").change();
         $<HTMLInputElement>("#check-realtime-compile")[0].checked = this.compileOptions.realtimeCompile;

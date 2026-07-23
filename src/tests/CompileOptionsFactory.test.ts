@@ -11,6 +11,7 @@ describe("createCompileOptions", () => {
         expect(compileOptions.useWorklet).toBe(true);
         expect(compileOptions.useDouble).toBe(false);
         expect(compileOptions.bufferSize).toBe(1024);
+        expect(compileOptions.plotFFTWindow).toBe("auto");
         expect(compileOptions.exportPlatform).toBe("source");
         expect(compileOptions.exportArch).toBe("cplusplus");
         expect(compileOptions.args).toEqual(["-f", "10", "-I", "/usr/share/project/"]);

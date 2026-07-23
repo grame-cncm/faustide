@@ -4,6 +4,9 @@ import {
     clampZoomOffset,
     frequencyToBinIndex,
     frequencyToLogarithmicPosition,
+    formatFrequency,
+    getLinearAxisTicks,
+    getLogarithmicAxisTicks,
     getLogFrequencyWindow,
     indexToFrequency,
     logarithmicPositionToFrequency
@@ -37,5 +40,12 @@ describe("FrequencyScale", () => {
         expect(clampZoomOffset(4, -1)).toBe(0);
         expect(clampZoomOffset(4, 1)).toBe(0.75);
         expect(clampZoomOffset(4, 0.25)).toBe(0.25);
+    });
+
+    it("creates readable ticks for visible linear and logarithmic ranges", () => {
+        expect(getLinearAxisTicks(6000, 12000).map(tick => tick.value)).toEqual([6000, 7000, 8000, 9000, 10000, 11000, 12000]);
+        expect(getLogarithmicAxisTicks(20, 20000).map(tick => tick.value)).toEqual([20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]);
+        expect(formatFrequency(6000)).toBe("6k");
+        expect(formatFrequency(1500)).toBe("1.5k");
     });
 });

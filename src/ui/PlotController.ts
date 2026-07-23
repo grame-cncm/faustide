@@ -43,7 +43,7 @@ export class PlotController {
 
     /**
      * Wires the plot panel controls (mode, plot button, sample count, sample
-     * rate, FFT size/overlap, spectrogram) and seeds them from the current
+     * rate, FFT size/overlap/window, spectrogram) and seeds them from the current
      * compile options.
      */
     bind() {
@@ -65,6 +65,11 @@ export class PlotController {
         $<HTMLInputElement>("#select-plot-fftoverlap").on("change", e => {
             this.compileOptions.plotFFTOverlap = +e.currentTarget.value as FaustEditorCompileOptions["plotFFTOverlap"];
             this.uiEnv.analyser.fftOverlap = this.compileOptions.plotFFTOverlap;
+            this.saveEditorParams();
+        });
+        $<HTMLInputElement>("#select-plot-fftwindow").on("change", e => {
+            this.compileOptions.plotFFTWindow = e.currentTarget.value as FaustEditorCompileOptions["plotFFTWindow"];
+            this.uiEnv.analyser.fftWindow = this.compileOptions.plotFFTWindow;
             this.saveEditorParams();
         });
         $<HTMLInputElement>("#input-plot-samps")[0].value = this.compileOptions.plot.toString();
