@@ -3,7 +3,8 @@ import { clampZoomOffset } from "../FrequencyScale";
 /** Independent zoom contexts for each family of static scope modes. */
 export type ScopeZoomType = "oscilloscope" | "spectroscope" | "spectrogram" | "phase";
 
-const MAX_VERTICAL_ZOOM = 16;
+const MIN_VERTICAL_ZOOM = 1 / 64;
+const MAX_VERTICAL_ZOOM = 64;
 
 /**
  * Per-mode horizontal/vertical zoom and pan state for the static scope, with the
@@ -20,9 +21,9 @@ export class ScopeViewState {
         return this.vzoomByType[type];
     }
 
-    /** Sets the vertical zoom, clamped to [1, 16]. */
+    /** Sets the vertical zoom, clamped to [1/64, 64]. */
     setVerticalZoom(type: ScopeZoomType, newZoom: number): void {
-        this.vzoomByType[type] = Math.min(MAX_VERTICAL_ZOOM, Math.max(1, newZoom));
+        this.vzoomByType[type] = Math.min(MAX_VERTICAL_ZOOM, Math.max(MIN_VERTICAL_ZOOM, newZoom));
     }
 
     getZoom(type: ScopeZoomType): number {

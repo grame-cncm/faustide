@@ -114,15 +114,46 @@ export const handleStaticScopePointerDown = (
 };
 
 /**
+ * Resets only the axis whose gutter receives a double-click.
+ */
+export const handleStaticScopeDoubleClick = (
+    target: StaticScopeInteractionTarget,
+    event: MouseEvent
+) => {
+    if (!canInteractWithCanvas(target)) return;
+    const x = event.offsetX;
+    const y = event.offsetY;
+
+    if (x < STATIC_SCOPE_LEFT_MARGIN && y < target.canvas.height - STATIC_SCOPE_BOTTOM_MARGIN) {
+        event.preventDefault();
+        target.vzoom = 1;
+        target.draw();
+        return;
+    }
+
+    if (x >= STATIC_SCOPE_LEFT_MARGIN && y >= target.canvas.height - STATIC_SCOPE_BOTTOM_MARGIN) {
+        event.preventDefault();
+        target.zoom = 1;
+        target.zoomOffset = 0;
+        target.draw();
+    }
+};
+
+/**
  * Applies wheel interaction for vertical zoom, horizontal zoom, and trackpad pan.
  */
 export const handleStaticScopeWheel = (
     target: StaticScopeInteractionTarget,
     event: WheelEvent
 ) => {
+    event.preventDefault();
     const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
     const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
-    const multiplier = 1.5 ** (event.deltaY > 0 ? -1 : 1);
+    const multiplier = event.deltaY === 0 ? 1 : 1.5 ** (event.deltaY > 0 ? -1 : 1);
+
+    // Update the cursor before changing zoom. StaticScope's zoom setter uses
+    // this position to keep the sample/frequency under the pointer fixed.
+    handleStaticScopePointerMove(target, event);
 
     if (event.offsetX < leftMargin && event.offsetY < target.canvas.height - bottomMargin) {
         if (multiplier !== 1) target.vzoom *= 1 / multiplier;
@@ -132,5 +163,5 @@ export const handleStaticScopeWheel = (
 
     if (multiplier !== 1) target.zoom *= multiplier;
     if (event.deltaX !== 0) target.zoomOffset += (event.deltaX > 0 ? 1 : -1) * 0.1;
-    handleStaticScopePointerMove(target, event);
+    target.draw();
 };

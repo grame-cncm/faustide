@@ -10,12 +10,12 @@ describe("ScopeViewState", () => {
         expect(s.getZoom("phase")).toBe(1);
     });
 
-    it("clamps vertical zoom to [1, 16]", () => {
+    it("clamps vertical zoom to [1/64, 64]", () => {
         const s = new ScopeViewState();
         s.setVerticalZoom("oscilloscope", 100);
-        expect(s.getVerticalZoom("oscilloscope")).toBe(16);
+        expect(s.getVerticalZoom("oscilloscope")).toBe(64);
         s.setVerticalZoom("oscilloscope", 0);
-        expect(s.getVerticalZoom("oscilloscope")).toBe(1);
+        expect(s.getVerticalZoom("oscilloscope")).toBe(1 / 64);
         s.setVerticalZoom("oscilloscope", 4);
         expect(s.getVerticalZoom("oscilloscope")).toBe(4);
     });
