@@ -222,7 +222,7 @@ describe("StaticScope instance behavior", () => {
 
         scope.mode = ScopeMode.Oscilloscope;
         rafMock.flush();
-        expect(drawOscilloscope).toHaveBeenCalledWith(scope.ctx, 320, 180, drawOptions, 1, 0, 1, undefined);
+        expect(drawOscilloscope).toHaveBeenCalledWith(scope.ctx, 320, 180, drawOptions, 1, 0, 1, undefined, undefined);
 
         scope.mode = ScopeMode.Data;
         rafMock.flush();
@@ -252,5 +252,29 @@ describe("StaticScope instance behavior", () => {
         rafMock.flush();
 
         expect(drawOscilloscope).not.toHaveBeenCalled();
+    });
+
+    it("copies the selected waveform as a sample/time/channel CSV table", () => {
+        const { container } = createStaticScopeContainer({ width: 320, height: 180 });
+        const scope = new StaticScope({ container });
+        scope.data = createDrawOptions({ sampleRate: 4 });
+        scope.selection = { startSampleIndex: 1, endSampleIndex: 3 };
+        const setData = vi.fn();
+        const copyEvent = new Event("copy", { bubbles: true, cancelable: true });
+        Object.defineProperty(copyEvent, "clipboardData", {
+            value: { setData }
+        });
+
+        scope.canvas.dispatchEvent(copyEvent);
+
+        const expected = [
+            "sample,time_seconds,channel1,channel2",
+            "1,0.25,0.25,0.25",
+            "2,0.5,-0.25,0",
+            ""
+        ].join("\n");
+        expect(setData).toHaveBeenCalledWith("text/plain", expected);
+        expect(setData).toHaveBeenCalledWith("text/csv", expected);
+        expect(copyEvent.defaultPrevented).toBe(true);
     });
 });
