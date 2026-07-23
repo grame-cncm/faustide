@@ -15,11 +15,13 @@ div.static-scope {
         & > .static-scope-channel {
             display: grid;
             position: relative;
-            width: 1px; // for Safari
-            flex: 1 1 auto;
-            grid-template-columns: repeat(auto-fill, 110px);
-            grid-template-rows: repeat(auto-fill, 20px);
+            width: max-content;
+            min-width: 100%;
+            min-height: 0;
+            flex: 1 1 0;
+            grid-auto-columns: 110px;
             grid-auto-flow: column;
+            align-content: start;
             border-bottom: #505050 dashed 1px;
             & > .static-scope-cell {
                 display: block;

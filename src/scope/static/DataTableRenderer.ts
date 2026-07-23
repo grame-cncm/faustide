@@ -2,8 +2,42 @@
  * Static-scope "Data" mode renderer: fills a DOM table with the raw sample
  * values (and event markers) for the current buffer. Extracted from StaticScope.
  */
-import type { TDrawOptions } from "../../StaticScope";
+import type { TDrawOptions, TWaveformSelection } from "./StaticScopeTypes";
 import { wrap } from "../../utils";
+
+const DATA_CELL_HEIGHT = 20;
+
+/**
+ * Serializes the selected chronological waveform range as a row-oriented CSV table.
+ *
+ * Sample indices refer to the displayed buffer order; values are resolved through
+ * the circular-buffer start index so copied data matches the waveform on screen.
+ */
+export const getSelectedWaveformCsv = (
+    drawOptions: TDrawOptions,
+    selection: TWaveformSelection
+) => {
+    const { timeDomainData, startSampleIndex, sampleRate } = drawOptions;
+    if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return "";
+    const bufferLength = timeDomainData[0].length;
+    const selectionStart = Math.max(0, Math.min(bufferLength, selection.startSampleIndex));
+    const selectionEnd = Math.max(selectionStart, Math.min(bufferLength, selection.endSampleIndex));
+    if (selectionStart === selectionEnd) return "";
+
+    const rows = [
+        ["sample", "time_seconds", ...timeDomainData.map((_, index) => `channel${index + 1}`)].join(",")
+    ];
+    for (let sampleIndex = selectionStart; sampleIndex < selectionEnd; sampleIndex++) {
+        const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);
+        const timeSeconds = sampleRate && sampleRate > 0 ? sampleIndex / sampleRate : "";
+        rows.push([
+            sampleIndex,
+            timeSeconds,
+            ...timeDomainData.map(channel => channel[wrappedSampleIndex])
+        ].join(","));
+    }
+    return `${rows.join("\n")}\n`;
+};
 
 /**
  * Renders the static scope raw sample table.
@@ -18,12 +52,18 @@ export const fillStaticScopeDataTable = (container: HTMLDivElement, drawOptions:
     const { startSampleIndex, timeDomainData, events, startBufferIndex, bufferSize } = drawOptions;
     if (!timeDomainData || !timeDomainData.length || !timeDomainData[0].length) return;
     const bufferLength = timeDomainData[0].length;
+    const rowsPerColumn = Math.max(
+        1,
+        Math.floor(container.clientHeight / timeDomainData.length / DATA_CELL_HEIGHT)
+    );
 
     for (let channelIndex = 0; channelIndex < timeDomainData.length; channelIndex++) {
         const channelData = timeDomainData[channelIndex];
         const divChannel = document.createElement("div");
         divChannel.classList.add("static-scope-channel");
         divChannel.style.backgroundColor = timeDomainData.length === 1 ? "#181818" : `hsl(${channelIndex * 60}, 100%, 10%)`;
+        divChannel.style.gridTemplateRows = `repeat(${rowsPerColumn}, ${DATA_CELL_HEIGHT}px)`;
+        divChannel.style.gridAutoFlow = "column";
 
         for (let sampleIndex = 0; sampleIndex < Math.min(channelData.length, 2048); sampleIndex++) {
             const wrappedSampleIndex = wrap(sampleIndex, startSampleIndex, bufferLength);

@@ -298,6 +298,48 @@ export const drawStaticScopeGrid = (
     return eventsToDraw;
 };
 
+/**
+ * Draws a waveform selection band and its duration in samples and seconds.
+ */
+export const drawStaticWaveformSelection = (
+    ctx: CanvasRenderingContext2D,
+    canvasWidth: number,
+    canvasHeight: number,
+    xStart: number,
+    xEnd: number,
+    sampleCount: number,
+    sampleRate?: number
+) => {
+    if (sampleCount <= 0 || xEnd <= xStart) return;
+    const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
+    const secondsLabel = sampleRate && sampleRate > 0
+        ? `${Number((sampleCount / sampleRate).toPrecision(7))} s`
+        : "n/a s";
+    const label = `${sampleCount} ${sampleCount === 1 ? "sample" : "samples"} / ${secondsLabel}`;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(70, 150, 255, 0.22)";
+    ctx.fillRect(xStart, 0, xEnd - xStart, canvasHeight - bottomMargin);
+    ctx.strokeStyle = "#66aaff";
+    ctx.beginPath();
+    ctx.moveTo(xStart, 0);
+    ctx.lineTo(xStart, canvasHeight - bottomMargin);
+    ctx.moveTo(xEnd, 0);
+    ctx.lineTo(xEnd, canvasHeight - bottomMargin);
+    ctx.stroke();
+    ctx.fillStyle = "#d8eaff";
+    ctx.font = "bold 12px Consolas, monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+        label,
+        Math.max(STATIC_SCOPE_LEFT_MARGIN, Math.min((xStart + xEnd) / 2, canvasWidth)),
+        12,
+        Math.max(1, canvasWidth - STATIC_SCOPE_LEFT_MARGIN)
+    );
+    ctx.restore();
+};
+
 /** Draws the label box for the events occurring at a grid position. */
 export const drawStaticScopeEvent = (
     ctx: CanvasRenderingContext2D,

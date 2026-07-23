@@ -3,7 +3,7 @@
  * zero-crossing stabilization, min/max grouping per pixel, and cursor stats.
  * Extracted from StaticScope.
  */
-import type { TDrawOptions } from "../../StaticScope";
+import type { TDrawOptions, TWaveformSelection } from "./StaticScopeTypes";
 import { StaticScopeMode } from "../ScopeModes";
 import { wrap } from "../../utils";
 import {
@@ -40,6 +40,16 @@ type TimeDomainRendererDependencies = {
     drawEvent: (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, x: number, eventData: EventPayload[]) => void;
     /** Draws cursor labels and sampled values. */
     drawStats: (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, statsToDraw: StatsToDraw) => void;
+    /** Draws the selected waveform range and its duration label. */
+    drawSelection: (
+        ctx: CanvasRenderingContext2D,
+        canvasWidth: number,
+        canvasHeight: number,
+        xStart: number,
+        xEnd: number,
+        sampleCount: number,
+        sampleRate?: number
+    ) => void;
 };
 
 /**
@@ -49,7 +59,7 @@ type TimeDomainRendererDependencies = {
  * second by finding a zero crossing on channel 0, then applies the horizontal
  * zoom window relative to that stabilized region.
  */
-const getTimeDomainWindow = (
+const calculateTimeDomainWindow = (
     drawOptions: TDrawOptions,
     minSampleValue: number,
     maxSampleValue: number,
@@ -107,6 +117,56 @@ const getTimeDomainRange = (timeDomainData: Float32Array[]) => {
 };
 
 /**
+ * Returns the logical sample bounds currently visible in a time-domain viewport.
+ *
+ * Pointer selection and rendering both use this helper so a selected boundary
+ * remains aligned with the waveform after zooming or stabilization.
+ */
+export const getVisibleTimeDomainWindow = (
+    drawOptions: TDrawOptions,
+    horizontalZoom: number,
+    horizontalZoomOffset: number
+) => {
+    const { minSampleValue, maxSampleValue } = getTimeDomainRange(drawOptions.timeDomainData);
+    return calculateTimeDomainWindow(
+        drawOptions,
+        minSampleValue,
+        maxSampleValue,
+        horizontalZoom,
+        horizontalZoomOffset
+    );
+};
+
+const drawVisibleSelection = (
+    dependencies: TimeDomainRendererDependencies,
+    ctx: CanvasRenderingContext2D,
+    canvasWidth: number,
+    canvasHeight: number,
+    drawStartIndex: number,
+    drawEndIndex: number,
+    selection?: TWaveformSelection,
+    sampleRate?: number
+) => {
+    if (!selection || selection.endSampleIndex <= selection.startSampleIndex) return;
+    const visibleStart = Math.max(drawStartIndex, selection.startSampleIndex);
+    const visibleEnd = Math.min(drawEndIndex, selection.endSampleIndex);
+    if (visibleEnd <= visibleStart) return;
+    const visibleSampleCount = Math.max(1, drawEndIndex - drawStartIndex);
+    const drawableWidth = canvasWidth - STATIC_SCOPE_LEFT_MARGIN;
+    const xStart = STATIC_SCOPE_LEFT_MARGIN + (visibleStart - drawStartIndex) / visibleSampleCount * drawableWidth;
+    const xEnd = STATIC_SCOPE_LEFT_MARGIN + (visibleEnd - drawStartIndex) / visibleSampleCount * drawableWidth;
+    dependencies.drawSelection(
+        ctx,
+        canvasWidth,
+        canvasHeight,
+        xStart,
+        xEnd,
+        selection.endSampleIndex - selection.startSampleIndex,
+        sampleRate
+    );
+};
+
+/**
  * Draws each time-domain channel in its own horizontal lane.
  */
 export const drawStaticInterleaved = (
@@ -118,7 +178,8 @@ export const drawStaticInterleaved = (
     horizontalZoom: number,
     horizontalZoomOffset: number,
     verticalZoom: number,
-    cursor?: { x: number; y: number }
+    cursor?: { x: number; y: number },
+    selection?: TWaveformSelection
 ) => {
     dependencies.drawBackground(ctx, canvasWidth, canvasHeight);
     if (!drawOptions) return;
@@ -128,7 +189,7 @@ export const drawStaticInterleaved = (
     const bufferLength = timeDomainData[0].length;
     const { minSampleValue, maxSampleValue } = getTimeDomainRange(timeDomainData);
     const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-    const { drawStartIndex, drawEndIndex, stabilizationOffset } = getTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
+    const { drawStartIndex, drawEndIndex, stabilizationOffset } = calculateTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
 
     const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
     const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
@@ -176,6 +237,7 @@ export const drawStaticInterleaved = (
     }
 
     eventsToDraw.forEach(params => dependencies.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
+    drawVisibleSelection(dependencies, ctx, canvasWidth, canvasHeight, drawStartIndex, drawEndIndex, selection, drawOptions.sampleRate);
 
     if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
         const statsToDraw: StatsToDraw = { values: [] };
@@ -204,7 +266,8 @@ export const drawStaticOscilloscope = (
     horizontalZoom: number,
     horizontalZoomOffset: number,
     verticalZoom: number,
-    cursor?: { x: number; y: number }
+    cursor?: { x: number; y: number },
+    selection?: TWaveformSelection
 ) => {
     dependencies.drawBackground(ctx, canvasWidth, canvasHeight);
     if (!drawOptions) return;
@@ -214,7 +277,7 @@ export const drawStaticOscilloscope = (
     const bufferLength = timeDomainData[0].length;
     const { minSampleValue, maxSampleValue } = getTimeDomainRange(timeDomainData);
     const verticalScaleFactor = Math.max(1, Math.abs(minSampleValue), Math.abs(maxSampleValue)) * verticalZoom;
-    const { drawStartIndex, drawEndIndex, stabilizationOffset } = getTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
+    const { drawStartIndex, drawEndIndex, stabilizationOffset } = calculateTimeDomainWindow(drawOptions, minSampleValue, maxSampleValue, horizontalZoom, horizontalZoomOffset);
 
     const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
     const bottomMargin = STATIC_SCOPE_BOTTOM_MARGIN;
@@ -260,6 +323,7 @@ export const drawStaticOscilloscope = (
     }
 
     eventsToDraw.forEach(params => dependencies.drawEvent(ctx, canvasWidth, canvasHeight, ...params));
+    drawVisibleSelection(dependencies, ctx, canvasWidth, canvasHeight, drawStartIndex, drawEndIndex, selection, drawOptions.sampleRate);
 
     if (cursor && cursor.x > leftMargin && cursor.y < canvasHeight - bottomMargin) {
         const statsToDraw: StatsToDraw = { values: [] };

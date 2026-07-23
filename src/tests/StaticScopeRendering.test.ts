@@ -199,6 +199,38 @@ describe("StaticScope rendering helpers", () => {
         expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
     });
 
+    it("draws waveform selection length in samples and seconds", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawOscilloscope(
+            context,
+            320,
+            180,
+            createDrawOptions({
+                timeDomainData: [new Float32Array(8)],
+                sampleRate: 8
+            }),
+            1,
+            0,
+            1,
+            undefined,
+            { startSampleIndex: 1, endSampleIndex: 5 }
+        );
+
+        expect(context.fillRect).toHaveBeenCalledWith(
+            expect.any(Number),
+            0,
+            expect.any(Number),
+            160
+        );
+        expect(context.fillText).toHaveBeenCalledWith(
+            "4 samples / 0.5 s",
+            expect.any(Number),
+            12,
+            expect.any(Number)
+        );
+    });
+
     it("draws interleaved traces in separate channel lanes", () => {
         const { context } = createMockCanvasContext();
 
@@ -314,33 +346,37 @@ describe("StaticScope rendering helpers", () => {
             sampleRate: 48000
         });
 
-        const linearLastIndex = StaticScope.drawOfflineSpectrogram(cache.context, drawOptions, 0, FreqScaleMode.Linear as any);
+        const linearLastIndex = StaticScope.drawOfflineSpectrogram(cache.context, drawOptions, 0, FreqScaleMode.Linear);
 
         expect(cache.canvas.width).toBe(4);
         expect(cache.context.fillRect).toHaveBeenCalledWith(0, 0, 1, 8);
         expect(linearLastIndex).toBe(0);
 
         const logCache = createMockCanvasContext({ width: 1, height: 8 });
-        StaticScope.drawOfflineSpectrogram(logCache.context, drawOptions, 0, FreqScaleMode.Logarithmic as any);
+        StaticScope.drawOfflineSpectrogram(logCache.context, drawOptions, 0, FreqScaleMode.Logarithmic);
 
         expect(logCache.canvas.width).toBe(4);
         expect(logCache.context.fillRect).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), 1, 1);
     });
 
-    it("renders data rows and clears stale rows", () => {
+    it("renders data top-to-bottom before continuing in the next column", () => {
         const container = document.createElement("div");
+        Object.defineProperty(container, "clientHeight", { configurable: true, value: 80 });
 
         StaticScope.fillDivData(container, createDrawOptions({
             timeDomainData: [
-                new Float32Array([0, 0.25, -0.25, 0.5]),
-                new Float32Array([1, 0.75, 0.5, 0.25])
+                new Float32Array([0, 0.25, -0.25, 0.5, 0.75, 1])
             ],
             events: [[{ type: "midi", data: [144, 60, 127] }]]
         }));
 
-        expect(container.querySelectorAll(".static-scope-channel")).toHaveLength(2);
-        expect(container.querySelectorAll(".static-scope-cell")).toHaveLength(8);
-        expect(container.querySelectorAll(".highlight")).toHaveLength(2);
+        const channel = container.querySelector(".static-scope-channel") as HTMLDivElement;
+        expect(channel.style.gridTemplateRows).toBe("repeat(4, 20px)");
+        expect(channel.style.gridAutoFlow).toBe("column");
+        expect(Array.from(channel.querySelectorAll(".static-scope-cell span:first-child"))
+            .map(span => (span as HTMLSpanElement).innerText)).toEqual(["0", "1", "2", "3", "4", "5"]);
+        expect(container.querySelectorAll(".static-scope-cell")).toHaveLength(6);
+        expect(container.querySelectorAll(".highlight")).toHaveLength(1);
         expect(Array.from(container.querySelectorAll("span")).map(span => span.innerText)).toContain("0.2500000");
 
         StaticScope.fillDivData(container, createDrawOptions({

@@ -27,6 +27,14 @@ export type TStatsToDraw = {
     values: number[];
 };
 
+/** Logical half-open sample range selected in a static waveform. */
+export type TWaveformSelection = {
+    /** First selected sample in chronological display order. */
+    startSampleIndex: number;
+    /** First sample after the selected range. */
+    endSampleIndex: number;
+};
+
 /**
  * Defines the data and options required for a drawing operation.
  */
