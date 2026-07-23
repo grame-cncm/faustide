@@ -116,7 +116,11 @@ export class FaustUiController {
             if (this.uiEnv.uiPopup) this.uiEnv.uiPopup.postMessage(msg, "*");
             if (this.compileOptions.saveParams) {
                 this.postCurrentParams(node, uiWindow);
-                requestAnimationFrame(() => this.postCurrentParams(node, uiWindow));
+                this.postCurrentParams(node, this.uiEnv.uiPopup);
+                requestAnimationFrame(() => {
+                    this.postCurrentParams(node, uiWindow);
+                    this.postCurrentParams(node, this.uiEnv.uiPopup);
+                });
             }
         };
         const iframe = $<HTMLIFrameElement>("#iframe-faust-ui")[0];
