@@ -20,6 +20,13 @@ export const mockFaustService = async (page: Page) => {
  * FileManager, and returns once the app is interactive.
  */
 export const openApp = async (page: Page) => {
+    await page.addInitScript(() => {
+        if (!navigator.mediaDevices) return;
+        Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+            configurable: true,
+            value: () => Promise.reject(new DOMException("Microphone access is disabled in e2e", "NotAllowedError"))
+        });
+    });
     await mockFaustService(page);
     await page.goto("/");
     await page.waitForFunction(() => Boolean(window.faustEnv && window.faustEnv.uiEnv && window.faustEnv.uiEnv.fileManager));

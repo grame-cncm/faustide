@@ -59,7 +59,7 @@ export class FaustUiController {
      * Binds window messages, popup lifecycle, and the close-tab control.
      */
     bind() {
-        $(window).on("message", e => this.handleMessage(e.originalEvent as MessageEvent));
+        window.addEventListener("message", e => this.handleMessage(e));
         $(window).on("beforeunload", () => (this.uiEnv.uiPopup ? this.uiEnv.uiPopup.close() : undefined));
         $("#nav-item-faust-ui .btn-popup").on("click", e => this.openPopup(e));
         $("#nav-item-faust-ui .btn-close-tab").on("click", e => this.closeDspTab(e));
@@ -114,8 +114,13 @@ export class FaustUiController {
             const msg = { type: "ui", ui: node.getUI() };
             if (uiWindow) uiWindow.postMessage(msg, "*");
             if (this.uiEnv.uiPopup) this.uiEnv.uiPopup.postMessage(msg, "*");
-            if (this.compileOptions.saveParams) this.postCurrentParams(node, uiWindow);
+            if (this.compileOptions.saveParams) {
+                this.postCurrentParams(node, uiWindow);
+                requestAnimationFrame(() => this.postCurrentParams(node, uiWindow));
+            }
         };
+        const iframe = $<HTMLIFrameElement>("#iframe-faust-ui")[0];
+        if (iframe) $(iframe).off("load.faustUiState").one("load.faustUiState", callback);
         if (!this.compileOptions.popup || (this.uiEnv.uiPopup && !this.uiEnv.uiPopup.closed)) callback();
         else this.openPopupWindow(callback);
     }
@@ -206,7 +211,12 @@ export class FaustUiController {
     }
 
     /**
-     * Posts all stored param values that still exist on the current DSP node.
+     * Posts remembered values that still exist on the current DSP node.
+     *
+     * DspRunner applies this same map to the new node before the UI is bound.
+     * Reading an AudioWorklet parameter immediately can still return its
+     * default until the audio clock advances, so the remembered map is the
+     * reliable source during this startup window.
      */
     private postCurrentParams(node: DspNode, target?: Window | WindowProxy) {
         if (!target) return;
