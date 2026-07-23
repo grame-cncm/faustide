@@ -24,6 +24,7 @@ const createNode = () => ({
     setOutputParamHandler: vi.fn(),
     getUI: vi.fn(() => [{ type: "vslider" }]),
     getParams: vi.fn(() => ["/gain"]),
+    getParamValue: vi.fn(() => 0.5),
     getNumInputs: vi.fn(() => 1),
     getNumOutputs: vi.fn(() => 2),
     setParamValue: vi.fn(),
@@ -80,7 +81,7 @@ describe("FaustUiController", () => {
         const postMessage = vi.fn();
         Object.defineProperty($("#iframe-faust-ui")[0], "contentWindow", { value: { postMessage }, configurable: true });
 
-        controller.showCompiledDsp(node as any);
+        controller.showCompiledDsp(node as unknown as Parameters<typeof controller.showCompiledDsp>[0]);
 
         expect(node.setOutputParamHandler).toHaveBeenCalled();
         expect(postMessage).toHaveBeenCalledWith({ type: "ui", ui: [{ type: "vslider" }] }, "*");
@@ -91,6 +92,18 @@ describe("FaustUiController", () => {
         expect($("#dsp-ui-detail-inputs").html()).toBe("1");
     });
 
+    it("uses remembered state while an AudioWorklet getter still reports its default", () => {
+        const { controller } = bindController({ options: { dspParams: { "/gain": 0.75 } } });
+        const node = createNode();
+        node.getParamValue.mockReturnValue(0.2);
+        const postMessage = vi.fn();
+        Object.defineProperty($("#iframe-faust-ui")[0], "contentWindow", { value: { postMessage }, configurable: true });
+
+        controller.showCompiledDsp(node as unknown as Parameters<typeof controller.showCompiledDsp>[0]);
+
+        expect(postMessage).toHaveBeenCalledWith({ path: "/gain", value: 0.75, type: "param" }, "*");
+    });
+
     it("mirrors incoming param messages to DSP and UI windows", () => {
         const popup = { postMessage: vi.fn(), close: vi.fn(), closed: false };
         const node = createNode();
@@ -98,8 +111,9 @@ describe("FaustUiController", () => {
         const { audioEnv, options } = bindController({ audioEnv: { dsp: node }, uiEnv: { uiPopup: popup } });
         Object.defineProperty($("#iframe-faust-ui")[0], "contentWindow", { value: { postMessage }, configurable: true });
 
-        $(window).trigger($.Event("message", {
-            originalEvent: { data: { type: "param", path: "/gain", value: 0.75 }, source: null }
+        window.dispatchEvent(new MessageEvent("message", {
+            data: { type: "param", path: "/gain", value: 0.75 },
+            source: null
         }));
 
         expect(audioEnv.dsp.setParamValue).toHaveBeenCalledWith("/gain", 0.75);
@@ -113,8 +127,9 @@ describe("FaustUiController", () => {
         const source = { postMessage: vi.fn() };
         const { options } = bindController();
 
-        $(window).trigger($.Event("message", {
-            originalEvent: { data: { type: "export", plat: "web", arch: "wap" }, source }
+        window.dispatchEvent(new MessageEvent("message", {
+            data: { type: "export", plat: "web", arch: "wap" },
+            source: source as unknown as WindowProxy
         }));
         await Promise.resolve();
         await Promise.resolve();
