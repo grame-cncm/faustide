@@ -163,11 +163,28 @@ describe("StaticScope instance behavior", () => {
         expect(scope.zoomOffset).toBe(0);
 
         scope.vzoom = 100;
-        expect(scope.vzoom).toBe(16);
+        expect(scope.vzoom).toBe(64);
 
         scope.btnZoom.click();
         expect(scope.zoom).toBe(1);
         expect(scope.btnZoom.innerHTML).toBe("1.0x");
+    });
+
+    it("supports deep horizontal zoom and vertical zoom in both directions", () => {
+        const { container } = createStaticScopeContainer();
+        const scope = new StaticScope({ container });
+        scope.draw(createDrawOptions({
+            timeDomainData: [new Float32Array(4096)],
+            bufferSize: 128
+        }));
+
+        scope.zoom = 1024;
+        expect(scope.zoom).toBe(1024);
+
+        scope.vzoom = 1 / 128;
+        expect(scope.vzoom).toBeCloseTo(1 / 64);
+        scope.vzoom = 128;
+        expect(scope.vzoom).toBe(64);
     });
 
     it("updates cursor state from pointer movement and clears it on leave", () => {
