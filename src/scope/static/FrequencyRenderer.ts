@@ -228,7 +228,19 @@ export const drawStaticPhase = (
     const frequencyBinCount = fftSize / 2;
     const maxFrequency = sampleRate / 2;
     const phaseBufferLength = phaseDomainData[0].length;
-    const frameStartBinIndex = phaseBufferLength - frequencyBinCount;
+    // Offline frames are written by FFT end position. The frame ending at
+    // `fftSize` is the one whose window starts at sample zero; with overlap it
+    // begins after `fftOverlap - 1` earlier, circularly shifted frames.
+    const offlineFrameStartBinIndex = Math.max(
+        0,
+        Math.min(
+            phaseBufferLength - frequencyBinCount,
+            frequencyBinCount * (fftOverlap - 1)
+        )
+    );
+    const frameStartBinIndex = drawOptions.drawMode === "offline"
+        ? offlineFrameStartBinIndex
+        : phaseBufferLength - frequencyBinCount;
     let startPhaseDataIndex = startSampleIndex * fftOverlap / 2;
     startPhaseDataIndex -= startPhaseDataIndex % frequencyBinCount;
 
@@ -281,7 +293,7 @@ export const drawStaticPhase = (
         const statsToDraw: StatsToDraw = {
             x: cursor.x,
             xLabel: cursorFrequency.toFixed(0),
-            values: phaseDomainData.map(channel => channel[phaseIndex])
+            values: phaseDomainData.map(channel => channel[phaseIndex] * 180 / Math.PI)
         };
         dependencies.drawStats(ctx, canvasWidth, canvasHeight, statsToDraw);
     }

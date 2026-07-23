@@ -204,7 +204,7 @@ export class StaticScope {
     static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode, magnitudeScaleMode = MagnitudeScaleMode.Decibels) {
         drawStaticSpectroscope(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode, magnitudeScaleMode);
     }
-    /** Draws wrapped FFT phase in radians on the selected frequency scale. */
+    /** Draws wrapped FFT phase with degree-labelled output on the selected frequency scale. */
     static drawPhase(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
         drawStaticPhase(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode);
     }

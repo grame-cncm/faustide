@@ -278,7 +278,7 @@ describe("StaticScope rendering helpers", () => {
         expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
     });
 
-    it("draws phase with radian ticks and cursor values", () => {
+    it("draws phase with degree ticks and cursor values", () => {
         const { context } = createMockCanvasContext();
 
         StaticScope.drawPhase(
@@ -293,8 +293,8 @@ describe("StaticScope rendering helpers", () => {
         );
 
         expect(context.stroke).toHaveBeenCalled();
-        expect(context.fillText).toHaveBeenCalledWith("rad/Hz", 45, 170, 40);
-        expect(context.fillText).toHaveBeenCalledWith("π", 45, 10);
+        expect(context.fillText).toHaveBeenCalledWith("deg/Hz", 45, 170, 40);
+        expect(context.fillText).toHaveBeenCalledWith("180", 45, 10);
         expect(context.fillText).toHaveBeenCalledWith(expect.stringMatching(/^-?\d+\.\d{7}$/), 318, expect.any(Number), 70);
     });
 
