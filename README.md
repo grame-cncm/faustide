@@ -81,11 +81,17 @@ Tools to display audio signals are available in the left panel:
 
 - **FFT Size** and **FFT Overlap** value are used when using _Oscilloscope_ and _Spectroscope_ modes
 
-In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_ and _Spectroscope_. Note that when used with _On Event_ mode, values in the _Data_ visualisation mode only change at sample 128 (since _On Event_ mode plots from 128 samples before the event).
+- **FFT Window** selects _Auto_, _None (Rectangular)_, _Hann (N/4)_, or _Blackman_ weighting. _Auto_ uses an unscaled rectangular FFT for offline plots, exactly like `numpy.fft.rfft`: a unit impulse produces a flat 0 dB magnitude and zero phase. Captured-signal modes use Blackman automatically. The optional Hann mode applies the symmetric Hann window and `N/4` scaling used by the reference Python plotter.
+
+In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_, _Spectroscope_, _Spectrogram_, and _Phase_. Note that when used with _On Event_ mode, values in the _Data_ visualisation mode only change at sample 128 (since _On Event_ mode plots from 128 samples before the event).
+
+Waveform x-axis ticks are shown in seconds using the active audio sample rate. Drag across an offline waveform to select a range; its length is displayed in samples and seconds. With the plot canvas focused, copy (`Ctrl+C`/`Cmd+C`) places a CSV table containing sample index, time in seconds, and every channel value on the clipboard. Use _Alt-drag_ to pan a waveform without changing the selection.
+
+Double-click the x- or y-axis gutter to reset only that axis to its default zoom. In _Data_ mode, sample indices fill each visible column from top to bottom before continuing in the next column.
 
 Both input and output have an audio analyzer in the right panel. In the small audio output window at the bottom, you can switch the visualization between _Oscilloscope_ and _Spectroscope_, or change buffer size and channel. Three numbers showing at right side are current value, estimated frequency and RMS.
 
-In the display zone, zoom can be changed with *2 fingers up/down slide* on macOS from 1x up to 800x. 
+In the display zone, zoom can be changed with a wheel or two-finger vertical gesture. Horizontal trackpad gestures pan the visible window.
 
 #### SVG Diagrams
 
