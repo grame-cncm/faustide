@@ -95,8 +95,10 @@ describe("PlotController", () => {
             saveEditorParams
         }).bind();
 
+        uiEnv.plotScope.mode = 3;
         $("#select-plot-mode").val("manual").trigger("change");
         expect(compileOptions.plotMode).toBe("manual");
+        expect(uiEnv.plotScope.mode).toBe(3);
         expect($("#btn-plot").css("display")).not.toBe("none");
         expect($("#btn-plot span").text()).toBe("Plot (Snapshot)");
         expect($("#input-plot-sr").prop("disabled")).toBe(true);
@@ -105,7 +107,7 @@ describe("PlotController", () => {
 
         $("#select-plot-mode").val("continuous").trigger("change");
         expect($("#btn-plot").css("display")).toBe("none");
-        expect(uiEnv.plotScope.mode).toBe(2);
+        expect(uiEnv.plotScope.mode).toBe(3);
     });
 
     it("quantizes sample count and updates analyser buffer count", () => {

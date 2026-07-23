@@ -18,6 +18,19 @@ test.describe("Plot controls", () => {
         await expect(btn).toBeHidden();
     });
 
+    test("plot mode changes preserve the active visualization", async ({ page }) => {
+        await openApp(page);
+        await page.evaluate(() => {
+            window.faustEnv.uiEnv.plotScope.mode = 3;
+        });
+
+        await page.locator("#select-plot-mode").selectOption("manual");
+        await expect.poll(() => page.evaluate(() => window.faustEnv.uiEnv.plotScope.mode)).toBe(3);
+
+        await page.locator("#select-plot-mode").selectOption("continuous");
+        await expect.poll(() => page.evaluate(() => window.faustEnv.uiEnv.plotScope.mode)).toBe(3);
+    });
+
     test("offline plot renders samples into the plot scope", async ({ page }) => {
         await openApp(page);
         await page.evaluate(() => window.faustEnv.editor.setValue("import(\"stdfaust.lib\");\nprocess = os.osc(440) <: _, _;"));
