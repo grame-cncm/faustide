@@ -66,4 +66,50 @@ test.describe("Compile option controls", () => {
             return faustUI.componentMap[path][0].state.value;
         }, paramPath)).toBeCloseTo(0.75);
     });
+
+    test("Save Params State preserves values in an already-open Faust UI popup", async ({ page }) => {
+        await openApp(page);
+        await setEditorCode(page, 'gain = hslider("gain", 0.2, 0, 1, 0.01); process = gain;');
+        await page.locator("#check-save-params").check();
+        await page.locator("#check-popup").check();
+        const [uiPopup] = await Promise.all([
+            page.waitForEvent("popup"),
+            runDsp(page)
+        ]);
+
+        const paramPath = await page.evaluate(() => window.faustEnv.audioEnv.dsp.getParams()[0]);
+        await uiPopup.waitForFunction((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            return Boolean(faustUI.componentMap[path]?.[0]);
+        }, paramPath);
+        await uiPopup.evaluate((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            faustUI.componentMap[path][0].setValue(0.75);
+        }, paramPath);
+        await expect.poll(() => uiPopup.evaluate((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            return faustUI.componentMap[path][0].state.value;
+        }, paramPath)).toBeCloseTo(0.75);
+        await uiPopup.evaluate((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            (window as Window & { __previousComponent?: unknown }).__previousComponent = faustUI.componentMap[path][0];
+        }, paramPath);
+
+        await page.evaluate(() => {
+            (window as Window & { __previousDsp?: unknown }).__previousDsp = window.faustEnv.audioEnv.dsp;
+        });
+        await page.locator("#btn-run").click();
+        await expect.poll(() => page.evaluate(() => (
+            window.faustEnv.audioEnv.dsp !== (window as Window & { __previousDsp?: unknown }).__previousDsp
+        )), { timeout: 30000 }).toBe(true);
+        await expect.poll(() => uiPopup.evaluate((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            return faustUI.componentMap[path][0] !== (window as Window & { __previousComponent?: unknown }).__previousComponent;
+        }, paramPath)).toBe(true);
+
+        await expect.poll(() => uiPopup.evaluate((path) => {
+            const faustUI = (window as FaustUiWindow).faustUI;
+            return faustUI.componentMap[path][0].state.value;
+        }, paramPath)).toBeCloseTo(0.75);
+    });
 });

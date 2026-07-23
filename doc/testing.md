@@ -84,7 +84,7 @@ These tests run the compiled app in a real Chromium browser. They are the **only
 | `midi.spec.ts` | MIDI input wiring |
 | `plot.spec.ts` | Plot rendering, FFT windows, magnitude/phase modes, waveform selection/copy, axis reset, and Data layout |
 | `recorder.spec.ts` | Audio recorder workflow |
-| `settings.spec.ts` | Settings persistence, including parameter state after recompilation |
+| `settings.spec.ts` | Settings persistence, including embedded and popup parameter state after recompilation |
 
 `tests/e2e/helpers.ts` intercepts the network (`faustservice.inria.fr`) and
 rejects microphone permission during startup so tests do not wait on an

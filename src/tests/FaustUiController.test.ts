@@ -104,6 +104,23 @@ describe("FaustUiController", () => {
         expect(postMessage).toHaveBeenCalledWith({ path: "/gain", value: 0.75, type: "param" }, "*");
     });
 
+    it("restores remembered state to an already-open Faust UI popup", () => {
+        const popup = { postMessage: vi.fn(), close: vi.fn(), closed: false };
+        const { controller } = bindController({
+            uiEnv: { uiPopup: popup },
+            options: {
+                compileOptions: { saveParams: true, popup: true, args: [] },
+                dspParams: { "/gain": 0.75 }
+            }
+        });
+        const node = createNode();
+
+        controller.showCompiledDsp(node as unknown as Parameters<typeof controller.showCompiledDsp>[0]);
+
+        expect(popup.postMessage).toHaveBeenCalledWith({ type: "ui", ui: [{ type: "vslider" }] }, "*");
+        expect(popup.postMessage).toHaveBeenCalledWith({ path: "/gain", value: 0.75, type: "param" }, "*");
+    });
+
     it("mirrors incoming param messages to DSP and UI windows", () => {
         const popup = { postMessage: vi.fn(), close: vi.fn(), closed: false };
         const node = createNode();
