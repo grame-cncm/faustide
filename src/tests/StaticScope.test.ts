@@ -54,6 +54,8 @@ describe("StaticScope instance behavior", () => {
         expect(scope.zoom).toBe(1);
         expect(scope.zoomOffset).toBe(0);
         expect(scope.vzoom).toBe(1);
+        expect(scope.magnitudeDbMin).toBe(-100);
+        expect(scope.magnitudeDbMax).toBe(0);
     });
 
     it("reuses existing static scope DOM surfaces", () => {
@@ -119,6 +121,7 @@ describe("StaticScope instance behavior", () => {
         expect(scope.btnZoom.style.display).toBe("");
         expect(scope.btnScale.style.display).toBe("");
         expect(scope.btnMagnitude.style.display).toBe("");
+        expect(scope.divMagnitudeDbRange.style.display).toBe("");
         expect(scope.iSwitch.className).toBe("fas fa-sm fa-chart-bar");
     });
 
@@ -148,6 +151,28 @@ describe("StaticScope instance behavior", () => {
         expect(scope.magnitudeScaleMode).toBe(0);
         expect(scope.btnMagnitude.innerText).toBe("amp");
         expect(scope.btnMagnitude.getAttribute("title")).toBe("Switch to Decibels");
+        expect(scope.divMagnitudeDbRange.style.display).toBe("none");
+    });
+
+    it("updates and validates explicit magnitude dB limits", () => {
+        const { container } = createStaticScopeContainer();
+        const scope = new StaticScope({ container });
+        const drawSpy = vi.spyOn(scope, "draw");
+        scope.mode = ScopeMode.Spectroscope;
+
+        scope.inputMagnitudeDbMin.value = "-72";
+        scope.inputMagnitudeDbMin.dispatchEvent(new Event("change"));
+        scope.inputMagnitudeDbMax.value = "6";
+        scope.inputMagnitudeDbMax.dispatchEvent(new Event("change"));
+
+        expect(scope.magnitudeDbMin).toBe(-72);
+        expect(scope.magnitudeDbMax).toBe(6);
+        expect(drawSpy).toHaveBeenCalled();
+
+        scope.inputMagnitudeDbMin.value = "10";
+        scope.inputMagnitudeDbMin.dispatchEvent(new Event("change"));
+        expect(scope.magnitudeDbMin).toBe(-72);
+        expect(scope.inputMagnitudeDbMin.value).toBe("-72");
     });
 
     it("clamps zoom, pan, vertical zoom, and reset controls", () => {
@@ -185,6 +210,32 @@ describe("StaticScope instance behavior", () => {
         expect(scope.vzoom).toBeCloseTo(1 / 64);
         scope.vzoom = 128;
         expect(scope.vzoom).toBe(64);
+    });
+
+    it("passes the explicit magnitude dB limits to the spectroscope renderer", () => {
+        const { container } = createStaticScopeContainer({ width: 320, height: 180 });
+        const scope = new StaticScope({ container });
+        const drawSpectroscope = vi.spyOn(StaticScope, "drawSpectroscope").mockImplementation(() => undefined);
+        scope.mode = ScopeMode.Spectroscope;
+        scope.magnitudeDbMin = -72;
+        scope.magnitudeDbMax = 6;
+
+        scope.draw(createDrawOptions());
+        rafMock.flush();
+
+        expect(drawSpectroscope).toHaveBeenCalledWith(
+            scope.ctx,
+            320,
+            180,
+            expect.any(Object),
+            1,
+            0,
+            undefined,
+            FreqScaleMode.Logarithmic,
+            1,
+            -72,
+            6
+        );
     });
 
     it("updates cursor state from pointer movement and clears it on leave", () => {
@@ -230,7 +281,7 @@ describe("StaticScope instance behavior", () => {
 
         scope.mode = ScopeMode.Spectroscope;
         rafMock.flush();
-        expect(drawSpectroscope).toHaveBeenCalledWith(scope.ctx, 320, 180, drawOptions, 1, 0, undefined, FreqScaleMode.Logarithmic, 1);
+        expect(drawSpectroscope).toHaveBeenCalledWith(scope.ctx, 320, 180, drawOptions, 1, 0, undefined, FreqScaleMode.Logarithmic, 1, -100, 0);
 
         scope.mode = ScopeMode.Phase;
         rafMock.flush();

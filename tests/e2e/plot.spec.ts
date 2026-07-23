@@ -59,9 +59,9 @@ test.describe("Plot controls", () => {
         await expect.poll(() => page.evaluate(() => window.faustEnv.uiEnv.analyser.resolvedFftWindow)).toBe("hann");
     });
 
-    test("frequency plots switch magnitude units and expose phase", async ({ page }) => {
+    test("frequency plots set dB limits, switch magnitude units, and expose phase", async ({ page }) => {
         await openApp(page);
-        await page.evaluate(() => window.faustEnv.editor.setValue('import("stdfaust.lib");\nprocess = os.osc(440);'));
+        await page.evaluate(() => window.faustEnv.editor.setValue('import("stdfaust.lib");\nprocess = os.impulse;'));
         await page.locator("#select-plot-mode").selectOption("offline");
         await page.locator("#input-plot-samps").fill("1024");
         await page.locator("#input-plot-samps").dispatchEvent("change");
@@ -71,16 +71,36 @@ test.describe("Plot controls", () => {
         const modeButton = page.locator("#plot-ui .static-scope-ui-switch");
         await modeButton.dispatchEvent("click");
         await expect.poll(() => page.evaluate(() => window.faustEnv.uiEnv.plotScope.mode)).toBe(3);
+        const magnitudeDbMin = page.locator("#plot-ui .static-scope-ui-db-min");
+        const magnitudeDbMax = page.locator("#plot-ui .static-scope-ui-db-max");
+        await expect(magnitudeDbMin).toHaveValue("-100");
+        await expect(magnitudeDbMax).toHaveValue("0");
+        await magnitudeDbMin.fill("-72");
+        await magnitudeDbMin.dispatchEvent("change");
+        await magnitudeDbMax.fill("6");
+        await magnitudeDbMax.dispatchEvent("change");
+        await expect.poll(() => page.evaluate(() => ({
+            min: window.faustEnv.uiEnv.plotScope.magnitudeDbMin,
+            max: window.faustEnv.uiEnv.plotScope.magnitudeDbMax
+        }))).toEqual({ min: -72, max: 6 });
         const magnitudeButton = page.locator("#plot-ui .static-scope-ui-magnitude");
         await expect(magnitudeButton).toHaveText("dB");
         await magnitudeButton.dispatchEvent("click");
         await expect(magnitudeButton).toHaveText("amp");
+        await expect(magnitudeDbMin).toBeHidden();
+        await expect(magnitudeDbMax).toBeHidden();
 
         await modeButton.dispatchEvent("click");
         await expect.poll(() => page.evaluate(() => window.faustEnv.uiEnv.plotScope.mode)).toBe(5);
         await expect(modeButton.locator("span")).toHaveText("Phase");
         await expect(magnitudeButton).toBeHidden();
-        expect(await page.evaluate(() => window.faustEnv.uiEnv.analyser.phaseDomainData[0].length)).toBeGreaterThan(0);
+        const alignedPhasePeak = await page.evaluate(() => {
+            const analyser = window.faustEnv.uiEnv.analyser;
+            const frameOffset = analyser.fftSize / 2 * (analyser.fftOverlap - 1);
+            const phaseFrame = analyser.phaseDomainData[0].slice(frameOffset, frameOffset + analyser.fftSize / 2);
+            return Math.max(...phaseFrame.map(Math.abs));
+        });
+        expect(alignedPhasePeak).toBeLessThan(1e-6);
     });
 
     test("waveform selection copies CSV, axes reset independently, and data flows down columns", async ({ page }) => {

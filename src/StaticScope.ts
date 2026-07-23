@@ -80,6 +80,12 @@ export class StaticScope {
     btnScale: HTMLButtonElement;
     /** Button to switch between dB and linear magnitude */
     btnMagnitude: HTMLButtonElement;
+    /** Container for the magnitude dB-axis limit inputs. */
+    divMagnitudeDbRange: HTMLDivElement;
+    /** Lower magnitude dB-axis limit input. */
+    inputMagnitudeDbMin: HTMLInputElement;
+    /** Upper magnitude dB-axis limit input. */
+    inputMagnitudeDbMax: HTMLInputElement;
     /** Button to download the current data as a CSV file */
     btnDownload: HTMLButtonElement;
     /** Icon element within the switch button */
@@ -98,6 +104,10 @@ export class StaticScope {
     private _freqScaleMode = EFreqScaleMode.Logarithmic;
     /** The current vertical magnitude mapping */
     private _magnitudeScaleMode = MagnitudeScaleMode.Decibels;
+    /** Lower limit of the magnitude dB axis. */
+    private _magnitudeDbMin = -100;
+    /** Upper limit of the magnitude dB axis. */
+    private _magnitudeDbMax = 0;
     /** Per-mode horizontal/vertical zoom and pan state with its clamping rules. */
     private viewState = new ScopeViewState();
     /** The current data and options for drawing */
@@ -200,9 +210,12 @@ export class StaticScope {
      * @param {number} horizontalZoomOffset The horizontal zoom offset.
      * @param {{ x: number; y: number }} cursor The current cursor position.
      * @param {EFreqScaleMode} freqScaleMode The frequency scale mode (linear or log).
+     * @param {MagnitudeScaleMode} magnitudeScaleMode The magnitude unit mapping.
+     * @param {number} magnitudeDbMin The lower dB-axis limit.
+     * @param {number} magnitudeDbMax The upper dB-axis limit.
      */
-    static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode, magnitudeScaleMode = MagnitudeScaleMode.Decibels) {
-        drawStaticSpectroscope(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode, magnitudeScaleMode);
+    static drawSpectroscope(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode, magnitudeScaleMode = MagnitudeScaleMode.Decibels, magnitudeDbMin = -100, magnitudeDbMax = 0) {
+        drawStaticSpectroscope(this.overlayCallbacks(), ctx, canvasWidth, canvasHeight, drawOptions, horizontalZoom, horizontalZoomOffset, cursor, freqScaleMode, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax);
     }
     /** Draws wrapped FFT phase with degree-labelled output on the selected frequency scale. */
     static drawPhase(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawOptions: TDrawOptions, horizontalZoom: number, horizontalZoomOffset: number, cursor: { x: number; y: number }, freqScaleMode: EFreqScaleMode) {
@@ -264,10 +277,13 @@ export class StaticScope {
      * @param {TDrawOptions} drawOptions The data and options for drawing.
      * @param {EScopeMode} mode The current scope mode.
      * @param {EFreqScaleMode} [freqScaleMode] The frequency scale mode.
+     * @param {MagnitudeScaleMode} [magnitudeScaleMode] The magnitude unit mapping.
+     * @param {number} magnitudeDbMin The lower dB-axis limit.
+     * @param {number} magnitudeDbMax The upper dB-axis limit.
      * @returns {[number, { type: string; data: any }[]][]} An array of events to be drawn.
      */
-    static drawGrid(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawStartValue: number, drawEndValue: number, stabilizationOffset: number, verticalScaleFactor: number, drawOptions: TDrawOptions, mode: EScopeMode, freqScaleMode?: EFreqScaleMode, magnitudeScaleMode?: MagnitudeScaleMode) {
-        return drawStaticScopeGrid(ctx, canvasWidth, canvasHeight, drawStartValue, drawEndValue, stabilizationOffset, verticalScaleFactor, drawOptions, mode, freqScaleMode, magnitudeScaleMode);
+    static drawGrid(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawStartValue: number, drawEndValue: number, stabilizationOffset: number, verticalScaleFactor: number, drawOptions: TDrawOptions, mode: EScopeMode, freqScaleMode?: EFreqScaleMode, magnitudeScaleMode?: MagnitudeScaleMode, magnitudeDbMin = -100, magnitudeDbMax = 0) {
+        return drawStaticScopeGrid(ctx, canvasWidth, canvasHeight, drawStartValue, drawEndValue, stabilizationOffset, verticalScaleFactor, drawOptions, mode, freqScaleMode, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax);
     }
     /**
      * Draws event information on the canvas.
@@ -379,6 +395,12 @@ export class StaticScope {
         this.btnMagnitude.addEventListener("click", () => {
             this.magnitudeScaleMode = (this.magnitudeScaleMode + 1) % 2;
         });
+        this.inputMagnitudeDbMin.addEventListener("change", () => {
+            this.magnitudeDbMin = this.inputMagnitudeDbMin.valueAsNumber;
+        });
+        this.inputMagnitudeDbMax.addEventListener("change", () => {
+            this.magnitudeDbMax = this.inputMagnitudeDbMax.valueAsNumber;
+        });
         this.btnDownload.addEventListener("click", () => {
             const csv = buildScopeCsv(this.mode, this.data);
             if (csv) downloadTextFile(csv, "data.csv");
@@ -443,7 +465,7 @@ export class StaticScope {
                 StaticScope.drawOscilloscope(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.vzoom, this.cursor, this.selection);
                 break;
             case EScopeMode.Spectroscope:
-                StaticScope.drawSpectroscope(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode, this.magnitudeScaleMode);
+                StaticScope.drawSpectroscope(this.ctx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode, this.magnitudeScaleMode, this.magnitudeDbMin, this.magnitudeDbMax);
                 break;
             case EScopeMode.Spectrogram:
                 StaticScope.drawSpectrogram(this.ctx, this.spectTempCtx, canvasWidth, canvasHeight, this.data, this.zoom, this.zoomOffset, this.cursor, this.freqScaleMode);
@@ -572,6 +594,38 @@ export class StaticScope {
     set magnitudeScaleMode(newMode: MagnitudeScaleMode) {
         this._magnitudeScaleMode = newMode;
         updateStaticScopeMagnitudeButton(this.btnMagnitude, newMode);
+        this.divMagnitudeDbRange.style.display = this.mode === EScopeMode.Spectroscope
+            && newMode === MagnitudeScaleMode.Decibels
+            ? ""
+            : "none";
+        this.draw();
+    }
+    /** Gets the lower dB limit used by the magnitude plot. */
+    get magnitudeDbMin() {
+        return this._magnitudeDbMin;
+    }
+    /** Sets the lower dB limit when it remains below the upper limit. */
+    set magnitudeDbMin(newMinimum: number) {
+        if (!Number.isFinite(newMinimum) || newMinimum >= this.magnitudeDbMax) {
+            this.inputMagnitudeDbMin.value = `${this._magnitudeDbMin}`;
+            return;
+        }
+        this._magnitudeDbMin = newMinimum;
+        this.inputMagnitudeDbMin.value = `${newMinimum}`;
+        this.draw();
+    }
+    /** Gets the upper dB limit used by the magnitude plot. */
+    get magnitudeDbMax() {
+        return this._magnitudeDbMax;
+    }
+    /** Sets the upper dB limit when it remains above the lower limit. */
+    set magnitudeDbMax(newMaximum: number) {
+        if (!Number.isFinite(newMaximum) || newMaximum <= this.magnitudeDbMin) {
+            this.inputMagnitudeDbMax.value = `${this._magnitudeDbMax}`;
+            return;
+        }
+        this._magnitudeDbMax = newMaximum;
+        this.inputMagnitudeDbMax.value = `${newMaximum}`;
         this.draw();
     }
     /**
@@ -598,7 +652,9 @@ export class StaticScope {
             btnZoomIn: this.btnZoomIn,
             btnZoomOut: this.btnZoomOut,
             btnScale: this.btnScale,
-            btnMagnitude: this.btnMagnitude
+            btnMagnitude: this.btnMagnitude,
+            divMagnitudeDbRange: this.divMagnitudeDbRange,
+            magnitudeScaleMode: this.magnitudeScaleMode
         });
         this.draw();
     }

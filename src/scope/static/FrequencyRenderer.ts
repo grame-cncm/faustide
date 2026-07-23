@@ -1,8 +1,9 @@
 /**
  * Static-scope frequency renderers for magnitude and wrapped phase.
  *
- * Magnitude supports dBFS and normalized linear amplitude; both views support
- * linear/log frequency mapping and cursor statistics. Extracted from StaticScope.
+ * Magnitude supports dBFS with explicit lower/upper limits and normalized
+ * linear amplitude; both views support linear/log frequency mapping and cursor
+ * statistics. Extracted from StaticScope.
  */
 import type { TDrawOptions } from "./StaticScopeTypes";
 import { wrap } from "../../utils";
@@ -42,7 +43,9 @@ type FrequencyRendererDependencies = {
         drawOptions: TDrawOptions,
         mode: StaticScopeMode,
         freqScaleMode?: FrequencyScaleMode,
-        magnitudeScaleMode?: MagnitudeScaleMode
+        magnitudeScaleMode?: MagnitudeScaleMode,
+        magnitudeDbMin?: number,
+        magnitudeDbMax?: number
     ) => [number, EventPayload[]][];
     /** Draws one event marker returned by `drawGrid`. */
     drawEvent: (ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, x: number, eventData: EventPayload[]) => void;
@@ -55,9 +58,9 @@ const dbToLinearAmplitude = (magnitudeDb: number) => 10 ** (magnitudeDb / 20);
 const getMagnitudeDisplayValue = (magnitudeDb: number, mode: MagnitudeScaleMode) =>
     mode === MagnitudeScaleMode.Decibels ? magnitudeDb : dbToLinearAmplitude(magnitudeDb);
 
-const getMagnitudePosition = (magnitudeDb: number, mode: MagnitudeScaleMode) =>
+const getMagnitudePosition = (magnitudeDb: number, mode: MagnitudeScaleMode, magnitudeDbMin: number, magnitudeDbMax: number) =>
     mode === MagnitudeScaleMode.Decibels
-        ? Math.min(1, Math.max(0, magnitudeDb / 100 + 1))
+        ? Math.min(1, Math.max(0, (magnitudeDb - magnitudeDbMin) / (magnitudeDbMax - magnitudeDbMin)))
         : Math.min(1, Math.max(0, dbToLinearAmplitude(magnitudeDb)));
 
 /**
@@ -77,7 +80,9 @@ export const drawStaticSpectroscope = (
     horizontalZoomOffset: number,
     cursor: { x: number; y: number },
     freqScaleMode: FrequencyScaleMode,
-    magnitudeScaleMode = MagnitudeScaleMode.Decibels
+    magnitudeScaleMode = MagnitudeScaleMode.Decibels,
+    magnitudeDbMin = -100,
+    magnitudeDbMax = 0
 ) => {
     dependencies.drawBackground(ctx, canvasWidth, canvasHeight);
     if (!drawOptions) return;
@@ -102,7 +107,7 @@ export const drawStaticSpectroscope = (
         const startBinIndex = Math.max(1, Math.floor(frequencyToBinIndex(startFrequency, maxFrequency, frequencyBinCount)));
         const endBinIndex = Math.min(frequencyBinCount, Math.ceil(frequencyToBinIndex(endFrequency, maxFrequency, frequencyBinCount)));
 
-        const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, StaticScopeMode.Spectroscope, freqScaleMode, magnitudeScaleMode);
+        const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, StaticScopeMode.Spectroscope, freqScaleMode, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax);
 
         for (let channelIndex = 0; channelIndex < freqDomainData.length; channelIndex++) {
             ctx.beginPath();
@@ -125,7 +130,7 @@ export const drawStaticSpectroscope = (
                     const magnitude = freqDomainData[channelIndex][wrappedBinIndex];
                     if (magnitude > maxMagnitude) maxMagnitude = magnitude;
                 }
-                const y = heightPerChannel * (channelIndex + 1 - getMagnitudePosition(maxMagnitude, magnitudeScaleMode));
+                const y = heightPerChannel * (channelIndex + 1 - getMagnitudePosition(maxMagnitude, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax));
                 ctx.lineTo(leftMargin + pixel, y);
             }
 
@@ -160,7 +165,7 @@ export const drawStaticSpectroscope = (
         const endBinIndex = frameStartBinIndex + visibleEndBinIndex;
         const startFrequency = binIndexToFrequency(visibleStartBinIndex, sampleRate / 2, frequencyBinCount);
         const endFrequency = binIndexToFrequency(visibleEndBinIndex, sampleRate / 2, frequencyBinCount);
-        const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, StaticScopeMode.Spectroscope, freqScaleMode, magnitudeScaleMode);
+        const eventsToDraw = dependencies.drawGrid(ctx, canvasWidth, canvasHeight, startFrequency, endFrequency, 0, 1, drawOptions, StaticScopeMode.Spectroscope, freqScaleMode, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax);
 
         const pixelsPerBin = (canvasWidth - leftMargin) / Math.max(1, endBinIndex - startBinIndex - 1);
         const horizontalDrawStep = Math.max(1, Math.round(1 / pixelsPerBin));
@@ -181,7 +186,7 @@ export const drawStaticSpectroscope = (
                 }
 
                 const x = (binIndex - startBinIndex) * pixelsPerBin + leftMargin;
-                const y = heightPerChannel * (channelIndex + 1 - getMagnitudePosition(maxMagnitudeInStep, magnitudeScaleMode));
+                const y = heightPerChannel * (channelIndex + 1 - getMagnitudePosition(maxMagnitudeInStep, magnitudeScaleMode, magnitudeDbMin, magnitudeDbMax));
                 if (binIndex === startBinIndex) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }

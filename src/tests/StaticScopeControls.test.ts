@@ -34,6 +34,8 @@ describe("StaticScopeControls", () => {
         expect(controls.canvas.tabIndex).toBe(0);
         expect(controls.canvas.title).toContain("Double-click an axis");
         expect(container.querySelector(".static-scope-ui-magnitude")).toBeInstanceOf(HTMLButtonElement);
+        expect(controls.inputMagnitudeDbMin.value).toBe("-100");
+        expect(controls.inputMagnitudeDbMax.value).toBe("0");
         expect(controls.iSwitch.className).toBe("fas fa-sm fa-wave-square");
         expect(controls.spanSwitch.innerText).toBe("Oscilloscope");
     });
@@ -77,7 +79,9 @@ describe("StaticScopeControls", () => {
             btnZoomIn: controls.btnZoomIn,
             btnZoomOut: controls.btnZoomOut,
             btnScale: controls.btnScale,
-            btnMagnitude: controls.btnMagnitude
+            btnMagnitude: controls.btnMagnitude,
+            divMagnitudeDbRange: controls.divMagnitudeDbRange,
+            magnitudeScaleMode: MagnitudeScaleMode.Linear
         });
         expect(controls.spanSwitch.innerText).toBe("Data");
         expect(controls.divData.style.display).toBe("block");
@@ -95,12 +99,32 @@ describe("StaticScopeControls", () => {
             btnZoomIn: controls.btnZoomIn,
             btnZoomOut: controls.btnZoomOut,
             btnScale: controls.btnScale,
-            btnMagnitude: controls.btnMagnitude
+            btnMagnitude: controls.btnMagnitude,
+            divMagnitudeDbRange: controls.divMagnitudeDbRange,
+            magnitudeScaleMode: MagnitudeScaleMode.Decibels
         });
         expect(controls.iSwitch.className).toBe("fas fa-sm fa-chart-bar");
         expect(controls.divData.style.display).toBe("none");
         expect(controls.canvas.style.display).toBe("block");
         expect(controls.btnScale.style.display).toBe("");
         expect(controls.btnMagnitude.style.display).toBe("");
+        expect(controls.divMagnitudeDbRange.style.display).toBe("");
+
+        updateStaticScopeModeControls({
+            mode: StaticScopeMode.Spectroscope,
+            inFrequencyDomain: true,
+            iSwitch: controls.iSwitch,
+            spanSwitch: controls.spanSwitch,
+            divData: controls.divData,
+            canvas: controls.canvas,
+            btnZoom: controls.btnZoom,
+            btnZoomIn: controls.btnZoomIn,
+            btnZoomOut: controls.btnZoomOut,
+            btnScale: controls.btnScale,
+            btnMagnitude: controls.btnMagnitude,
+            divMagnitudeDbRange: controls.divMagnitudeDbRange,
+            magnitudeScaleMode: MagnitudeScaleMode.Linear
+        });
+        expect(controls.divMagnitudeDbRange.style.display).toBe("none");
     });
 });

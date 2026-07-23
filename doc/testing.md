@@ -82,7 +82,7 @@ These tests run the compiled app in a real Chromium browser. They are the **only
 | `panels.spec.ts` | Panel resize behaviour |
 | `files.spec.ts` | File manager operations (add, rename, delete) |
 | `midi.spec.ts` | MIDI input wiring |
-| `plot.spec.ts` | Plot rendering, FFT windows, magnitude/phase modes, waveform selection/copy, axis reset, and Data layout |
+| `plot.spec.ts` | Plot rendering, FFT windows, magnitude/phase modes and explicit dB limits, waveform selection/copy, axis reset, and Data layout |
 | `recorder.spec.ts` | Audio recorder workflow |
 | `settings.spec.ts` | Settings persistence, including embedded and popup parameter state after recompilation |
 
@@ -114,4 +114,4 @@ operating-system prompt. Real microphone and speaker checks remain manual.
 
 Files at 0% or low coverage require the E2E level to be exercised — `index.ts`, `FaustEditorFactory.ts`, `BootstrapLoaders.ts` — they are out of reach for jsdom by design, as they depend on a real browser environment (AudioWorklet, full DOM lifecycle, network asset loading).
 
-Coverage thresholds are configured in `vitest.config.ts` as anti-regression floors (currently statements ≥ 78%, branches ≥ 64%, functions ≥ 77%, lines ≥ 81%). They sit just below the current measured values so the suite cannot silently backslide; raise them whenever coverage improves.
+Coverage thresholds are configured in `vitest.config.ts` as anti-regression floors (currently statements ≥ 80.4%, branches ≥ 67.8%, functions ≥ 78.5%, lines ≥ 83.3%). They sit just below the current measured values so the suite cannot silently backslide; raise them whenever coverage improves.

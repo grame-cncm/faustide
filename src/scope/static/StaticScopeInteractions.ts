@@ -217,6 +217,7 @@ export const handleStaticScopeDoubleClick = (
     const y = event.offsetY;
 
     if (x < STATIC_SCOPE_LEFT_MARGIN && y < target.canvas.height - STATIC_SCOPE_BOTTOM_MARGIN) {
+        if (target.mode === StaticScopeMode.Spectroscope) return;
         event.preventDefault();
         target.vzoom = 1;
         target.draw();
@@ -248,6 +249,7 @@ export const handleStaticScopeWheel = (
     handleStaticScopePointerMove(target, event);
 
     if (event.offsetX < leftMargin && event.offsetY < target.canvas.height - bottomMargin) {
+        if (target.mode === StaticScopeMode.Spectroscope) return;
         if (multiplier !== 1) target.vzoom *= 1 / multiplier;
         target.draw();
         return;
