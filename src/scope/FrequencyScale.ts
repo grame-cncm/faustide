@@ -50,6 +50,63 @@ export const getLogFrequencyWindow = (
     };
 };
 
+/** One grid tick on a numeric axis. */
+export type AxisTick = {
+    value: number;
+    major: boolean;
+};
+
+/** Returns a human-readable frequency label without unnecessary decimals. */
+export const formatFrequency = (frequency: number) => {
+    if (Math.abs(frequency) >= 1000) {
+        const kilohertz = frequency / 1000;
+        return `${Number(kilohertz.toFixed(kilohertz < 10 && !Number.isInteger(kilohertz) ? 1 : 0))}k`;
+    }
+    return `${Number(frequency.toFixed(Math.abs(frequency) < 10 && !Number.isInteger(frequency) ? 1 : 0))}`;
+};
+
+/** Chooses a 1/2/5 × 10ⁿ step for a readable linear axis. */
+export const getNiceLinearStep = (range: number, targetTickCount = 7) => {
+    const rawStep = Math.abs(range) / Math.max(1, targetTickCount - 1);
+    if (!isFinite(rawStep) || rawStep === 0) return 1;
+    const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+    const normalized = rawStep / magnitude;
+    const multiplier = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+    return multiplier * magnitude;
+};
+
+/** Builds stable, evenly spaced ticks for a visible linear range. */
+export const getLinearAxisTicks = (rangeStart: number, rangeEnd: number, targetTickCount = 7): AxisTick[] => {
+    const min = Math.min(rangeStart, rangeEnd);
+    const max = Math.max(rangeStart, rangeEnd);
+    const step = getNiceLinearStep(max - min, targetTickCount);
+    const first = Math.ceil((min - step * 1e-9) / step) * step;
+    const ticks: AxisTick[] = [];
+    for (let value = first; value <= max + step * 1e-9; value += step) {
+        ticks.push({ value: Number(value.toPrecision(12)), major: true });
+    }
+    return ticks;
+};
+
+/** Builds conventional 1/2/5 ticks for a visible logarithmic range. */
+export const getLogarithmicAxisTicks = (rangeStart: number, rangeEnd: number): AxisTick[] => {
+    const min = Math.max(Number.MIN_VALUE, Math.min(rangeStart, rangeEnd));
+    const max = Math.max(rangeStart, rangeEnd);
+    if (!isFinite(min) || !isFinite(max) || min >= max) return [];
+    const ticks: AxisTick[] = [];
+    const firstPower = Math.floor(Math.log10(min));
+    const lastPower = Math.ceil(Math.log10(max));
+    for (let power = firstPower; power <= lastPower; power++) {
+        const decade = 10 ** power;
+        for (const multiplier of [1, 2, 5]) {
+            const value = multiplier * decade;
+            if (value < min || value > max) continue;
+            ticks.push({ value, major: multiplier === 1 });
+        }
+    }
+    return ticks;
+};
+
 /** Clamps a normalized zoom offset to the visible range for the current zoom. */
 export const clampZoomOffset = (zoom: number, zoomOffset: number) =>
     Math.max(0, Math.min(1 - 1 / zoom, zoomOffset));

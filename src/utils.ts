@@ -1,6 +1,8 @@
 import { FFT } from "kissfft-js";
-import apply from "window-function/apply";
-import { blackman } from "window-function";
+import { blackman, hann } from "window-function";
+
+/** Concrete sample weighting applied before a custom FFT. */
+export type FFTWindow = "rectangular" | "hann" | "blackman";
 
 /* eslint-disable no-param-reassign */
 /**
@@ -97,20 +99,49 @@ export const fillRectWrap = (ctx: CanvasRenderingContext2D, x: number, y: number
 };
 
 /**
- * Calcute FFT power, result array is half sized
+ * Calculates one half-spectrum of dB magnitude and wrapped phase.
+ *
+ * Rectangular mode matches NumPy's unscaled `rfft`: a unit impulse produces
+ * magnitude one and phase zero at every retained bin. Hann mode matches the
+ * reference plotter by dividing the windowed signal by `N / 4`. Blackman keeps
+ * coherent-gain amplitude normalization for captured-signal analysis.
  *
  * @param {Float32Array} t
  * @param {FFT} fft
- * @returns
+ * @param {FFTWindow} windowMode sample weighting applied before the transform
+ * @returns magnitude and phase arrays derived from the same FFT
  */
-export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => { // eslint-disable-line arrow-body-style
-    const ffted = fft.forward(apply(t, blackman));
-    const f = new Float32Array(t.length / 2);
-    for (let i = 0; i < f.length; i++) {
-        f[i] = 20 * Math.log10((ffted[i * 2] ** 2 + ffted[i * 2 + 1] ** 2) ** 0.5 / f.length * 2.38328);
+export const getFrequencyDomainFrame = (t: Float32Array, fft: FFT, windowMode: FFTWindow = "blackman") => {
+    let magnitudeScale = 1;
+    if (windowMode === "blackman") {
+        let windowSum = 0;
+        for (let sampleIndex = 0; sampleIndex < t.length; sampleIndex++) {
+            const coefficient = blackman(sampleIndex, t.length);
+            t[sampleIndex] *= coefficient;
+            windowSum += coefficient;
+        }
+        magnitudeScale = 2 / windowSum;
+    } else if (windowMode === "hann") {
+        for (let sampleIndex = 0; sampleIndex < t.length; sampleIndex++) {
+            t[sampleIndex] *= hann(sampleIndex, t.length);
+        }
+        magnitudeScale = 4 / t.length;
     }
-    return f;
+    const ffted = fft.forward(t);
+    const magnitudeDb = new Float32Array(t.length / 2);
+    const phase = new Float32Array(t.length / 2);
+    for (let i = 0; i < magnitudeDb.length; i++) {
+        const real = ffted[i * 2];
+        const imaginary = ffted[i * 2 + 1];
+        magnitudeDb[i] = 20 * Math.log10((real ** 2 + imaginary ** 2) ** 0.5 * magnitudeScale);
+        const phaseValue = Math.atan2(imaginary, real);
+        phase[i] = phaseValue === 0 ? 0 : phaseValue;
+    }
+    return { magnitudeDb, phase };
 };
+
+/** Calculates the dB magnitude spectrum retained by the historical API. */
+export const getFrequencyDomainData = (t: Float32Array, fft: FFT) => getFrequencyDomainFrame(t, fft).magnitudeDb;
 
 /** Estimates the dominant frequency (Hz) as the peak bin of a power spectrum. */
 export const estimateFreq = (fft: Float32Array, sampleRate: number) => {

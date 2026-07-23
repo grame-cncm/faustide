@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
     createStaticScopeControls,
+    updateStaticScopeMagnitudeButton,
     updateStaticScopeModeControls,
     updateStaticScopeScaleButton
 } from "../scope/static/StaticScopeControls";
-import { FrequencyScaleMode, StaticScopeMode } from "../scope/ScopeModes";
+import { FrequencyScaleMode, MagnitudeScaleMode, StaticScopeMode } from "../scope/ScopeModes";
 import { installMockCanvasContext } from "./helpers/canvasContext";
 import { createStaticScopeContainer } from "./helpers/scopeDom";
 
@@ -30,6 +31,9 @@ describe("StaticScopeControls", () => {
         expect(container.querySelector(".static-scope-default")).toBe(controls.divDefault);
         expect(controls.spectTempCtx.canvas.height).toBe(1024);
         expect(controls.btnZoom.innerText).toBe("1.0x");
+        expect(controls.canvas.tabIndex).toBe(0);
+        expect(controls.canvas.title).toContain("Double-click an axis");
+        expect(container.querySelector(".static-scope-ui-magnitude")).toBeInstanceOf(HTMLButtonElement);
         expect(controls.iSwitch.className).toBe("fas fa-sm fa-wave-square");
         expect(controls.spanSwitch.innerText).toBe("Oscilloscope");
     });
@@ -58,6 +62,9 @@ describe("StaticScopeControls", () => {
         updateStaticScopeScaleButton(controls.btnScale, controls.iScale, FrequencyScaleMode.Linear);
         expect(controls.iScale.className).toBe("fas fa-ruler-horizontal");
         expect(controls.btnScale.getAttribute("title")).toBe("Switch to Logarithmic Scale");
+        updateStaticScopeMagnitudeButton(controls.btnMagnitude, MagnitudeScaleMode.Linear);
+        expect(controls.btnMagnitude.innerText).toBe("amp");
+        expect(controls.btnMagnitude.getAttribute("title")).toBe("Switch to Decibels");
 
         updateStaticScopeModeControls({
             mode: StaticScopeMode.Data,
@@ -69,7 +76,8 @@ describe("StaticScopeControls", () => {
             btnZoom: controls.btnZoom,
             btnZoomIn: controls.btnZoomIn,
             btnZoomOut: controls.btnZoomOut,
-            btnScale: controls.btnScale
+            btnScale: controls.btnScale,
+            btnMagnitude: controls.btnMagnitude
         });
         expect(controls.spanSwitch.innerText).toBe("Data");
         expect(controls.divData.style.display).toBe("block");
@@ -86,11 +94,13 @@ describe("StaticScopeControls", () => {
             btnZoom: controls.btnZoom,
             btnZoomIn: controls.btnZoomIn,
             btnZoomOut: controls.btnZoomOut,
-            btnScale: controls.btnScale
+            btnScale: controls.btnScale,
+            btnMagnitude: controls.btnMagnitude
         });
         expect(controls.iSwitch.className).toBe("fas fa-sm fa-chart-bar");
         expect(controls.divData.style.display).toBe("none");
         expect(controls.canvas.style.display).toBe("block");
         expect(controls.btnScale.style.display).toBe("");
+        expect(controls.btnMagnitude.style.display).toBe("");
     });
 });

@@ -18,7 +18,9 @@ export enum StaticScopeMode {
     /** Frequency-domain magnitude spectrum. */
     Spectroscope = 3,
     /** Time-frequency waterfall rendered from cached FFT frames. */
-    Spectrogram = 4
+    Spectrogram = 4,
+    /** Wrapped FFT phase spectrum in radians. */
+    Phase = 5
 }
 
 /** Frequency axis mapping used by frequency-domain static scope modes. */
@@ -27,6 +29,14 @@ export enum FrequencyScaleMode {
     Linear = 0,
     /** Logarithmic spacing for perceptual frequency inspection. */
     Logarithmic = 1
+}
+
+/** Vertical magnitude mapping for static frequency spectra. */
+export enum MagnitudeScaleMode {
+    /** Linear amplitude normalized to full scale. */
+    Linear = 0,
+    /** Decibels relative to full scale. */
+    Decibels = 1
 }
 
 /** Display modes supported by the real-time analyser scope. */
@@ -50,6 +60,7 @@ export const getStaticScopeIconClassName = (scopeMode: StaticScopeMode) => {
     if (scopeMode === StaticScopeMode.Oscilloscope) return iconPrefix + "fa-wave-square";
     if (scopeMode === StaticScopeMode.Spectroscope) return iconPrefix + "fa-chart-bar";
     if (scopeMode === StaticScopeMode.Spectrogram) return iconPrefix + "fa-align-justify";
+    if (scopeMode === StaticScopeMode.Phase) return iconPrefix + "fa-chart-line";
     return iconPrefix;
 };
 
@@ -62,6 +73,7 @@ export const getStaticScopeModeName = (scopeMode: StaticScopeMode) => {
     if (scopeMode === StaticScopeMode.Oscilloscope) return "Oscilloscope";
     if (scopeMode === StaticScopeMode.Spectroscope) return "Spectroscope";
     if (scopeMode === StaticScopeMode.Spectrogram) return "Spectrogram";
+    if (scopeMode === StaticScopeMode.Phase) return "Phase";
     return "";
 };
 

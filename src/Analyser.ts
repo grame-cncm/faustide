@@ -1,10 +1,15 @@
 import { FFTR } from "kissfft-js";
 import { TDrawOptions } from "./StaticScope";
-import { sliceWrap, getFrequencyDomainData, setWrap, estimateFreq } from "./utils";
+import type { FFTWindow } from "./utils";
+import { sliceWrap, getFrequencyDomainFrame, setWrap, estimateFreq } from "./utils";
+
+/** User-selectable FFT window behavior for captured/static plots. */
+export type FFTWindowMode = "auto" | FFTWindow;
 
 /**
  * This class provides a default handler for a buffer given by Faust2WebAudio.
- * The handler analyses the buffer with FFT, then saves both time-domain and frequency-domain data.
+ * The handler analyses the buffer with FFT, then saves time-domain data plus
+ * frequency-domain magnitude and phase from the same transform.
  * After each buffer is analysed, a drawHandler is called to display data.
  *
  * @export
@@ -24,6 +29,8 @@ export class Analyser {
      * @memberof Analyser
      */
     freqDomainData: Float32Array[];
+    /** Wrapped FFT phase values in radians for every channel and frame. */
+    phaseDomainData: Float32Array[];
     /**
      * Events stored for each buffer.
      * @type {{ type: string; data: any }[][]}
@@ -83,6 +90,11 @@ export class Analyser {
      */
     private _fftOverlap: 1 | 2 | 4 | 8;
     /**
+     * Selected FFT window behavior. Automatic mode keeps impulse-response
+     * plots untapered while retaining leakage control for captured signals.
+     */
+    private _fftWindow: FFTWindowMode = "auto";
+    /**
      * A callback function that will be executed after each buffer is processed, typically to draw the data.
      * @memberof Analyser
      */
@@ -105,9 +117,10 @@ export class Analyser {
 
     initCache(bufferSize: number, channels: number) {
         const buffers = this.drawMode === "offline" ? 1 : this.buffers;
-        if (this.timeDomainData && this.timeDomainData.length === channels && this.timeDomainData[0].length === bufferSize * buffers) return;
+        if (this.timeDomainData && this.timeDomainData.length === channels && this.timeDomainData[0].length === bufferSize * buffers && this.phaseDomainData) return;
         this.timeDomainData = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers));
         this.freqDomainData = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers * this.fftOverlap / 2).fill(-Infinity));
+        this.phaseDomainData = new Array(channels).fill(null).map(() => new Float32Array(bufferSize * buffers * this.fftOverlap / 2));
         this.currentSampleIndex = 0;
         this.events = [];
     }
@@ -124,17 +137,21 @@ export class Analyser {
         this.initCache(bufferSize, channels);
         this.currentSampleIndex = (index % this.buffers) * bufferSize;
         this.currentBufferIndex = index;
-        const { currentSampleIndex, fftSize, fftOverlap, fftHopSize, fftBins, fft } = this;
+        const { currentSampleIndex, fftSize, fftOverlap, fftHopSize, fftBins, fft, resolvedFftWindow } = this;
 
         timeDomainData.forEach((channelData, i) => {
             this.timeDomainData[i].set(channelData, currentSampleIndex);
             let latestFreqData: Float32Array;
+            let latestPhaseData: Float32Array;
             // Perform FFT on overlapping windows within the new buffer
             for (let fftEndSample = (currentSampleIndex + bufferSize) - (currentSampleIndex + bufferSize) % fftHopSize; fftEndSample > currentSampleIndex; fftEndSample -= fftHopSize) {
                 const fftStartSample = fftEndSample - fftSize;
                 const timeDataForFFT = sliceWrap(this.timeDomainData[i], fftStartSample, fftSize);
-                latestFreqData = getFrequencyDomainData(timeDataForFFT, fft);
+                const frequencyFrame = getFrequencyDomainFrame(timeDataForFFT, fft, resolvedFftWindow);
+                latestFreqData = frequencyFrame.magnitudeDb;
+                latestPhaseData = frequencyFrame.phase;
                 setWrap(this.freqDomainData[i], latestFreqData, fftEndSample * fftOverlap / 2 - fftBins);
+                setWrap(this.phaseDomainData[i], latestPhaseData, fftEndSample * fftOverlap / 2 - fftBins);
             }
             if (latestFreqData) this.estimatedFrequency = estimateFreq(latestFreqData, this.sampleRate);
         });
@@ -154,7 +171,7 @@ export class Analyser {
     }
 
     draw() {
-        const { timeDomainData, freqDomainData, events, drawHandler, drawMode, fftSize, fftOverlap, estimatedFrequency, sampleRate } = this;
+        const { timeDomainData, freqDomainData, phaseDomainData, events, drawHandler, drawMode, fftSize, fftOverlap, estimatedFrequency, sampleRate } = this;
         if (!drawHandler) return;
         if (!timeDomainData || !timeDomainData.length) return;
 
@@ -170,6 +187,7 @@ export class Analyser {
                 sampleRate,
                 timeDomainData,
                 freqDomainData,
+                phaseDomainData,
                 events
             });
             return;
@@ -190,6 +208,7 @@ export class Analyser {
             sampleRate,
             timeDomainData,
             freqDomainData,
+            phaseDomainData,
             events
         };
 
@@ -201,6 +220,7 @@ export class Analyser {
                 ...options,
                 timeDomainData: this.timeDomainData.map(a => a.slice()),
                 freqDomainData: this.freqDomainData.map(a => a.slice()),
+                phaseDomainData: this.phaseDomainData.map(a => a.slice()),
                 events: this.events.slice()
             });
         }
@@ -250,6 +270,29 @@ export class Analyser {
         if (!this.timeDomainData || !this.timeDomainData.length || !this.timeDomainData[0].length) return;
         // Re-initialize frequency domain data array with new size
         this.freqDomainData = new Array(this.timeDomainData.length).fill(null).map(() => new Float32Array(this.timeDomainData[0].length * this.fftOverlap / 2).fill(-Infinity));
+        this.phaseDomainData = new Array(this.timeDomainData.length).fill(null).map(() => new Float32Array(this.timeDomainData[0].length * this.fftOverlap / 2));
+    }
+
+    /** Gets the requested FFT window behavior. */
+    get fftWindow() {
+        return this._fftWindow;
+    }
+
+    /**
+     * Selects automatic, rectangular, Hann, or Blackman FFT weighting.
+     * @param windowMode window behavior used for subsequently analysed frames
+     */
+    set fftWindow(windowMode: FFTWindowMode) {
+        this._fftWindow = windowMode;
+    }
+
+    /**
+     * Resolves automatic selection to rectangular offline and Blackman in
+     * continuous, event, and manual capture modes.
+     */
+    get resolvedFftWindow(): FFTWindow {
+        if (this.fftWindow !== "auto") return this.fftWindow;
+        return this.drawMode === "offline" ? "rectangular" : "blackman";
     }
 
     get fftHopSize() {

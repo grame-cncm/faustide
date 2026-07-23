@@ -29,6 +29,7 @@ export function createCompileOptions(options: CompileOptionsFactoryOptions): Fau
         plotSR: 48000,
         plotFFT: 256,
         plotFFTOverlap: 2,
+        plotFFTWindow: "auto",
         drawSpectrogram: false,
         enableGuiBuilder: false,
         guiBuilderUrl: "https://mainline.i3s.unice.fr/fausteditorweb/dist/PedalEditor/Front-End/",

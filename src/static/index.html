@@ -210,6 +210,18 @@
 						<option value="8">8</option>
 					</select>
 				</div>
+				<div class="input-group input-group-sm mb-2" data-toggle="tooltip" data-placement="right"
+					title="Select FFT window (Auto uses an unscaled rectangular FFT offline and Blackman for captured signals)">
+					<div class="input-group-prepend">
+						<span class="input-group-text">FFT Window</span>
+					</div>
+					<select id="select-plot-fftwindow" class="form-control">
+						<option value="auto" selected>Auto</option>
+						<option value="rectangular">None (Rectangular)</option>
+						<option value="hann">Hann (N/4)</option>
+						<option value="blackman">Blackman</option>
+					</select>
+				</div>
 				<div class="form form-check mb-2" data-toggle="tooltip" data-placement="right"
 					title="Draw spectrogram (Increase CPU usage)">
 					<input id="check-draw-spectrogram" class="form-check-input" type="checkbox" value="" />

@@ -33,6 +33,14 @@ describe("buildScopeCsv", () => {
         expect(buildScopeCsv(EScopeMode.Spectroscope, data)).toBe("channel1\n5\n6\n");
     });
 
+    it("serializes phase bins with the same frequency-domain layout", () => {
+        const phase = new Float32Array([0, Math.PI]);
+        const data: TDrawOptions = { ...base, phaseDomainData: [phase] };
+        expect(buildScopeCsv(EScopeMode.Phase, data)).toBe(
+            `channel1\n0\n${phase[1]}\n`
+        );
+    });
+
     it("serializes frames × channels per bin row (Spectrogram)", () => {
         const data: TDrawOptions = { ...base, freqDomainData: [new Float32Array([1, 2, 3, 4])] };
         expect(buildScopeCsv(EScopeMode.Spectrogram, data)).toBe(
@@ -43,6 +51,7 @@ describe("buildScopeCsv", () => {
     it("returns an empty string when the relevant buffer is missing", () => {
         expect(buildScopeCsv(EScopeMode.Oscilloscope, base)).toBe("");
         expect(buildScopeCsv(EScopeMode.Spectroscope, base)).toBe("");
+        expect(buildScopeCsv(EScopeMode.Phase, base)).toBe("");
         expect(buildScopeCsv(EScopeMode.Spectrogram, base)).toBe("");
     });
 

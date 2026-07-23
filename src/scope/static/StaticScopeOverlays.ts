@@ -1,9 +1,14 @@
-import type { TDrawOptions } from "../../StaticScope";
+import type { TDrawOptions } from "./StaticScopeTypes";
 import {
     FrequencyScaleMode as EFreqScaleMode,
+    MagnitudeScaleMode,
     StaticScopeMode as EScopeMode
 } from "../ScopeModes";
-import { indexToFrequency } from "../FrequencyScale";
+import {
+    formatFrequency,
+    getLinearAxisTicks,
+    getLogarithmicAxisTicks
+} from "../FrequencyScale";
 import {
     STATIC_SCOPE_BOTTOM_MARGIN,
     STATIC_SCOPE_LEFT_MARGIN
@@ -22,6 +27,16 @@ import {
 
 const log = Math.log10;
 const pow = Math.pow;
+
+/** Formats a time-axis value with enough decimal places for the active tick step. */
+const formatTimeSeconds = (seconds: number, tickStep: number) => {
+    const decimalPlaces = Math.min(
+        9,
+        Math.max(0, Math.ceil(-Math.log10(Math.abs(tickStep))) + 1)
+    );
+    const rounded = Number(seconds.toFixed(decimalPlaces));
+    return `${Object.is(rounded, -0) ? 0 : rounded} s`;
+};
 
 /** Cursor statistics payload drawn over the scope. */
 type StatsToDraw = {
@@ -46,16 +61,25 @@ export const drawStaticScopeGrid = (
     verticalScaleFactor: number,
     drawOptions: TDrawOptions,
     mode: EScopeMode,
-    freqScaleMode?: EFreqScaleMode
+    freqScaleMode?: EFreqScaleMode,
+    magnitudeScaleMode = MagnitudeScaleMode.Decibels
 ): [number, { type: string; data: any }[]][] => {
     ctx.save();
     ctx.setLineDash([]);
     ctx.lineWidth = 1;
     const { events, bufferSize, fftSize, fftOverlap, sampleRate } = drawOptions;
-    const isFrequencyDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope;
+    const isFrequencyDomain = mode === EScopeMode.Spectrogram || mode === EScopeMode.Spectroscope || mode === EScopeMode.Phase;
+    const isFrequencyPlot = mode === EScopeMode.Spectroscope || mode === EScopeMode.Phase;
     const frequencyBinCount = fftSize / 2;
-    const channelCount = mode === EScopeMode.Oscilloscope ? 1 : isFrequencyDomain ? drawOptions.freqDomainData.length : drawOptions.timeDomainData.length;
-    const unit = mode === EScopeMode.Spectrogram ? "Hz/frame" : mode === EScopeMode.Spectroscope ? "dB/Hz" : "lvl/samp";
+    const frequencyChannels = mode === EScopeMode.Phase ? drawOptions.phaseDomainData : drawOptions.freqDomainData;
+    const channelCount = mode === EScopeMode.Oscilloscope ? 1 : isFrequencyDomain ? frequencyChannels.length : drawOptions.timeDomainData.length;
+    const unit = mode === EScopeMode.Spectrogram
+        ? "Hz/frame"
+        : mode === EScopeMode.Phase
+            ? "rad/Hz"
+            : mode === EScopeMode.Spectroscope
+                ? magnitudeScaleMode === MagnitudeScaleMode.Decibels ? "dB/Hz" : "amp/Hz"
+                : "lvl/s";
     const eventsToDraw: [number, { type: string; data: any }[]][] = [];
 
     const leftMargin = STATIC_SCOPE_LEFT_MARGIN;
@@ -79,38 +103,30 @@ export const drawStaticScopeGrid = (
     ctx.stroke();
 
     // X-Axis Grid
-    if (mode === EScopeMode.Spectroscope && freqScaleMode === EFreqScaleMode.Logarithmic) {
-        const startFreq = drawStartValue;
-        const endFreq = drawEndValue;
-        if (startFreq > 0) {
-            const logStartFreq = log(startFreq);
-            const logEndFreq = log(endFreq);
-            const magnitude = Math.floor(logStartFreq);
-            for (let powerOf10 = magnitude; powerOf10 < logEndFreq + 1; powerOf10++) {
-                for (let multiplier = 1; multiplier < 10; multiplier++) {
-                    const freq = multiplier * pow(10, powerOf10);
-                    if (freq < startFreq) continue;
-                    if (freq > endFreq) break;
-                    const x = leftMargin + (canvasWidth - leftMargin) * (log(freq) - logStartFreq) / (logEndFreq - logStartFreq);
-                    const isMajor = multiplier === 1;
-                    ctx.strokeStyle = (isMajor || multiplier === 5) ? bufferStrokeStyle : normalStrokeStyle;
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0);
-                    ctx.lineTo(x, canvasHeight - bottomMargin);
-                    ctx.stroke();
-                    if (isMajor || multiplier === 5 || (logEndFreq - logStartFreq < 3 && (multiplier === 2 || multiplier === 7))) {
-                        ctx.fillText(freq >= 1000 ? `${(freq / 1000).toFixed(1)}k` : freq.toFixed(0), Math.min(x, canvasWidth - 20), canvasHeight - 10);
-                    }
-                }
-            }
+    if (isFrequencyPlot) {
+        const rangeStart = drawStartValue;
+        const rangeEnd = drawEndValue;
+        const logarithmic = freqScaleMode === EFreqScaleMode.Logarithmic;
+        const ticks = logarithmic
+            ? getLogarithmicAxisTicks(rangeStart, rangeEnd)
+            : getLinearAxisTicks(rangeStart, rangeEnd);
+        const logStart = logarithmic ? log(rangeStart) : 0;
+        const logRange = logarithmic ? log(rangeEnd) - logStart : 0;
+        for (const tick of ticks) {
+            const position = logarithmic
+                ? (log(tick.value) - logStart) / logRange
+                : (tick.value - rangeStart) / (rangeEnd - rangeStart);
+            const x = leftMargin + (canvasWidth - leftMargin) * position;
+            ctx.strokeStyle = tick.major ? bufferStrokeStyle : normalStrokeStyle;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasHeight - bottomMargin);
+            ctx.stroke();
+            ctx.fillText(formatFrequency(tick.value), Math.min(x, canvasWidth - 20), canvasHeight - 10);
         }
-    } else { // Linear X-Axis (Time-based for Osc/Spectrogram, Freq-based for linear Spectroscope)
-        let rangeStart = drawStartValue;
-        let rangeEnd = drawEndValue;
-        if (mode === EScopeMode.Spectroscope) { // linear spectroscope uses bin indices
-            rangeStart = 0;
-            rangeEnd = frequencyBinCount;
-        }
+    } else { // Linear X-Axis (seconds for waveforms and frames for spectrogram)
+        const rangeStart = drawStartValue;
+        const rangeEnd = drawEndValue;
         const samplesPerPixel = isFrequencyDomain ? fftOverlap / 2 : 1;
         let startBuffer = rangeStart / bufferSize / samplesPerPixel;
         let endBuffer = rangeEnd / bufferSize / samplesPerPixel;
@@ -120,22 +136,37 @@ export const drawStaticScopeGrid = (
         let currentBufferIndex = (drawOptions.startBufferIndex || 0) + Math.round(stabilizationOffset / bufferSize / samplesPerPixel);
         if (isFrequencyDomain) currentBufferIndex -= currentBufferIndex % (frequencyBinCount / bufferSize / fftOverlap / 2);
 
-        for (let gridLineIndex = startBuffer; gridLineIndex < endBuffer; gridLineIndex += horizontalGridStep) {
-            const x = (gridLineIndex * bufferSize * samplesPerPixel - rangeStart) / (rangeEnd - rangeStart - 1) * (canvasWidth - leftMargin) + leftMargin;
-            if (x < leftMargin) continue;
-            ctx.strokeStyle = gridLineIndex % 1 === 0 ? bufferStrokeStyle : normalStrokeStyle;
-            ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, canvasHeight - bottomMargin);
-            ctx.stroke();
-            if (mode === EScopeMode.Spectrogram) {
-                const fftFrameIndex = gridLineIndex / (frequencyBinCount / bufferSize) * fftOverlap / 2;
-                if (fftFrameIndex % 1 === 0) ctx.fillText(fftFrameIndex.toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
-            } else if (mode === EScopeMode.Spectroscope) {
-                const freq = indexToFrequency(gridLineIndex * bufferSize, frequencyBinCount, sampleRate);
-                ctx.fillText(freq.toFixed(0), Math.min(x, canvasWidth - 20), canvasHeight - 10);
-            } else {
-                ctx.fillText((gridLineIndex * bufferSize).toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+        if (!isFrequencyDomain && sampleRate && sampleRate > 0) {
+            const lastVisibleSample = Math.max(rangeStart, rangeEnd - 1);
+            const timeStart = rangeStart / sampleRate;
+            const timeEnd = lastVisibleSample / sampleRate;
+            const ticks = getLinearAxisTicks(timeStart, timeEnd);
+            const tickStep = ticks.length > 1 ? ticks[1].value - ticks[0].value : timeEnd - timeStart;
+            const sampleRange = Math.max(1, lastVisibleSample - rangeStart);
+            for (const tick of ticks) {
+                const x = leftMargin + (tick.value * sampleRate - rangeStart) / sampleRange * (canvasWidth - leftMargin);
+                ctx.strokeStyle = normalStrokeStyle;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvasHeight - bottomMargin);
+                ctx.stroke();
+                ctx.fillText(formatTimeSeconds(tick.value, tickStep || 1), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+            }
+        } else {
+            for (let gridLineIndex = startBuffer; gridLineIndex < endBuffer; gridLineIndex += horizontalGridStep) {
+                const x = (gridLineIndex * bufferSize * samplesPerPixel - rangeStart) / (rangeEnd - rangeStart - 1) * (canvasWidth - leftMargin) + leftMargin;
+                if (x < leftMargin) continue;
+                ctx.strokeStyle = gridLineIndex % 1 === 0 ? bufferStrokeStyle : normalStrokeStyle;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvasHeight - bottomMargin);
+                ctx.stroke();
+                if (mode === EScopeMode.Spectrogram) {
+                    const fftFrameIndex = gridLineIndex / (frequencyBinCount / bufferSize) * fftOverlap / 2;
+                    if (fftFrameIndex % 1 === 0) ctx.fillText(fftFrameIndex.toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+                } else {
+                    ctx.fillText((gridLineIndex * bufferSize).toFixed(), Math.min(x, canvasWidth - 20), canvasHeight - 10);
+                }
             }
         }
         if (events && mode !== EScopeMode.Spectroscope) {
@@ -159,7 +190,43 @@ export const drawStaticScopeGrid = (
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
 
-    if (mode === EScopeMode.Spectrogram && freqScaleMode === EFreqScaleMode.Logarithmic) {
+    if (mode === EScopeMode.Phase) {
+        const ticks = [
+            { value: -Math.PI, label: "-π" },
+            { value: -Math.PI / 2, label: "-π/2" },
+            { value: 0, label: "0" },
+            { value: Math.PI / 2, label: "π/2" },
+            { value: Math.PI, label: "π" }
+        ];
+        ctx.strokeStyle = normalStrokeStyle;
+        ctx.beginPath();
+        for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+            for (const tick of ticks) {
+                const position = (tick.value + Math.PI) / (2 * Math.PI);
+                const y = channelIndex * heightPerChannel + (1 - position) * heightPerChannel;
+                ctx.moveTo(leftMargin, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.fillText(tick.label, 45, Math.max(y, 10));
+            }
+        }
+        ctx.stroke();
+    } else if (mode === EScopeMode.Spectroscope) {
+        const tickValues = magnitudeScaleMode === MagnitudeScaleMode.Decibels
+            ? [-100, -75, -50, -25, 0]
+            : [0, 0.25, 0.5, 0.75, 1];
+        ctx.strokeStyle = normalStrokeStyle;
+        ctx.beginPath();
+        for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+            for (const value of tickValues) {
+                const position = magnitudeScaleMode === MagnitudeScaleMode.Decibels ? value / 100 + 1 : value;
+                const y = channelIndex * heightPerChannel + (1 - position) * heightPerChannel;
+                ctx.moveTo(leftMargin, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.fillText(`${value}`, 45, Math.max(y, 10));
+            }
+        }
+        ctx.stroke();
+    } else if (mode === EScopeMode.Spectrogram && freqScaleMode === EFreqScaleMode.Logarithmic) {
         const minFrequency = sampleRate / fftSize;
         const maxFrequency = sampleRate / 2;
         if (minFrequency > 0) {
@@ -189,40 +256,30 @@ export const drawStaticScopeGrid = (
                 }
             }
         }
-    } else { // Linear Y-Axis
+    } else if (mode === EScopeMode.Spectrogram) {
         ctx.strokeStyle = normalStrokeStyle;
         ctx.beginPath();
-        let verticalGridStep = verticalScaleFactor === 1 && isFrequencyDomain ? frequencyBinCount / 4 : 0.25;
-        if (!isFrequencyDomain) {
-            while (verticalScaleFactor / verticalGridStep > 2) verticalGridStep *= 2;
+        const ticks = getLinearAxisTicks(0, sampleRate / 2, 5);
+        for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+            for (const tick of ticks) {
+                const y = channelIndex * heightPerChannel + (1 - tick.value / (sampleRate / 2)) * heightPerChannel;
+                ctx.moveTo(leftMargin, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.fillText(formatFrequency(tick.value), 45, Math.max(y, 10));
+            }
         }
-        const drawHLine = (y: number, yLabel: string) => {
-            ctx.moveTo(leftMargin, y);
-            ctx.lineTo(canvasWidth, y);
-            ctx.fillText(yLabel, 45, Math.max(y, 10));
-        };
-        for (let i = 0; i < (mode === EScopeMode.Oscilloscope ? 1 : channelCount); i++) {
-            let y = (i + 0.5) * heightPerChannel;
-            let positionRatio = 0.5;
-            const getYLabel = () => {
-                if (mode === EScopeMode.Spectrogram) return indexToFrequency(frequencyBinCount * positionRatio, frequencyBinCount, sampleRate).toFixed(0);
-                if (mode === EScopeMode.Spectroscope) return (-100 + 100 * positionRatio).toFixed(0);
-                return (-verticalScaleFactor + 2 * verticalScaleFactor * positionRatio).toFixed(2);
-            };
-            let yLabel = getYLabel();
-            drawHLine(y, yLabel);
-            const verticalRange = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
-            for (let j = verticalGridStep; j < verticalRange; j += verticalGridStep) {
-                const vFactor = isFrequencyDomain ? frequencyBinCount / 2 : verticalScaleFactor;
-                positionRatio = 0.5 - j / vFactor / 2; // (isFrequencyDomain ? 1 : 2);
-                y = (i + 0.5 + j / vFactor / 2) * heightPerChannel;
-                yLabel = getYLabel();
-                drawHLine(y, yLabel);
-                // if (isFrequencyDomain) continue;
-                positionRatio = 0.5 + j / vFactor / 2;
-                y = (i + 0.5 - j / vFactor / 2) * heightPerChannel;
-                yLabel = getYLabel();
-                drawHLine(y, yLabel);
+        ctx.stroke();
+    } else { // Time-domain Y axis
+        ctx.strokeStyle = normalStrokeStyle;
+        ctx.beginPath();
+        const ticks = getLinearAxisTicks(-verticalScaleFactor, verticalScaleFactor, 7);
+        for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+            for (const tick of ticks) {
+                const position = (tick.value + verticalScaleFactor) / (2 * verticalScaleFactor);
+                const y = channelIndex * heightPerChannel + (1 - position) * heightPerChannel;
+                ctx.moveTo(leftMargin, y);
+                ctx.lineTo(canvasWidth, y);
+                ctx.fillText(`${Number(tick.value.toPrecision(3))}`, 45, Math.max(y, 10));
             }
         }
         ctx.stroke();
