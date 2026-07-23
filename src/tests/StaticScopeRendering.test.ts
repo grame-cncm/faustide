@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { StaticScope, type TDrawOptions } from "../StaticScope";
-import { FrequencyScaleMode as FreqScaleMode, StaticScopeMode as ScopeMode } from "../scope/ScopeModes";
+import { FrequencyScaleMode as FreqScaleMode, MagnitudeScaleMode, StaticScopeMode as ScopeMode } from "../scope/ScopeModes";
 import { createMockCanvasContext } from "./helpers/canvasContext";
 
 const createDrawOptions = (overrides: Partial<TDrawOptions> = {}): TDrawOptions => ({
@@ -147,6 +147,29 @@ describe("StaticScope rendering helpers", () => {
         expect(context.fillText).toHaveBeenCalledWith("100", expect.any(Number), 170);
         expect(context.fillText).toHaveBeenCalledWith("1k", expect.any(Number), 170);
         expect(context.fillText).toHaveBeenCalledWith("10k", expect.any(Number), 170);
+    });
+
+    it("draws magnitude y-axis ticks from explicit dB limits", () => {
+        const { context } = createMockCanvasContext();
+
+        StaticScope.drawGrid(
+            context,
+            320,
+            180,
+            20,
+            20000,
+            0,
+            2,
+            createDrawOptions(),
+            ScopeMode.Spectroscope,
+            FreqScaleMode.Logarithmic,
+            MagnitudeScaleMode.Decibels,
+            -72,
+            6
+        );
+
+        expect(context.fillText).toHaveBeenCalledWith("-60", 45, expect.any(Number));
+        expect(context.fillText).toHaveBeenCalledWith("0", 45, expect.any(Number));
     });
 
     it("draws linear frequency ticks from the visible zoom window", () => {

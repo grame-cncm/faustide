@@ -62,7 +62,9 @@ export const drawStaticScopeGrid = (
     drawOptions: TDrawOptions,
     mode: EScopeMode,
     freqScaleMode?: EFreqScaleMode,
-    magnitudeScaleMode = MagnitudeScaleMode.Decibels
+    magnitudeScaleMode = MagnitudeScaleMode.Decibels,
+    magnitudeDbMin = -100,
+    magnitudeDbMax = 0
 ): [number, { type: string; data: any }[]][] => {
     ctx.save();
     ctx.setLineDash([]);
@@ -211,18 +213,22 @@ export const drawStaticScopeGrid = (
         }
         ctx.stroke();
     } else if (mode === EScopeMode.Spectroscope) {
-        const tickValues = magnitudeScaleMode === MagnitudeScaleMode.Decibels
-            ? [-100, -75, -50, -25, 0]
-            : [0, 0.25, 0.5, 0.75, 1];
+        const rangeStart = magnitudeScaleMode === MagnitudeScaleMode.Decibels
+            ? magnitudeDbMin
+            : 0;
+        const rangeEnd = magnitudeScaleMode === MagnitudeScaleMode.Decibels
+            ? magnitudeDbMax
+            : 1;
+        const ticks = getLinearAxisTicks(rangeStart, rangeEnd, 5);
         ctx.strokeStyle = normalStrokeStyle;
         ctx.beginPath();
         for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
-            for (const value of tickValues) {
-                const position = magnitudeScaleMode === MagnitudeScaleMode.Decibels ? value / 100 + 1 : value;
+            for (const tick of ticks) {
+                const position = (tick.value - rangeStart) / (rangeEnd - rangeStart);
                 const y = channelIndex * heightPerChannel + (1 - position) * heightPerChannel;
                 ctx.moveTo(leftMargin, y);
                 ctx.lineTo(canvasWidth, y);
-                ctx.fillText(`${value}`, 45, Math.max(y, 10));
+                ctx.fillText(`${Number(tick.value.toPrecision(3))}`, 45, Math.max(y, 10));
             }
         }
         ctx.stroke();

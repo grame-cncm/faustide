@@ -40,7 +40,7 @@ describe("FrequencyRenderer", () => {
         drawStaticSpectroscope(dependencies, context, 320, 180, drawOptions, 1, 0, { x: 160, y: 60 }, FrequencyScaleMode.Linear);
 
         expect(dependencies.drawBackground).toHaveBeenCalledWith(context, 320, 180);
-        expect(dependencies.drawGrid).toHaveBeenCalledWith(context, 320, 180, expect.any(Number), expect.any(Number), 0, 1, drawOptions, StaticScopeMode.Spectroscope, FrequencyScaleMode.Linear, MagnitudeScaleMode.Decibels);
+        expect(dependencies.drawGrid).toHaveBeenCalledWith(context, 320, 180, expect.any(Number), expect.any(Number), 0, 1, drawOptions, StaticScopeMode.Spectroscope, FrequencyScaleMode.Linear, MagnitudeScaleMode.Decibels, -100, 0);
         expect(context.beginPath).toHaveBeenCalled();
         expect(context.closePath).toHaveBeenCalled();
         expect(context.fill).toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe("FrequencyRenderer", () => {
 
         drawStaticSpectroscope(dependencies, context, 320, 180, drawOptions, 1, 0, { x: 160, y: 60 }, FrequencyScaleMode.Logarithmic);
 
-        expect(dependencies.drawGrid).toHaveBeenCalledWith(context, 320, 180, expect.any(Number), expect.any(Number), 0, 1, drawOptions, StaticScopeMode.Spectroscope, FrequencyScaleMode.Logarithmic, MagnitudeScaleMode.Decibels);
+        expect(dependencies.drawGrid).toHaveBeenCalledWith(context, 320, 180, expect.any(Number), expect.any(Number), 0, 1, drawOptions, StaticScopeMode.Spectroscope, FrequencyScaleMode.Logarithmic, MagnitudeScaleMode.Decibels, -100, 0);
         expect(context.beginPath).toHaveBeenCalled();
         expect(context.closePath).toHaveBeenCalled();
         expect(context.fill).toHaveBeenCalled();
@@ -101,10 +101,52 @@ describe("FrequencyRenderer", () => {
             expect.any(Object),
             StaticScopeMode.Spectroscope,
             FrequencyScaleMode.Linear,
-            MagnitudeScaleMode.Linear
+            MagnitudeScaleMode.Linear,
+            -100,
+            0
         );
         const stats = dependencies.drawStats.mock.calls[0][3];
         expect(stats.values.every((value: number) => value >= 0 && value <= 1)).toBe(true);
+    });
+
+    it("uses explicit dB limits for magnitude position and grid ticks", () => {
+        const { context } = createMockCanvasContext();
+        const dependencies = createDependencies();
+        const drawOptions = createDrawOptions({
+            freqDomainData: [new Float32Array(8).fill(-20)]
+        });
+
+        drawStaticSpectroscope(
+            dependencies,
+            context,
+            320,
+            180,
+            drawOptions,
+            1,
+            0,
+            undefined,
+            FrequencyScaleMode.Linear,
+            MagnitudeScaleMode.Decibels,
+            -40,
+            20
+        );
+
+        expect(dependencies.drawGrid).toHaveBeenCalledWith(
+            context,
+            320,
+            180,
+            expect.any(Number),
+            expect.any(Number),
+            0,
+            1,
+            drawOptions,
+            StaticScopeMode.Spectroscope,
+            FrequencyScaleMode.Linear,
+            MagnitudeScaleMode.Decibels,
+            -40,
+            20
+        );
+        expect(context.lineTo).toHaveBeenCalledWith(expect.any(Number), expect.closeTo(106.6667, 3));
     });
 
     it("draws phase on logarithmic frequency coordinates", () => {

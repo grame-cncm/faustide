@@ -55,8 +55,33 @@ div.static-scope {
     }
     & > .static-scope-ui-controller {
         display: flex;
+        align-items: center;
         opacity: 0.4;
         transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
+        & > .static-scope-ui-db-range {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 4px;
+            color: #f8f9fa;
+            font-size: 10px;
+            & > .static-scope-ui-db-label {
+                display: flex;
+                align-items: center;
+                gap: 2px;
+                margin: 0;
+                & > input {
+                    width: 58px;
+                    height: 22px;
+                    border: 1px solid #6c757d;
+                    border-radius: 2px;
+                    padding: 0 2px;
+                    background-color: #181818;
+                    color: #f8f9fa;
+                    font: inherit;
+                }
+            }
+        }
     }
     &:hover {
         & > .static-scope-ui-controller {

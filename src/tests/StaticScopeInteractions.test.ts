@@ -88,6 +88,21 @@ describe("StaticScopeInteractions", () => {
         expect(target.cursor).toEqual({ x: 120, y: 40 });
     });
 
+    it("does not wheel-zoom the magnitude y-axis", () => {
+        const target = createTarget();
+        target.mode = StaticScopeMode.Spectroscope;
+        target.vzoom = 4;
+        const verticalWheel = new WheelEvent("wheel", { deltaY: -1 });
+        Object.defineProperties(verticalWheel, {
+            offsetX: { value: 10 },
+            offsetY: { value: 20 }
+        });
+
+        handleStaticScopeWheel(target, verticalWheel);
+
+        expect(target.vzoom).toBe(4);
+    });
+
     it("anchors wheel zoom to the pointer from the current event", () => {
         const target = createTarget();
         let cursorWhenZoomChanged: { x: number; y: number };
