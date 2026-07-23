@@ -117,4 +117,21 @@ describe("FrequencyRenderer", () => {
         expect(context.stroke).toHaveBeenCalled();
         expect(dependencies.drawStats).toHaveBeenCalled();
     });
+
+    it("reads offline phase from the FFT window that begins at sample zero", () => {
+        const { context } = createMockCanvasContext();
+        const dependencies = createDependencies();
+        const drawOptions = createDrawOptions({
+            drawMode: "offline",
+            startSampleIndex: 0,
+            phaseDomainData: [new Float32Array([
+                0, Math.PI, 0, Math.PI,
+                0, -Math.PI / 4, -Math.PI / 2, -3 * Math.PI / 4
+            ])]
+        });
+
+        drawStaticPhase(dependencies, context, 320, 180, drawOptions, 1, 0, { x: 117.5, y: 60 }, FrequencyScaleMode.Linear);
+
+        expect(dependencies.drawStats.mock.calls[0][3].values[0]).toBeCloseTo(-45);
+    });
 });

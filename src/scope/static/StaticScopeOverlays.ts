@@ -76,7 +76,7 @@ export const drawStaticScopeGrid = (
     const unit = mode === EScopeMode.Spectrogram
         ? "Hz/frame"
         : mode === EScopeMode.Phase
-            ? "rad/Hz"
+            ? "deg/Hz"
             : mode === EScopeMode.Spectroscope
                 ? magnitudeScaleMode === MagnitudeScaleMode.Decibels ? "dB/Hz" : "amp/Hz"
                 : "lvl/s";
@@ -192,17 +192,17 @@ export const drawStaticScopeGrid = (
 
     if (mode === EScopeMode.Phase) {
         const ticks = [
-            { value: -Math.PI, label: "-π" },
-            { value: -Math.PI / 2, label: "-π/2" },
+            { value: -180, label: "-180" },
+            { value: -90, label: "-90" },
             { value: 0, label: "0" },
-            { value: Math.PI / 2, label: "π/2" },
-            { value: Math.PI, label: "π" }
+            { value: 90, label: "90" },
+            { value: 180, label: "180" }
         ];
         ctx.strokeStyle = normalStrokeStyle;
         ctx.beginPath();
         for (let channelIndex = 0; channelIndex < channelCount; channelIndex++) {
             for (const tick of ticks) {
-                const position = (tick.value + Math.PI) / (2 * Math.PI);
+                const position = (tick.value + 180) / 360;
                 const y = channelIndex * heightPerChannel + (1 - position) * heightPerChannel;
                 ctx.moveTo(leftMargin, y);
                 ctx.lineTo(canvasWidth, y);
