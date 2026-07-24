@@ -105,6 +105,16 @@ describe("StaticScope instance behavior", () => {
         expect(scope.spanSwitch.innerText).toBe("Phase");
     });
 
+    it("keeps Phase available before FFT data arrives", () => {
+        const { container } = createStaticScopeContainer();
+        const scope = new StaticScope({ container });
+
+        scope.btnSwitch.click();
+        expect(scope.spanSwitch.innerText).toBe("Spectroscope");
+        scope.btnSwitch.click();
+        expect(scope.spanSwitch.innerText).toBe("Phase");
+    });
+
     it("updates surfaces and controls when mode changes", () => {
         const { container } = createStaticScopeContainer();
         const scope = new StaticScope({ container });
