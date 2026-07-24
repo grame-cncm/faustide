@@ -176,8 +176,8 @@ Node 20 release line, matching CI. npm is included with Node.js.
 Clone a copy of the repo then change to the directory:
 
 ```bash
-git clone https://github.com/grame-cncm/faustide-llm.git
-cd faustide-llm
+git clone https://github.com/grame-cncm/faustide.git
+cd faustide
 ```
 
 Beware: on Windows, before cloning the repository, and for the libfaust-wasm.data file line ending to be correctly handled, you'll have to do:
@@ -271,7 +271,7 @@ typed by hand — `AGENTS.md` is the contract for both.
 ## Useful links
 
 - [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website
-- [https://github.com/grame-cncm/faustide-llm](https://github.com/grame-cncm/faustide-llm): the GitHub repository
+- [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the GitHub repository
 
 ## Known problems and solutions
 
