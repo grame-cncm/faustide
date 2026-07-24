@@ -364,7 +364,6 @@ export class StaticScope {
             for (let attempts = 0; attempts < 6; attempts++) {
                 newType = (newType + 1) % 6;
                 if (newType === EScopeMode.Spectrogram && !this.drawSpectrogram) continue;
-                if (newType === EScopeMode.Phase && (!this.data.phaseDomainData || !this.data.phaseDomainData.length)) continue;
                 if (newType === EScopeMode.Data && this.data.drawMode === "continuous") continue;
                 if (newType === EScopeMode.Interleaved && this.data.timeDomainData && this.data.timeDomainData.length === 1) continue;
                 break;
