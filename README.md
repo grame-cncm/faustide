@@ -14,6 +14,13 @@ The editor engine is based on [Monaco Editor](https://microsoft.github.io/monaco
 
 You can double-click knobs or sliders to reset them, or on the group label to reset all its children. 
 
+#### Saving parameter state
+
+Enable *Save Params State* to preserve DSP control values when running or
+recompiling the program. The restored values are applied to the new DSP and
+reflected in both the embedded Faust UI and an already-open Faust UI popup,
+instead of those controls returning to their declared defaults.
+
 #### Vim Mode Support
 
 The Monaco Editor supports an optional mode for Vim users. To enable it, open the command pane (F1) and search for 'Toggle Vim Mode'. The same command is used to desactivate this functionality. Alternatively, you can right click on the editor and press 'Open Command Palette' to open the contextual menu.
@@ -83,7 +90,13 @@ Tools to display audio signals are available in the left panel:
 
 - **FFT Window** selects _Auto_, _None (Rectangular)_, _Hann (N/4)_, or _Blackman_ weighting. _Auto_ uses an unscaled rectangular FFT for offline plots, exactly like `numpy.fft.rfft`: a unit impulse produces a flat 0 dB magnitude and zero phase. Captured-signal modes use Blackman automatically. The optional Hann mode applies the symmetric Hann window and `N/4` scaling used by the reference Python plotter.
 
-In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_, _Spectroscope_, _Spectrogram_, and _Phase_. Note that when used with _On Event_ mode, values in the _Data_ visualisation mode only change at sample 128 (since _On Event_ mode plots from 128 samples before the event).
+In the _Plot_ Tab in the middle section, you can switch the visualization between _Data_, _Interleaved_, _Oscilloscope_, _Spectroscope_, _Spectrogram_, and _Phase_. Changing the acquisition mode does not change the active visualization. Note that when used with _On Event_ mode, values in the _Data_ visualisation mode only change at sample 128 (since _On Event_ mode plots from 128 samples before the event).
+
+The _Spectroscope_ view can display magnitude as dBFS or normalized linear
+amplitude. In dBFS mode, the _Bottom_ and _Top_ number fields set the visible
+magnitude range directly. The _Phase_ view displays wrapped phase in degrees.
+Both magnitude and phase views support linear or logarithmic frequency axes
+with ticks that follow the visible zoom range.
 
 Waveform x-axis ticks are shown in seconds using the active audio sample rate. Drag across an offline waveform to select a range; its length is displayed in samples and seconds. With the plot canvas focused, copy (`Ctrl+C`/`Cmd+C`) places a CSV table containing sample index, time in seconds, and every channel value on the clipboard. Use _Alt-drag_ to pan a waveform without changing the selection.
 
@@ -157,50 +170,50 @@ The recommended browsers are the latest versions of Chrome and Firefox for Audio
 
 ## Building
 
-Firstly ensure that you have [Git](https://git-scm.com/downloads) and [Node.js](https://nodejs.org/) installed.
+Install [Git](https://git-scm.com/downloads) and Node.js 20.12 or newer in the
+Node 20 release line, matching CI. npm is included with Node.js.
 
 Clone a copy of the repo then change to the directory:
 
 ```bash
-git clone https://github.com/grame-cncm/faustide.git --depth 1
-cd faustide
+git clone https://github.com/grame-cncm/faustide-llm.git
+cd faustide-llm
 ```
+
 Beware: on Windows, before cloning the repository, and for the libfaust-wasm.data file line ending to be correctly handled, you'll have to do:
 
 ```bash
 git config --global core.autocrlf false
 ```
 
-Install dev dependencies:
+Install the exact dependencies recorded in `package-lock.json`, build the
+development bundle, and start the local server:
 
 ```bash
-npm install
-```
-
-Possibly:
-
-```bash
-npm update
-```
-
-To build everything (using Webpack 4, Babel 7, TypeScript), this will produce `dist/index.js`
-```bash
+npm ci
 npm run build
+npm run serve
 ```
 
-To test, put the directory in a local server, then open page: `./dist/index.html`
+Open <http://127.0.0.1:8000/dist/>. The server does not rebuild or hot-reload
+source files: after a source change, run `npm run build` again and reload the
+browser. Keep the hostname consistent because browser storage is scoped to the
+origin.
 
-If you need to update the editor's version using `git pull`, as the repository has other dependencies hosted on Github, you may run `npm update` to make sure everything is up to date.
+To exercise the optimized production-equivalent bundle locally:
+
+```bash
+npm run dist
+npm run serve
+```
+
+If the server is already running, only reload the browser after `npm run dist`.
+Do not change the version in `package.json` merely to run a local build.
 
 Note that the `src/static/examples` folder is a manually copied subset of the `faust/examples` that will have to be updated from time to time. 
 
-## Launching the local editor
-
-A local HTTP server has to be started with `npm run serve` (or something similar), then use `http://127.0.0.1:8000/dist/` to launch the local editor.
-
-## Versioning
-
-You'll have to raise the package version number in `package.json` before `npm run build` to properly work.
+For validation commands, browser/audio caveats, production builds, and
+troubleshooting, see the [local deployment guide](doc/local-deployment.md).
 
 ## Contributing
 
@@ -258,7 +271,7 @@ typed by hand — `AGENTS.md` is the contract for both.
 ## Useful links
 
 - [https://faustide.grame.fr](https://faustide.grame.fr): the official link on the Faust IDE website
-- [https://github.com/grame-cncm/faustide](https://github.com/grame-cncm/faustide): the github repository
+- [https://github.com/grame-cncm/faustide-llm](https://github.com/grame-cncm/faustide-llm): the GitHub repository
 
 ## Known problems and solutions
 
