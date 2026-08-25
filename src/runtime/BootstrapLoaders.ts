@@ -13,6 +13,7 @@ export async function loadFaustRuntime() {
     const { instantiateFaustModuleFromFile, LibFaust, FaustCompiler, FaustSvgDiagrams } = await import("@grame/faustwasm");
     const faustModule = await instantiateFaustModuleFromFile("faustwasm/libfaust-wasm.js");
     const libFaust = new LibFaust(faustModule);
+    console.info(`libfaust version: ${libFaust.version()}`);
     const faustCompiler = new FaustCompiler(libFaust);
     const faustSvgDiagrams = new FaustSvgDiagrams(faustCompiler);
     const faustPrimitiveLibFile = await fetch("primitives.lib");
