@@ -196,6 +196,11 @@ regression you caused, and don't disable other lint to "fix" it.
   ```
 - Branch for changes; do not commit to the default branch. Commit/push only when
   asked.
+- **`master` history is always linear — no merge commits.** Integrate a branch
+  with a fast-forward merge (`git merge --ff-only`, or plain `git merge` when
+  the branch was cut from the current tip); rebase the branch onto `master`
+  first if it would not fast-forward. Never `git merge --no-ff` into `master`.
+  Delete the branch once it's merged in.
 
 ## Quick reference
 
