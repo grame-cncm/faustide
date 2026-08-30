@@ -63,7 +63,7 @@
     "babel-loader": "^9.1.0",
     "bootstrap": "^4.6.2",
     "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^11.0.0",
+    "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^6.7.3",
     "directory-tree": "^2.2.7",
     "eslint": "^6.8.0",
@@ -100,6 +100,6 @@
     "webpack-cli": "^5.0.1",
     "whatwg-fetch": "^3.6.20",
     "window-function": "^2.1.0",
-    "workbox-webpack-plugin": "^6.5.4"
+    "workbox-webpack-plugin": "^7.4.1"
   }
 }
