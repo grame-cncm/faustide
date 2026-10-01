@@ -3,7 +3,7 @@ import { UrlParamsController } from "../ui/UrlParamsController";
 
 const setupDom = () => {
     document.body.innerHTML = `
-        <select id="export-server"><option value="https://faustservice-old.inria.fr"></option></select>
+        <select id="export-server"><option value="https://faustservice.inria.fr/old/"></option></select>
         <button id="btn-def-exp-content"></button>
         <div id="ide-params"></div>
         <form id="form-plot"></form>
@@ -70,10 +70,10 @@ describe("UrlParamsController", () => {
 
         await controller.load("?mode=amstram");
 
-        expect(options.setServer).toHaveBeenCalledWith("https://faustservice-old.inria.fr");
+        expect(options.setServer).toHaveBeenCalledWith("https://faustservice.inria.fr/old/");
         expect(options.compileOptions.exportPlatform).toBe("esp32");
         expect(options.compileOptions.exportArch).toBe("gramophoneFlash");
-        expect($("#export-server").val()).toBe("https://faustservice-old.inria.fr");
+        expect($("#export-server").val()).toBe("https://faustservice.inria.fr/old/");
         expect($("#btn-def-exp-content").html()).toBe("Gramo");
         expect($("#ide-params").css("display")).toBe("none");
         expect($("#form-plot").css("display")).toBe("none");
