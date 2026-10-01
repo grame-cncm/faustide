@@ -71,7 +71,7 @@ export class UrlParamsController {
      * Applies the legacy amstram export target and optional reduced UI mode.
      */
     private applyAmstramMode(mode: "amstram" | "amstram-pro") {
-        const server = "https://faustservice-old.inria.fr";
+        const server = "https://faustservice.inria.fr/old/";
         this.setServer(server);
         this.compileOptions.exportPlatform = "esp32";
         this.compileOptions.exportArch = "gramophoneFlash";
