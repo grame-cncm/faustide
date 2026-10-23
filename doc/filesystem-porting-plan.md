@@ -70,7 +70,7 @@ speculative gate.
 | **Type-check gate (`tsc --noEmit`) scoped to `src/runtime/fs/`** | High (fs layer is type-heavy) | High (there is none today) | Low if scoped | **Do first** (0.6) |
 | Test-harness shims (`fake-indexeddb` + WebCrypto) | High | Low | Low | **Do first** (0.4) |
 | Bump TS 4.9 → 5.x | Med (keep markpage's modern type idioms) | Med | Med (new warnings; no tsc gate today so build is unaffected) | **Optional**, pairs with 0.6 |
-| ESLint 6→9 / replace airbnb / lift the `for…of` ban | Med (kills R1) | Med (ESLint 6 is EOL) | **High** (airbnb is woven through; flat-config migration) | **Defer** — the `for await` disable costs 3 lines |
+| ESLint 6→9 / replace airbnb / lift the `for…of` ban | Med (kills R1) | Med (ESLint 6 is EOL) | **High** (airbnb is woven through; flat-config migration) | **Done later** — ESLint 9 flat config (`eslint.config.mjs`); the `for…of` ban is lifted |
 | `target es2015 → es2020` | Low (native async-iter, no downlevel) | Low | Low, but depends on browser targets | **Opportunistic** |
 | webpack+Babel → Vite | ~Zero (fs code is bundler-agnostic) | Med (DX) | **Very high** (monaco plugin, workbox, code-split, e2e dist serving) | **No** |
 
@@ -94,6 +94,11 @@ Capture the answers as a short "Resolved" note at the bottom of this file, then
 delete the spike.
 
 ### 0.2 ESLint friction — the #1 porting risk
+
+> **Superseded.** ESLint was later migrated to ESLint 9 with a flat config
+> (`eslint.config.mjs`) that drops airbnb-base and the `ForOfStatement` ban.
+> The ESLint 6 setup described below only linted `.js` files, so these rules
+> never actually ran on the TypeScript sources.
 
 `.eslintrc.json` extends **airbnb-base**, which is materially stricter than
 markpage's config. Confirmed offenders in the code we lift:
@@ -555,6 +560,7 @@ than claim it.
   as an error. Policy: rewrite sync `for…of` to array methods (`map`/`filter`/
   `forEach`/`reduce`). For `for await…of` over directory handles (no equivalent),
   add one justified `// eslint-disable-next-line no-restricted-syntax` per file.
+  *(Superseded: the ESLint 9 migration lifts the `for…of` ban.)*
 - **TypeScript:** ✅ — **kept at 4.9.5** (no bump). The only adaptation needed
   per §0.3: drop `Uint8Array<ArrayBuffer>` generic argument when it appears in
   lifted code (use plain `Uint8Array`). markpage's interface shims for async-iter

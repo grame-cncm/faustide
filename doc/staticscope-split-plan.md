@@ -33,8 +33,8 @@ large file flagged by the TS-runtime refactor quality review.
   (`refactor(scope):`, `test(scope):`, `docs(scope):`). Body states the
   verification result.
 - **The gate, every commit:** `npm run test:unit` (vitest) is the primary safety
-  net — the scope suite is dense (~10 files). Also run `eslint -c .eslintrc.json
-  src`. Note: `tsconfig.fs.json` does **not** cover `src/StaticScope.ts` or
+  net — the scope suite is dense (~10 files). Also run `npm run test-eslint`.
+  Note: `tsconfig.fs.json` does **not** cover `src/StaticScope.ts` or
   `src/scope/`; their type-check rides on the webpack build, so vitest is the real
   guard here.
 - **Characterize before you change.** Phase 1 adds tests for the CSV logic that

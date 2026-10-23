@@ -96,7 +96,7 @@ for the module map and current phase status; update it when you change structure
 
 | Layer | Command | What it covers |
 |-------|---------|----------------|
-| Lint / style | `npm test` | ESLint (`test-eslint`) + Stylelint (`test-stylelint`) |
+| Lint / style | `npm test` | ESLint 9 (`test-eslint`, flat config `eslint.config.mjs`, `.ts`/`.js` under `src/`) + Stylelint (`test-stylelint`) |
 | Unit / jsdom | `npm run test:unit` (`:watch`, `test:coverage`) | `src/**/*.test.ts` |
 | Browser e2e | `npm run test:e2e` | Playwright against the built `dist/` |
 

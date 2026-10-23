@@ -1,6 +1,0 @@
-dist
-node_modules
-local
-old
-src/libfaust-wasm.js
-webpack.config.js
