@@ -54,4 +54,39 @@ test.describe("Block diagram", () => {
         await expect.poll(() => page.locator("#diagram-svg").innerHTML()).not.toBe(before);
         await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
     });
+
+    test("a polyphonic effect gets its own navigable diagram", async ({ page }) => {
+        await openApp(page);
+        await setEditorCode(page, "import(\"stdfaust.lib\");\nprocess = os.osc(hslider(\"freq\", 440, 50, 1000, 1)) * button(\"gate\") <: _,_;\neffect = dm.zita_light;");
+        await runDsp(page);
+        await page.locator("#tab-diagram").click();
+
+        const selector = page.locator("#diagram-selector");
+        await expect(selector).toBeVisible();
+        await expect(page.locator("#diagram-svg")).toHaveAttribute("data-diagram", "main");
+        const processSvg = await page.locator("#diagram-svg").innerHTML();
+
+        await selector.locator("button[data-diagram=effect]").dispatchEvent("click");
+        await expect(page.locator("#diagram-svg")).toHaveAttribute("data-diagram", "effect");
+        await expect.poll(() => page.locator("#diagram-svg").innerHTML()).not.toBe(processSvg);
+
+        // Effect sub-diagram links are read from the effect diagram directory.
+        const effectSvg = await page.locator("#diagram-svg").innerHTML();
+        await page.locator("#diagram-svg svg a").first().dispatchEvent("click");
+        await expect.poll(() => page.locator("#diagram-svg").innerHTML()).not.toBe(effectSvg);
+        await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
+
+        await selector.locator("button[data-diagram=main]").dispatchEvent("click");
+        await expect.poll(() => page.locator("#diagram-svg").innerHTML()).toBe(processSvg);
+    });
+
+    test("no diagram selector without an effect", async ({ page }) => {
+        await openApp(page);
+        await setEditorCode(page, "process = _;");
+        await runDsp(page);
+        await page.locator("#tab-diagram").click();
+
+        await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
+        await expect(page.locator("#diagram-selector")).toBeHidden();
+    });
 });

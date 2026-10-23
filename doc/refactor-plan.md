@@ -88,8 +88,8 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 85 files, 596 tests |
-| Browser end-to-end | Playwright | `npm run test:e2e` | 74 tests against the built `dist/` |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 86 files, 605 tests |
+| Browser end-to-end | Playwright | `npm run test:e2e` | 76 tests against the built `dist/` |
 
 ### Unit and integration layer (Vitest)
 
@@ -947,7 +947,7 @@ Run these manually after phases touching audio, DSP, export, or cross-window mes
 - open DSP UI popup and verify parameter sync both ways;
 - use keyboard MIDI and a real MIDI input when available;
 - drag/drop a source audio file;
-- generate a diagram, zoom, pan, and follow SVG links;
+- generate a diagram, zoom, pan, and follow SVG links (also in the `effect` diagram of a polyphonic instrument);
 - export via the production Faust service;
 - verify layout on narrow and wide windows.
 

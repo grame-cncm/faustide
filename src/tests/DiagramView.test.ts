@@ -29,9 +29,19 @@ describe("DiagramView", () => {
 
         $("#diagram-svg a").trigger("click");
 
-        expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested.svg");
+        expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested.svg", "main");
         expect($("#diagram-svg svg text").text()).toBe("nested");
         expect($("#diagram-svg svg").width()).toBe(400);
+    });
+
+    it("follows links inside the displayed effect diagram set", () => {
+        const source = { readGeneratedSvg: vi.fn(() => "<svg></svg>") };
+        $("#diagram-svg").attr("data-diagram", "effect");
+        new DiagramView(source).bind();
+
+        $("#diagram-svg a").trigger("click");
+
+        expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested.svg", "effect");
     });
 
     it("zooms the displayed SVG only with ctrl wheel", () => {

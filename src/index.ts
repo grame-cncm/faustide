@@ -574,6 +574,7 @@ $(async () => {
     }).bind();
     projectRuntimeController.bindEditorContent(editor, uiEnv.fileManager);
     faustUiController.bind();
+    diagramController.bind();
     new DiagramView(diagramService).bind();
     new GlobalShortcutsController({
         docs: () => $("#btn-docs")[0].click(),

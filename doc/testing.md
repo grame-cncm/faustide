@@ -75,7 +75,7 @@ These tests run the compiled app in a real Chromium browser. They are the **only
 | `app-smoke.spec.ts` | App boots, Monaco loads, FileManager initialises |
 | `dsp.spec.ts` | Faust compilation → active DSP node in the audio graph |
 | `audio-graph.spec.ts` | Audio routing (input/output connections) |
-| `diagram.spec.ts` | Faust SVG diagram generation |
+| `diagram.spec.ts` | Faust SVG diagram generation, including the process/effect selector |
 | `examples.spec.ts` | Loading and running bundled examples |
 | `export.spec.ts` | Export to the Faust Service platform |
 | `scopes.spec.ts` | Oscilloscope and spectrum analyser views |

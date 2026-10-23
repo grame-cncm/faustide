@@ -347,6 +347,12 @@ body {
                     }
                     & > #diagram {
                         overflow: auto;
+                        & > #diagram-selector {
+                            position: absolute;
+                            top: 5px;
+                            right: 5px;
+                            z-index: 1;
+                        }
                         & > #diagram-svg {
                             position: relative;
                             display: none;

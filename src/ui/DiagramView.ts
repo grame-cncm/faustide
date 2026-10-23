@@ -1,5 +1,7 @@
+import type { DiagramName } from "../runtime/DiagramService";
+
 type DiagramSource = {
-    readGeneratedSvg: (fileName: string) => string;
+    readGeneratedSvg: (fileName: string, diagramName?: DiagramName) => string;
 };
 
 /**
@@ -25,14 +27,17 @@ export class DiagramView {
 
     /**
      * Follows a Faust SVG hyperlink by replacing the pane with the linked
-     * sub-diagram, scaled to fit. Clicks that were part of a drag are ignored.
+     * sub-diagram, scaled to fit. Links are read from the diagram set recorded
+     * in `#diagram-svg[data-diagram]` (process by default). Clicks that were
+     * part of a drag are ignored.
      */
     private bindSvgLinks() {
         $<SVGAElement>("#diagram-svg").on("click", "a", (e) => {
             e.preventDefault();
             if (this.svgDragged) return;
             const fileName = e.currentTarget.href?.baseVal || e.currentTarget.getAttribute("href");
-            const strSvg = this.diagramSource.readGeneratedSvg(fileName);
+            const diagramName = ($("#diagram-svg").attr("data-diagram") || "main") as DiagramName;
+            const strSvg = this.diagramSource.readGeneratedSvg(fileName, diagramName);
             const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
             const width = Math.min($("#diagram").width(), $("#diagram").height() / this.getSvgHeight(svg) * this.getSvgWidth(svg));
             $("#diagram-svg").empty().append(svg).children("svg").width(width);
