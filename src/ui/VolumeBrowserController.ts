@@ -384,7 +384,7 @@ export class VolumeBrowserController {
                 entries = await vol.list(path);
             } catch (err) {
                 // eslint-disable-next-line no-console
-                console.error("volume list failed", err);
+                console.error(`Volume list failed: ${err instanceof Error ? err.message : String(err)}`);
                 listEl.replaceChildren();
                 const errEl = document.createElement("div");
                 errEl.className = "vb-error";

@@ -219,6 +219,7 @@ describe("VolumeBrowserController", () => {
     });
 
     it("shows an error when list() rejects", async () => {
+        const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
         const vol = fakeVolume({ list: () => Promise.reject(new Error("disk error")) });
         const ctrl = new VolumeBrowserController({ volumes: [vol] });
         ctrl.open();
@@ -228,6 +229,7 @@ describe("VolumeBrowserController", () => {
         await flush();
         await flush();
         expect(document.querySelector(".vb-error")).toBeTruthy();
+        expect(consoleError).toHaveBeenCalledWith("Volume list failed: disk error");
     });
 
     // ── breadcrumb navigation ──────────────────────────────────────────────────
