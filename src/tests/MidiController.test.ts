@@ -15,8 +15,8 @@ const setupDom = () => {
 };
 
 const createWebMidi = () => {
-    const listeners: Record<string, Function> = {};
-    const inputListeners: Function[] = [];
+    const listeners: Record<string, (...args: any[]) => void> = {};
+    const inputListeners: ((...args: any[]) => void)[] = [];
     const input = {
         addListener: vi.fn((type, channel, listener) => inputListeners.push(listener)),
         removeListener: vi.fn()

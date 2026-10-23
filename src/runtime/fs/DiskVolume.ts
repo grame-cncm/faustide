@@ -80,9 +80,8 @@ export class DiskVolume implements Volume {
 
     async list(path: string): Promise<VolumeEntry[]> {
         const dir = (await this.dirAt(path)) as FsDirHandle;
-        // Collect all handles first so the async-iter disable is confined here.
+        // Collect all handles first, then process them.
         const handles: FileSystemHandle[] = [];
-        // eslint-disable-next-line no-restricted-syntax
         for await (const h of dir.values()) {
             handles.push(h);
         }

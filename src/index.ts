@@ -1,6 +1,3 @@
-/* eslint-disable newline-per-chained-call */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable no-use-before-define */
 // TODO
 // webworkerify
 // bargraph in scopes

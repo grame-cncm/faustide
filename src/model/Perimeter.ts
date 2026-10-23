@@ -132,7 +132,6 @@ export function computeClosure(
     const queue: string[] = [mainFile];
 
     while (queue.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const current = queue.shift()!;
         if (visited.has(current)) continue;
         visited.add(current);

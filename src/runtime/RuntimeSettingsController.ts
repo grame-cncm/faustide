@@ -32,7 +32,7 @@ export class RuntimeSettingsController {
     /**
      * Loads version-compatible compile options.
      */
-    loadCompileOptions(): FaustEditorCompileOptions | {} {
+    loadCompileOptions(): Partial<FaustEditorCompileOptions> {
         return this.settingsStore.loadCompileOptions();
     }
 

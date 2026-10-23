@@ -6,21 +6,21 @@ import type { DiskVolume } from "../runtime/fs/DiskVolume";
 function makeFakeVol(writeSpy: (content: string) => void): DiskVolume {
     const writable = {
         write: vi.fn((content: string) => { writeSpy(content); return Promise.resolve(); }),
-        close: vi.fn(() => Promise.resolve()),
+        close: vi.fn(() => Promise.resolve())
     };
     return {
         id: "disk:test",
         kind: "disk",
         fileHandle: vi.fn(() => Promise.resolve({
-            createWritable: vi.fn(() => Promise.resolve(writable)),
-        })),
+            createWritable: vi.fn(() => Promise.resolve(writable))
+        }))
     } as unknown as DiskVolume;
 }
 
 function makeFakeVolWithId(id: string): DiskVolume {
     return {
         ...makeFakeVol(vi.fn()),
-        id,
+        id
     } as DiskVolume;
 }
 
@@ -141,13 +141,13 @@ describe("DiskOriginTracker", () => {
             let closeCalled = false;
             const writable = {
                 write: vi.fn(() => Promise.resolve()),
-                close: vi.fn(() => { closeCalled = true; return Promise.resolve(); }),
+                close: vi.fn(() => { closeCalled = true; return Promise.resolve(); })
             };
             const vol = {
                 kind: "disk",
                 fileHandle: vi.fn(() => Promise.resolve({
-                    createWritable: vi.fn(() => Promise.resolve(writable)),
-                })),
+                    createWritable: vi.fn(() => Promise.resolve(writable))
+                }))
             } as unknown as DiskVolume;
             const tracker = new DiskOriginTracker();
             tracker.track("kick.dsp", vol, "kick.dsp");

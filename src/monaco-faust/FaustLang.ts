@@ -123,7 +123,7 @@ export const getProviders = async (libFaust: LibFaust): Promise<FaustLanguagePro
     try {
         libDocs = await Faust2Doc.parse("stdfaust.lib", async (fileName: string) => getFile(fileName, libFaust));
         primDocs = await Faust2Doc.parse("primitives.lib", async (fileName: string) => getFile(fileName, libFaust));
-    } catch (e) { console.error(e); } // eslint-disable-line no-empty, no-console
+    } catch (e) { console.error(e); } // eslint-disable-line no-console
     const faustLib = Object.keys(libDocs);
 
     const hoverProvider: languages.HoverProvider = {

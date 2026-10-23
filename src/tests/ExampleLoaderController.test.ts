@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExampleLoaderController } from "../ui/ExampleLoaderController";
 
 const setupDom = () => {
-    document.body.innerHTML = `<div id="tab-examples"></div>`;
+    document.body.innerHTML = '<div id="tab-examples"></div>';
     ($.fn as any).dropdown = vi.fn(function dropdown() {
         return this;
     });

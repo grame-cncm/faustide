@@ -27,7 +27,6 @@ function makeRegistry() {
 // Reset IDB between tests by patching globalThis with a fresh factory.
 // fake-indexeddb's deleteDatabase hangs, so we create a new factory instead.
 function resetIdb() {
-    // eslint-disable-next-line no-undef
     Object.assign(window, { indexedDB: new IDBFactory() });
 }
 

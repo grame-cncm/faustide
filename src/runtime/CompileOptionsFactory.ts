@@ -3,7 +3,7 @@ import type { FaustEditorCompileOptions } from "./types";
 export interface CompileOptionsFactoryOptions {
     projectDir: string;
     supportAudioWorklet: boolean;
-    savedOptions?: Partial<FaustEditorCompileOptions> | {};
+    savedOptions?: Partial<FaustEditorCompileOptions>;
 }
 
 /**

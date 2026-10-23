@@ -57,7 +57,7 @@ export class EditorSettingsStore {
      * Returns saved compile options for the current version, or an empty object
      * when the saved data is absent, stale, or malformed.
      */
-    loadCompileOptions(): FaustEditorCompileOptions | {} {
+    loadCompileOptions(): Partial<FaustEditorCompileOptions> {
         const clientVersion = this.storage.getItem(EDITOR_VERSION_KEY);
         if (clientVersion !== this.version) return {};
         const str = this.storage.getItem(EDITOR_PARAMS_KEY);

@@ -64,7 +64,7 @@ export async function readBundleFromDir(
     const result = new Map<string, string>();
     for (let i = 0; i < entries.length; i++) {
         const entry = entries[i];
-        if (entry.type !== "file") continue; // eslint-disable-line no-continue
+        if (entry.type !== "file") continue;
         try {
             // eslint-disable-next-line no-await-in-loop
             const text = await vol.readText(entry.path);

@@ -110,7 +110,7 @@ class Key2Midi {
         this.offset = options.offset || 36;
         this.velocity = options.velocity || 60;
         this.handler = options.handler || (() => undefined);
-        this.enabled = options.enabled || false && true;
+        this.enabled = options.enabled || false;
     }
     /**
      * KeyDown Handler

@@ -201,7 +201,7 @@ export class GainUI {
         e.preventDefault();
         this.value = 0;
     }
-    handlePointerUp = (e: PointerUpEvent) => {}; // eslint-disable-line @typescript-eslint/no-unused-vars
+    handlePointerUp = (e: PointerUpEvent) => {};
     /** Current fader value in dB; the setter applies the gain and repaints. */
     get value() {
         return this.state.value;

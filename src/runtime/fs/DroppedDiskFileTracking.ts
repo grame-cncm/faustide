@@ -67,6 +67,8 @@ export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOpti
             if (vol.kind !== "disk") continue;
             const diskVol = vol as DiskVolume;
             // resolvePath() is null unless the handle lives inside this mount.
+            // Mounts are probed in order and the first match wins.
+            // eslint-disable-next-line no-await-in-loop
             const path = await diskVol.resolvePath(handle);
             if (path === null) continue;
             const result = handleExistingDiskFile(fileManager, diskTracker, diskVol, path, handle.name, {
@@ -79,6 +81,7 @@ export function createDroppedDiskFileTracker(options: DroppedDiskFileTrackerOpti
             }
             diskTracker.track(savedName, diskVol, path);
             fileManager.setDiskTracked(savedName, true);
+            // eslint-disable-next-line no-await-in-loop
             await onDiskTracked?.(savedName);
             return;
         }

@@ -198,7 +198,7 @@ export class VolumeBrowserController {
             b.className = "vb-open-device";
             b.append(faIcon("fa-file"), document.createTextNode(` ${STRINGS.openDevice}`));
             b.addEventListener("click", () => {
-                close(); // eslint-disable-line no-use-before-define
+                close();
                 onDevice();
             });
             footer.append(b);
@@ -211,7 +211,7 @@ export class VolumeBrowserController {
             b.append(faIcon("fa-hdd"), document.createTextNode(` ${STRINGS.mountDisk}`));
             b.addEventListener("click", async () => {
                 await onMount();
-                render(); // eslint-disable-line no-use-before-define
+                render();
             });
             footer.append(b);
         }
@@ -269,7 +269,7 @@ export class VolumeBrowserController {
                 crumb(STRINGS.root, () => {
                     current = null;
                     path = "";
-                    render(); // eslint-disable-line no-use-before-define
+                    render();
                 })
             );
             if (current) {
@@ -278,7 +278,7 @@ export class VolumeBrowserController {
                     sep(),
                     crumb(vol.label, () => {
                         path = "";
-                        render(); // eslint-disable-line no-use-before-define
+                        render();
                     })
                 );
                 let acc = "";
@@ -289,7 +289,7 @@ export class VolumeBrowserController {
                         sep(),
                         crumb(seg, () => {
                             path = target;
-                            render(); // eslint-disable-line no-use-before-define
+                            render();
                         })
                     );
                 });
@@ -302,14 +302,14 @@ export class VolumeBrowserController {
                     if (ok) {
                         current = v;
                         path = "";
-                        render(); // eslint-disable-line no-use-before-define
+                        render();
                     }
                 });
                 return;
             }
             current = v;
             path = "";
-            render(); // eslint-disable-line no-use-before-define
+            render();
         };
 
         const renderRoot = (): void => {
@@ -358,7 +358,7 @@ export class VolumeBrowserController {
                             current = null;
                             path = "";
                         }
-                        render(); // eslint-disable-line no-use-before-define
+                        render();
                     });
                     actions.append(btn);
                     row.append(actions);
@@ -425,7 +425,7 @@ export class VolumeBrowserController {
                 nameBtn.addEventListener("click", () => {
                     if (entry.type === "dir") {
                         path = entry.path;
-                        render(); // eslint-disable-line no-use-before-define
+                        render();
                     } else if (mode === "save") {
                         nameInput.value = entry.name;
                     } else {
@@ -451,7 +451,7 @@ export class VolumeBrowserController {
                         btn.addEventListener("click", (e) => {
                             e.stopPropagation();
                             onDel(vol, entry);
-                            render(); // eslint-disable-line no-use-before-define
+                            render();
                         });
                         actions.append(btn);
                     }

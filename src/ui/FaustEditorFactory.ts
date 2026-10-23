@@ -70,7 +70,7 @@ effect = dm.freeverb_demo;`;
     const showDoc = () => {
         const matched = faustLang.matchDocKey(providers.docs, editor.getModel(), editor.getPosition());
         let docUrl = faustDocURL;
-        let syntaxUrl = faustSyntaxURL;
+        const syntaxUrl = faustSyntaxURL;
 
         if (matched) {
             const prefix = matched.nameArray.slice();
