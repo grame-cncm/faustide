@@ -39,7 +39,9 @@ export class DiagramView {
             const diagramName = ($("#diagram-svg").attr("data-diagram") || "main") as DiagramName;
             const strSvg = this.diagramSource.readGeneratedSvg(fileName, diagramName);
             const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
-            const width = Math.min($("#diagram").width(), $("#diagram").height() / this.getSvgHeight(svg) * this.getSvgWidth(svg));
+            const $selector = $("#diagram-selector").not(".d-none");
+            const height = $("#diagram").height() - ($selector.length ? $selector.outerHeight(true) : 0);
+            const width = Math.min($("#diagram").width(), height / this.getSvgHeight(svg) * this.getSvgWidth(svg));
             $("#diagram-svg").empty().append(svg).children("svg").width(width);
         });
     }

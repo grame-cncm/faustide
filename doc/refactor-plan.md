@@ -88,7 +88,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 | Layer | Tool | Script | Scope |
 |-------|------|--------|-------|
 | Lint / style | ESLint + Stylelint | `npm test` (`test-eslint`, `test-stylelint`) | static quality gate |
-| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 86 files, 605 tests |
+| Unit / jsdom integration | Vitest | `npm run test:unit` (`:watch`, `test:coverage`) | 86 files, 606 tests |
 | Browser end-to-end | Playwright | `npm run test:e2e` | 76 tests against the built `dist/` |
 
 ### Unit and integration layer (Vitest)

@@ -102,6 +102,17 @@ describe("DiagramController", () => {
         expect($("#diagram-selector").hasClass("d-none")).toBe(true);
     });
 
+    it("fits the diagram below the visible process/effect selector", () => {
+        const { controller, options } = bindController();
+        $("#diagram-selector").height(30);
+        options.diagramService.generateEffectSvg = vi.fn(() => ({ success: true, svg: "<svg></svg>" }));
+
+        controller.update("process = _; effect = _;");
+
+        // (150 - 30) / 300 * 600: the selector height is taken from the pane.
+        expect($("#diagram-svg svg").width()).toBe(240);
+    });
+
     it("shows the process diagram and reports an effect error", () => {
         const error = new Error("FaustDSP : 3");
         const { controller, options } = bindController();

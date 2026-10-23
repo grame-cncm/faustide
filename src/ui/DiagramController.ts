@@ -113,12 +113,14 @@ export class DiagramController {
     }
 
     /**
-     * Fits the generated SVG to the current diagram viewport while preserving
-     * aspect ratio.
+     * Fits the generated SVG to the current diagram viewport, below the
+     * process/effect selector when shown, while preserving aspect ratio.
      */
     private fitWidth(svg: SVGSVGElement) {
         const svgWidth = svg.width?.baseVal?.value || +svg.getAttribute("width") || 0;
         const svgHeight = svg.height?.baseVal?.value || +svg.getAttribute("height") || 1;
-        return Math.min($("#diagram").width(), $("#diagram").height() / svgHeight * svgWidth);
+        const $selector = $("#diagram-selector").not(".d-none");
+        const height = $("#diagram").height() - ($selector.length ? $selector.outerHeight(true) : 0);
+        return Math.min($("#diagram").width(), height / svgHeight * svgWidth);
     }
 }
