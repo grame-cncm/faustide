@@ -45,7 +45,7 @@
     "@babel/runtime": "^7.18.9",
     "@eslint/js": "^9.39.5",
     "@fortawesome/fontawesome-free": "^5.15.3",
-    "@grame/faustwasm": "^0.19.0",
+    "@grame/faustwasm": "^0.19.1",
     "@playwright/test": "^1.56.1",
     "@shren/faust-ui": "^1.1.19",
     "@stylistic/eslint-plugin": "^5.10.0",

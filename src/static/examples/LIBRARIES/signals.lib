@@ -57,8 +57,8 @@ ro = library("routes.lib");
 ma = library("maths.lib");
 si = library("signals.lib");
 
-declare name "Faust Signal Routing Library";
-declare version "1.6.0";
+declare name "Faust Routing Library";
+declare version "1.8.0";
 
 //=============================Functions Reference========================================
 //========================================================================================
@@ -82,9 +82,9 @@ declare version "1.6.0";
 // ```
 // si = library("signals.lib");
 // bus_test = (
-//     hslider("bus:x0", 0, -1, 1, 0.01),
-//     hslider("bus:x1", 0, -1, 1, 0.01),
-//     hslider("bus:x2", 0, -1, 1, 0.01)
+//     hslider("bus:x0", 0.25, -1, 1, 0.01),
+//     hslider("bus:x1", -0.5, -1, 1, 0.01),
+//     hslider("bus:x2", 0.75, -1, 1, 0.01)
 // ) : si.bus(3);
 // ```
 //-----------------------------------------------------------------------------
@@ -100,7 +100,7 @@ bus(N) = par(i, N, _);
 // #### Usage
 //
 // ```
-// si.bus(N) : block(N)
+// bus(N) : block(N)
 // ```
 //
 // Where:
@@ -111,8 +111,8 @@ bus(N) = par(i, N, _);
 // ```
 // si = library("signals.lib");
 // block_test = (
-//     hslider("block:x0", 0, -1, 1, 0.01),
-//     hslider("block:x1", 0, -1, 1, 0.01)
+//     hslider("block:x0", 0.5, -1, 1, 0.01),
+//     hslider("block:x1", -0.25, -1, 1, 0.01)
 // ) : (si.block(1), _);
 // ```
 //--------------------------------------
@@ -137,8 +137,8 @@ block(N) = par(i, N, !);
 // os = library("oscillators.lib");
 // interpolate_test = si.interpolate(
 //     hslider("interpolate:mix", 0.5, 0, 1, 0.01),
-//     os.osc(220),
-//     os.osc(440)
+//     os.tosc(220),
+//     os.tosc(440)
 // );
 // ```
 //-----------------------------------------------------------------------------
@@ -151,7 +151,7 @@ interpolate(i,x,y) = x + i*(y-x);
 // #### Usage
 //
 // ```
-// si.bus(inputs(FX)) : repeat(N, FX) : si.bus(outputs(FX))
+// bus(inputs(FX)) : repeat(N, FX) : bus(outputs(FX))
 // ```
 //
 // Where:
@@ -162,7 +162,7 @@ interpolate(i,x,y) = x + i*(y-x);
 // #### Test
 // ```
 // si = library("signals.lib");
-// repeat_test = hslider("repeat:input", 0, -1, 1, 0.01) : si.repeat(3, *(0.5));
+// repeat_test = hslider("repeat:input", 0.5, -1, 1, 0.01) : si.repeat(3, *(0.5));
 // ```
 //
 // Example 1:
@@ -207,7 +207,7 @@ with {
 // #### Test
 // ```
 // si = library("signals.lib");
-// smoo_test = hslider("smoo:input", 0, -1, 1, 0.01) : si.smoo;
+// smoo_test = hslider("smoo:input", 0.5, -1, 1, 0.01) : si.smoo;
 // ```
 //---------------------------------------------------------------------
 smoo = si.smooth(1 - 44.1/ma.SR);
@@ -234,7 +234,7 @@ smoo = si.smooth(1 - 44.1/ma.SR);
 // #### Test
 // ```
 // si = library("signals.lib");
-// polySmooth_test = hslider("polySmooth:input", 0, -1, 1, 0.01)
+// polySmooth_test = hslider("polySmooth:input", 0.5, -1, 1, 0.01)
 //   : si.polySmooth(button("polySmooth:gate"), 0.999, 32);
 // ```
 //-------------------------------------------------------------------
@@ -260,7 +260,7 @@ polySmooth(g,s,d) = si.smooth(s*((g==(g@d)) | (g == 0)));
 // #### Test
 // ```
 // si = library("signals.lib");
-// smoothAndH_test = hslider("smoothAndH:input", 0, -1, 1, 0.01)
+// smoothAndH_test = hslider("smoothAndH:input", 0.5, -1, 1, 0.01)
 //   : si.smoothAndH(button("smoothAndH:hold"), 0.999);
 // ```
 //-------------------------------------------------------------------
@@ -278,7 +278,7 @@ smoothAndH(t,s) = si.smooth(s*t) : ba.sAndH(t);
 // #### Test
 // ```
 // si = library("signals.lib");
-// bsmooth_test = hslider("bsmooth:input", 0, -1, 1, 0.01) : si.bsmooth;
+// bsmooth_test = hslider("bsmooth:input", 0.5, -1, 1, 0.01) : si.bsmooth;
 // ```
 //-----------------------------------------------------------------------
 bsmooth(c) = +(i) ~ _
@@ -293,7 +293,7 @@ with {
 // #### Usage
 //
 // ```
-// si.bus(N), si.bus(N) : dot(N) : _
+// bus(N), bus(N) : dot(N) : _
 // ```
 //
 // Where:
@@ -305,8 +305,8 @@ with {
 // si = library("signals.lib");
 // os = library("oscillators.lib");
 // dot_test = (
-//     os.osc(100), os.osc(200), os.osc(300),
-//     os.osc(400), os.osc(500), os.osc(600)
+//     os.tosc(100), os.tosc(200), os.tosc(300),
+//     os.tosc(400), os.tosc(500), os.tosc(600)
 // ) : si.dot(3);
 // ```
 //-----------------------------------------------------------------------------
@@ -329,20 +329,15 @@ Michon and Julius O. Smith III, and are released under the
 ************************************************************************/
 //-------------------`(si.)smooth`-----------------------------------
 // Exponential smoothing by a unity-dc-gain one-pole lowpass.
-// `smooth` is a standard Faust function.
+// `smooth` is a standard Faust function. The input is typically a control
+// signal (`hslider(...) : smooth(s)`). The pole `s` is usually computed
+// from a smoothing time constant `tau` in seconds with `ba.tau2pole(tau)`
+// (see the example).
 //
-// #### Usage:
-//
-// ```
-// _ : si.smooth(ba.tau2pole(tau)) : _
-// ```
-//
-// Where:
-//
-// * `tau`: desired smoothing time constant in seconds, or
+// #### Usage
 //
 // ```
-// hslider(...) : smooth(s) : _
+// _ : smooth(s) : _
 // ```
 //
 // Where:
@@ -352,10 +347,22 @@ Michon and Julius O. Smith III, and are released under the
 // The exponential time-constant is approximately 1/(1-s) samples, when s is close to
 // (but less than) 1.
 //
+// #### Example
+//
+// ```
+// _ : smooth(ba.tau2pole(tau)) : _   // tau: smoothing time constant in seconds
+// ```
+//
 // #### Test
 // ```
 // si = library("signals.lib");
-// smooth_test = hslider("smooth:input", 0, -1, 1, 0.01) : si.smooth(0.9);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// smooth_test = hslider("smooth:input", 0.5, -1, 1, 0.01) : si.smooth(0.9);
+// smooth_slider_test = no.noise : si.smooth(hslider("smooth:s", 0.999, 0, 0.9999, 0.0001));
+// smooth_modulated_test = no.noise : si.smooth(1 - 0.1*pow(0.001, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// smooth_jump_test = no.noise : si.smooth(1 - 0.1*pow(0.001, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -365,21 +372,21 @@ Michon and Julius O. Smith III, and are released under the
 //-------------------------------------------------------------
 
 // See [grame-cncm/faustlibraries]: Minor improvement to si.smoo. (Discussion #106)
+// Implementation 0 is the best compromise on modern CPUs where two independent
+// multiplications can be done in parallel. The other versions could possibly
+// be faster on embedded devices.
+smooth = imp(0) with {
+  imp = case {
+    // y[n] = (1 - s) * x[n] + s * y[n - 1]
+    (0,s) => \(x).(fb ~ _ with { fb(y) = (1.0 - s) * x + s * y; });
 
-smooth_imp = case { 
-  // y[n] = (1 - s) * x[n] + s * y[n - 1]
-  (0,s) => \(x).(fb ~ _ with { fb(y) = (1.0 - s) * x + s * y; });
-  
-  // y[n] = s * (y[n - 1] - x[n]) + x[n]
-  (1,s) => \(x).(fb ~ _ with { fb(y) = s * (y - x) + x; });
-  
-  // y[n] = y[n - 1] + (1 - s) * (x[n] - y[n - 1])
-  (2,s) => \(x).(fb ~ _ with { fb(y) = y + (1.0 - s) * (x - y); });
+    // y[n] = s * (y[n - 1] - x[n]) + x[n]
+    (1,s) => \(x).(fb ~ _ with { fb(y) = s * (y - x) + x; });
+
+    // y[n] = y[n - 1] + (1 - s) * (x[n] - y[n - 1])
+    (2,s) => \(x).(fb ~ _ with { fb(y) = y + (1.0 - s) * (x - y); });
+  };
 };
-
-// The best compromise on modern CPUs where two independent multiplications can be done in parallel.
-// Other versions could possibly be faster on embedded devices. 
-smooth = smooth_imp(0);
 
 
 //--------------------------------`(si.)smoothq`-------------------------------------
@@ -399,33 +406,55 @@ smooth = smooth_imp(0);
 // #### Test
 // ```
 // si = library("signals.lib");
-// smoothq_test = hslider("smoothq:input", 0, -1, 1, 0.01) : si.smoothq(0.25, 0.5);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// smoothq_test = hslider("smoothq:input", 0.5, -1, 1, 0.01) : si.smoothq(0.25, 0.5);
+// smoothq_linear_test = select2(ba.period(2*P) < P, -1, 1) : si.smoothq(0.25, 1)
+// with { P = int(ma.SR/4); };
+// smoothq_slider_test = no.noise : ba.sAndH(ba.period(Q) == 0) : si.smoothq(hslider("smoothq:time", 0.25, 0.001, 1, 0.001), hslider("smoothq:q", 0.5, 0, 1, 0.01)) with { Q = int(ma.SR/30); };
+// smoothq_modulated_test = no.noise : ba.sAndH(ba.period(Q) == 0) : si.smoothq(0.001*pow(1000, tri), 0.5) with { Q = int(ma.SR/30); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// smoothq_jump_test = no.noise : ba.sAndH(ba.period(Q) == 0) : si.smoothq(0.001*pow(1000, sq), 0.5) with { Q = int(ma.SR/30); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //-----------------------------------------------------------------------------
 declare smoothq author "Andrew John March";
-declare smoothq licence "STK-4.3";
+declare smoothq licence "LicenseRef-STK-4.3";
 
 smoothq(time, q, tar) = envelope 
     with {
         ratio = pow(q, 5) * 32 : max(0.001);
-        coef = (ratio / (1 + ratio))^(1 / (ma.SR * time));
+        // om = 1 - coef, with coef = (ratio / (1 + ratio))^(1 / (ma.SR * time)).
+        // For long times, coef is a few ulps below 1 in single precision: at
+        // time = 1 s and 192 kHz, 1 - coef is off by 11% once coef is
+        // rounded, and the ramp is that much too fast. om is computed
+        // directly, and coef itself is never formed.
+        om = 0 - em1(log(ratio / (1 + ratio)) / (ma.SR * time));
+        // exp(x) - 1 for x <= 0: its Taylor series near 0 (truncation below
+        // 2e-10 relative), where exp(x) - 1 would cancel. Kahan's
+        // (u - 1) * x / log(u) does not survive the Faust normalizer, which
+        // simplifies log(exp(x)) to x.
+        em1(x) = select2(x > -0.1, exp(x) - 1,
+                         x * (1 + x/2 * (1 + x/3 * (1 + x/4 * (1 + x/5 * (1 + x/6))))));
         fb(cBase, cTar, cSrc, cDistance, cDir, cY, cOut) = base, tar, src, distance, dir, y, out
             with {
                 trig = cTar != tar;
                 src = select2(trig, cSrc, cOut);
                 dir = select2(trig, cDir, tar > src);
                 base = select2(trig, cBase, select2(dir,
-                    (0.0 - ratio) * (1.0 - coef),
-                    (1.0 + ratio) * (1.0 - coef)
+                    (0.0 - ratio) * om,
+                    (1.0 + ratio) * om
                 ));
                 distance = select2(trig, cDistance, abs(tar - src));
+                // base + cY * coef, without rounding coef. Written so that the
+                // Faust normalizer does not fold it back into base + (1 - om) * cY.
+                step = cY - (cY * om - base);
                 y = select2(dir,
                     select2(trig, 
-                        max( 0, base + cY * coef),
+                        max(0, step),
                         1
                     ),
                     select2(trig,
-                        min( 1, base + cY * coef),
+                        min(1, step),
                         0
                     )
                 );
@@ -459,8 +488,8 @@ smoothq(time, q, tar) = envelope
 // si = library("signals.lib");
 // os = library("oscillators.lib");
 // cbus_test = (
-//     os.osc(100), os.osc(150),
-//     os.osc(200), os.osc(250)
+//     os.tosc(100), os.tosc(150),
+//     os.tosc(200), os.tosc(250)
 // ) : si.cbus(2);
 // ```
 //-----------------------------------------------------------------------------
@@ -470,6 +499,8 @@ cbus(N) = par(i, N, (_,_));
 //--------------------------------`(si.)cmul`-------------------------------------
 // Multiply two complex signals pointwise.
 // `cmul` is a standard Faust function.
+// Each complex number is represented by two real signals as (real,imag):
+// the inputs `(r1,i1)` are the real and imaginary parts of signal 1.
 //
 // #### Usage
 //
@@ -479,17 +510,15 @@ cbus(N) = par(i, N, (_,_));
 //
 // Where:
 //
-// * Each complex number is represented by two real signals as (real,imag), so
-// - `(r1,i1)` = real and imaginary parts of signal 1
-// - `(r2,i2)` = real and imaginary parts of signal 2
+// * `r2`, `i2`: real and imaginary parts of signal 2
 //
 // #### Test
 // ```
 // si = library("signals.lib");
 // os = library("oscillators.lib");
 // cmul_test = si.cmul(
-//     os.osc(110), os.osc(220),
-//    os.osc(330), os.osc(440)
+//     os.tosc(110), os.tosc(220),
+//     os.tosc(330), os.tosc(440)
 // );
 // ```
 //-----------------------------------------------------------------------------
@@ -515,7 +544,7 @@ cmul(r1,i1,r2,i2) = (r1*r2 - i1*i2), (r1*i2 + r2*i1);
 // ```
 // si = library("signals.lib");
 // os = library("oscillators.lib");
-// cconj_test = (os.osc(210), os.osc(310)) : si.cconj;
+// cconj_test = (os.tosc(210), os.tosc(310)) : si.cconj;
 // ```
 //-----------------------------------------------------------------------------
 cconj = _, *(-1);
@@ -548,12 +577,18 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 // #### Test
 // ```
 // si = library("signals.lib");
-// onePoleSwitching_test = hslider("onePoleSwitching:input", 0, -1, 1, 0.01)
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// onePoleSwitching_test = hslider("onePoleSwitching:input", 0.5, -1, 1, 0.01)
 //   : si.onePoleSwitching(0.05, 0.2);
+// onePoleSwitching_slider_test = no.noise : si.onePoleSwitching(hslider("onePoleSwitching:att", 0.05, 0.001, 1, 0.001), hslider("onePoleSwitching:rel", 0.2, 0.001, 1, 0.001));
+// onePoleSwitching_modulated_test = no.noise : si.onePoleSwitching(0.001*pow(1000, tri), 0.001*pow(1000, 1 - tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// onePoleSwitching_jump_test = no.noise : si.onePoleSwitching(0.001*pow(1000, sq), 0.001*pow(1000, 1 - sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //----------------------------------------------------
 declare onePoleSwitching author "Jonatan Liljedahl, revised by Dario Sanfilippo";
-declare onePoleSwitching licence "STK-4.3";
+declare onePoleSwitching licence "LicenseRef-STK-4.3";
 
 onePoleSwitching(att, rel, x) = loop ~ _
     with {
@@ -563,7 +598,30 @@ onePoleSwitching(att, rel, x) = loop ~ _
             };
     };
     
-// Kept for backward compatibility
+//-------------`(si.)lag_ud`---------------
+// Lag filter with separate times for the up (attack) and down (release)
+// directions. Alias of `onePoleSwitching`, kept for backward compatibility.
+//
+// #### Usage
+//
+// ```
+// _ : lag_ud(up,dn) : _
+// ```
+//
+// Where:
+//
+// * `up`: the attack tau time constant in second
+// * `dn`: the release tau time constant in second
+//
+// #### Test
+// ```
+// si = library("signals.lib");
+// lag_ud_test = hslider("lag_ud:input", 0.5, -1, 1, 0.01) : si.lag_ud(0.05, 0.2);
+// ```
+//----------------------------------------------------
+declare lag_ud author "Jonatan Liljedahl, revised by Dario Sanfilippo";
+declare lag_ud licence "LicenseRef-STK-4.3";
+
 lag_ud = onePoleSwitching;
 
 
@@ -587,7 +645,7 @@ lag_ud = onePoleSwitching;
 // ```
 // si = library("signals.lib");
 // os = library("oscillators.lib");
-// rev_test = os.osc(440) : si.rev(32);
+// rev_test = os.tosc(440) : si.rev(32);
 // ```
 //----------------------------------------------------
 declare rev author "Yann Orlarey";
@@ -619,10 +677,10 @@ with {
 // #### Usage
 //
 // ```
-//      si.bus(inputs(vectorsList)) : vecOp((vectorsList), op) : si.bus(outputs(ba.take(1, vectorsList)));
+// bus(inputs(vectorsList)) : vecOp(vectorsList, op) : bus(outputs(ba.take(1, vectorsList)))
 // ```
 //
-// #### Where
+// Where:
 //
 // * `vectorsList`: is a list of vectors
 // * `op`: is a two-input, one-output operator
@@ -703,7 +761,7 @@ with {
 declare vecOp author "Dario Sanfilippo";
 declare vecOp copyright "Copyright (C) 2022 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare vecOp license "MIT License";
+declare vecOp license "MIT";
 vecOp(vectorsList, op) =
     vectorsList : seq(i, vecDim - 1, vecOp2D , vecBus(vecDim - 2 - i))
     with {
@@ -730,7 +788,7 @@ when the repeated expression doesn't depend on the variable.
 // #### Usage
 //
 // ```
-// si.bus(N * inputs(f)) : bpar(N, f) : si.bus(N * outputs(f))
+// bus(N * inputs(f)) : bpar(N, f) : bus(N * outputs(f))
 // ```
 //
 // Where:
@@ -742,7 +800,7 @@ when the repeated expression doesn't depend on the variable.
 // ```
 // si = library("signals.lib");
 // os = library("oscillators.lib");
-// bpar_test = (os.osc(120), os.osc(240), os.osc(360)) : si.bpar(3, *(0.5));
+// bpar_test = (os.tosc(120), os.tosc(240), os.tosc(360)) : si.bpar(3, *(0.5));
 // ```
 //
 // Example:
@@ -754,7 +812,7 @@ when the repeated expression doesn't depend on the variable.
 //------------------------------------------
 declare bpar author "Haggai Nuchi";
 declare bpar copyright "Copyright (C) 2024 Haggai Nuchi <haggai@haggainuchi.com>";
-declare bpar license "MIT License";
+declare bpar license "MIT";
 bpar(1, f) = f;
 bpar(N, f) = bpar(left, f), bpar(right, f) with {
     left = ma.np2(N) >> 1; // biggest power of 2 less than N
@@ -767,7 +825,7 @@ bpar(N, f) = bpar(left, f), bpar(right, f) with {
 // #### Usage
 //
 // ```
-// si.bus(N * inputs(f)) : bsum(N, f) : _
+// bus(N * inputs(f)) : bsum(N, f) : _
 // ```
 //
 // Where:
@@ -779,8 +837,7 @@ bpar(N, f) = bpar(left, f), bpar(right, f) with {
 // ```
 // si = library("signals.lib");
 // os = library("oscillators.lib");
-// bsum_test = (os.osc(100), os.osc(200), os.osc(300))
-//   : si.bsum(3, *(0.5));
+// bsum_test = (os.tosc(100), os.tosc(200), os.tosc(300)) : si.bsum(3, *(0.5));
 // ```
 //
 // Example:
@@ -791,7 +848,7 @@ bpar(N, f) = bpar(left, f), bpar(right, f) with {
 //----------------------------------------------------
 declare bsum author "Haggai Nuchi";
 declare bsum copyright "Copyright (C) 2024 Haggai Nuchi <haggai@haggainuchi.com>";
-declare bsum license "MIT License";
+declare bsum license "MIT";
 bsum(1, f) = f;
 bsum(N, f) = bsum(left, f) + bsum(right, f) with {
     left = ma.np2(N) >> 1; // biggest power of 2 less than N
@@ -804,7 +861,7 @@ bsum(N, f) = bsum(left, f) + bsum(right, f) with {
 // #### Usage
 //
 // ```
-// si.bus(N * inputs(f)) : bprod(N, f) : _
+// bus(N * inputs(f)) : bprod(N, f) : _
 // ```
 //
 // Where:
@@ -829,9 +886,122 @@ bsum(N, f) = bsum(left, f) + bsum(right, f) with {
 //----------------------------------------------------
 declare bprod author "Haggai Nuchi";
 declare bprod copyright "Copyright (C) 2024 Haggai Nuchi <haggai@haggainuchi.com>";
-declare bprod license "MIT License";
+declare bprod license "MIT";
 bprod(1, f) = f;
 bprod(N, f) = bprod(left, f) * bprod(right, f) with {
     left = ma.np2(N) >> 1; // biggest power of 2 less than N
     right = N - left;
+};
+
+
+
+//-------------------------------`(si.)cumsum`------------------------------------
+// Cumulative sum of `N` signals: output `k` is the sum of inputs `0` to `k`.
+// The inputs need not sum to 1; for a cumulative distribution, normalize them
+// first (`si.normalizeL1`).
+//
+// #### Usage
+//
+// ```
+// bus(N) : cumsum(N) : bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of signals (int, known at compile time, at least 1)
+//
+// #### Test
+// ```
+// si = library("signals.lib");
+// cumsum_test = (0.1, 0.2, 0.3, 0.4) : si.cumsum(4);
+// ```
+//-----------------------------------------------------------------------------
+declare cumsum author "David Braun";
+declare cumsum license "MIT";
+cumsum(1) = _;
+cumsum(N) = seq(i, N - 1, (bus(i), (\(x, y).(x, x + y)), bus(N - 2 - i)));
+
+
+//-------------------------`(si.)normalizeL1`, `(si.)normalizeL2`---------------------------
+// Scale `N` signals by a common factor so that their L1 norm (sum of absolute
+// values, `normalizeL1`) or L2 norm (square root of the sum of squares,
+// `normalizeL2`) is 1. For non-negative inputs, `normalizeL1` turns weights into
+// probabilities; `normalizeL2` turns gains into equal-power gains. The output is
+// not finite when all the inputs are 0.
+//
+// #### Usage
+//
+// ```
+// bus(N) : normalizeL1(N) : bus(N)
+// bus(N) : normalizeL2(N) : bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of signals (int, known at compile time)
+//
+// #### Test
+// ```
+// si = library("signals.lib");
+// normalizeL1_test = (0.1, -0.2, 0.4) : si.normalizeL1(3);
+// normalizeL2_test = (0.1, -0.2, 0.4) : si.normalizeL2(3);
+// ```
+//-----------------------------------------------------------------------------
+declare normalizeL1 author "David Braun";
+declare normalizeL1 license "MIT";
+normalizeL1(N) = bus(N) <: vecOp((bus(N), (par(i, N, abs) :> _ <: bus(N))), /);
+
+declare normalizeL2 author "David Braun";
+declare normalizeL2 license "MIT";
+normalizeL2(N) = bus(N) <: vecOp((bus(N), (bus(N) <: dot(N) : sqrt <: bus(N))), /);
+
+
+//--------------------------------`(si.)softmax`-----------------------------------
+// Softmax of `N` signals: `exp(x_k/temp)` normalized to sum to 1, which turns
+// arbitrary scores (logits) into probabilities. A high temperature flattens the
+// distribution toward uniform; a low one sharpens it toward the largest input.
+// The maximum is subtracted before `exp`, so the output is finite for any
+// finite input.
+//
+// #### Usage
+//
+// ```
+// bus(N) : softmax(N, temp) : bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of signals (int, known at compile time)
+// * `temp`: temperature, greater than 0
+//
+// #### Test
+// ```
+// si = library("signals.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// softmax_test = (-0.1, 0.2, 0.3, -0.2) : si.softmax(4, 0.5);
+// softmax_slider_test = (-0.1, 0.2, 0.3, -0.2) : si.softmax(4, hslider("softmax:temp", 0.5, 0.01, 10, 0.01));
+// softmax_modulated_test = (-0.1, 0.2, 0.3, -0.2) : si.softmax(4, 0.01 + tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// ```
+//
+// #### References
+//
+// * <https://en.wikipedia.org/wiki/Softmax_function>
+//-----------------------------------------------------------------------------
+declare softmax author "David Braun";
+declare softmax license "MIT";
+softmax(N, temp) = bus(N) <: vecOp((bus(N), (ba.parallelMax(N) <: bus(N))), -)
+    : par(i, N, (/(temp) : exp))
+    // the largest term is exp(0) = 1, so the sum is at least 1
+    <: vecOp((bus(N), (bus(N) :> _ <: bus(N))), /);
+
+// Deprecated backward-compatibility alias, kept for one version and scheduled
+// for removal: a frozen copy of the internal implementation selector that was
+// folded into si.smooth (see CONTRIBUTING.md, "Variables and identifiers
+// scoping").
+declare smooth_imp deprecated "internal implementation selector, folded into si.smooth";
+smooth_imp = case {
+  (0,s) => \(x).(fb ~ _ with { fb(y) = (1.0 - s) * x + s * y; });
+  (1,s) => \(x).(fb ~ _ with { fb(y) = s * (y - x) + x; });
+  (2,s) => \(x).(fb ~ _ with { fb(y) = y + (1.0 - s) * (x - y); });
 };

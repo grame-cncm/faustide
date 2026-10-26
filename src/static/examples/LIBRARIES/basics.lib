@@ -66,7 +66,7 @@ it = library("interpolators.lib");
 si = library("signals.lib");
 
 declare name "Faust Basic Element Library";
-declare version "1.22.0";
+declare version "1.23.6";
 
 //=============================Conversion Tools===========================================
 //========================================================================================
@@ -96,7 +96,7 @@ samp2sec(n) = n/ma.SR;
 
 //-------`(ba.)sec2samp`----------
 // Converts a duration in seconds to a number of samples at the current sampling rate (see `ma.SR`).
-// `samp2sec` is a standard Faust function.
+// `sec2samp` is a standard Faust function.
 //
 // #### Usage
 //
@@ -231,7 +231,7 @@ Michon and Julius O. Smith III, and are released under the
 // #### Usage
 //
 // ```
-// _ : smooth(tau2pole(tau)) : _
+// _ : si.smooth(tau2pole(tau)) : _
 // ```
 //
 // Where:
@@ -321,6 +321,57 @@ midikey2hz(mk) = 440.0*pow(2.0, (mk-69.0)/12.0);
 // ```
 //----------------------------
 hz2midikey(freq) = 12.0*ma.log2(freq/440.0) + 69.0;
+
+
+//-------`(ba.)hz2mel`----------
+// Converts a frequency in Hz to the mel perceptual-pitch scale.
+// Uses the O'Shaughnessy (1987) formula `2595 * log10(1 + f/700)`. Useful with
+// `mel2hz` and `it.interpolate_mel` for spacing things the way the ear hears pitch.
+//
+// #### Usage
+//
+// ```
+// hz2mel(freq) : _
+// ```
+//
+// Where:
+//
+// * `freq`: frequency in Hz
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// hz2mel_test = ba.hz2mel(440.0);
+// ```
+//----------------------------
+declare hz2mel author "Bart Brouns";
+declare hz2mel licence "MIT";
+hz2mel(freq) = 2595.0*log10(1.0+freq/700.0);
+
+
+//-------`(ba.)mel2hz`----------
+// Converts a value on the mel perceptual-pitch scale back to a frequency in Hz.
+// Inverse of `hz2mel`, using `700 * (10^(m/2595) - 1)`.
+//
+// #### Usage
+//
+// ```
+// mel2hz(mel) : _
+// ```
+//
+// Where:
+//
+// * `mel`: value on the mel scale
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// mel2hz_test = ba.mel2hz(1000.0);
+// ```
+//----------------------------
+declare mel2hz author "Bart Brouns";
+declare mel2hz licence "MIT";
+mel2hz(mel) = 700.0*(pow(10.0, mel/2595.0)-1.0);
 
 
 //-------`(ba.)semi2ratio`----------
@@ -537,7 +588,7 @@ countdown(n, trig) = \(c).(if(trig>0, n, max(0, c-1))) ~ _;
 // #### Test
 // ```
 // ba = library("basics.lib");
-// countup_test = ba.countup(8, button("trig"));
+// countup_test = ba.countup(8, ba.pulse(16));
 // ```
 //----------------------------
 countup(n, trig) = \(c).(if(trig>0, 0, min(n, c+1))) ~ _;
@@ -554,6 +605,11 @@ countup(n, trig) = \(c).(if(trig>0, 0, min(n, c+1))) ~ _;
 // ```
 // sweep(period,run) : _
 // ```
+//
+// Where:
+//
+// * `period`: sweep length in samples
+// * `run`: enable signal, non-zero while the sweep runs
 //
 // #### Test
 // ```
@@ -601,7 +657,7 @@ time = +(1)~_ : mem;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// ramp_test = os.osc(1) : ba.ramp(256);
+// ramp_test = os.tosc(1) : ba.ramp(256);
 // ```
 //----------------------------
 ramp = case {
@@ -614,7 +670,9 @@ ramp = case {
 // A ramp interpolator that generates a linear transition to reach a target value:
 //
 //  - the interpolation process restarts each time a new and distinct input value is received
-//  - it utilizes 'n' samples to achieve the transition to the target value
+//  - it utilizes 'n' samples to achieve the transition to the target value;
+//    'n' is rounded to the nearest whole number of samples, so that a ramp
+//    never overshoots its target
 //  - after reaching the target value, the output value is maintained.
 //
 // #### Usage
@@ -630,14 +688,18 @@ ramp = case {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// line_test = os.osc(1) : ba.line(256);
+// line_test = os.tosc(1) : ba.line(256);
+// line_frac_test = os.lf_squarewavepos(100) : ba.line(4.8);
+// line_slider_test = os.tosc(1) : ba.line(hslider("line:n", 256, 1, 4096, 1));
 // ```
 //----------------------------
 line(n, x) = state ~ (_,_) : !,_
 with {
     state(t, c) = nt,nc
     with {
-        nt = ba.if(x != x', n, t-1);
+        // rint: with a fractional count, the last step would divide by a
+        // number below 1 and overshoot the target
+        nt = ba.if(x != x', rint(n), t-1);
         nc = ba.if(nt > 0, c + (x - c)/nt, x);
     };
 };
@@ -828,7 +890,7 @@ beat(t) = pulse(tempo(t));
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countup_test = ba.pulse_countup(button("run"));
+// pulse_countup_test = ba.pulse_countup(1) + 0.001;
 // ```
 //----------------------------
 declare pulse_countup author "Vince";
@@ -853,7 +915,7 @@ pulse_countup(trig) = + ~ _ * trig;
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countdown_test = ba.pulse_countdown(button("run"));
+// pulse_countdown_test = ba.pulse_countdown(1) + 0.001;
 // ```
 //----------------------------
 declare pulse_countdown author "Vince";
@@ -862,9 +924,14 @@ pulse_countdown(trig) = - ~ _ * trig;
 
 
 //----------------------------`(ba.)pulse_countup_loop`------------------------------
-// Starts counting up pulses from 0 to n included. While trig is 1 the output is
-// counting up, while trig is 0 the counter is reset to 0. At the end
-// of the countup (n) the output value will be reset to 0.
+// Counts pulses up from 0 to n included, then starts again from 0: each pulse
+// adds 1, the pulse after the one that reached n brings the output back to 0,
+// and each value is held until the next pulse. While trig is 1 the output
+// counts, while trig is 0 the counter is reset to 0. With pulses of 1 and
+// n = 4 the output goes 1, 2, 3, 4, 0, 1, ...
+//
+// Until basics.lib 1.23.3 the output went up to n+1 before coming back to 0,
+// and n itself was held for one sample only.
 //
 // #### Usage
 //
@@ -874,27 +941,35 @@ pulse_countdown(trig) = - ~ _ * trig;
 //
 // Where:
 //
-// * `n`: the highest number of the countup (included) before reset to 0
+// * `n`: the highest value of the count (included) before it starts again from 0
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countup_loop_test = ba.pulse_countup_loop(4, button("run"));
+// pulse_countup_loop_test = ba.pulse_countup_loop(4, 1) + 0.001;
+// pulse_countup_loop_pulses_test = ba.pulse(2) : ba.pulse_countup_loop(4, 1);
 // ```
 //----------------------------
 declare pulse_countup_loop author "Vince";
 
-pulse_countup_loop(n, trig) = + ~ cond(n)*trig
+pulse_countup_loop(n, trig) = (+ : wrap) ~ *(trig)
 with {
-    cond(n, x) = x * (x <= n);
+    // past n, the count starts again from 0
+    wrap(c) = c * (c <= n);
 };
 
 
 //----------------------------`(ba.)pulse_countdown_loop`----------------------------
-// Starts counting down pulses from 0 to n included. While trig is 1 the output
-// is counting down, while trig is 0 the counter is reset to 0. At the end
-// of the countdown (n) the output value will be reset to 0.
+// Counts pulses down from 0 to -n included, then starts again from 0: each
+// pulse subtracts 1, the pulse after the one that reached -n brings the output
+// back to 0, and each value is held until the next pulse. While trig is 1 the
+// output counts, while trig is 0 the counter is reset to 0. With pulses of 1
+// and n = 4 the output goes -1, -2, -3, -4, 0, -1, ...: the opposite of
+// `pulse_countup_loop`, and a count down as `pulse_countdown` counts.
+//
+// Until basics.lib 1.23.3 the count only looped for a negative n: with a
+// positive n it did not count, the output was -1 on each pulse and 0 between.
 //
 // #### Usage
 //
@@ -904,20 +979,22 @@ with {
 //
 // Where:
 //
-// * `n`: the highest number of the countup (included) before reset to 0
+// * `n`: the magnitude of the lowest value of the count (-n, included) before it starts again from 0
 // * `trig`: the trigger signal (1: start at next pulse; 0: reset to 0)
 //
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countdown_loop_test = ba.pulse_countdown_loop(4, button("run"));
+// pulse_countdown_loop_test = ba.pulse_countdown_loop(4, 1) + 0.001;
+// pulse_countdown_loop_pulses_test = ba.pulse(2) : ba.pulse_countdown_loop(4, 1);
 // ```
 //----------------------------
 declare pulse_countdown_loop author "Vince";
 
-pulse_countdown_loop(n, trig) = - ~ cond(n)*trig
+pulse_countdown_loop(n, trig) = (- : wrap) ~ *(trig)
 with {
-    cond(n, x) = x * (x >= n);
+    // past -n, the count starts again from 0
+    wrap(c) = c * (c >= -n);
 };
 
 
@@ -940,11 +1017,14 @@ with {
 // ```
 // ba = library("basics.lib");
 // resetCtr_test = ba.pulse(16) : ba.resetCtr(4, 2);
+// resetCtr_last_test = ba.pulse(4) : ba.resetCtr(4, 4);
 // ```
 //----------------------------
 declare resetCtr author "Mike Olsen";
 
-resetCtr(n,m) = _ <: (_,pulse_countup_loop(n-1,1)) : (_,(_==m)) : *;
+// the count of pulse_countup_loop(n-1) goes 1, ..., n-1, 0: the n-th impulse
+// is the one that brings it back to 0, hence m % n
+resetCtr(n,m) = _ <: (_,pulse_countup_loop(n-1,1)) : (_,(_==(m%n))) : *;
 
 
 //===============================Array Processing/Pattern Matching========================
@@ -1057,7 +1137,7 @@ pick(l,n) = l : route(outputs(l),1, n+1, 1);
 // #### Example test program
 //
 // ```
-// pickN(4,2) : _  // same as selector(2,4) but faster
+// pickN(4,2) : _  // same as selector(2,4)
 // ```
 //
 // ```
@@ -1114,6 +1194,130 @@ subseq((head, tail), P, N) = subseq(tail, P-1, N);
 subseq(head, 0, N)         = head;
 
 
+//----------------------------`(ba.)processArray`-------------------------------
+// Run `N` parallel copies of `processor`, interpolating its parameters across the copies.
+// Each input of `processor` is one of two kinds, depending on whether you supply bounds
+// for it: a *parameter input*, which `processArray` generates by interpolating across a
+// lo/hi range and smoothing, or a *signal input*, which you feed in and `processArray`
+// passes through to the copies untouched.
+//
+// For each parameter input of `processor` you give a low and a high bound; `processArray`
+// spreads that range across the `N` copies so the first copy gets the low bound,
+// the last copy gets the high bound, and the copies in between get values stepping
+// from low to high. Each per-input range is shaped by a supplied interpolator, so
+// the steps need not be evenly spaced. With several parameters interpolated at once,
+// each copy takes one value from every range: copy `j` gets the `j`-th value of each.
+//
+// If fewer parameter bounds are supplied than `processor` has inputs, the inputs left
+// without bounds are taken from `processArray`'s own signal inputs instead: one
+// `N`-wide bus per such input, so `(inputs(processor) - outputs(loBounds)) * N` signal
+// inputs in all. When every input is bounded, `processArray` has no signal input.
+//
+// #### Interpolators
+//
+// An interpolator is a function `interp(frac, lo, hi)` that maps a fraction `frac` in
+// `0..1` across the `lo`/`hi` range — the shape of every `interpolate_*` in
+// `interpolators.lib`. Pass one interpolator to shape every parameter the same way, or a
+// list of one per parameter to shape each differently.
+//
+// #### Smoothers
+//
+// `smoother` is a per-wire stage applied to the interpolated values, after
+// interpolation and before `processor`. It goes here, not on the bounds, because
+// some interpolators aren't cheap (`it.interpolate_logarithmic`,
+// `it.interpolate_power`): with slider bounds the interpolator folds to a block
+// constant, but smoothing the bounds first would force it to recompute per-sample.
+//
+// `smoother` follows the same one-or-list convention as `interp`: pass one stage to
+// apply to every parameter, or a list of one stage per parameter. For no smoothing,
+// pass `_` (the identity wire) — it broadcasts to a pass-through on every parameter.
+//
+// #### Usage
+//
+// ```
+// si.bus((inputs(processor)-outputs(loBounds))*N) : processArray(N, processor, interp, smoother, loBounds, hiBounds) : si.bus(N*outputs(processor))
+// ```
+//
+// Where:
+//
+// * `N`: number of parallel copies (int, known at compile time, `N >= 2`)
+// * `processor`: the function to replicate
+// * `interp`: interpolator function(s) of shape `interp(frac, lo, hi)`; either a
+//   single function applied to every array, or a list of one function per supplied array
+// * `smoother`: per-wire 1-in/1-out stage(s) applied to the interpolated values
+//   before `processor`; either a single stage for every array, or a list of one per
+//   supplied array. Use `_` for no smoothing.
+// * `loBounds`: list of low bounds, one per array (at most `inputs(processor)` of them)
+// * `hiBounds`: list of high bounds, matching `loBounds`
+//
+// #### Note:
+//
+// The number of supplied arrays is measured as `outputs(loBounds)`, so `loBounds`,
+// `hiBounds`, and (when passed as a list) `interp` and `smoother` must all have that
+// same length.
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// it = library("interpolators.lib");
+// si = library("signals.lib");
+// // 3-input processor, 2 arrays supplied -> 1 N-wide bus input, sliders smoothed:
+// processArray_proc(a, b, c) = a + b + c;
+// processArray_test = si.bus(4) : ba.processArray(4, processArray_proc, it.interpolate_linear, si.smoo, (0.1, 1.0), (1.0, 10.0));
+// ```
+//----------------------------
+declare processArray author "Bart Brouns";
+declare processArray copyright "Copyright (C) 2026 Bart Brouns <bart@magnetophon.nl>";
+declare processArray license "AGPL-3.0-only";
+processArray(N, processor, interp, smoother, loBounds, hiBounds) = build(nSignalInputs)
+    with {
+        nIn = inputs(processor);
+        nArray = outputs(loBounds);
+        nSignalInputs = nIn-nArray;
+        // `interp` is either one interpolator or a list of one per array. Normalize to
+        // the list form so `ba.take` below can index it. Discriminate on
+        // `outputs(interp)` — 1 means a single interpolator (replicate it), nArray
+        // means a list (pass through). Not `outputs(par(i, nArray, interp))`: that is
+        // nArray for a single interp too, so it can't tell the cases apart once
+        // nArray > 1.
+        interps = broadcast(outputs(interp))
+            with {
+                broadcast = case{(1)=>par(i, nArray, interp);
+                (n)=>interp;
+                };
+            };
+        // `smoother` is broadcast the same way. `_` (identity) has 1 output, so it
+        // broadcasts to a pass-through on every parameter — i.e. no smoothing.
+        smoothers = broadcast(outputs(smoother))
+            with {
+                broadcast = case{(1)=>par(i, nArray, smoother);
+                (n)=>smoother;
+                };
+            };
+        // loBounds and hiBounds arrive as one flat list: every low bound first, then
+        // every high bound. interleave(nArray, 2) zips them back into nArray (lo, hi)
+        // pairs — one per array. oneArray then expands each pair into its own N-wide
+        // bus of interpolated values, then applies that parameter's smoother to all N.
+        allArrays = (loBounds, hiBounds):ro.interleave(nArray, 2):par(i, nArray, oneArray(ba.take(i+1, interps), ba.take(i+1, smoothers)));
+        // allArrays lays its output out parameter-by-parameter: all N values of
+        // parameter 0, then all N values of parameter 1, and so on. The processor
+        // instances need the opposite grouping — each instance wants one value from
+        // every parameter. interleave(N, nIn) performs that transpose, turning the nIn
+        // parameter-blocks into N per-copy blocks, which then feed the N processor
+        // instances. When signal inputs are present, their nSignalInputs*N buses (laid out
+        // the same parameter-by-parameter way) are appended first, so the same
+        // transpose lines everything up.
+        build = case{(0)=>allArrays:ro.interleave(N, nIn):par(i, N, processor);
+        (b)=>(allArrays, si.bus(nSignalInputs*N)):ro.interleave(N, nIn):par(i, N, processor);
+        };
+        // Replicate one array: interpolate at each frac step, then smooth all N wires
+        // of this parameter. Per-wire layout is parameter-major, matching allArrays.
+        oneArray(thisInterp, thisSmoother, lo, hi) = par(i, N, thisInterp(frac(i), lo, hi):thisSmoother);
+        // frac runs 0..1 across the N copies. NOTE: divides by N-1, so N must be >= 2.
+        frac(i) = i/(N-1);
+    };
+
+
 //============================Function tabulation=========================================
 // The purpose of function tabulation is to speed up the computation of heavy functions over an interval, 
 // so that the computation at runtime can be faster than directly using the function. 
@@ -1145,30 +1349,26 @@ subseq(head, 0, N)         = head;
 //-------`(ba.)tabulate`----------
 // Tabulate a 1D function over the range [r0, r1] for access via nearest-value, linear, cubic interpolation.
 // In other words, the uniformly tabulated function can be evaluated using interpolation of order 0 (none), 1 (linear), or 3 (cubic).
+// `tabulate(C, FX, S, r0, r1, x).val` uses the value in the table closest to x,
+// `.lin` evaluates at x using linear interpolation between the closest stored values,
+// and `.cub` evaluates at x using cubic interpolation between the closest stored values.
 //
 // #### Usage
 //
 // ```
-// tabulate(C, FX, S, r0, r1, x).(val|lin|cub) : _
+// tabulate(C, FX, S, r0, r1, x).val : _
+// tabulate(C, FX, S, r0, r1, x).lin : _
+// tabulate(C, FX, S, r0, r1, x).cub : _
 // ```
+//
+// Where:
 //
 // * `C`: whether to dynamically force the `x` value to the range [r0, r1]: 1 forces the check, 0 deactivates it (constant numerical expression)
 // * `FX`: unary function Y=F(X) with one output (scalar function of one variable) 
 // * `S`: size of the table in samples (constant numerical expression)
 // * `r0`: minimum value of argument x
 // * `r1`: maximum value of argument x
-//
-// ```
-// tabulate(C, FX, S, r0, r1, x).val uses the value in the table closest to x
-// ```
-//
-// ```
-// tabulate(C, FX, S, r0, r1, x).lin evaluates at x using linear interpolation between the closest stored values
-// ```
-//
-// ```
-// tabulate(C, FX, S, r0, r1, x).cub evaluates at x using cubic interpolation between the closest stored values
-// ```
+// * `x`: input value used to read the tabulated function
 //
 // #### Example test program
 //
@@ -1180,7 +1380,10 @@ subseq(head, 0, N)         = head;
 // #### Test
 // ```
 // ba = library("basics.lib");
+// ma = library("maths.lib");
 // tabulate_test = ba.tabulate(1, ba.midikey2hz, 128, 0, 127, 60).lin;
+// tabulate_modulated_test = ba.tabulate(1, ba.midikey2hz, 128, 0, 127, 127*tri).lin with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// tabulate_cub_modulated_test = ba.tabulate(1, ba.midikey2hz, 128, 0, 127, 127*tri).cub with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //----------------------------
 tabulate(C, FX, S, r0, r1, x) = environment {
@@ -1242,8 +1445,10 @@ declare tabulate author "Stephane Letz";
 // #### Usage
 //
 // ```
-// _ : tabulate_chebychev(C, FX, NX, CD, r0, r1) : _
+// tabulate_chebychev(C, FX, NX, CD, r0, r1, x) : _
 // ```
+//
+// Where:
 //
 // * `C`: whether to dynamically force the value to the range [r0, r1]: 1 forces the check, 0 deactivates it (constant numerical expression)
 // * `FX`: unary function Y=F(X) with one output (scalar function of one variable)
@@ -1251,6 +1456,7 @@ declare tabulate author "Stephane Letz";
 // * `CD`: maximum polynomial degree for each Chebyshev polynomial (constant numerical expression)
 // * `r0`: minimum value of argument x
 // * `r1`: maximum value of argument x
+// * `x`: input value used to evaluate the approximation
 //
 // #### Example test program
 //
@@ -1298,7 +1504,7 @@ tabulate_chebychev(C, FX, NX, CD, r0, r1, x) = y with {
 
 declare tabulate_chebychev author "Oleg Nesterov";
 declare tabulate_chebychev copyright "Copyright (C) 2022 Oleg Nesterov <oleg@redhat.com>";
-declare tabulate_chebychev license "MIT-style STK-4.3 license";
+declare tabulate_chebychev license "LicenseRef-STK-4.3";
 
 
 //-------`(ba.)tabulateNd`----------
@@ -1308,17 +1514,25 @@ declare tabulate_chebychev license "MIT-style STK-4.3 license";
 //
 // The number of dimensions is deduced from the number of parameters you give, see below.
 //
-// Note that processing the last point in each interval is not safe. So either be sure the inputs stay in their respective ranges, or use `C = 1`. Similarly for the first point when doing cubic interpolation.
+// Note that with `.val` and `.lin`, processing the last point in each interval is not safe. So either be sure the inputs stay in their respective ranges, or use `C = 1`. `.cub` keeps the four points it interpolates inside each dimension, repeating the edge value, so it reads inside the table whatever the inputs.
+//
+// The user facing functions are `tabulateNd(C, function, parameters).val`, which uses the value in the table closest to x,
+// `.lin`, which evaluates at x using linear interpolation between the closest stored values,
+// and `.cub`, which evaluates at x using cubic interpolation between the closest stored values.
 //
 // #### Usage
 //
 // ```
-// tabulateNd(C, function, (parameters) ).(val|lin|cub) : _
+// tabulateNd(C, function, parameters).val : _
+// tabulateNd(C, function, parameters).lin : _
+// tabulateNd(C, function, parameters).cub : _
 // ```
+//
+// Where:
 //
 // * `C`: whether to dynamically force the parameter values for each dimension to the ranges specified in parameters: 1 forces the check, 0 deactivates it (constant numerical expression)
 // * `function`: the function we want to tabulate. Can have any number of inputs, but needs to have just one output.
-// * `(parameters)`: sizes, ranges and read values. Note: these need to be in brackets, to make them one entity.  
+// * `parameters`: sizes, ranges and read values. Note: these need to be in parentheses, to make them one entity.  
 //
 //   If N is the number of dimensions, we need:
 // 
@@ -1328,20 +1542,6 @@ declare tabulate_chebychev license "MIT-style STK-4.3 license";
 //   * N times `x`: read value of this dimension
 //
 // By providing these parameters, you indirectly specify the number of dimensions; it's the number of parameters divided by 4.
-//
-// The user facing functions are:
-// ```
-// tabulateNd(C, function, S, parameters).val
-// ```
-//  - Uses the value in the table closest to x.
-// ```
-// tabulateNd(C, function, S, parameters).lin
-// ```
-//  - Evaluates at x using linear interpolation between the closest stored values.
-// ```
-// tabulateNd(C, function, S, parameters).cub
-// ```
-//  - Evaluates at x using cubic interpolation between the closest stored values.
 //
 //
 // #### Example test program
@@ -1591,8 +1791,12 @@ declare tabulate_chebychev license "MIT-style STK-4.3 license";
 // #### Test
 // ```
 // ba = library("basics.lib");
+// ma = library("maths.lib");
 // powSin(x,y) = sin(pow(x,y));
 // tabulateNd_test = ba.tabulateNd(1, powSin, (8,8, 2.0,2.0, 8.0,8.0, 3.0,4.0)).lin;
+// tabulateNd_modulated_test = ba.tabulateNd(1, powSin, (8,8, 2.0,2.0, 8.0,8.0, 2.0 + tri, 3.0 - tri)).lin with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// tabulateNd_cub_modulated_test = ba.tabulateNd(1, powSin, (8,8, 2.0,2.0, 8.0,8.0, 2.0 + tri, 3.0 - tri)).cub with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// tabulateNd_cub_edge_test = T(0.05,1.5), T(1.5,0.05), T(2.97,1.5), T(1.5,2.97) with { f(x,y) = sin(x) + cos(y); T(x,y) = ba.tabulateNd(1, f, (32,32, 0.0,0.0, 3.0,3.0, x,y)).cub; };
 // ```
 //----------------------------
 tabulateNd(C,function,parameters) =
@@ -1657,35 +1861,53 @@ tabulateNd(C,function,parameters) =
         with {
             readIndexes =
                 si.bus(nParams) <:
-                ((stepSizes:ro.cross(N))
+                // the 4 offsets of each dimension, last dimension first
+                ((cubOffsets : ro.cross(4*N) : par(i, N, ro.cross(4)))
                 , readIndex(sizesIds))
-                // calculate the offsets for each interpolation read index and add them to the "base" readindex
+                // add the offsets of each interpolation read index to the "base" readindex
                 :cubifiers;
             // since each interpolator has 4 inputs
             nrReadIndexes = pow(4,N);
-            // calculate the offsets and add them to the "base" readindex
+            // the offsets of the 4 points of each dimension, from the "base" readindex.
+            // The points are the same as in ``ba.tabulate`` (-1, 0, 1 and 2 steps), but
+            // each one is kept inside its dimension, the edge value being repeated: in
+            // the first cell of a dimension the -1 point was the last value of the
+            // previous row, or outside the table, and in the last two cells the +1 and
+            // +2 points were in the next row, or outside the table.
+            cubOffsets =
+                si.bus(nParams)
+                <: (stepSizes, sizes, bases)
+                : ro.interleave(N,3)
+                : par(i, N, dimOffsets)
+            with {
+                sizes = bs, par(i, 3*N, !);
+                // the read index in each dimension, as in ``riN``
+                bases = si.bus(nParams) <: (ids, sizes) : ro.interleave(N,2)
+                      : par(i, N, base);
+                base(idX,sizeX) = rid(int(idX),(sizeX-int(1)),C);
+                dimOffsets(stepSize,sizeX,b) = par(k, 4, stepSize*(point(C,k) - b))
+                with {
+                    // with C = 1, b is already in [0, sizeX-1]: one bound per point is enough
+                    point(1,0) = max(int(0), b-int(1));
+                    point(1,1) = b;
+                    point(1,k) = min(b+(k-1), sizeX-int(1));
+                    point(0,k) = max(int(0), min(b+(k-1), sizeX-int(1)));
+                };
+            };
+            // add the offsets to the "base" readindex
             // we do this by creating a tree, where each branch has 4 sub-branches
             // there are N splits, so we end up with nrReadIndexes "leaves"
             cubifiers =
                 // iterate trough the dimensions, each feeding into the next
                 seq(i, N,
-                    si.bus(N-i-1),cubifier(pow(4,i)));
-            // take a step size and ``len`` input indexes and create 4*len output indexes
-            // offset the input index(es) with the amount needed for that dimension
+                    si.bus(4*(N-i-1)),cubifier(pow(4,i)));
+            // take the 4 offsets of a dimension and ``len`` input indexes and create
+            // 4*len output indexes: each input index plus each offset
             cubifier(len) =
-                ((_<:si.bus(len*4))
+                (par(k, 4, _<:si.bus(len))
                 , (si.bus(len)<:si.bus(len*4)))
                 : ro.interleave(len*4,2)
-                :par(i, 4,
-                     par(j, len, off(i)+_))
-            with {
-                // the hardcoded numbers are the same offsets as in ``ba.tabulate``
-                // but they get multiplied by the step size of the current dimension
-                off(0,stepSize) = -1*stepSize;
-                off(1,stepSize) = 0;
-                off(2,stepSize) = 1*stepSize;
-                off(3,stepSize) = 2*stepSize;
-            };
+                : par(i, len*4, +);
         };
 
         // how many parameters have we been given?
@@ -1846,7 +2068,7 @@ tabulateNd(C,function,parameters) =
 
 declare tabulateNd author "Bart Brouns";
 declare tabulateNd copyright "Copyright (C) 2023 Bart Brouns <bart@magnetophon.nl>";
-declare tabulateNd license "AGPL-3.0";
+declare tabulateNd license "AGPL-3.0-only";
 
 //============================Selectors (Conditions)======================================
 //========================================================================================
@@ -1879,22 +2101,23 @@ if(cond,then,else) = select2(cond,else,then);
 //-----------------------------`(ba.)ifNc`--------------------------------------
 // if-then-elseif-then-...elsif-then-else implemented on top of `ba.if`.
 //
+// The branches are given as one list, `(cond1,then1, cond2,then2, ..., condN,thenN, else)`,
+// where `condX` is a condition, `thenX` the signal selected if `condX` is the
+// 1st true condition, and `else` the signal selected if all the cond1-condN
+// conditions are false; the number of branches/conditions `Nc` is deduced
+// from the list. They can also be given as arguments, `ifNc(Nc, cond1,then1, ..., else)`,
+// or as the 2*Nc+1 inputs of `ifNc(Nc)`, `Nc` being then a constant numerical
+// expression (see the example).
+//
 // #### Usage
 //
 // ```
-//    ifNc((cond1,then1, cond2,then2, ... condN,thenN, else)) : _
-// or
-//    ifNc(Nc, cond1,then1, cond2,then2, ... condN,thenN, else) : _
-// or
-//    cond1,then1, cond2,then2, ... condN,thenN, else : ifNc(Nc) : _
+// ifNc(branches) : _
 // ```
 //
 // Where:
 //
-// * `Nc` : number of branches/conditions (constant numerical expression)
-// * `condX`: condition
-// * `thenX`: signal selected if condX is the 1st true condition
-// * `else`: signal selected if all the cond1-condN conditions are false
+// * `branches`: the list `(cond1,then1, cond2,then2, ..., condN,thenN, else)`, in parentheses
 //
 // #### Example test program
 //
@@ -1920,24 +2143,27 @@ ifNc(n) = _,_,ifNc(n-1) : ifNc(1);
 
 declare ifNc author "Oleg Nesterov";
 declare ifNc copyright "Copyright (C) 2023 Oleg Nesterov <oleg@redhat.com>";
-declare ifNc license "MIT-style STK-4.3 license";
+declare ifNc license "LicenseRef-STK-4.3";
 
 //-----------------------------`(ba.)ifNcNo`-------------------------------------
 // `ifNcNo(Nc,No)` is similar to `ifNc(Nc)` above but then/else branches have `No` outputs.
 //
+// `ifNcNo(Nc,No)` has Nc*(No+1)+No inputs: `cond1,then1, cond2,then2, ..., condN,thenN, else`,
+// where `condX` is a condition, `thenX` a list of No signals selected if `condX`
+// is the 1st true condition, and `else` a list of No signals selected if all the
+// cond1-condN conditions are false. They can also be given as arguments,
+// `ifNcNo(Nc,No, cond1,then1, ..., else)` (see the example).
+//
 // #### Usage
 //
 // ```
-//    ifNcNo(Nc,No, cond1,then1, cond2,then2, ... condN,thenN, else) : sig.bus(No)
+// si.bus(Nc*(No+1)+No) : ifNcNo(Nc,No) : si.bus(No)
 // ```
 //
 // Where:
 //
 // * `Nc` : number of branches/conditions (constant numerical expression)
 // * `No` : number of outputs (constant numerical expression)
-// * `condX`: condition
-// * `thenX`: list of No signals selected if condX is the 1st true condition
-// * `else`: list of No signals selected if all the cond1-condN conditions are false
 //
 // #### Example test program
 //
@@ -1964,10 +2190,10 @@ with {
 
 declare ifNcNo author "Oleg Nesterov";
 declare ifNcNo copyright "Copyright (C) 2023 Oleg Nesterov <oleg@redhat.com>";
-declare ifNcNo license "MIT-style STK-4.3 license";
+declare ifNcNo license "LicenseRef-STK-4.3";
 
 //-----------------------------`(ba.)selector`---------------------------------
-// Selects the ith input among n at compile time.
+// Selects the ith input among N at compile time.
 //
 // #### Usage
 //
@@ -1990,8 +2216,31 @@ declare ifNcNo license "MIT-style STK-4.3 license";
 // selector_test = (0.1, 0.2, 0.3, 0.4) : ba.selector(2, 4);
 // ```
 //----------------------------
-selector(i,n) = par(j, n, S(i, j))    with { S(i,i) = _; S(i,j) = !; };
-cselector(i,n) = par(j, n, S(i, j))   with { S(i,i) = (_,_); S(i,j) = (!,!); }; // for complex numbers
+selector(i,n) = pickN(n, i);
+
+//-----------------------------`(ba.)cselector`---------------------------------
+// Selects the ith complex input among N at compile time. The complex
+// version of `selector`: each input is a pair of (real,imag) signals.
+//
+// #### Usage
+//
+// ```
+// cselector(I,N)
+// _,_, _,_, _,_, _,_ : cselector(2,4) : _,_ // selects the 3rd complex input among 4
+// ```
+//
+// Where:
+//
+// * `I`: complex input to select (int, numbered from 0, known at compile time)
+// * `N`: number of complex inputs (int, known at compile time, N > I)
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// cselector_test = (0.1, 0.2, 0.3, 0.4) : ba.cselector(1, 2);
+// ```
+//----------------------------
+cselector(i,n) = pickN(2*n, (2*i, 2*i+1));
 
 
 //--------------------`(ba.)select2stereo`--------------------
@@ -2050,11 +2299,31 @@ with {
 };
 
 
-// The generic version with a 'sel' function to be applied on:
-// - the channel index as a (possibly) fractional value
-// - the next channel index as an integer value
-// - the 2 signals to be selected between
-
+//-----------------------------`(ba.)selectnX`---------------------------------
+// Generic form of `selectn`, with a `sel` function deciding how each pair
+// of candidate signals is combined. `selectn` specializes it with a hard
+// `select2`; a crossfading `sel` turns it into an interpolated selector.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : selectnX(N,i,sel) : _
+// ```
+//
+// Where:
+//
+// * `N`: number of inputs (int, known at compile time, N > 0)
+// * `i`: input to select (numbered from 0, possibly fractional)
+// * `sel`: selection function applied on: the channel index `i` as a
+// (possibly) fractional value, the next channel index as an integer value,
+// and the 2 signals to be selected between
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// selectnX_test = (1,2,3,4) : ba.selectnX(4, 2, \(i,j,x,y).(select2((i >= j), x, y)));
+// ```
+//----------------------------
 selectnX(N,i,sel) = S(N,0)
 with {
     S(1,offset) = _;
@@ -2101,7 +2370,7 @@ declare selectbus license "MIT";
 // #### Usage
 //
 // ```
-// process = si.bus(BUS_SIZE*NUM_BUSES) : selectbus(BUS_SIZE, NUM_BUSES, FADE, id) : si.bus(BUS_SIZE);
+// process = si.bus(BUS_SIZE*NUM_BUSES) : selectxbus(BUS_SIZE, NUM_BUSES, fade, id) : si.bus(BUS_SIZE);
 // ```
 //
 // Where:
@@ -2159,7 +2428,7 @@ declare selectxbus license "MIT";
 // ma = library("maths.lib");
 // effects = ((_*0.5,_*0.5),(_*0.25,_*0.25));
 // choice = int(checkbox("choice"));
-// selectmulti_test = (os.osc(440), os.osc(660)) : ba.selectmulti(ma.SR/100, effects, choice);
+// selectmulti_test = (os.tosc(440), os.tosc(660)) : ba.selectmulti(ma.SR/100, effects, choice);
 // ```
 //----------------------------
 selectmulti(n, lgen, id) = selectmultiX(ins, lgen, id)
@@ -2217,7 +2486,9 @@ selectoutn(N, s) = _ <: par(i, N, *(s==i));
 //----------------------------`(ba.)latch`--------------------------------
 // Latch input on the rising edge of trig.
 // Captures ("records") the input x whenever trig crosses from ≤0 to >0,
-// and holds the last captured value at all other times.
+// and holds the last captured value at all other times. An infinite or NaN
+// input between the rising edges does not reach the output (until
+// basics.lib 1.23.3 it turned the held value into NaN).
 //
 // #### Usage
 // ```
@@ -2232,10 +2503,13 @@ selectoutn(N, s) = _ <: par(i, N, *(s==i));
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// latch_test = os.osc(2) : ba.latch(button("hold"));
+// latch_test = os.tosc(2) : ba.latch(ba.pulse(32));
+// latch_inf_test = (1 / (ba.time - 3)) : ba.latch(ba.time == 1);
 // ```
 //----------------------------
-latch(trig, x) = x * s : + ~ *(1-s) with { s = (trig' <= 0) & (trig > 0); };
+// select2 rather than x*s + y*(1-s): a product would turn an infinite x,
+// even outside a rising edge, into NaN (inf * 0)
+latch(trig, x) = x : sAndH(s) with { s = (trig' <= 0) & (trig > 0); };
 
 
 //--------------------------`(ba.)sAndH`-------------------------------
@@ -2256,7 +2530,7 @@ latch(trig, x) = x * s : + ~ *(1-s) with { s = (trig' <= 0) & (trig > 0); };
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// sAndH_test = os.osc(2) : ba.sAndH(button("hold"));
+// sAndH_test = os.tosc(2) : ba.sAndH(ba.pulse(32));
 // ```
 //----------------------------
 declare sAndH author "Romain Michon";
@@ -2281,14 +2555,21 @@ sAndH(trig) = select2(trig) ~ _;
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
 // isPositive(x) = x > 0.0;
-// tAndH_test = os.osc(2) : ba.tAndH(isPositive);
+// tAndH_test = os.tosc(2) : ba.tAndH(isPositive);
 // ```
 //----------------------------
 tAndH(pred) = _ <: pred,_ : sAndH;
 
 //--------------------------`(ba.)downSample`-------------------------------
-// Down sample a signal. WARNING: this function doesn't change the
-// rate of a signal, it just holds samples...
+// Sample-and-hold "down sampling" effect: holds each sample for
+// `ma.SR/freq` samples, deliberately producing aliasing ("lo-fi"
+// decimator sound).
+//
+// WARNING: despite its name, this function performs NO sample rate
+// conversion and NO anti-aliasing filtering: the output stays at the
+// current sampling rate, and the held staircase folds all the aliased
+// images back into the band. Do not use it where a proper decimation
+// (lowpass filtering followed by rate reduction) is required.
 // `downSample` is a standard Faust function.
 //
 // #### Usage
@@ -2305,7 +2586,7 @@ tAndH(pred) = _ <: pred,_ : sAndH;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// downSample_test = os.osc(440) : ba.downSample(11025);
+// downSample_test = os.tosc(440) : ba.downSample(11025);
 // ```
 //----------------------------
 declare downSample author "Romain Michon";
@@ -2335,7 +2616,8 @@ with {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// downSampleCV_test = os.osc(440) : ba.downSampleCV(0.5);
+// downSampleCV_test = os.tosc(440) : ba.downSampleCV(0.5);
+// downSampleCV_slider_test = os.tosc(440) : ba.downSampleCV(hslider("downSampleCV:amt", 0.5, 0, 1, 0.01));
 // ```
 //----------------------------
 downSampleCV(amt) = sAndH(hold)
@@ -2361,17 +2643,15 @@ declare downSampleCV author "Romain Michon/David Braun";
 //
 // Where:
 //
-// `mode` means:
-//
-//  0 - Pass through. A single sample 0 trigger will work as a reset.
-//
-//  1 - Track and hold max value.
+// * `mode`: operation mode
+//   `0` passes the signal through and a single-sample `0` trigger resets the held value
+//   `1` tracks and holds the maximum value
 //
 // #### Test
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// peakhold_test = os.osc(440) : ba.peakhold(1);
+// peakhold_test = os.tosc(440) : ba.peakhold(1);
 // ```
 //----------------------------
 declare peakhold author "Jonatan Liljedahl, revised by Romain Michon";
@@ -2403,13 +2683,13 @@ peakhold = (*,_ : max) ~ _;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// peakholder_test = os.osc(440) : ba.peakholder(ba.sec2samp(0.1));
+// peakholder_test = os.tosc(440) : ba.peakholder(ba.sec2samp(0.1));
 // ```
 //----------------------------
 declare peakholder author "Dario Sanfilippo";
 declare peakholder copyright
     "Copyright (C) 2022 Dario Sanfilippo <sanfilippo.dario@gmail.com>";
-declare peakholder license "MIT-style STK-4.3 license";
+declare peakholder license "LicenseRef-STK-4.3";
 peakholder(holdTime, x) = loop ~ si.bus(2) : ! , _
     with {
         loop(timerState, outState) = timer , output
@@ -2458,6 +2738,12 @@ peakholder(n) = peakhold2 ~ reset : (!,_) with {
 // #### Usage
 //
 // ```
+// kr2ar : _
+// ```
+//
+// Typical use:
+//
+// ```
 // hslider("freq", 200, 200, 2000, 0.1) : kr2ar;
 // ```
 //
@@ -2471,10 +2757,13 @@ kr2ar = + ~ *(0);
 
 
 //--------------------------`(ba.)impulsify`---------------------------
-// Turns a signal into an impulse with the value of the current sample
-// (0.3,0.2,0.1 becomes 0.3,0.0,0.0). This function is typically used with a
-// `button` to turn its output into an impulse. `impulsify` is a standard Faust
-// function.
+// Turns each rise of a signal into a one-sample impulse as high as the rise:
+// the output is `x - x'` when it is positive, and 0 otherwise. A step from 0
+// to `v` gives an impulse of height `v` (0.3,0.2,0.1 becomes 0.3,0.0,0.0), but
+// a signal that climbs from 0.3 to 0.5 gives 0.2, and a fall gives nothing.
+// This function is typically used with a `button` to turn each press into an
+// impulse of 1.
+// `impulsify` is a standard Faust function.
 //
 // #### Usage
 //
@@ -2486,7 +2775,7 @@ kr2ar = + ~ *(0);
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// impulsify_test = os.osc(440) : ba.impulsify;
+// impulsify_test = os.tosc(440) : ba.impulsify;
 // ```
 //----------------------------
 impulsify = _ <: _,mem : - <: >(0)*_;
@@ -2533,6 +2822,8 @@ with {
 // * `end(x,y)` to end a break-point function
 // * `point(x,y)` to add intermediate points to a break-point function, using linear interpolation
 //
+// #### Usage
+//
 // A minimal break-point function must contain at least a start and an end point:
 //
 // ```
@@ -2547,12 +2838,8 @@ with {
 // ```
 //
 // In any case the `x_{i}` must be in increasing order (for all `i`, `x_{i} < x_{i+1}`).
-// For example the following definition:
-//
-// ```
-// f = bpf.start(x0,y0) : ... : bpf.point(xi,yi) : ... : bpf.end(xn,yn);
-// ```
-//
+// For example, a definition `f` made of a `start` at `(x_{0},y_{0})`, a `point`
+// at each `(x_{i},y_{i})`, and an `end` at `(x_{n},y_{n})`,
 // implements a break-point function f such that:
 //
 // * `f(x) = y_{0}` when `x < x_{0}`
@@ -2680,7 +2967,7 @@ listInterp(v) =
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// bypass1_test = os.osc(440) : ba.bypass1(button("bypass"), *(0.5));
+// bypass1_test = os.tosc(440) : ba.bypass1(button("bypass"), *(0.5));
 // ```
 //----------------------------
 declare bypass1 author "Julius Smith";
@@ -2712,7 +2999,7 @@ with {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// bypass2_test = (os.osc(440), os.osc(660)) : ba.bypass2(button("bypass"), par(i,2, *(0.5)));
+// bypass2_test = (os.tosc(440), os.tosc(660)) : ba.bypass2(button("bypass"), par(i,2, *(0.5)));
 // ```
 //----------------------------
 declare bypass2 author "Julius Smith";
@@ -2746,7 +3033,7 @@ with {
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
 // monoToStereo(x) = (x*0.5, x*0.25);
-// bypass1to2_test = os.osc(440) : ba.bypass1to2(button("bypass"), monoToStereo);
+// bypass1to2_test = os.tosc(440) : ba.bypass1to2(button("bypass"), monoToStereo);
 // ```
 //----------------------------
 declare bypass1to2 author "Julius Smith";
@@ -2768,10 +3055,11 @@ with {
 // #### Usage
 //
 // ```
-// _ : bypass_fade(n,b,e) : _
-// or
-// _,_ : bypass_fade(n,b,e) : _,_
+// si.bus(inputs(e)) : bypass_fade(n,b,e) : si.bus(outputs(e))
 // ```
+//
+// Where:
+//
 // * `n`: number of samples for the crossfade
 // * `b`: bypass switch (0/1)
 // * `e`: N x N circuit
@@ -2787,7 +3075,7 @@ with {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// bypass_fade_test = (os.osc(440), os.osc(660)) : ba.bypass_fade(128, button("bypass"), par(i,2, *(0.5)));
+// bypass_fade_test = (os.tosc(440), os.tosc(660)) : ba.bypass_fade(128, button("bypass"), par(i,2, *(0.5)));
 // ```
 //----------------------------
 bypass_fade(n, b, e) = par(i, ins, _)
@@ -2837,8 +3125,13 @@ with {
 // #### Usage
 //
 // ```
-// _,_ : on_and_off : _
+// on_and_off(a, b) : _
 // ```
+//
+// Where:
+//
+// * `a`: trigger that sets the output to 1, on its rising edges (0 to 1)
+// * `b`: trigger that sets the output to 0, on its rising edges (0 to 1)
 //
 // #### Example test program
 //
@@ -2878,7 +3171,7 @@ with {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// bitcrusher_test = os.osc(440) : ba.bitcrusher(8);
+// bitcrusher_test = os.tosc(440) : ba.bitcrusher(8);
 // ```
 //----------------------------
 declare bitcrusher author "Julius O. Smith III, revised by Stephane Letz";
@@ -2938,7 +3231,7 @@ with {
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// mulaw_bitcrusher_test = os.osc(440) : ba.mulaw_bitcrusher(2.0, 8);
+// mulaw_bitcrusher_test = os.tosc(440) : ba.mulaw_bitcrusher(2.0, 8);
 // ```
 // #### References
 //
@@ -3146,7 +3439,10 @@ with {
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
 // ma = library("maths.lib");
-// slidingReduce_test = os.osc(440) : ba.slidingReduce(max, 64, 64, 0 - ma.MAX);
+// no = library("noises.lib");
+// slidingReduce_test = os.tosc(440) : ba.slidingReduce(max, 64, 64, 0 - ma.MAX);
+// slidingReduce_slider_test = os.tosc(440) : ba.slidingReduce(max, hslider("slidingReduce:n", 64, 1, 64, 1), 64, 0 - ma.MAX);
+// slidingReduce_modulated_test = no.noise : ba.slidingReduce(max, n, 128, 0 - ma.MAX) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingReduce(op,n,0,disabledVal) = 0:!;
@@ -3200,7 +3496,11 @@ slidingReduce(op,n,maxN,disabledVal) =
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingSum_test = os.osc(440) : ba.slidingSum(64);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingSum_test = os.tosc(440) : ba.slidingSum(64);
+// slidingSum_slider_test = os.tosc(440) : ba.slidingSum(hslider("slidingSum:n", 64, 1, 128, 1));
+// slidingSum_modulated_test = no.noise : ba.slidingSum(n) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingSum(n) = fi.integrator <: _, _@int(max(0,n)) :> -;
@@ -3226,7 +3526,11 @@ slidingSum(n) = fi.integrator <: _, _@int(max(0,n)) :> -;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingSump_test = os.osc(440) : ba.slidingSump(64, 128);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingSump_test = os.tosc(440) : ba.slidingSump(64, 128);
+// slidingSump_slider_test = os.tosc(440) : ba.slidingSump(hslider("slidingSump:n", 64, 1, 128, 1), 128);
+// slidingSump_modulated_test = no.noise : ba.slidingSump(n, 128) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingSump(n,maxN) = slidingReduce(+,n,maxN,0);
@@ -3251,7 +3555,10 @@ slidingSump(n,maxN) = slidingReduce(+,n,maxN,0);
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
 // ma = library("maths.lib");
-// slidingMax_test = os.osc(440) : ba.slidingMax(64, 128);
+// no = library("noises.lib");
+// slidingMax_test = os.tosc(440) : ba.slidingMax(64, 128);
+// slidingMax_slider_test = os.tosc(440) : ba.slidingMax(hslider("slidingMax:n", 64, 1, 128, 1), 128);
+// slidingMax_modulated_test = no.noise : ba.slidingMax(n, 128) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingMax(n,maxN) = slidingReduce(max,n,maxN,0-(ma.MAX));
@@ -3275,7 +3582,10 @@ slidingMax(n,maxN) = slidingReduce(max,n,maxN,0-(ma.MAX));
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
 // ma = library("maths.lib");
-// slidingMin_test = os.osc(440) : ba.slidingMin(64, 128);
+// no = library("noises.lib");
+// slidingMin_test = os.tosc(440) : ba.slidingMin(64, 128);
+// slidingMin_slider_test = os.tosc(440) : ba.slidingMin(hslider("slidingMin:n", 64, 1, 128, 1), 128);
+// slidingMin_modulated_test = no.noise : ba.slidingMin(n, 128) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingMin(n,maxN) = slidingReduce(min,n,maxN,ma.MAX);
@@ -3301,7 +3611,11 @@ slidingMin(n,maxN) = slidingReduce(min,n,maxN,ma.MAX);
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingMean_test = os.osc(440) : ba.slidingMean(64);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingMean_test = os.tosc(440) : ba.slidingMean(64);
+// slidingMean_slider_test = os.tosc(440) : ba.slidingMean(hslider("slidingMean:n", 64, 1, 128, 1));
+// slidingMean_modulated_test = no.noise : ba.slidingMean(n) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingMean(n) = slidingSum(n)/n;
@@ -3327,7 +3641,11 @@ slidingMean(n) = slidingSum(n)/n;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingMeanp_test = os.osc(440) : ba.slidingMeanp(64, 128);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingMeanp_test = os.tosc(440) : ba.slidingMeanp(64, 128);
+// slidingMeanp_slider_test = os.tosc(440) : ba.slidingMeanp(hslider("slidingMeanp:n", 64, 1, 128, 1), 128);
+// slidingMeanp_modulated_test = no.noise : ba.slidingMeanp(n, 128) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingMeanp(n,maxN) = slidingSump(n,maxN)/n;
@@ -3338,7 +3656,7 @@ slidingMeanp(n,maxN) = slidingSump(n,maxN)/n;
 //
 // It will eventually run into numerical trouble when there is a persistent dc component.
 // If that matters in your application, use the more CPU-intensive `ba.slidingRMSp`.
-
+//
 //
 // #### Usage
 //
@@ -3354,7 +3672,11 @@ slidingMeanp(n,maxN) = slidingSump(n,maxN)/n;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingRMS_test = os.osc(440) : ba.slidingRMS(64);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingRMS_test = os.tosc(440) : ba.slidingRMS(64);
+// slidingRMS_slider_test = os.tosc(440) : ba.slidingRMS(hslider("slidingRMS:n", 64, 1, 128, 1));
+// slidingRMS_modulated_test = no.noise : ba.slidingRMS(n) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingRMS(n) = pow(2) : slidingMean(n) : sqrt;
@@ -3380,7 +3702,11 @@ slidingRMS(n) = pow(2) : slidingMean(n) : sqrt;
 // ```
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// slidingRMSp_test = os.osc(440) : ba.slidingRMSp(64, 128);
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// slidingRMSp_test = os.tosc(440) : ba.slidingRMSp(64, 128);
+// slidingRMSp_slider_test = os.tosc(440) : ba.slidingRMSp(hslider("slidingRMSp:n", 64, 1, 128, 1), 128);
+// slidingRMSp_modulated_test = no.noise : ba.slidingRMSp(n, 128) with { P = int(ma.SR/10); m = 112*(P - abs(2*ba.period(P) - P)); n = 16 + int((m - m % P)/P + 0.5) : max(16) : min(128); };
 // ```
 //----------------------------------------------------
 slidingRMSp(n,maxn) = pow(2) : slidingMeanp(n,maxn) : sqrt;
@@ -3403,7 +3729,7 @@ slidingRMSp(n,maxn) = pow(2) : slidingMeanp(n,maxn) : sqrt;
 //-----------------------------`(ba.)parallelOp`-----------------------------
 // Apply a commutative binary operation `op` to N parallel inputs.
 //
-// #### usage
+// #### Usage
 //
 // ```
 // si.bus(N) : parallelOp(op,N) : _
@@ -3425,7 +3751,7 @@ parallelOp(op,2) = op;
 parallelOp(op,n) = op(parallelOp(op,n-1));
 
 declare parallelOp author "Bart Brouns";
-declare parallelOp licence "GPL-3.0";
+declare parallelOp licence "GPL-3.0-only";
 declare parallelOp copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.nl>";
 
 
@@ -3451,7 +3777,7 @@ declare parallelOp copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.n
 parallelMax(n) = parallelOp(max,n);
 
 declare parallelMax author "Bart Brouns";
-declare parallelMax licence "GPL-3.0";
+declare parallelMax licence "GPL-3.0-only";
 declare parallelMax copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.nl>";
 
 
@@ -3477,7 +3803,7 @@ declare parallelMax copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.
 parallelMin(n) = parallelOp(min,n);
 
 declare parallelMin author "Bart Brouns";
-declare parallelMin licence "GPL-3.0";
+declare parallelMin licence "GPL-3.0-only";
 declare parallelMin copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.nl>";
 
 
@@ -3503,7 +3829,7 @@ declare parallelMin copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.
 parallelMean(n) = si.bus(n):>_/n;
 
 declare parallelMean author "Bart Brouns";
-declare parallelMean licence "GPL-3.0";
+declare parallelMean licence "GPL-3.0-only";
 declare parallelMean copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.nl>";
 
 //---------------------------`(ba.)parallelRMS`---------------------------------
@@ -3528,14 +3854,44 @@ declare parallelMean copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon
 parallelRMS(n) = par(i, n, pow(2)) : parallelMean(n) : sqrt;
 
 declare parallelRMS author "Bart Brouns";
-declare parallelRMS licence "GPL-3.0";
+declare parallelRMS licence "GPL-3.0-only";
 declare parallelRMS copyright "Copyright (c) 2020 Bart Brouns <bart@magnetophon.nl>";
 
 //////////////////////////////////Deprecated Functions////////////////////////////////////
 // This section implements functions that used to be in music.lib but that are now
-// considered as "deprecated".
+// considered as "deprecated": kept for backward compatibility only, they should
+// not be used in new code.
+//
+// WARNING: despite their names, the '1s'/'2s'/.../'43s' suffixes do NOT denote
+// durations in seconds. They are fixed power-of-two sizes in SAMPLES (65536,
+// 131072, ..., 2097152), so the actual duration depends on the sampling rate:
+// 65536 samples last 1.49 s at 44.1 kHz but 1.37 s at 48 kHz.
 //////////////////////////////////////////////////////////////////////////////////////////
 
+declare millisec deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time1s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time2s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time5s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time10s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time21s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+declare time43s deprecated "the 1s..43s names are power-of-two related ranges in milliseconds of a fixed slider, not seconds";
+
+//-----------------------------`(ba.)millisec`---------------------------------
+// Number of samples in one millisecond at the current sampling rate.
+// Multiply a duration expressed in milliseconds by it to convert to samples.
+//
+// #### Usage
+//
+// ```
+// millisec : _
+// ```
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// millisec_test = 10 * ba.millisec; // 10 ms as a number of samples
+// ```
+//----------------------------
 millisec = ma.SR/1000.0;
 
 time1s = hslider("time", 0, 0,  1000, 0.1)*millisec;

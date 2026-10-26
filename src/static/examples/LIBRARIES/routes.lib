@@ -51,7 +51,7 @@ si = library("signals.lib");
 sp = library("spats.lib");
 
 declare name "Faust Signal Routing Library";
-declare version "1.2.0";
+declare version "1.4.1";
 
 //=============================Functions Reference========================================
 //========================================================================================
@@ -75,7 +75,7 @@ declare version "1.2.0";
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// cross_test = (os.osc(200), os.osc(300), os.osc(400)) : ro.cross(3);
+// cross_test = (os.tosc(200), os.tosc(300), os.tosc(400)) : ro.cross(3);
 // ```
 //
 // #### Note
@@ -88,6 +88,23 @@ declare version "1.2.0";
 //-----------------------------------------------------------------------------
 // cross n cables : (x1,x2,..,xn) -> (xn,..,x2,x1)
 cross(N) = route(N, N, par(i, N, (i+1, N-i)));
+//--------------`(ro.)cross2`--------------
+// Swap the two middle signals of four: (a,b,c,d) -> (a,c,b,d). Kept
+// public for compatibility with some old misceffects.lib functions
+// (basics.lib uses it).
+//
+// #### Usage
+//
+// ```
+// _,_,_,_ : cross2 : _,_,_,_
+// ```
+//
+// #### Test
+// ```
+// ro = library("routes.lib");
+// cross2_test = (1,2,3,4) : ro.cross2;
+// ```
+//------------------------------------------
 cross2 = _,cross(2),_; // for compatibility with some old misceffects.lib functions
 
 
@@ -108,7 +125,7 @@ cross2 = _,cross(2),_; // for compatibility with some old misceffects.lib functi
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// crossnn_test = (os.osc(110), os.osc(220), os.osc(330), os.osc(440)) : ro.crossnn(2);
+// crossnn_test = (os.tosc(110), os.tosc(220), os.tosc(330), os.tosc(440)) : ro.crossnn(2);
 // ```
 //--------------------------------------
 crossnn(N) = crossNM(N,N);
@@ -131,7 +148,7 @@ crossnn(N) = crossNM(N,N);
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// crossn1_test = (os.osc(100), os.osc(200), os.osc(300), os.osc(400)) : ro.crossn1(3);
+// crossn1_test = (os.tosc(100), os.tosc(200), os.tosc(300), os.tosc(400)) : ro.crossn1(3);
 // ```
 //--------------------------------------
 crossn1(N) = crossNM(N,1);
@@ -143,7 +160,7 @@ crossn1(N) = crossNM(N,1);
 // #### Usage
 //
 // ```
-// (_,si.bus(N)) : crossn1(N) : (si.bus(N),_)
+// (_,si.bus(N)) : cross1n(N) : (si.bus(N),_)
 // ```
 //
 // Where:
@@ -154,7 +171,7 @@ crossn1(N) = crossNM(N,1);
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// cross1n_test = (os.osc(150), os.osc(250), os.osc(350), os.osc(450)) : ro.cross1n(3);
+// cross1n_test = (os.tosc(150), os.tosc(250), os.tosc(350), os.tosc(450)) : ro.cross1n(3);
 // ```
 //--------------------------------------
 cross1n(N) = crossNM(1,N);
@@ -178,7 +195,7 @@ cross1n(N) = crossNM(1,N);
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// crossNM_test = (os.osc(180), os.osc(280), os.osc(380), os.osc(480), os.osc(580)) : ro.crossNM(2,3);
+// crossNM_test = (os.tosc(180), os.tosc(280), os.tosc(380), os.tosc(480), os.tosc(580)) : ro.crossNM(2,3);
 // ```
 //--------------------------------------
 crossNM(N,M) = route(N+M, N+M, par(i, N+M, i+1, ((i+M)%(N+M))+1));
@@ -209,7 +226,7 @@ crossNM(N,M) = route(N+M, N+M, par(i, N+M, i+1, ((i+M)%(N+M))+1));
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// interleave_test = (os.osc(200), os.osc(300), os.osc(400), os.osc(500)) : ro.interleave(2,2);
+// interleave_test = (os.tosc(200), os.tosc(300), os.tosc(400), os.tosc(500)) : ro.interleave(2,2);
 // ```
 //-----------------------------------------------------------------------------
 interleave(1,2) = _,_;
@@ -232,7 +249,7 @@ interleave(R,C) = route(R*C, R*C, par(i, R*C, (i+1, (i%R)*C + int(i/R) + 1)));
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// butterfly_test = (os.osc(250), os.osc(350), os.osc(450), os.osc(550)) : ro.butterfly(4);
+// butterfly_test = (os.tosc(250), os.tosc(350), os.tosc(450), os.tosc(550)) : ro.butterfly(4);
 // ```
 //-----------------------------------------------------------------------------
 butterfly(2) = si.bus(2) <: +,-;
@@ -256,7 +273,7 @@ butterfly(N) = si.bus(N) <: interleave(N/2,2), interleave(N/2,2) : par(i, N/2, +
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// hadamard_test = (os.osc(220), os.osc(330), os.osc(440), os.osc(550)) : ro.hadamard(4);
+// hadamard_test = (os.tosc(220), os.tosc(330), os.tosc(440), os.tosc(550)) : ro.hadamard(4);
 // ```
 //-----------------------------------------------------------------------------
 declare hadamard author "Remy Muller, revised by Romain Michon";
@@ -283,7 +300,7 @@ hadamard(N) = butterfly(N) : (hadamard(N/2), hadamard(N/2));
 // ```
 // ro = library("routes.lib");
 // os = library("oscillators.lib");
-// recursivize_test = (os.osc(220), os.osc(330)) : ro.recursivize(*(0.5), *(0.3));
+// recursivize_test = (os.tosc(220), os.tosc(330)) : ro.recursivize(*(0.5), *(0.3));
 // ```
 //----------------------------------------
 recursivize(p,q) = (_,_,_,_ :> sp.stereoize(p)) ~ sp.stereoize(q);
@@ -337,7 +354,7 @@ recursivize(p,q) = (_,_,_,_ :> sp.stereoize(p)) ~ sp.stereoize(q);
 declare bubbleSort author "Dario Sanfilippo";
 declare bubbleSort copyright "Copyright (C) 2021 Dario Sanfilippo
     <sanfilippo.dario@gmail.com>";
-declare bubbleSort license "MIT License";
+declare bubbleSort license "MIT";
 bubbleSort(0) = 0 : !;
 bubbleSort(1) = _;
 bubbleSort(N) = seq(i, N - 1, pairSortN(N - i), bus(i))
@@ -347,3 +364,252 @@ bubbleSort(N) = seq(i, N - 1, pairSortN(N - i), bus(i))
         pairSort = bus(2) <: select2(>), select2(<);
         pairSortN(N) = seq(i, N - 1, bus(i), pairSort, bus(N - i - 2));
     };
+
+
+//--------------------`(ro.)bitonicSort`------------------------------------------
+//
+// A bitonic sorter is a parallel sorting network that performs comparisons
+// and swaps on signal pairs iteratively. The pairs are selected according
+// to different index gaps determined by the current state and pass indices, 
+// while the sorting direction of each pair depends on the current stage index.
+//
+// The algorithm first builds a bitonic sequence with the input values, 
+// that is, a sequence that is ascending for the first half, and descending 
+// for the second half. Then, it applies a bitonic merger to sort the bitonic
+// list in ascending or descending order.
+//
+// The algorithm has O(log2(N) ^ 2) depth complexity, and O(N * log2(N) ^ 2)
+// work complexity. Specifically, the bitonic sorter algorithm requires N 
+// inputs to be a power-of-two. The algorithm has a total of 
+// log2(N) * ((log2(N) + 1) / 2) stages, and each stage requires N / 2 
+// comparators. Each _comparator has one min() and one max() function.
+//
+// For comparison, the Bubble Sort algorithm has N - 1 stages, and
+// N * (N - 1) / 2 comparators. For N = 32, Bitonic Sort has 15 stages
+// and 240 comparators, Bubble Sort has 31 stages and 496 comparators.
+//
+// The sorting process is zero-latency.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : bitonicSort(N) : si.bus(N)
+//
+// ```
+//
+// Where:
+//
+// * `N`: the number of signals to be sorted (it must be a power-of-two 
+// compile-time numerical expression)
+//
+// #### Test
+// ```
+// ro = library("routes.lib");
+// bitonicSort_test = (
+//     hslider("bubbleSort:x0", 0.3, -1, 1, 0.01),
+//     hslider("bubbleSort:x1", -0.2, -1, 1, 0.01),
+//     hslider("bubbleSort:x2", 0.8, -1, 1, 0.01),
+//     hslider("bubbleSort:x3", -0.5, -1, 1, 0.01)
+// ) : ro.bitonicSort(4);
+// ```
+//
+// #### References
+//
+// * <https://en.wikipedia.org/wiki/Bitonic_sorter>
+declare bitonicSort author "Dario Sanfilippo";
+declare bitonicSort copyright "Copyright (C) 2026 Dario Sanfilippo
+    <sanfilippo.dario@gmail.com>";
+declare bitonicSort license "MIT";
+
+/// Helper 0-indexed route wrapper
+_route0idx(N, M, connectionList) = 
+    route(N, M, si.vecOp((connectionList, par(i, outputs(connectionList), 1)), +));
+/// Ascending and descending comparators
+_comparatorDes(x0, x1) = max(x0, x1) , min(x0, x1);
+_comparatorAsc(x0, x1) = min(x0, x1) , max(x0, x1);
+_comparator(0, x0, x1) = _comparatorDes(x0, x1);
+_comparator(1, x0, x1) = _comparatorAsc(x0, x1);
+/// Direction selector, according to the stage index
+_comparatorDirections(N, s) = par(i, N / 2, (i % (2 ^ (s + 1)) < (2 ^ s)));
+/// Comparison input routing pairs
+_bitonicRouteCompareInputList(N, G) = inlets , outlets : interleave(N, 2) with {
+    inlets = par(j, N / (2 * G) , par(i, G, i + j * (2 * G) , i + G + j * (2 * G)));
+    outlets = par(i, N, i);
+};
+/// Comparison output unrouting pairs
+_bitonicRouteCompareOutputList(N, G) = inlets , outlets : interleave(N, 2) with {
+    inlets = par(i, N, i);
+    outlets = par(j, N / (2 * G) , par(i, G, i + j * (2 * G) , i + G + j * (2 * G)));
+};
+/// Apply routing
+_bitonicRouteInput(N, G) = _route0idx(N, N, (_bitonicRouteCompareInputList(N, G)));
+_bitonicRouteOutput(N, G) = _route0idx(N, N, (_bitonicRouteCompareOutputList(N, G)));
+/// Bitonic sequence builder layer
+_bitonicBuilderLayer(N, s, p) = Y with {
+    G = 2 ^ (s - p);
+    D(i) = ba.pick(_comparatorDirections(N, s), i);
+    Y = _bitonicRouteInput(N, G) : par(i, N / 2, _comparator(D(i))) : _bitonicRouteOutput(N, G);
+};
+/// Bitonic sequence builder network
+_bitonicBuilderNetwork(N) = Y with {
+    S = rint(log2(N) - 1);
+    Y = seq(s, S, seq(p, s + 1, _bitonicBuilderLayer(N, s, p)));
+    log2(x) = log(x)/log(2.0);
+};
+/// Bitonic sorter layer
+_bitonicSorterLayer(N, s, p) = Y with {
+    G = 2 ^ (s - p);
+    Y = _bitonicRouteInput(N, G) : par(i, N / 2, _comparator(1)) : _bitonicRouteOutput(N, G);
+};
+/// Bitonic sorter network
+_bitonicSorterNetwork(N) = Y with {
+    S = rint(log2(N) - 1);
+    Y = seq(p, S + 1, _bitonicSorterLayer(N, S, p));
+    log2(x) = log(x)/log(2.0);
+};
+/// Bitonic sorter
+bitonicSort(N) = _bitonicBuilderNetwork(N) : _bitonicSorterNetwork(N);
+
+
+//--------------------`(ro.)bitonicSortIdx`---------------------------------------
+//
+// This function is based on the `bitonicSort` function, except it returns the 
+// set of indices for the ordered input values. This is useful if you want
+// to sort one set based on another one.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : bitonicSortIdx(N) : si.bus(N)
+//
+// ```
+//
+// Where:
+//
+// * `N`: the number of signals to be sorted (it must be a power-of-two
+// compile-time numerical expression)
+//
+// #### Test
+// ```
+// ro = library("routes.lib");
+// bitonicSortIdx_test = (
+//     hslider("bubbleSort:x0", 0.3, -1, 1, 0.01),
+//     hslider("bubbleSort:x1", -0.2, -1, 1, 0.01),
+//     hslider("bubbleSort:x2", 0.8, -1, 1, 0.01),
+//     hslider("bubbleSort:x3", -0.5, -1, 1, 0.01)
+// ) : ro.bitonicSortIdx(4);
+// ```
+//
+// #### References
+//
+// * <https://en.wikipedia.org/wiki/Bitonic_sorter>
+declare bitonicSortIdx author "Dario Sanfilippo";
+declare bitonicSortIdx copyright "Copyright (C) 2026 Dario Sanfilippo
+    <sanfilippo.dario@gmail.com>";
+declare bitonicSortIdx license "MIT";
+
+_comparatorDesIdx(x0, i0, x1, i1) = ba.if(cond, x1, x0) , ba.if(cond, i1, i0) , ba.if(cond, x0, x1) , ba.if(cond, i0, i1) with {
+    cond = x1 > x0;
+};
+_comparatorAscIdx(x0, i0, x1, i1) = ba.if(cond, x1, x0) , ba.if(cond, i1, i0) , ba.if(cond, x0, x1) , ba.if(cond, i0, i1) with {
+    cond = x0 > x1;
+};
+_comparatorIdx(0, x0, i0, x1, i1) = _comparatorDesIdx(x0, i0, x1, i1);
+_comparatorIdx(1, x0, i0, x1, i1) = _comparatorAscIdx(x0, i0, x1, i1);
+_comparatorDirectionsIdx(N, s) = par(i, N / 2, (i % (2 ^ (s + 1)) < (2 ^ s)));
+
+_bitonicRouteCompareInputListIdx(N, G) = inlets , outlets : interleave(2 * N, 2) with {
+    inlets = par(j, N / (2 * G) , par(i, G,
+        2 * (i + j * (2 * G)) ,
+        2 * (i + j * (2 * G)) + 1 ,
+        2 * (i + G + j * (2 * G)) ,
+        2 * (i + G + j * (2 * G)) + 1
+    ));
+    outlets = par(i, N, 2 * i , 2 * i + 1);
+};
+_bitonicRouteCompareOutputListIdx(N, G) = inlets , outlets : interleave(2 * N, 2) with {
+    inlets = par(i, N, 2 * i , 2 * i + 1);
+    outlets = par(j, N / (2 * G) , par(i, G,
+        2 * (i + j * (2 * G)) ,
+        2 * (i + j * (2 * G)) + 1 ,
+        2 * (i + G + j * (2 * G)) ,
+        2 * (i + G + j * (2 * G)) + 1
+    ));
+};
+_bitonicRouteInputIdx(N, G) = _route0idx(2 * N, 2 * N, (_bitonicRouteCompareInputListIdx(N, G)));
+_bitonicRouteOutputIdx(N, G) = _route0idx(2 * N, 2 * N, (_bitonicRouteCompareOutputListIdx(N, G)));
+
+_bitonicBuilderLayerIdx(N, s, p) = Y with {
+    G = 2 ^ (s - p);
+    D(i) = ba.pick(_comparatorDirectionsIdx(N, s), i);
+    Y = _bitonicRouteInputIdx(N, G) : par(i, N / 2, _comparatorIdx(D(i))) : _bitonicRouteOutputIdx(N, G);
+};
+_bitonicBuilderNetworkIdx(N) = Y with {
+    S = rint(log2(N) - 1);
+    Y = seq(s, S, seq(p, s + 1, _bitonicBuilderLayerIdx(N, s, p)));
+    log2(x) = log(x)/log(2.0);
+};
+_bitonicSorterLayerIdx(N, s, p) = Y with {
+    G = 2 ^ (s - p);
+    Y = _bitonicRouteInputIdx(N, G) : par(i, N / 2, _comparatorIdx(1)) : _bitonicRouteOutputIdx(N, G);
+};
+_bitonicSorterNetworkIdx(N) = Y with {
+    S = rint(log2(N) - 1);
+    Y = seq(p, S + 1, _bitonicSorterLayerIdx(N, S, p));
+    log2(x) = log(x)/log(2.0);
+};
+bitonicSortIdx(N) = si.bus(N) , par(i, N, i) : interleave(N, 2) : _bitonicBuilderNetworkIdx(N) : _bitonicSorterNetworkIdx(N) : par(i, N, ! , _);
+
+// Deprecated aliases of the internal bitonic-sort machinery, kept for one
+// version: the canonical names now carry the internal underscore prefix
+// (see CONTRIBUTING.md, "Variables and identifiers scoping").
+declare bitonicBuilderLayer deprecated "internal machinery, renamed _bitonicBuilderLayer";
+bitonicBuilderLayer = _bitonicBuilderLayer;
+declare bitonicBuilderLayerIdx deprecated "internal machinery, renamed _bitonicBuilderLayerIdx";
+bitonicBuilderLayerIdx = _bitonicBuilderLayerIdx;
+declare bitonicBuilderNetwork deprecated "internal machinery, renamed _bitonicBuilderNetwork";
+bitonicBuilderNetwork = _bitonicBuilderNetwork;
+declare bitonicBuilderNetworkIdx deprecated "internal machinery, renamed _bitonicBuilderNetworkIdx";
+bitonicBuilderNetworkIdx = _bitonicBuilderNetworkIdx;
+declare bitonicRouteCompareInputList deprecated "internal machinery, renamed _bitonicRouteCompareInputList";
+bitonicRouteCompareInputList = _bitonicRouteCompareInputList;
+declare bitonicRouteCompareInputListIdx deprecated "internal machinery, renamed _bitonicRouteCompareInputListIdx";
+bitonicRouteCompareInputListIdx = _bitonicRouteCompareInputListIdx;
+declare bitonicRouteCompareOutputList deprecated "internal machinery, renamed _bitonicRouteCompareOutputList";
+bitonicRouteCompareOutputList = _bitonicRouteCompareOutputList;
+declare bitonicRouteCompareOutputListIdx deprecated "internal machinery, renamed _bitonicRouteCompareOutputListIdx";
+bitonicRouteCompareOutputListIdx = _bitonicRouteCompareOutputListIdx;
+declare bitonicRouteInput deprecated "internal machinery, renamed _bitonicRouteInput";
+bitonicRouteInput = _bitonicRouteInput;
+declare bitonicRouteInputIdx deprecated "internal machinery, renamed _bitonicRouteInputIdx";
+bitonicRouteInputIdx = _bitonicRouteInputIdx;
+declare bitonicRouteOutput deprecated "internal machinery, renamed _bitonicRouteOutput";
+bitonicRouteOutput = _bitonicRouteOutput;
+declare bitonicRouteOutputIdx deprecated "internal machinery, renamed _bitonicRouteOutputIdx";
+bitonicRouteOutputIdx = _bitonicRouteOutputIdx;
+declare bitonicSorterLayer deprecated "internal machinery, renamed _bitonicSorterLayer";
+bitonicSorterLayer = _bitonicSorterLayer;
+declare bitonicSorterLayerIdx deprecated "internal machinery, renamed _bitonicSorterLayerIdx";
+bitonicSorterLayerIdx = _bitonicSorterLayerIdx;
+declare bitonicSorterNetwork deprecated "internal machinery, renamed _bitonicSorterNetwork";
+bitonicSorterNetwork = _bitonicSorterNetwork;
+declare bitonicSorterNetworkIdx deprecated "internal machinery, renamed _bitonicSorterNetworkIdx";
+bitonicSorterNetworkIdx = _bitonicSorterNetworkIdx;
+declare comparator deprecated "internal machinery, renamed _comparator";
+comparator = _comparator;
+declare comparatorAsc deprecated "internal machinery, renamed _comparatorAsc";
+comparatorAsc = _comparatorAsc;
+declare comparatorAscIdx deprecated "internal machinery, renamed _comparatorAscIdx";
+comparatorAscIdx = _comparatorAscIdx;
+declare comparatorDes deprecated "internal machinery, renamed _comparatorDes";
+comparatorDes = _comparatorDes;
+declare comparatorDesIdx deprecated "internal machinery, renamed _comparatorDesIdx";
+comparatorDesIdx = _comparatorDesIdx;
+declare comparatorDirections deprecated "internal machinery, renamed _comparatorDirections";
+comparatorDirections = _comparatorDirections;
+declare comparatorDirectionsIdx deprecated "internal machinery, renamed _comparatorDirectionsIdx";
+comparatorDirectionsIdx = _comparatorDirectionsIdx;
+declare comparatorIdx deprecated "internal machinery, renamed _comparatorIdx";
+comparatorIdx = _comparatorIdx;
+declare route0idx deprecated "internal machinery, renamed _route0idx";
+route0idx = _route0idx;

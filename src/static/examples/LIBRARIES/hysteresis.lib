@@ -5,6 +5,7 @@
 // Suitable for transformer saturation, tape emulation, and magnetic effects.
 //
 // Currently implemented models:
+//
 // * Jiles-Atherton (ja_*) - Physics-based ferromagnetic hysteresis
 //
 // The Hysteresis library is organized into 3 sections:
@@ -69,7 +70,8 @@ fi = library("filters.lib");
 
 declare name "Faust Hysteresis Library";
 declare author "Thomas Mandolini";
-declare version "1.0.1";
+declare contributor "Bart Brouns a.k.a magnetophon";
+declare version "1.0.2";
 
 //========================== Jiles-Atherton Core =====================================
 // The core hysteresis function implementing the Jiles-Atherton model with
@@ -99,7 +101,12 @@ declare version "1.0.1";
 // ```
 // hy = library("hysteresis.lib");
 // os = library("oscillators.lib");
-// ja_hysteresis_test = os.osc(100) * 0.5 : hy.ja_hysteresis(380, 720, 0.015, 380, 0.25);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// mono = os.tosc(100) * 0.5;
+// ja_hysteresis_test = mono : hy.ja_hysteresis(380, 720, 0.015, 380, 0.25);
+// ja_hysteresis_slider_test = os.tosc(100)*0.5 : hy.ja_hysteresis(hslider("ja_hysteresis:Ms", 380, 100, 1000, 1), hslider("ja_hysteresis:a", 720, 100, 2000, 1), hslider("ja_hysteresis:alpha", 0.015, 0, 0.1, 0.001), hslider("ja_hysteresis:k", 380, 100, 1000, 1), hslider("ja_hysteresis:c", 0.25, 0, 1, 0.01));
+// ja_hysteresis_modulated_test = os.tosc(100)*0.5 : hy.ja_hysteresis(380, 720, 0.015, 100*pow(10, tri), 0.25) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //
 // #### References
@@ -108,7 +115,7 @@ declare version "1.0.1";
 // * <https://www.sciencedirect.com/science/article/abs/pii/S0304885321006466>
 //------------------------------------------------------------
 declare ja_hysteresis author "Thomas Mandolini";
-declare ja_hysteresis license "LGPLv2.1";
+declare ja_hysteresis license "LGPL-2.1-only";
 
 ja_hysteresis(Ms, a, alpha, k, c) = core
 with {
@@ -154,10 +161,14 @@ with {
 
     // 4x cascaded substeps with cubic Hermite interpolation
     // Uses H history for smooth tangent-matched curve between samples
-    core(H_in) = (loop ~ (_, _, _)) : (_, !, !)
+    core(H_in) = loop ~ _
     with {
-        loop(M_prev, H_prev, H_prev_prev) = M4, H_in, H_prev
+        loop(M_prev) = M4
         with {
+            // H history via delay operators
+            H_prev = H_in@1;
+            H_prev_prev = H_in@2;
+
             // Tangent estimation (Catmull-Rom style)
             dH_prev = H_prev - H_prev_prev;
             dH_in = H_in - H_prev;
@@ -207,11 +218,15 @@ with {
 // hy = library("hysteresis.lib");
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// ja_processor_test = os.osc(100) : hy.ja_processor(380, 720, 0.015, 380, 0.25, ba.db2linear(10), 1);
+// ma = library("maths.lib");
+// mono = os.tosc(100) * 0.5;
+// ja_processor_test = mono : hy.ja_processor(380, 720, 0.015, 380, 0.25, ba.db2linear(10), 1.0);
+// ja_processor_slider_test = os.tosc(100)*0.5 : hy.ja_processor(hslider("ja_processor:Ms", 380, 100, 1000, 1), hslider("ja_processor:a", 720, 100, 2000, 1), hslider("ja_processor:alpha", 0.015, 0, 0.1, 0.001), hslider("ja_processor:k", 380, 100, 1000, 1), hslider("ja_processor:c", 0.25, 0, 1, 0.01), hslider("ja_processor:drive", 3.1623, 0, 10, 0.0001), hslider("ja_processor:trim", 1.0, 0, 2, 0.01));
+// ja_processor_modulated_test = os.tosc(100)*0.5 : hy.ja_processor(380, 720, 0.015, 380, 0.25, ba.db2linear(20*tri), 1.0) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //------------------------------------------------------------
 declare ja_processor author "Thomas Mandolini";
-declare ja_processor license "LGPLv2.1";
+declare ja_processor license "LGPL-2.1-only";
 
 ja_processor(Ms, a, alpha, k, c, drive, trim) = chain
 with {
@@ -261,11 +276,12 @@ with {
 // hy = library("hysteresis.lib");
 // ba = library("basics.lib");
 // os = library("oscillators.lib");
-// ja_processor_stereo_test = os.osc(100), os.osc(150) : hy.ja_processor_stereo(380, 720, 0.015, 380, 0.25, ba.db2linear(10), 1);
+// stereo = os.tosc(100), os.tosc(150);
+// ja_processor_stereo_test = stereo : hy.ja_processor_stereo(380, 720, 0.015, 380, 0.25, ba.db2linear(10), 1.0);
 // ```
 //------------------------------------------------------------
 declare ja_processor_stereo author "Thomas Mandolini";
-declare ja_processor_stereo license "LGPLv2.1";
+declare ja_processor_stereo license "LGPL-2.1-only";
 
 ja_processor_stereo(Ms, a, alpha, k, c, drive, trim) =
     par(i, 2, ja_processor(Ms, a, alpha, k, c, drive, trim));
@@ -289,11 +305,12 @@ ja_processor_stereo(Ms, a, alpha, k, c, drive, trim) =
 // ```
 // hy = library("hysteresis.lib");
 // os = library("oscillators.lib");
-// ja_processor_ui_test = os.osc(100) : hy.ja_processor_ui;
+// mono = os.tosc(100) * 0.5;
+// ja_processor_ui_test = mono : hy.ja_processor_ui;
 // ```
 //------------------------------------------------------------
 declare ja_processor_ui author "Thomas Mandolini";
-declare ja_processor_ui license "LGPLv2.1";
+declare ja_processor_ui license "LGPL-2.1-only";
 
 ja_processor_ui = ja_processor(Ms_ui, a_ui, alpha_ui, k_ui, c_ui, drive_ui, trim_ui)
 with {
@@ -329,11 +346,12 @@ with {
 // ```
 // hy = library("hysteresis.lib");
 // os = library("oscillators.lib");
-// ja_processor_stereo_ui_test = os.osc(100), os.osc(150) : hy.ja_processor_stereo_ui;
+// stereo = os.tosc(100), os.tosc(150);
+// ja_processor_stereo_ui_test = stereo : hy.ja_processor_stereo_ui;
 // ```
 //------------------------------------------------------------
 declare ja_processor_stereo_ui author "Thomas Mandolini";
-declare ja_processor_stereo_ui license "LGPLv2.1";
+declare ja_processor_stereo_ui license "LGPL-2.1-only";
 
 ja_processor_stereo_ui = ja_processor_stereo(Ms_ui, a_ui, alpha_ui, k_ui, c_ui, drive_ui, trim_ui)
 with {

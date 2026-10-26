@@ -5,11 +5,12 @@
 // not included in other specialized Faust libraries. It includes filtering, mixing, time based, pitch shifters, 
 // and other creative or experimental signal processing components for sound design and musical applications.
 //
-// The library is organized into 7 sections:
+// The library is organized into 9 sections:
 //
 // * [Dynamic](#dynamic)
 // * [Fibonacci](#fibonacci)
 // * [Filtering](#filtering)
+// * [Dither and Noise Shaping](#dither-and-noise-shaping)
 // * [Meshes](#meshes)
 // * [Mixing](#mixing)
 // * [Time Based](#time-based)
@@ -56,7 +57,9 @@ closed source license or any other license if you decide so.
 ma = library("maths.lib");
 ba = library("basics.lib");
 de = library("delays.lib");
+os = library("oscillators.lib");
 si = library("signals.lib");
+no = library("noises.lib");
 an = library("analyzers.lib");
 fi = library("filters.lib");
 ro = library("routes.lib");
@@ -64,13 +67,14 @@ aa = library("aanl.lib");
 ef = library("misceffects.lib"); // for compatible copy/paste out of this file
 
 declare name "Misc Effects Library";
-declare version "2.5.1"; 
+declare version "2.7.2";
 
 //======================================Dynamic===========================================
 //========================================================================================
 
-//---------------------`(ef.)cubicnl`-----------------------
-// Cubic nonlinearity distortion.
+//---------------------`(ef.)cubicnl`, `(ef.)cubicnl_nodc`-----------------------
+// Cubic nonlinearity distortion. The `cubicnl_nodc` variant adds a
+// `dcblocker` on the output.
 // `cubicnl` is a standard Faust function.
 //
 // #### Usage:
@@ -90,8 +94,8 @@ declare version "2.5.1";
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// cubicnl_test = os.osc(440) : ef.cubicnl(0.5, 0.0);
-// cubicnl_nodc_test = os.osc(440) : ef.cubicnl_nodc(0.5, 0.0);
+// cubicnl_test = os.tosc(440) : ef.cubicnl(0.5, 0.0);
+// cubicnl_nodc_test = os.tosc(440) : ef.cubicnl_nodc(0.5, 0.0);
 // ```
 //
 // #### References
@@ -110,9 +114,9 @@ with {
 cubicnl_nodc(drive,offset) = cubicnl(drive,offset) : fi.dcblocker;
 
 declare cubicnl author "Julius O. Smith III";
-declare cubicnl license "STK-4.3";
+declare cubicnl license "LicenseRef-STK-4.3";
 declare cubicnl_nodc author "Julius O. Smith III";
-declare cubicnl_nodc license "STK-4.3";
+declare cubicnl_nodc license "LicenseRef-STK-4.3";
 
 //-----------------`(ef.)gate_mono`-------------------
 // Mono signal gate.
@@ -135,7 +139,7 @@ declare cubicnl_nodc license "STK-4.3";
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// gate_mono_test = os.osc(440) : ef.gate_mono(-60, 0.0001, 0.1, 0.02);
+// gate_mono_test = os.tosc(440) : ef.gate_mono(-60, 0.0001, 0.1, 0.02);
 // ```
 //
 // #### References
@@ -147,7 +151,7 @@ declare cubicnl_nodc license "STK-4.3";
 gate_mono(thresh,att,hold,rel,x) = x * gate_gain_mono(thresh,att,hold,rel,x);
 
 declare gate_mono author "Julius O. Smith III";
-declare gate_mono license "STK-4.3";
+declare gate_mono license "LicenseRef-STK-4.3";
 
 //-----------------`(ef.)gate_stereo`-------------------
 // Stereo signal gates.
@@ -170,7 +174,7 @@ declare gate_mono license "STK-4.3";
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// gate_stereo_test = os.osc(440), os.osc(441) : ef.gate_stereo(-60, 0.0001, 0.1, 0.02);
+// gate_stereo_test = os.tosc(440), os.tosc(441) : ef.gate_stereo(-60, 0.0001, 0.1, 0.02);
 // ```
 //
 // #### References
@@ -182,6 +186,40 @@ declare gate_mono license "STK-4.3";
 gate_stereo(thresh,att,hold,rel,x,y) = ggm*x, ggm*y with {
   ggm = gate_gain_mono(thresh,att,hold,rel,abs(x)+abs(y));
 };
+
+//-----------------`(ef.)gate_gain_mono`-------------------
+// The gain signal of the mono gate: the core shared by `gate_mono` and
+// `gate_stereo`, which multiply their input by it. Returns a smoothed
+// gain between 0 and 1 following the level of the input signal.
+//
+// #### Usage
+//
+// ```
+// _ : gate_gain_mono(thresh,att,hold,rel) : _
+// ```
+//
+// Where:
+//
+// * `thresh`: dB level threshold above which gate opens (e.g., -60 dB)
+// * `att`: attack time = time constant (sec) for gate to open (e.g., 0.0001 s = 0.1 ms)
+// * `hold`: hold time = time (sec) gate stays open after signal level < thresh (e.g., 0.1 s)
+// * `rel`: release time = time constant (sec) for gate to close (e.g., 0.020 s = 20 ms)
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// gate_gain_mono_test = os.tosc(440) : ef.gate_gain_mono(-60, 0.0001, 0.1, 0.02);
+// gate_gain_mono_slider_test = os.tosc(440) : ef.gate_gain_mono(hslider("gate_gain_mono:thresh", -60, -120, 0, 0.1), hslider("gate_gain_mono:att", 0.0001, 0.0001, 0.1, 0.0001), hslider("gate_gain_mono:hold", 0.1, 0, 1, 0.001), hslider("gate_gain_mono:rel", 0.02, 0.001, 1, 0.001));
+// gate_gain_mono_modulated_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : ef.gate_gain_mono(-30, 0.0001, 0.02, 0.001*pow(100, tri)) with { Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// gate_gain_mono_jump_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : ef.gate_gain_mono(-30, 0.0001, 0.02, 0.001*pow(100, sq)) with { Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//------------------------------------------------------------
+declare gate_gain_mono author "Julius O. Smith III";
+declare gate_gain_mono license "LicenseRef-STK-4.3";
 
 gate_gain_mono(thresh,att,hold,rel,x) = x : extendedrawgate : an.amp_follower_ar(att,rel) with {
   extendedrawgate(x) = max(float(rawgatesig(x)),holdsig(x));
@@ -195,9 +233,7 @@ gate_gain_mono(thresh,att,hold,rel,x) = x : extendedrawgate : an.amp_follower_ar
 };
 
 declare gate_stereo author "Julius O. Smith III";
-declare gate_stereo license "STK-4.3";
-declare gate_gain_mono author "Julius O. Smith III";
-declare gate_gain_mono license "STK-4.3";
+declare gate_stereo license "LicenseRef-STK-4.3";
 
 //=====================================Fibonacci==========================================
 //========================================================================================
@@ -219,7 +255,7 @@ declare gate_gain_mono license "STK-4.3";
 // #### Test
 // ```
 // ef = library("misceffects.lib");
-// fibonacci_test = 0 : ef.fibonacci(2);
+// fibonacci_test = 1 : ef.fibonacci(2);
 // ```
 //
 // #### Example
@@ -251,7 +287,7 @@ fibonacci(order) = +~(_<:sum(i, order, @(i)):>_);
 // #### Test
 // ```
 // ef = library("misceffects.lib");
-// fibonacciGeneral_test = 0 : ef.fibonacciGeneral(waveform{2, 3});
+// fibonacciGeneral_test = 1 : ef.fibonacciGeneral(waveform{2, 3});
 // ```
 //
 // #### Example:
@@ -312,19 +348,22 @@ declare fibonacciSeq author "Dario Sanfilippo";
 //
 // High-frequency model = -24 dB/octave slope implemented using a
 // fourth-order Butterworth lowpass.
-
-//
 //
 // #### Usage
 // ```
 // _ : speakerbp(f1,f2) : _
 // ```
 //
+// Where:
+//
+// * `f1`: low-frequency break point in Hz for the speaker model
+// * `f2`: high-frequency lowpass cutoff in Hz for the speaker model
+//
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// speakerbp_test = os.osc(440) : ef.speakerbp(100.0, 5000.0);
+// speakerbp_test = os.tosc(440) : ef.speakerbp(100.0, 5000.0);
 // ```
 //
 // #### Example
@@ -339,16 +378,17 @@ declare fibonacciSeq author "Dario Sanfilippo";
 speakerbp(f1,f2) = fi.dcblockerat(f1) : fi.dcblockerat(f1) : fi.lowpass(4,f2);
 
 declare speakerbp author "Julius O. Smith III";
-declare speakerbp license "STK-4.3";
+declare speakerbp license "LicenseRef-STK-4.3";
 
 //------------`(ef.)piano_dispersion_filter`---------------
-// Piano dispersion allpass filter in closed form.
+// Piano dispersion allpass filter in closed form. The first output is
+// MINUS the estimated delay of the allpass chain at `f0`, the second one
+// the filtered signal (see Outputs below).
 //
 // #### Usage
 //
 // ```
-// piano_dispersion_filter(M,B,f0)
-// _ : piano_dispersion_filter(1,B,f0) : +(totalDelay),_ : fdelay(maxDelay) : _
+// _ : piano_dispersion_filter(M,B,f0) : _,_
 // ```
 //
 // Where:
@@ -362,7 +402,21 @@ declare speakerbp license "STK-4.3";
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// piano_dispersion_filter_test = os.osc(110) : ef.piano_dispersion_filter(4, 0.0001, 110);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// piano_dispersion_filter_test = os.tosc(110) : ef.piano_dispersion_filter(4, 0.0001, 110);
+// piano_dispersion_filter_slider_test = os.tosc(110) : ef.piano_dispersion_filter(4, hslider("piano_dispersion_filter:B", 0.0001, 0.000001, 0.01, 0.000001), hslider("piano_dispersion_filter:f0", 110, 27.5, 4186, 0.1));
+// piano_dispersion_filter_modulated_test = no.noise : ef.piano_dispersion_filter(4, 0.0001, 27.5*pow(4186/27.5, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// piano_dispersion_filter_jump_test = no.noise : ef.piano_dispersion_filter(4, 0.0001, 27.5*pow(4186/27.5, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//
+// #### Example
+//
+// The delay output compensates the delay of a string loop:
+//
+// ```
+// _ : piano_dispersion_filter(1,B,f0) : +(totalDelay),_ : de.fdelay(maxDelay) : _
 // ```
 //
 // #### Outputs
@@ -386,7 +440,7 @@ declare speakerbp license "STK-4.3";
 
 piano_dispersion_filter(M,B,f0) = -Df0*M,seq(i,M,fi.tf1(a1,1,a1))
 with {
- a1 = (1-D)/(1+D); // By Eq. 3, have D >= 0, hence a1 >= 0 also
+ a1 = (1-D)/(1+D); // D > 0 by Eq. 3, hence |a1| < 1 (a1 < 0 when D > 1, i.e., low keys)
  D = exp(Cd - Ikey(f0)*kd);
  trt = pow(2.0,1.0/12.0); // 12th root of 2
  logb(b,x) = log(x) / log(b); // log-base-b of x
@@ -407,7 +461,7 @@ with {
 };
 
 declare piano_dispersion_filter author "Julius O. Smith III";
-declare piano_dispersion_filter license "STK-4.3";
+declare piano_dispersion_filter license "LicenseRef-STK-4.3";
 
 //-------------------------`(ef.)stereo_width`---------------------------
 // Stereo Width effect using the Blumlein Shuffler technique.
@@ -427,7 +481,9 @@ declare piano_dispersion_filter license "STK-4.3";
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// stereo_width_test = os.osc(440), os.osc(550) : ef.stereo_width(0.5);
+// no = library("noises.lib");
+// stereo_width_test = os.tosc(440), os.tosc(550) : ef.stereo_width(0.5);
+// stereo_width_mono_test = no.noise <: _, *(0.5) : ef.stereo_width(0);
 // ```
 //
 // At `w=0`, the output signal is mono ((left+right)/2 in both channels).
@@ -442,12 +498,139 @@ declare piano_dispersion_filter license "STK-4.3";
 stereo_width(w) = shuffle : *(mgain),*(sgain) : shuffle
 with {
      shuffle =  _,_ <: +,-; // normally scaled by 1/sqrt(2) for orthonormality,
-     mgain = 1-w/2;  // but we pick up the needed normalization here.
-     sgain = w/2;
+     mgain = 0.5;    // but we pick up the needed normalization here:
+     sgain = w/2;    // (l+r)/2 at w=0, (l,r) at w=1
 };
 
 declare stereo_width author "Julius O. Smith III";
-declare stereo_width license "STK-4.3";
+declare stereo_width license "LicenseRef-STK-4.3";
+
+//-------------------------`(ef.)ms_enc`, `(ef.)ms_dec`---------------------------
+// Mid/side encoder and decoder. `ms_enc` converts a left/right stereo pair
+// into mid = (l+r)/2 and side = (l-r)/2; `ms_dec` is its exact inverse
+// (l = m+s, r = m-s), so `ms_enc : ms_dec` is the identity. Process the mid
+// and side channels independently between the two (e.g. compress the mid,
+// EQ or widen the side) for classic M/S mastering.
+//
+// #### Usage
+//
+// ```
+// _,_ : ms_enc : _,_ // (l,r) to (m,s)
+// _,_ : ms_dec : _,_ // (m,s) to (l,r)
+// ```
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ms_enc_test = os.tosc(440), os.tosc(550) : ef.ms_enc;
+// ms_dec_test = os.tosc(440), os.tosc(550) : ef.ms_enc : ef.ms_dec;
+// ```
+//------------------------------------------------------------
+declare ms_enc license "MIT";
+declare ms_dec license "MIT";
+ms_enc = _,_ <: +,- : *(0.5),*(0.5);
+ms_dec = _,_ <: +,-;
+
+
+//=================================Dither and Noise Shaping===============================
+// Requantization to a target bit depth, done properly: TPDF dither
+// decorrelates the quantization error from the signal, and error-feedback
+// noise shaping pushes it towards high frequencies where hearing is least
+// sensitive. Use these at the very end of a chain that feeds an integer
+// output format.
+//========================================================================================
+
+//-------------------------`(ef.)dither`---------------------------
+// TPDF-dithered requantizer to a given bit depth: adds triangular dither of
+// 2 LSB peak-to-peak (the sum of two independent uniform noises), then
+// rounds to the nearest of the `2^nbits` levels covering [-1,1). Unlike the
+// plain `ba.bitcrusher`, the quantization error is decorrelated from the
+// signal: low-level material fades into a constant noise floor instead of
+// developing correlated distortion.
+//
+// #### Usage
+//
+// ```
+// _ : dither(nbits) : _
+// ```
+//
+// Where:
+//
+// * `nbits`: target bit depth (e.g. 16), a constant numerical expression
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// dither_test = os.tosc(440)*0.001 : ef.dither(16);
+// ```
+//
+// #### References
+//
+// * S.P. Lipshitz, R.A. Wannamaker, J. Vanderkooy, "Quantization and
+//   Dither: A Theoretical Survey", JAES vol. 40, no. 5, 1992.
+//------------------------------------------------------------
+declare dither license "MIT";
+dither(nbits) = +(dith) : quant
+with {
+    scaler = pow(2.0, float(nbits-1));
+    quant(v) = round(v*scaler)/scaler;
+    dith = (no.noises(2,0) + no.noises(2,1)) * (0.5/scaler);
+};
+
+//-------------------------`(ef.)dither_shaped`---------------------------
+// TPDF-dithered requantizer with error-feedback noise shaping: the
+// quantization error is fed back through `(1-z^-1)^K`, giving a noise
+// transfer function that rises at 6*K dB/octave and pushes the error energy
+// towards Nyquist. `K = 1` or `2` are the useful orders: higher plain
+// difference orders boost the total noise power faster than hearing
+// benefits (psychoacoustically weighted shapers need dedicated
+// coefficients).
+//
+// #### Usage
+//
+// ```
+// _ : dither_shaped(K,nbits) : _
+// ```
+//
+// Where:
+//
+// * `K`: noise shaping order, 1 or 2 (a constant numerical expression)
+// * `nbits`: target bit depth (e.g. 16), a constant numerical expression
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// dither_shaped_test = os.tosc(440)*0.001 : ef.dither_shaped(2, 16);
+// ```
+//
+// #### References
+//
+// * S.P. Lipshitz, R.A. Wannamaker, J. Vanderkooy, "Quantization and
+//   Dither: A Theoretical Survey", JAES vol. 40, no. 5, 1992.
+// * R.A. Wannamaker, "Psychoacoustically Optimal Noise Shaping", JAES
+//   vol. 40, no. 7/8, 1992.
+//------------------------------------------------------------
+declare dither_shaped license "MIT";
+dither_shaped(K, nbits) = (body ~ (_,_)) : (!,!,_)
+with {
+    scaler = pow(2.0, float(nbits-1));
+    quant(v) = round(v*scaler)/scaler;
+    dith = (no.noises(2,0) + no.noises(2,1)) * (0.5/scaler);
+    // y = u + e with u = x - H(z)e, so NTF = 1 - H(z); H = 1 - (1-z^-1)^K
+    // K=1: H =  z^-1            -> u = x -  e[n-1]
+    // K=2: H = 2z^-1 - z^-2     -> u = x - 2e[n-1] + e[n-2]
+    c1(1) = -1.0; c2(1) = 0.0;
+    c1(2) = -2.0; c2(2) = 1.0;
+    body(e1, e2, x) = e, e1, y
+    with {
+        u = x + c1(K)*e1 + c2(K)*e2;
+        y = quant(u + dith);
+        e = y - u;
+    };
+};
 
 //===========================================Meshes=======================================
 //========================================================================================
@@ -461,7 +644,7 @@ declare stereo_width license "STK-4.3";
 // #### Usage
 //
 // ```
-// bus(4*N) : mesh_square(N) : bus(4*N)
+// si.bus(4*N) : mesh_square(N) : si.bus(4*N)
 // ```
 //
 // Where:
@@ -471,7 +654,7 @@ declare stereo_width license "STK-4.3";
 // #### Test
 // ```
 // ef = library("misceffects.lib");
-// mesh_square_test = (0,0,0,0) : ef.mesh_square(1);
+// mesh_square_test = (1,0.5,-0.5,0.25) : ef.mesh_square(1);
 // ```
 //
 // #### Signal Order In and Out
@@ -518,9 +701,9 @@ declare stereo_width license "STK-4.3";
 // Reflectively terminated mesh impulsed at one corner:
 //
 // ```
-// mesh_square_test(N,x) = mesh_square(N)~(busi(4*N,x)) // input to corner
-// with { 
-//     busi(N,x) = bus(N) : par(i,N,*(-1)) : par(i,N-1,_), +(x); 
+// mesh_square_test(N,x) = ef.mesh_square(N)~(busi(4*N,x)) // input to corner
+// with {
+//     busi(N,x) = si.bus(N) : par(i,N,*(-1)) : par(i,N-1,_), +(x);
 // };
 // process = 1-1' : mesh_square_test(4); // all modes excited forever
 // ```
@@ -584,14 +767,14 @@ with {
 };
 
 declare mesh_square author "Julius O. Smith III";
-declare mesh_square license "STK-4.3";
+declare mesh_square license "LicenseRef-STK-4.3";
 
 
 //=====================================Mixing=============================================
 //========================================================================================
 
 // Implementation to share common code
-dwmEnv(wetAmount, FX) = environment
+_dwmEnv(wetAmount, FX) = environment
 {
     N = inputs(FX);
     wet(wg) = FX : par(i, N, *(wg));
@@ -613,8 +796,14 @@ dwmEnv(wetAmount, FX) = environment
 };
 
 
-//---------------`(ef.)dryWetMixer`-------------
-// Linear dry-wet mixer for a N inputs and N outputs effect.
+//---------------`(ef.)dryWetMixer`--------------------------------------------
+// Linear dry-wet mixer for an N-inputs, N-outputs effect. The dry and wet
+// gains sum to 1 for all positions, so this mixer is mono-safe but not
+// constant-power: total power dips at the midpoint (each channel at −6 dB).
+//
+// * `wetAmount = 0`  : dry = 1.0 (0 dB),  wet = 0
+// * `wetAmount = 0.5`: dry = 0.5 (−6 dB), wet = 0.5 (−6 dB)
+// * `wetAmount = 1`  : dry = 0,           wet = 1.0 (0 dB)
 //
 // #### Usage
 //
@@ -624,45 +813,74 @@ dwmEnv(wetAmount, FX) = environment
 //
 // Where:
 //
-// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal and 1 produces only the wet signal
-// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the input bus
+// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal at
+//   unity, and 1 produces only the wet signal at unity
+// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the
+//   input bus
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// dryWetMixer_test = os.osc(440) : ef.dryWetMixer(0.5, fi.dcblocker);
+// fi = library("filters.lib");
+// dryWetMixer_test = os.tosc(440) : ef.dryWetMixer(0.5, fi.dcblocker);
 // ```
 //------------------------------------------------------------
 declare dryWetMixer author "David Braun, revised by Stéphane Letz";
 
-dryWetMixer(wetAmount, FX) = dwmEnv(wetAmount, FX).dryWetMixer;
+dryWetMixer(wetAmount, FX) = _dwmEnv(wetAmount, FX).dryWetMixer;
 
 
-//---------------`(ef.)dryWetMixerConstantPower`-------------
-// Constant-power dry-wet mixer for a N inputs and N outputs effect.
+//---------------`(ef.)dryWetMixerConstantPower`-------------------------------
+// Constant-power dry-wet mixer for an N-inputs, N-outputs effect. The dry
+// input is scaled by cos(θ)/√2 and the wet output by sin(θ)/√2, where
+// θ = π*wetAmount/2.
+//
+// * `wetAmount = 0`  : dry = 1/√2 ≈ 0.707 (−3 dB), wet = 0
+// * `wetAmount = 0.5`: dry = 0.5 (−6 dB),          wet = 0.5 (−6 dB)
+// * `wetAmount = 1`  : dry = 0,                    wet = 1/√2 ≈ 0.707 (−3 dB)
+//
+// #### Normalization
+//
+// A standard constant-power crossfade uses bare cos/sin gains, which peak at
+// unity (0 dB) when fully dry or fully wet and dip to 1/√2 (−3 dB) at center.
+// This implementation divides by √2, which makes the mixer mono-safe: the sum
+// of the dry and wet gains is bounded by 1 for all positions:
+//
+//   dryGain + wetGain = (cos θ + sin θ) / √2 ≤ 1
+//
+// This holds because cos θ + sin θ peaks at √2 (at θ = π/4), and √2/√2 = 1.
+// As a result, if the dry and wet paths carry correlated or in-phase material,
+// their sum can never clip. Total power (dryGain² + wetGain²) is constant at
+// 0.5 for all positions.
+//
+// Note that the extremes attenuate by −3 dB rather than passing at unity. Use
+// `dryWetMixer` if unity passthrough at the extremes is required.
 //
 // #### Usage
 //
 // ```
-// si.bus(inputs(FX)) : dryWetMixerConstantPower(wetAmount, FX) :si.bus(inputs(FX))
+// si.bus(inputs(FX)) : dryWetMixerConstantPower(wetAmount, FX) : si.bus(inputs(FX))
 // ```
 //
 // Where:
 //
-// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal and 1 produces only the wet signal
-// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the input bus
+// * `wetAmount`: the wet amount (0-1). 0 produces only the dry signal at −3 dB
+//   and 1 produces only the wet signal at −3 dB
+// * `FX`: an arbitrary effect (N inputs and N outputs) to apply to the input
+//   bus
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// dryWetMixerConstantPower_test = os.osc(440) : ef.dryWetMixerConstantPower(0.5, fi.dcblocker);
+// fi = library("filters.lib");
+// dryWetMixerConstantPower_test = os.tosc(440) : ef.dryWetMixerConstantPower(0.5, fi.dcblocker);
 // ```
 //------------------------------------------------------------
 declare dryWetMixerConstantPower author "David Braun, revised by Stéphane Letz";
 
-dryWetMixerConstantPower(wetAmount, FX) = dwmEnv(wetAmount, FX).dryWetMixerConstantPower;
+dryWetMixerConstantPower(wetAmount, FX) = _dwmEnv(wetAmount, FX).dryWetMixerConstantPower;
 
 
 mixingEnv = environment
@@ -703,8 +921,8 @@ mixingEnv = environment
   //
   // #### Test
   // ```
-  // ef = library("misceffects.lib");
-  // weightsPowerLoop_test = ef.mixingEnv.weightsPowerLoop(4, 1.2);
+// ef = library("misceffects.lib");
+// weightsPowerLoop_test = ef.mixingEnv.weightsPowerLoop(4, 1.2);
   // ```
   weightsPowerLoop(N, m) = par(i, N, gain(i))
   with {
@@ -791,7 +1009,7 @@ mixingEnv = environment
 // #### Test
 // ```
 // ef = library("misceffects.lib");
-// mixLinearClamp_test = (1,0,0,0) : ef.mixLinearClamp(4, 1, 1.2);
+// mixLinearClamp_test = (1,0.5,0,0) : ef.mixLinearClamp(4, 1, 1.2);
 // ```
 //---------------------------------------------------------------------------------------
 declare mixLinearClamp author "David Braun";
@@ -901,14 +1119,14 @@ mixPowerLoop = mixingEnv.mixPowerLoop;
 // Where:
 //
 // * `maxDuration`: the max echo duration in seconds
-// * `duration`: the echo duration in seconds
+// * `duration`: the echo duration in seconds: the echoes come every `int(duration*ma.SR)` samples (at least one)
 // * `feedback`: the feedback coefficient
-
+//
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// echo_test = os.osc(440) : ef.echo(0.5, 0.25, 0.4);
+// echo_test = os.tosc(440) : ef.echo(0.5, 0.25, 0.4);
 // ```
 //----------------------------------------------------
 declare echo author "Romain Michon";
@@ -916,7 +1134,9 @@ declare echo author "Romain Michon";
 echo(maxDuration,duration,feedback) = +~de.delay(maxDel,del)*feedback
 with{
   maxDel = ma.SR*maxDuration;
-  del = ma.SR*duration;
+  // the feedback loop adds one sample: delay by one less, as echo1s..echo43s do,
+  // so that the echoes come every int(duration*ma.SR) samples (at least one)
+  del = int(ma.SR*duration) - 1;
 };
 
 // TODO demo function for echo
@@ -927,25 +1147,25 @@ with{
 // #### Usage
 //
 // ```
-// _ : ef.reverseEchoN(N,delay) : si.bus(N)
+// _ : reverseEchoN(N,delay) : si.bus(N)
 // ```
 //
 // Where:
 //
 // * `N`: Number of output channels desired (1 or more), a constant numerical expression
-// * `delay`: echo delay (integer power of 2)
+// * `delay`: echo delay in samples, an integer power of 2 known at compile time
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// reverseEchoN_test = os.osc(440) : ef.reverseEchoN(2, 32);
+// reverseEchoN_test = os.tosc(440) : ef.reverseEchoN(2, 32);
 // ```
 //
 // #### Demo
 //
 // ```
-// _ : dm.reverseEchoN(N) : _,_
+// _ : dm.reverse_echo_demo(N) : _,_
 // ```
 //
 // #### Description
@@ -956,7 +1176,7 @@ with{
 reverseEchoN(N,delMax) = _<: par(i,N,ef.reverseDelayRamped(delMax,i/N));
 
 declare reverseEchoN author "Julius O. Smith III";
-declare reverseEchoN license "STK-4.3";
+declare reverseEchoN license "LicenseRef-STK-4.3";
 
 
 //-------------------`(ef.)reverseDelayRamped`------------------
@@ -965,25 +1185,25 @@ declare reverseEchoN license "STK-4.3";
 // #### Usage
 //
 // ```
-// _ : ef.reverseDelayRamped(delay,phase) : _
+// _ : reverseDelayRamped(delay,phase) : _
 // ```
 //
 // Where:
 //
-// * `delay`: echo delay (integer power of 2)
+// * `delay`: echo delay in samples, an integer power of 2 known at compile time
 // * `phase`: float between 0 and 1 giving ramp delay phase*delay
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// reverseDelayRamped_test = os.osc(440) : ef.reverseDelayRamped(32, 0.6);
+// reverseDelayRamped_test = os.tosc(440) : ef.reverseDelayRamped(32, 0.6);
 // ```
 //
 // #### Demo
 //
 // ```
-// _ : ef.reverseDelayRamped(32,0.6) : _,_
+// _ : ef.reverseDelayRamped(32,0.6) : _
 // ```
 //
 //------------------------------------------------------------
@@ -995,7 +1215,7 @@ reverseDelayRamped(delMax,phs) = rampGain * de.delay(delMax,del) with {
 };
 
 declare reverseDelayRamped author "Julius O. Smith III";
-declare reverseDelayRamped license "STK-4.3";
+declare reverseDelayRamped license "LicenseRef-STK-4.3";
 
 //-------------------`(ef.)uniformPanToStereo`------------------
 // Pan nChans channels to the stereo field, spread uniformly left to right.
@@ -1003,18 +1223,22 @@ declare reverseDelayRamped license "STK-4.3";
 // #### Usage
 //
 // ```
-// si.bus(N) : ef.uniformPanToStereo(N) : _,_
+// si.bus(N) : uniformPanToStereo(N) : _,_
 // ```
 //
 // Where:
 //
-// * `N`: Number of input channels to pan down to stereo, a constant numerical expression
+// * `N`: Number of input channels to pan down to stereo, a constant numerical expression (N >= 2)
+//
+// Channel `i` gets gain `1-i/(N-1)` on the left (first) output and
+// `i/(N-1)` on the right (second): channel 0 is hard left, channel N-1
+// hard right.
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// uniformPanToStereo_test = os.osc(440), os.osc(550), os.osc(660) : ef.uniformPanToStereo(3);
+// uniformPanToStereo_test = os.tosc(440), os.tosc(550), os.tosc(660) : ef.uniformPanToStereo(3);
 // ```
 //
 // #### Demo
@@ -1025,11 +1249,111 @@ declare reverseDelayRamped license "STK-4.3";
 //
 //------------------------------------------------------------
 uniformPanToStereo(N) = si.bus(N) <: par(i,2*N,_) :
-              (par(i,N,*(i/(N-1))) :> _),
-              (par(i,N,*(1-i/(N-1))) :> _);
+              (par(i,N,*(1-i/(N-1))) :> _),
+              (par(i,N,*(i/(N-1))) :> _);
 
 declare uniformPanToStereo author "Julius O. Smith III";
-declare uniformPanToStereo license "STK-4.3";
+declare uniformPanToStereo license "LicenseRef-STK-4.3";
+
+//-------------------`(ef.)xferDimensionExpander`------------------
+// Model of Xfer Records' DimensionExpander, a free stereo spatializer in the
+// spirit of the Roland Dimension D (the "Dimension" half of Serum's
+// Hyper/Dimension effect). Not affiliated with or endorsed by Xfer Records.
+//
+// The mono sum of the input feeds four fixed delay taps (15 ms * 1.18^i,
+// stretched by `size`). Each tap is amplitude-modulated by a 0.455 Hz sine,
+// the four sines in quadrature, and the sum is added to the left channel and
+// subtracted from the right. The dry signal passes at unity; there are no
+// filters and no feedback. Every constant was fitted to measurements of the
+// plug-in binary (v1.0.0.5); on stereo program material the wet signal
+// matches the plug-in to about -60 dB at 44.1, 48 and 96 kHz, up to the
+// LFO's start phase, which the plug-in free-runs.
+//
+// The wet signal is pure side signal: the mono sum `L' + R'` is exactly the
+// dry `L + R`, and an anti-phase input (`R = -L`) passes with no wet signal.
+// Unlike the Dimension D's swept bucket-brigade delays, the taps are fixed.
+// It still sounds like a chorus because the quadrature modulation turns each
+// input frequency into two equal sidebands 0.455 Hz above and below it, with
+// no carrier: two copies detuned by a constant offset in Hz, not by a pitch
+// ratio as in a Doppler chorus.
+//
+// `size` is used as given, and moving it moves all four taps. Smoothing it
+// turns each change into a delay sweep, a Doppler pitch bend: the smoothing
+// time sets how gentle the bend is (e.g. a 0.25 s time constant gives a
+// smooth bend, `si.smoo` a quick chirp).
+//
+// #### Usage
+//
+// ```
+// _,_ : xferDimensionExpander(size, wet) : _,_
+// ```
+//
+// Where:
+//
+// * `size`: Size knob (0-1, clamped), scales the tap delays from 15-25 ms
+//   (0) to 115-189 ms (1)
+// * `wet`: Dry/Wet knob (0-1), the wet level (the dry signal is always at
+//   unity)
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// xferDimensionExpander_test = os.tosc(440), os.tosc(550) : ef.xferDimensionExpander(0.5, 0.5);
+// xferDimensionExpander_slider_test = os.tosc(440), os.tosc(550)
+//    : ef.xferDimensionExpander(hslider("xferDimensionExpander:size", 0.5, 0, 1, 0.01),
+//                               hslider("xferDimensionExpander:wet", 0.5, 0, 1, 0.01));
+// xferDimensionExpander_modulated_test = os.tosc(440), os.tosc(550) : ef.xferDimensionExpander(tri, 0.5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// xferDimensionExpander_wet_modulated_test = os.tosc(440), os.tosc(550) : ef.xferDimensionExpander(0.5, tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// ```
+//------------------------------------------------------------
+/*
+Implementation Notes:
+
+  wet(t) = 0.5 * wet * sum_i sin(2 pi f t - i pi/2) * m(t - d_i)
+  d_i = 15 ms * 1.18^i * (1 + 20 size / 3),  i = 0..3,  f = 0.45486 Hz
+  m = (L + R)/2;  L' = L + wet(t);  R' = R - wet(t)
+
+- The taps are fractional delays read through a Catmull-Rom cubic kernel,
+  fitted sample-exact against the plug-in's click response (rounding the taps
+  to whole samples, or using a Lagrange kernel, costs tens of dB of
+  high-frequency accuracy). The kernel lives here because delays.lib has no
+  Catmull-Rom delay.
+- The modulation is applied after the delay, at the tap outputs, with the
+  four gains 0.5 sin(a), -0.5 cos(a), -0.5 sin(a), 0.5 cos(a).
+- Delays and LFO rate are in seconds and hertz: the plug-in's behavior does
+  not change with the sample rate. The buffer holds the longest tap
+  (189 ms) up to 192 kHz.
+*/
+xferDimensionExpander(size, wet, xL, xR) = xL + w, xR - w
+with {
+    MAXD = 65536;                       // holds the 189 ms tap up to ~346 kHz; above that,
+                                        // de.delay clamps the reads (e.g. to ~171 ms at 384 kHz)
+    RATE = 0.45486;                     // LFO rate (Hz)
+    s = max(0.0, min(1.0, size));
+    m = 0.5 * (xL + xR);
+    d(i) = 0.015 * pow(1.18, i) * (1.0 + 20.0 * s / 3.0) * ma.SR;   // samples
+    tap(i) = crdelay(MAXD, d(i), m);
+    a = 2.0 * ma.PI * os.lf_sawpos(RATE);
+    w = 0.5 * wet * (sin(a) * (tap(0) - tap(2)) + cos(a) * (tap(3) - tap(1)));
+
+    // Catmull-Rom fractional delay by dl samples (buffer of maxd samples).
+    crdelay(maxd, dl, x) = hm1 * r(0) + h0 * r(1) + h1 * r(2) + h2 * r(3)
+    with {
+        di = int(floor(dl));
+        f = dl - floor(dl);
+        r(j) = de.delay(maxd, max(0, di - 1 + j), x);
+        hm1 = f * (-0.5 + f * (1.0 - 0.5 * f));
+        h0 = 1.0 + f * f * (-2.5 + 1.5 * f);
+        h1 = f * (0.5 + f * (2.0 - 1.5 * f));
+        h2 = f * f * (-0.5 + 0.5 * f);
+    };
+};
+
+declare xferDimensionExpander author "David Braun";
+declare xferDimensionExpander license "MIT";
 
 //---------------------`(ef.)tapeStop`-----------------------------------------
 // A tape-stop effect, like putting a finger on a vinyl record player.
@@ -1037,13 +1361,8 @@ declare uniformPanToStereo license "STK-4.3";
 // #### Usage:
 //
 // ```
-// _,_ : tapeStop(2, LAGRANGE_ORDER, MAX_TIME_SAMP, 
-//               crossfade, gainAlpha, stopAlpha, stopTime, stop) : _,_
-// ```
-//
-// ```
-// _ : tapeStop(1, LAGRANGE_ORDER, MAX_TIME_SAMP, 
-//              crossfade, gainAlpha, stopAlpha, stopTime, stop) : _
+// si.bus(C) : tapeStop(C, LAGRANGE_ORDER, MAX_TIME_SAMP,
+//                      crossfade, gainAlpha, stopAlpha, stopTime, stop) : si.bus(C)
 // ```
 //
 // Where:
@@ -1056,12 +1375,24 @@ declare uniformPanToStereo license "STK-4.3";
 // * `stopAlpha`: `stopAlpha==1` represents a linear deceleration (constant force). `stopAlpha<1` represents an initially weaker, then stronger force. `stopAlpha>1` represents an initially stronger, then weaker force. Safe values are in the range [.01,2].
 // * `stopTime`: Desired duration of the stop time, in samples.
 // * `stop`: When `stop` becomes positive, the tape-stop effect will start. When `stop` becomes zero, normal audio will resume via crossfade.
-
+//
+// #### Example
+//
+// ```
+// _,_ : tapeStop(2, LAGRANGE_ORDER, MAX_TIME_SAMP,
+//               crossfade, gainAlpha, stopAlpha, stopTime, stop) : _,_
+// _ : tapeStop(1, LAGRANGE_ORDER, MAX_TIME_SAMP,
+//              crossfade, gainAlpha, stopAlpha, stopTime, stop) : _
+// ```
+//
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// tapeStop_test = os.osc(440), os.osc(441) : ef.tapeStop(2, 3, 44100, 128, 1.0, 1.0, 22050, button("stop"));
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// tapeStop_test = os.tosc(440), os.tosc(441) : ef.tapeStop(2, 3, 44100, 128, 1.0, 1.0, 22050, button("stop"));
+// tapeStop_jump_test = os.tosc(440), os.tosc(441) : ef.tapeStop(2, 3, 44100, 128, 1.0, 1.0, 22050, sq) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; };
 // ```
 //-----------------------------------------------------------------------------
 tapeStop(C, LAGRANGE_ORDER, MAX_TIME_SAMP, crossfade, gainAlpha, stopAlpha, stopTime, stop) = 
@@ -1113,7 +1444,7 @@ with {
 
 declare tapeStop author "David Braun";
 declare tapeStop copyright "Copyright (C) 2024 by David Braun <braun@ccrma.stanford.edu>";
-declare tapeStop license "MIT-style STK-4.3 license";
+declare tapeStop license "LicenseRef-STK-4.3";
 
 //=======================================Pitch Shifting===================================
 //========================================================================================
@@ -1133,12 +1464,17 @@ declare tapeStop license "MIT-style STK-4.3 license";
 // * `w`: the window length (samples)
 // * `x`: crossfade duration duration (samples)
 // * `s`: shift (semitones)
-
+//
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// transpose_test = os.osc(440) : ef.transpose(1024, 512, 7);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// transpose_test = os.tosc(440) : ef.transpose(1024, 512, 7);
+// transpose_slider_test = os.tosc(440) : ef.transpose(hslider("transpose:w", 1024, 16, 4096, 1), hslider("transpose:x", 512, 1, 4096, 1), hslider("transpose:s", 7, -12, 12, 0.1));
+// transpose_modulated_test = os.tosc(440) : ef.transpose(1024, 512, 24*tri - 12) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// transpose_jump_test = os.tosc(440) : ef.transpose(1024, 512, 24*sq - 12) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //-----------------------------------------
 transpose(w, x, s, sig) = de.fdelay(maxDelay,d,sig)*ma.fmin(d/x,1) +
@@ -1147,6 +1483,156 @@ with {
     maxDelay = 65536;
     i = 1 - pow(2, s/12);
     d = i : (+ : +(w) : fmod(_,w)) ~ _;
+};
+
+//--------------`(ef.)transpose_windowed`----------------
+// Delay-line pitch shifter with `P` overlapping Hann-windowed read taps:
+// the windowed-tap refinement of `ef.transpose`. Each tap sweeps the same
+// `w`-sample window with a phase offset of `1/P`, weighted by
+// `an.window_hann` of its own phase; since Hann windows at any regular
+// overlap sum to a constant, the crossfade is click-free and
+// equal-amplitude by construction (with `s = 0` the output is exactly a
+// delayed copy). `P = 2` matches the classic two-tap topology; higher `P`
+// smears transients less at large shifts.
+//
+// #### Usage
+//
+// ```
+// _ : transpose_windowed(P, w, s) : _
+// ```
+//
+// Where:
+//
+// * `P`: number of overlapping taps, 2 or more (a constant numerical expression)
+// * `w`: window length in samples (up to 65536)
+// * `s`: shift in semitones (positive or negative, may vary at run time)
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// transpose_windowed_test = os.tosc(440) : ef.transpose_windowed(2, 1024, 7);
+// transpose_windowed_slider_test = os.tosc(440) : ef.transpose_windowed(2, hslider("transpose_windowed:w", 1024, 16, 4096, 1), hslider("transpose_windowed:s", 7, -12, 12, 0.1));
+// transpose_windowed_modulated_test = os.tosc(440) : ef.transpose_windowed(2, 1024, 24*tri - 12) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// transpose_windowed_jump_test = os.tosc(440) : ef.transpose_windowed(2, 1024, 24*sq - 12) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//-----------------------------------------
+declare transpose_windowed license "MIT";
+transpose_windowed(P, w, s, sig) = sum(i, P, tap(i)) * (2.0/float(P))
+with {
+    maxDelay = 65536;
+    f = (1.0 - pow(2.0, s/12.0)) / w;          // phase increment per sample
+    ph = (+(f) ~ ma.frac);                     // master phase in [0,1)
+    phi(i) = ma.frac(ph + float(i)/float(P));
+    tap(i) = de.fdelay(maxDelay, w*phi(i), sig) * an.window_hann(phi(i));
+};
+
+//--------------`(ef.)granular`----------------
+// Live granulator on an internal delay line: `P` voices continuously replay
+// Hann-windowed grains of `dur` seconds taken `pos` seconds back in the
+// input, each voice offset by `1/P` of a grain so the voices overlap into a
+// continuous texture (Hann overlaps sum to a constant: with `ratio = 1`,
+// `jit = 0` the output is exactly the delayed input). The grain start
+// position is latched when each grain begins - `pos` and `jit` can move
+// freely without tearing grains. `ratio` repitches the material inside
+// each grain by resampling (2 = up an octave, 0.5 = down an octave), and
+// `jit` adds a per-grain random offset to the position for the classic
+// granular cloud.
+//
+// When repitching tonal material with `jit = 0`, note that the voices read
+// the source offset by `dur/P` seconds from one another: if that offset
+// lands near an odd half-period of a source partial, that partial cancels
+// between overlapping grains (ordinary granular phasiness). Choose `dur`
+// against the material, or add a little `jit`, to decorrelate the voices.
+//
+// #### Usage
+//
+// ```
+// _ : granular(P, dur, ratio, pos, jit) : _
+// ```
+//
+// Where:
+//
+// * `P`: number of overlapping grain voices, 2 or more (a constant numerical expression)
+// * `dur`: grain duration in seconds, rounded to a whole number of samples
+// * `ratio`: playback speed inside each grain (1 = unchanged pitch)
+// * `pos`: read position in seconds behind the write head
+// * `jit`: random position jitter in seconds, latched per grain
+//
+// The latched read offset `pos + jit + (ratio-1)*dur` must stay within the
+// 65536-sample internal line (about 1.36 s at 48 kHz).
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// granular_test = os.tosc(440) : ef.granular(2, 0.05, 1.5, 0.2, 0.1);
+// granular_slider_test = os.tosc(440) : ef.granular(2, hslider("granular:dur", 0.05, 0.005, 1, 0.001), hslider("granular:ratio", 1.5, 0.25, 4, 0.01), hslider("granular:pos", 0.2, 0, 1, 0.001), hslider("granular:jit", 0.1, 0, 1, 0.001));
+// granular_modulated_test = os.tosc(440) : ef.granular(2, 0.05, 0.5 + tri, 0.05 + 0.3*tri, 0.1) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// ```
+//-----------------------------------------
+declare granular license "MIT";
+granular(P, dur, ratio, pos, jit, sig) = sum(i, P, voice(i)) * (2.0/float(P))
+with {
+    maxDelay = 65536;
+    // one grain per dur, of N samples: an integer phase, so that the grains
+    // start at the same sample in single and double precision
+    N = max(1, int(dur*ma.SR + 0.5));
+    k(i) = (ba.period(N) + 1 + int(i*N/P)) % N; // phase of voice i, 0..N-1
+    phi(i) = float(k(i))/float(N);            // in [0,1)
+    trig(i) = k(i) < k(i)';                   // wrap = new grain
+    // per-grain latched start offset, in samples
+    start(i) = ba.sAndH(trig(i), (pos + jit*abs(no.noises(P, i)))*ma.SR);
+    dly(i) = start(i) + (1.0 - ratio)*phi(i)*float(N);
+    voice(i) = de.fdelay(maxDelay, max(0.0, min(float(maxDelay-1), dly(i))), sig)
+               * an.window_hann(phi(i));
+};
+
+//--------------`(ef.)doppler_shift`----------------
+// Pitch shifter for signals with known fundamental frequency.
+// Uses Doppler effect from a continuously ramping delay line,
+// with phase-coherent phasor reset synced to the signal period.
+// Best suited for harmonic/periodic signals like oscillator outputs.
+//
+// #### Usage
+//
+// ```
+// _ : doppler_shift(freq, ratio) : _
+// ```
+//
+// Where:
+//
+// * `freq`: fundamental frequency of the input signal (Hz)
+// * `ratio`: pitch ratio (1.0 = no shift, 2.0 = octave up, 0.5 = octave down)
+//
+// #### Test
+// ```
+// ef = library("misceffects.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// doppler_shift_test = os.sawtooth(220) : ef.doppler_shift(220, 1.5);
+// doppler_shift_slider_test = os.sawtooth(220) : ef.doppler_shift(hslider("doppler_shift:freq", 220, 20, 2000, 1), hslider("doppler_shift:ratio", 1.5, 0.5, 2, 0.01));
+// doppler_shift_modulated_test = os.tosc(220) : ef.doppler_shift(220, 0.5 + tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// ```
+//
+// #### References
+//
+// * <https://www.researchgate.net/publication/325654284>
+//-----------------------------------------
+declare doppler_shift author "David Lowenfels";
+
+doppler_shift(freq, ratio, sig) = de.fdelaylti(4, MAX_DELAY, delay_samples, sig)
+with {
+    MAX_DELAY = 4096;
+    period_samples = ma.SR / freq;
+    phasor_freq = freq * (ratio - 1);
+    phasor = os.phasor(1, phasor_freq);
+    delay_samples = (2 - phasor) * period_samples;
 };
 
 //=======================================Saturators=======================================
@@ -1173,8 +1659,10 @@ nonlinearityEnv = environment
       a = width : aa.clip(0, 1) : *(.4);
       g = 1/(1-2*a); // peak-level normalization
 
-      // triangle-like function
-      tri = 1 - 2.5*a + a*abs(ma.frac((x-(1-2*a))/(2*a))-.5);
+      // triangle-like function; at a = 0 its last term is 0 (the signal is
+      // clipped at 1), and max(ma.EPSILON) keeps the quotient finite there:
+      // 0*abs(frac(inf)) would be NaN, and a constant 0 would not compile
+      tri = 1 - 2.5*a + a*abs(ma.frac((x-(1-2*a))/(2*a : max(ma.EPSILON)))-.5);
     };
   };
 };
@@ -1185,14 +1673,18 @@ nonlinearityEnv = environment
 // #### Usage
 //
 // ```
-// _ : softclipQuadratic : _
+// softclipQuadratic(x) : _
 // ```
+//
+// Where:
+//
+// * `x`: input signal
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// softclipQuadratic_test = os.osc(440) : ef.softclipQuadratic;
+// softclipQuadratic_test = os.tosc(440) : ef.softclipQuadratic;
 // ```
 //
 // #### References
@@ -1201,7 +1693,7 @@ nonlinearityEnv = environment
 //---------------------------------------------------------------------------------------
 declare softclipQuadratic author "David Braun";
 declare softclipQuadratic copyright "Copyright (C) 2024 David Braun";
-declare softclipQuadratic license "MIT license";
+declare softclipQuadratic license "MIT";
 
 softclipQuadratic(x) = ba.ifNcNo(2, 1, 
     absX < 1/3, 2*x,
@@ -1224,13 +1716,19 @@ with {
 //
 // Where:
 //
-// * `width`: The width of the folded section [0..1] (float).
+// * `width`: The width of the folded section [0..1] (float). At 0 nothing is folded:
+//   the signal is clipped at ±1.
 //
 // #### Test
 // ```
 // ef = library("misceffects.lib");
 // os = library("oscillators.lib");
-// wavefold_test = os.osc(440) : ef.wavefold(0.5);
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// wavefold_test = os.tosc(440) : ef.wavefold(0.5);
+// wavefold_slider_test = 2*no.noise : ef.wavefold(hslider("width", 0, 0, 1, 0.01));
+// wavefold_modulated_test = 2*no.noise : ef.wavefold(tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //---------------------------------------------------------------------------------------
 declare wavefold author "David Braun";
@@ -1239,8 +1737,21 @@ wavefold = nonlinearityEnv.wavefold;
 
 //////////////////////////////////Deprecated Functions////////////////////////////////////
 // This section implements functions that used to be in music.lib but that are now
-// considered as "deprecated".
+// considered as "deprecated": kept for backward compatibility only, they should
+// not be used in new code.
+//
+// WARNING: despite their names, the '1s'/'2s'/.../'43s' suffixes do NOT denote
+// durations in seconds. They are fixed power-of-two sizes in SAMPLES (65536,
+// 131072, ..., 2097152), so the actual duration depends on the sampling rate:
+// 65536 samples last 1.49 s at 44.1 kHz but 1.37 s at 48 kHz.
 //////////////////////////////////////////////////////////////////////////////////////////
+
+declare echo1s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
+declare echo2s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
+declare echo5s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
+declare echo10s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
+declare echo21s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
+declare echo43s deprecated "use ef.echo with explicit parameters; the 1s..43s names are power-of-two sample counts, not seconds";
 
 echo1s  = vgroup("echo 1000", +~(de.delay(65536, int(hslider("millisecond", 0, 0, 1000, 0.10)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
 echo2s  = vgroup("echo 2000", +~(de.delay(131072, int(hslider("millisecond", 0, 0, 2000, 0.25)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
@@ -1248,3 +1759,10 @@ echo5s  = vgroup("echo 5000", +~(de.delay(262144, int(hslider("millisecond", 0, 
 echo10s = vgroup("echo 10000", +~(de.delay(524288, int(hslider("millisecond", 0, 0, 10000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
 echo21s = vgroup("echo 21000", +~(de.delay(1048576, int(hslider("millisecond", 0, 0, 21000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
 echo43s = vgroup("echo 43000", +~(de.delay(2097152, int(hslider("millisecond", 0, 0, 43000, 1.00)*ba.millisec)-1) * (hslider("feedback", 0, 0, 100, 0.1)/100.0)));
+
+
+// Deprecated backward-compatibility alias, kept for one version and
+// scheduled for removal: the canonical name now carries the internal
+// underscore prefix (see CONTRIBUTING.md, "Variables and identifiers scoping").
+declare dwmEnv deprecated "internal machinery, renamed _dwmEnv";
+dwmEnv = _dwmEnv;

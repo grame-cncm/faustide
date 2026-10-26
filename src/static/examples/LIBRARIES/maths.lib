@@ -65,17 +65,18 @@ pl = library("platform.lib");
 ma = library("maths.lib"); // for compatible copy/paste out of this file
 
 declare name "Faust Math Library";
-declare version "2.9.0";
+declare version "2.9.3";
 declare author "GRAME";
 declare copyright "GRAME";
-declare license "LGPL with exception";
+declare license "LicenseRef-LGPL-2.1-or-later-with-Faust-exception";
 
 //=============================Functions Reference========================================
 //========================================================================================
 
 
 //---------------------------------`(ma.)SR`---------------------------------------
-// Current sampling rate given at init time. Constant during program execution.
+// Current sampling rate given at init time, between 50 and 192000 Hz
+// (see `pl.SR`). Constant during program execution.
 //
 // #### Usage
 //
@@ -166,12 +167,12 @@ PI = 3.14159265358979323846;
 // #### Usage
 //
 // ```
-// 45. : deg2rad
+// deg2rad(x) : _
 // ```
 //
 // Where:
 //
-// * input: angle in degrees to convert
+// * `x`: angle in degrees to convert
 //
 // #### Test
 // ```
@@ -188,12 +189,12 @@ deg2rad = _ * PI / 180.;
 // #### Usage
 //
 // ```
-// ma.PI : rad2deg
+// rad2deg(x) : _
 // ```
 //
 // Where:
 //
-// * input: angle in radians to convert
+// * `x`: angle in radians to convert
 //
 // #### Test
 // ```
@@ -270,7 +271,7 @@ fixedpointprecision EPSILON = 2.2204460492503131e-016;
 // #### Test
 // ```
 // ma = library("maths.lib");
-// MIN_test = ma.MIN;
+// MIN_test = ma.MIN * 1e307;
 // ```
 //-----------------------------------------------------------------------------
 singleprecision MIN = 1.175494351e-38;
@@ -303,8 +304,23 @@ doubleprecision MAX = 1.7976931348623158e+308;
 quadprecision MAX = 1.7976931348623158e+308;
 fixedpointprecision MAX = 1.7976931348623158e+308;
 
-// Obsolete, kept for compatibility reasons
-INFINITY = MAX; 
+//---------------------------------`(ma.)INFINITY`---------------------------------------
+// Obsolete alias of `MAX`, kept for compatibility reasons. Despite its name it
+// is not an IEEE infinity but the maximal finite value for the current precision.
+//
+// #### Usage
+//
+// ```
+// INFINITY : _
+// ```
+//
+// #### Test
+// ```
+// ma = library("maths.lib");
+// INFINITY_test = ma.INFINITY == ma.MAX; // 1: ma.INFINITY is ma.MAX, in both precisions
+// ```
+//-----------------------------------------------------------------------------
+INFINITY = MAX;
 
 //---------------------------------`(ma.)FTZ`---------------------------------------
 // Flush to zero: force samples under the "maximum subnormal number"
@@ -314,7 +330,7 @@ INFINITY = MAX;
 // #### Usage
 //
 // ```
-// _ : FTZ : _
+// FTZ(x) : _
 // ```
 //
 // Where:
@@ -324,7 +340,7 @@ INFINITY = MAX;
 // #### Test
 // ```
 // ma = library("maths.lib");
-// FTZ_test = (ma.MIN * 0.5) : ma.FTZ;
+// FTZ_test = ((ma.MIN * 0.5) : ma.FTZ), ((ma.MIN * 1e307) : ma.FTZ);
 // ```
 //
 // #### References
@@ -340,7 +356,7 @@ FTZ(x) = x * (abs(x) > MIN);
 // #### Usage
 //
 // ```
-// _,_ : copysign : _
+// copysign(x,y) : _
 // ```
 //
 // Where:
@@ -363,7 +379,7 @@ copysign = ffunction(float copysignf|copysign|copysignl (float, float), <math.h>
 // #### Usage
 //
 // ```
-// _ : neg : _
+// neg(x) : _
 // ```
 //
 // Where:
@@ -380,13 +396,13 @@ neg(x) = -x;
 
 
 //---------------------------------`(ma.)not`---------------------------------------
-// Bitwise `not` implemented with [xor](https://faustdoc.grame.fr/manual/syntax/#xor-primitive) as `not(x) = x xor -1;`.
+// Bitwise `not` of an integer input signal, implemented with [xor](https://faustdoc.grame.fr/manual/syntax/#xor-primitive) as `not(x) = x xor -1;`.
 // So working regardless of the size of the integer, assuming negative numbers in two's complement.
 //
 // #### Usage
 //
 // ```
-// _ : not : _
+// not(x) : _
 // ```
 //
 // Where:
@@ -402,13 +418,13 @@ neg(x) = -x;
 not(x) = x xor -1;
 
 
-//-------`(ma.)sub(x,y)`------------------
-// Subtract `x` and `y`.
+//-------`(ma.)sub`------------------
+// Subtracts the first input `x` from the second input `y`: the output is `y - x`.
 //
 // #### Usage
 //
 // ```
-// _,_ : sub : _
+// sub(x,y) : _
 // ```
 //
 // Where:
@@ -426,12 +442,12 @@ sub(x,y) = y-x;
 
 
 //---------------------------------`(ma.)inv`---------------------------------------
-// Compute the inverse (1/x) of the input signal.
+// Compute the inverse (1/x) of the input signal x (non-zero).
 //
 // #### Usage
 //
 // ```
-// _ : inv : _
+// inv(x) : _
 // ```
 //
 // Where:
@@ -450,10 +466,14 @@ inv(x) = 1/x;
 //---------------------------------`(ma.)cbrt`--------------------------------------
 // Computes the cube root of of the input signal.
 //
+// `cbrt` calls the C `cbrt`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
 // #### Usage
 //
 // ```
-// _ : cbrt : _
+// cbrt(x) : _
 // ```
 //
 // Where:
@@ -470,13 +490,17 @@ cbrt = ffunction(float cbrtf|cbrt|cbrtl (float), <math.h>,"");
 
 
 //---------------------------------`(ma.)hypot`-------------------------------------
-// Computes the euclidian distance of the two input signals
-// sqrt(x*x+y*y) without undue overflow or underflow.
+// Computes the euclidian distance of the two input signals x and y,
+// sqrt(x*x+y*y), without undue overflow or underflow.
+//
+// `hypot` calls the C `hypot`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _,_ : hypot : _
+// hypot(x,y) : _
 // ```
 //
 // Where:
@@ -494,12 +518,17 @@ hypot = ffunction(float hypotf|hypot|hypotl (float, float), <math.h>,"");
 
 
 //---------------------------------`(ma.)ldexp`-------------------------------------
-// Takes two input signals: x and n, and multiplies x by 2 to the power n.
+// Takes two input signals: x and n (an integer), and multiplies x by 2 to
+// the power n.
+//
+// `ldexp` calls the C `ldexp`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _,_ : ldexp : _
+// ldexp(x,n) : _
 // ```
 //
 // Where:
@@ -517,12 +546,17 @@ ldexp = ffunction(float ldexpf|ldexp|ldexpl (float, int), <math.h>,"");
 
 
 //---------------------------------`(ma.)scalb`-------------------------------------
-// Takes two input signals: x and n, and multiplies x by 2 to the power n.
+// Takes two input signals: x and n (an integer), and multiplies x by 2 to
+// the power n.
+//
+// `scalb` calls the C `scalbn`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _,_ : scalb : _
+// scalb(x,n) : _
 // ```
 //
 // Where:
@@ -540,12 +574,29 @@ scalb = ffunction(float scalbnf|scalbn|scalbnl (float, int), <math.h>,"");
 
 
 //---------------------------------`(ma.)log1p`----------------------------------
-// Computes log(1 + x) without undue loss of accuracy when x is nearly zero.
+// Computes log(1 + x) of the input signal x (greater than -1) without undue
+// loss of accuracy when x is nearly zero, where `log(1 + x)` loses all its
+// digits in single precision.
+//
+// For |x| < 0.5 it computes `2*atanh(x/(2 + x))`, which is exact since
+// `2*atanh(z) = log((1 + z)/(1 - z))` and `(1 + z)/(1 - z) = 1 + x` for
+// `z = x/(2 + x)`: the cancellation moves into `atanh`, which is accurate
+// near 0. Elsewhere it computes `log(1 + x)`, which is accurate there
+// (`1 + x` is exact for x in [-1, -0.5]) while the `atanh` form is not
+// (`atanh` is ill-conditioned near -1 and 1). Both branches are computed.
+// Measured maximum relative error: 1.6e-7 in single precision, 3.3e-16 in
+// double, against 6e-8 and 1.3e-16 for the C `log1p`.
+//
+// Built on `atanh` and `log` rather than on the C `log1p` (a foreign
+// function), it compiles with every backend that provides `atanh`:
+// C++, C, Rust, LLVM, WebAssembly, the interpreter, Cmajor, Codebox,
+// Julia, C# and Java. The slider test reads, at run time, values where a
+// simpler form fails: near -1, around 0 (+-2^-30), and large (1e7, 1e30).
 //
 // #### Usage
 //
 // ```
-// _ : log1p : _
+// log1p(x) : _
 // ```
 //
 // Where:
@@ -555,19 +606,26 @@ scalb = ffunction(float scalbnf|scalbn|scalbnl (float, int), <math.h>,"");
 // #### Test
 // ```
 // ma = library("maths.lib");
+// ba = library("basics.lib");
 // log1p_test = 0.5 : ma.log1p;
+// log1p_slider_test = par(i, 7, ma.log1p(hslider("log1p:x%i", ba.take(i+1, X), -1, 1.0e30, 0.001))) with { X = (-0.9999990463256836, -0.75, -9.313225746154785e-10, 9.313225746154785e-10, 0.25, 1.0e7, 1.0e30); };
+// log1p_modulated_test = ma.log1p(1000.999*tri*tri*tri - 0.999) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //-----------------------------------------------------------------------------
-log1p = ffunction(float log1pf|log1p|log1pl (float), <math.h>,"");
+log1p(x) = select2(abs(x) < 0.5, log(1.0 + x), 2.0*atanh(x/(2.0 + x)));
 
 
 //---------------------------------`(ma.)logb`---------------------------------------
-// Return exponent of the input signal as a floating-point number.
+// Return exponent of the (positive) input signal as a floating-point number.
+//
+// `logb` calls the C `logb`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : logb : _
+// logb(x) : _
 // ```
 //
 // Where:
@@ -584,12 +642,16 @@ logb = ffunction(float logbf|logb|logbl (float), <math.h>,"");
 
 
 //---------------------------------`(ma.)ilogb`-------------------------------------
-// Return exponent of the input signal as an integer number.
+// Return exponent of the (positive) input signal as an integer number.
+//
+// `ilogb` calls the C `ilogb`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : ilogb : _
+// ilogb(x) : _
 // ```
 //
 // Where:
@@ -606,12 +668,12 @@ ilogb = ffunction(int ilogbf|ilogb|ilogbl (float), <math.h>,"");
 
 
 //---------------------------------`(ma.)log2`-------------------------------------
-// Returns the base 2 logarithm of x.
+// Returns the base 2 logarithm of the positive input signal x.
 //
 // #### Usage
 //
 // ```
-// _ : log2 : _
+// log2(x) : _
 // ```
 //
 // Where:
@@ -628,12 +690,28 @@ log2(x) = log(x)/log(2.0);
 
 
 //---------------------------------`(ma.)expm1`-------------------------------------
-// Return exponent of the input signal minus 1 with better precision.
+// Return exponent of the input signal x minus 1, `exp(x) - 1`, with better
+// precision near 0, where `exp(x) - 1` loses all its digits in single
+// precision.
+//
+// It computes `2*exp(x/2)*sinh(x/2)`, which is exact since
+// `sinh(y) = (exp(y) - exp(-y))/2`: the cancellation moves into `sinh`,
+// which is accurate near 0. The input is first clamped to -80, below which
+// the result is -1 in every precision and the product would overflow
+// (`exp` underflows to 0 while `sinh` overflows). Measured maximum relative
+// error: 1.6e-7 in single precision, 3.2e-16 in double, against 6e-8 and
+// 1.1e-16 for the C `expm1`.
+//
+// Built on `exp` and `sinh` rather than on the C `expm1` (a foreign
+// function), it compiles with every backend that provides `sinh`:
+// C++, C, Rust, LLVM, WebAssembly, the interpreter, Cmajor, Codebox,
+// Julia, C# and Java. The slider test reads, at run time, values where a
+// simpler form fails: below the clamp (-1e5, -200) and around 0 (+-2^-30).
 //
 // #### Usage
 //
 // ```
-// _ : expm1 : _
+// expm1(x) : _
 // ```
 //
 // Where:
@@ -643,20 +721,23 @@ log2(x) = log(x)/log(2.0);
 // #### Test
 // ```
 // ma = library("maths.lib");
+// ba = library("basics.lib");
 // expm1_test = 0.5 : ma.expm1;
+// expm1_slider_test = par(i, 6, ma.expm1(hslider("expm1:x%i", ba.take(i+1, X), -1.0e5, 10, 0.001))) with { X = (-1.0e5, -200.0, -9.313225746154785e-10, 9.313225746154785e-10, 0.5, 10.0); };
+// expm1_modulated_test = ma.expm1(20*tri - 10) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //-----------------------------------------------------------------------------
-expm1 = ffunction(float expm1f|expm1|expm1l (float), <math.h>,"");
+expm1(x) = 2.0*exp(0.5*y)*sinh(0.5*y) with { y = max(x, -80.0); };
 
 
 //---------------------------------`(ma.)acosh`-------------------------------------
 // Computes the principle value of the inverse hyperbolic cosine
-// of the input signal.
+// of the input signal (greater than or equal to 1).
 //
 // #### Usage
 //
 // ```
-// _ : acosh : _
+// acosh(x) : _
 // ```
 //
 // Where:
@@ -678,7 +759,7 @@ acosh = ffunction(float acoshf|acosh|acoshl (float), <math.h>, "");
 // #### Usage
 //
 // ```
-// _ : asinh : _
+// asinh(x) : _
 // ```
 //
 // Where:
@@ -695,12 +776,12 @@ asinh = ffunction(float asinhf|asinh|asinhl (float), <math.h>, "");
 
 
 //--------------------------------`(ma.)atanh`-----------------------------------
-// Computes the inverse hyperbolic tangent of the input signal.
+// Computes the inverse hyperbolic tangent of the input signal, in (-1, 1).
 //
 // #### Usage
 //
 // ```
-// _ : atanh : _
+// atanh(x) : _
 // ```
 //
 // Where:
@@ -722,7 +803,7 @@ atanh = ffunction(float atanhf|atanh|atanhl (float), <math.h>, "");
 // #### Usage
 //
 // ```
-// _ : sinh : _
+// sinh(x) : _
 // ```
 //
 // Where:
@@ -744,7 +825,7 @@ sinh = ffunction(float sinhf|sinh|sinhl (float), <math.h>, "");
 // #### Usage
 //
 // ```
-// _ : cosh : _
+// cosh(x) : _
 // ```
 //
 // Where:
@@ -766,7 +847,7 @@ cosh = ffunction(float coshf|cosh|coshl (float), <math.h>, "");
 // #### Usage
 //
 // ```
-// _ : tanh : _
+// tanh(x) : _
 // ```
 //
 // Where:
@@ -785,10 +866,14 @@ tanh = ffunction(float tanhf|tanh|tanhl (float), <math.h>,"");
 //---------------------------------`(ma.)erf`---------------------------------------
 // Computes the error function of the input signal.
 //
+// `erf` calls the C `erf`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
 // #### Usage
 //
 // ```
-// _ : erf : _
+// erf(x) : _
 // ```
 //
 // Where:
@@ -807,10 +892,14 @@ erf = ffunction(float erff|erf|erfl(float), <math.h>,"");
 //---------------------------------`(ma.)erfc`---------------------------------------
 // Computes the complementary error function of the input signal.
 //
+// `erfc` calls the C `erfc`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
 // #### Usage
 //
 // ```
-// _ : erfc : _
+// erfc(x) : _
 // ```
 //
 // Where:
@@ -827,12 +916,16 @@ erfc = ffunction(float erfcf|erfc|erfcl(float), <math.h>,"");
 
 
 //---------------------------------`(ma.)gamma`-------------------------------------
-// Computes the gamma function of the input signal.
+// Computes the gamma function of the positive input signal.
+//
+// `gamma` calls the C `tgamma`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : gamma : _
+// gamma(x) : _
 // ```
 //
 // Where:
@@ -850,12 +943,16 @@ gamma = ffunction(float tgammaf|tgamma|tgammal(float), <math.h>,"");
 
 //---------------------------------`(ma.)lgamma`------------------------------------
 // Calculates the natural logorithm of the absolute value of
-// the gamma function of the input signal.
+// the gamma function of the positive input signal.
+//
+// `lgamma` calls the C `lgamma`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : lgamma : _
+// lgamma(x) : _
 // ```
 //
 // Where:
@@ -875,10 +972,14 @@ lgamma = ffunction(float lgammaf|lgamma|lgammal(float), <math.h>,"");
 // Computes the Bessel function of the first kind of order 0
 // of the input signal.
 //
+// `J0` calls the C `j0`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
 // #### Usage
 //
 // ```
-// _ : J0 : _
+// J0(x) : _
 // ```
 //
 // Where:
@@ -898,10 +999,14 @@ J0 = ffunction(float j0(float), <math.h>,"");
 // Computes the Bessel function of the first kind of order 1
 // of the input signal.
 //
+// `J1` calls the C `j1`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
 // #### Usage
 //
 // ```
-// _ : J1 : _
+// J1(x) : _
 // ```
 //
 // Where:
@@ -919,12 +1024,16 @@ J1 = ffunction(float j1(float), <math.h>,"");
 
 //----------------------------------`(ma.)Jn`---------------------------------------
 // Computes the Bessel function of the first kind of order n
-// (first input signal) of the second input signal.
+// (first input signal, an integer) of the second input signal x.
+//
+// `Jn` calls the C `jn`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _,_ : Jn : _
+// Jn(n,x) : _
 // ```
 //
 // Where:
@@ -943,12 +1052,16 @@ Jn = ffunction(float jn(int, float), <math.h>,"");
 
 //----------------------------------`(ma.)Y0`---------------------------------------
 // Computes the linearly independent Bessel function of the second kind
-// of order 0 of the input signal.
+// of order 0 of the positive input signal.
+//
+// `Y0` calls the C `y0`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : Y0 : _
+// Y0(x) : _
 // ```
 //
 // Where:
@@ -966,12 +1079,16 @@ Y0 = ffunction(float y0(float), <math.h>,"");
 
 //----------------------------------`(ma.)Y1`---------------------------------------
 // Computes the linearly independent Bessel function of the second kind
-// of order 1 of the input signal.
+// of order 1 of the positive input signal.
+//
+// `Y1` calls the C `y1`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _ : Y0 : _
+// Y1(x) : _
 // ```
 //
 // Where:
@@ -989,12 +1106,17 @@ Y1 = ffunction(float y1(float), <math.h>,"");
 
 //----------------------------------`(ma.)Yn`---------------------------------------
 // Computes the linearly independent Bessel function of the second kind
-// of order n (first input signal) of the second input signal.
+// of order n (first input signal, an integer) of the second input signal x
+// (positive).
+//
+// `Yn` calls the C `yn`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
 //
 // #### Usage
 //
 // ```
-// _,_ : Yn : _
+// Yn(n,x) : _
 // ```
 //
 // Where:
@@ -1012,13 +1134,20 @@ Yn = ffunction(float yn(int, float), <math.h>,"");
 
 
 //----------------------------`(ma.)fabs`, `(ma.)fmax`, `(ma.)fmin`---------------------------
-// Just for compatibility...
+// Aliases of the `abs`, `max` and `min` primitives, for compatibility with
+// the C math library naming: `fabs = abs`, `fmax = max`, `fmin = min`.
+//
+// #### Usage
 //
 // ```
-// fabs = abs
-// fmax = max
-// fmin = min
+// fabs(x) : _
+// fmax(x,y) : _
+// fmin(x,y) : _
 // ```
+//
+// Where:
+//
+// * `x`, `y`: input signals
 //-----------------------------------------------------------------------------
 fabs = abs;
 fmax = max;
@@ -1066,12 +1195,29 @@ np2 = -(1) <: >>(1)|_ <: >>(2)|_ <: >>(4)|_ <: >>(8)|_ <: >>(16)|_ : +(1);
 // ```
 //------------------------------------------------------------------------------
 frac(n) = n - floor(n);
-decimal = frac;
 
-// NOTE: decimal does the same thing as frac but using floor instead. JOS uses frac a lot
-// in filters.lib so we decided to keep that one... decimal is declared though for
-// backward compatibility.
-// decimal(n) = n - floor(n);
+//-----------------------------`(ma.)decimal`---------------------------------------
+// Gives the fractional part of n. Alias of `frac`, kept for backward
+// compatibility: JOS uses `frac` a lot in filters.lib so that name was
+// preferred.
+//
+// #### Usage
+//
+// ```
+// decimal(n) : _
+// ```
+//
+// Where:
+//
+// * `n`: a decimal number
+//
+// #### Test
+// ```
+// ma = library("maths.lib");
+// decimal_test = 3.75 : ma.decimal;
+// ```
+//------------------------------------------------------------------------------
+decimal = frac;
 
 
 //-------------------------------`(ma.)modulo`---------------------------------------
@@ -1103,8 +1249,7 @@ modulo(x,y) = (x % y + y) % y;
 // #### Usage
 //
 // ```
-// isnan(x)
-// _ : isnan : _
+// isnan(x) : _
 // ```
 //
 // Where:
@@ -1114,7 +1259,8 @@ modulo(x,y) = (x % y + y) % y;
 // #### Test
 // ```
 // ma = library("maths.lib");
-// isnan_test = 1.0 : ma.isnan;
+// os = library("oscillators.lib");
+// isnan_test = (os.tosc(1) - 2.0) : sqrt : ma.isnan;
 // ```
 //------------------------------------------
 isnan = ffunction(int isnanf|isnan|isnanl (float),<math.h>,"");
@@ -1126,8 +1272,7 @@ isnan = ffunction(int isnanf|isnan|isnanl (float),<math.h>,"");
 // #### Usage
 //
 // ```
-// isinf(x)
-// _ : isinf : _
+// isinf(x) : _
 // ```
 //
 // Where:
@@ -1137,11 +1282,37 @@ isnan = ffunction(int isnanf|isnan|isnanl (float),<math.h>,"");
 // #### Test
 // ```
 // ma = library("maths.lib");
-// isinf_test = 1.0 : ma.isinf;
+// os = library("oscillators.lib");
+// isinf_test = (os.impulse - os.impulse) : log : ma.isinf;
 // ```
 //------------------------------------------
 isinf = ffunction(int isinff|isinf|isinfl (float),<math.h>,"");
 
+//---------------------------`(ma.)nextafter`-------------------------------
+// Gives the next representable floating-point value after `x` (first input)
+// in the direction of `y` (second input) (the C `nextafter` function of math.h).
+//
+// `nextafter` calls the C `nextafter`, a foreign function: it compiles only for the
+// backends that generate C, C++, Rust or LLVM code, not for WebAssembly,
+// the interpreter, Cmajor, Codebox, Julia, C# or Java.
+//
+// #### Usage
+//
+// ```
+// nextafter(x,y) : _
+// ```
+//
+// Where:
+//
+// * `x`: the starting value
+// * `y`: the direction toward which the next representable value is taken
+//
+// #### Test
+// ```
+// ma = library("maths.lib");
+// nextafter_test = (1.0, 2.0) : ma.nextafter;
+// ```
+//------------------------------------------
 nextafter = ffunction(float nextafter(float, float),<math.h>,"");
 
 
@@ -1187,13 +1358,20 @@ chebychev(n,x) = 2*x*chebychev(n-1, x) - chebychev(n-2, x);
 // #### Usage
 //
 // ```
-// _ : chebychevpoly((c0,c1,...,cn)) : _
+// _ : chebychevpoly(lcoef) : _
 // ```
 //
 // Where:
 //
-// * `cn`: the different Chebychevs polynomials such that:
-// chebychevpoly((c0,c1,...,cn)) = Sum of chebychev(i)*ci
+// * `lcoef`: the list of coefficients `(c0,c1,...,cn)` of the Chebychev
+//   polynomials, such that `chebychevpoly((c0,c1,...,cn))` is the sum of
+//   `chebychev(i)*ci`
+//
+// #### Example
+//
+// ```
+// _ : chebychevpoly((1, 0, 1)) : _   // T[0](x) + T[2](x)
+// ```
 //
 // #### Test
 // ```
@@ -1213,12 +1391,12 @@ chebychevpoly(lcoef) = _ <: L(0,lcoef) :> _
 
 
 //------------------`(ma.)diffn`----------------------------
-// Negated first-order difference.
+// Negated first-order difference of the input signal x: `x' - x`.
 //
 // #### Usage
 //
 // ```
-// _ : diffn : _
+// diffn(x) : _
 // ```
 //
 // Where:
@@ -1229,7 +1407,7 @@ chebychevpoly(lcoef) = _ <: L(0,lcoef) :> _
 // ```
 // ma = library("maths.lib");
 // os = library("oscillators.lib");
-// diffn_test = os.osc(440) : ma.diffn;
+// diffn_test = os.tosc(440) : ma.diffn;
 // ```
 //--------------------------------------------------------
 diffn(x) = x' - x; // negated first-order difference
@@ -1242,7 +1420,7 @@ diffn(x) = x' - x; // negated first-order difference
 // #### Usage
 //
 // ```
-// _ : signum : _
+// signum(x) : _
 // ```
 //
 // Where:
@@ -1265,16 +1443,21 @@ signum(x) = (x>0)-(x<0);
 // #### Usage
 //
 // ```
-// 2^nextpow2(n) : _
-// ```
-// Useful for allocating delay lines, e.g., 
-// ```
-// delay(2^nextpow2(maxDelayNeeded), currentDelay);
+// nextpow2(n) : _
 // ```
 //
 // Where:
 //
 // * `n`: positive value whose next power-of-two exponent is computed
+//
+// #### Example
+//
+// Useful for allocating delay lines, `2^nextpow2(n)` being the power of
+// two greater than or equal to `n`:
+//
+// ```
+// de.delay(2^nextpow2(maxDelayNeeded), currentDelay)
+// ```
 //
 // #### Test
 // ```
@@ -1286,13 +1469,13 @@ nextpow2(x) = ceil(log(x)/log(2.0));
 
 
 //--------------------`(ma.)zc`------------------------------------------------
-// Indicator function for zero-crossing: it returns 1 if a zero-crossing
-// occurs, 0 otherwise.
+// Indicator function for zero-crossing of the input signal: it returns 1
+// if a zero-crossing occurs, 0 otherwise.
 //
 // #### Usage
 //
 // ```
-// _ : zc : _
+// zc(x) : _
 // ```
 //
 // Where:
@@ -1303,7 +1486,7 @@ nextpow2(x) = ceil(log(x)/log(2.0));
 // ```
 // ma = library("maths.lib");
 // os = library("oscillators.lib");
-// zc_test = os.osc(440) : ma.zc;
+// zc_test = os.tosc(440) : ma.zc;
 // ```
 //-----------------------------------------------------------------------------
 zc = ba.tAndH(!=(0)) <: *(mem) < 0;
@@ -1344,14 +1527,15 @@ unwrap(pi,x) = (_ <: +(dz)) ~ _ with {
 };
 
 //--------------------`(ma.)primes`------------------------------------------------
-// Return the n-th prime using a waveform primitive. Note that primes(0) is 2,
+// Return the n-th prime using a waveform primitive, n being the (0-based)
+// input signal. Note that primes(0) is 2,
 // primes(1) is 3, and so on. The waveform is length 2048, so the largest
 // precomputed prime is primes(2047) which is 17863.
 //
 // #### Usage
 //
 // ```
-// _ : primes : _
+// primes(x) : _
 // ```
 //
 // Where:

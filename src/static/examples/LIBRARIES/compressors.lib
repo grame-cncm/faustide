@@ -5,7 +5,7 @@
 // This library provides building blocks and complete dynamic processors
 // including compressors, limiters, expanders, and gates.
 //
-// The Compressors library is organized into 6 sections:
+// The Compressors library is organized into 7 sections:
 //
 // * [Conversion Tools](#conversion-tools)
 // * [Functions Reference](#functions-reference)
@@ -13,6 +13,7 @@
 // * [Original versions section](#original-versions-section)
 // * [Expanders](#expanders)
 // * [Lookahead Limiters](#lookahead-limiters)
+// * [Multiband Compressors](#multiband-compressors)
 // 
 // #### References
 //
@@ -57,9 +58,10 @@ an = library("analyzers.lib");
 ro = library("routes.lib");
 ma = library("maths.lib");
 it = library("interpolators.lib");
+fi = library("filters.lib");
 
 declare name "Faust Compressor Effect Library";
-declare version "1.6.0";
+declare version "1.7.1";
 
 //================================Conversion Tools=======================================
 // Most compressors have a ratio parameter to define the amount of compression.
@@ -71,7 +73,7 @@ declare version "1.6.0";
 // 0 means no compression, 1 means hard limiting and  bigger than 1 means over-compression.
 //========================================================================================
 //
-//--------------------`(co.)ratio2strength `-------------------
+//--------------------`(co.)ratio2strength`-------------------
 //
 // This utility converts a ratio to a strength.
 //
@@ -92,11 +94,11 @@ declare version "1.6.0";
 // ```
 //------------------------------------------------------------
 declare ratio2strength author "Bart Brouns";
-declare ratio2strength license "GPLv3";
+declare ratio2strength license "GPL-3.0-only";
 
 ratio2strength(ratio) = 1-(1/ratio);
 
-//--------------------`(co.)strength2ratio `-------------------
+//--------------------`(co.)strength2ratio`-------------------
 //
 // This utility converts a strength to a ratio.
 //
@@ -117,7 +119,7 @@ ratio2strength(ratio) = 1-(1/ratio);
 // ```
 //------------------------------------------------------------
 declare strength2ratio author "Bart Brouns";
-declare strength2ratio license "GPLv3";
+declare strength2ratio license "GPL-3.0-only";
 
 strength2ratio(strength) = 1/(1-strength);
 
@@ -159,7 +161,14 @@ strength2ratio(strength) = 1/(1-strength);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// peak_compression_gain_mono_db_test = os.osc(440) : co.peak_compression_gain_mono_db(0.5, -12, 0.01, 0.1, 6, 0);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// peak_compression_gain_mono_db_test = os.tosc(440) : co.peak_compression_gain_mono_db(0.5, -12, 0.01, 0.1, 6, 0);
+// peak_compression_gain_mono_db_slider_test = os.tosc(440) : co.peak_compression_gain_mono_db(hslider("peak_compression_gain_mono_db:strength", 0.5, 0, 1, 0.01), hslider("peak_compression_gain_mono_db:thresh", -12, -60, 0, 0.1), hslider("peak_compression_gain_mono_db:att", 0.01, 0, 1, 0.001), hslider("peak_compression_gain_mono_db:rel", 0.1, 0, 1, 0.001), hslider("peak_compression_gain_mono_db:knee", 6, 0, 30, 0.1), hslider("peak_compression_gain_mono_db:prePost", 0, 0, 1, 1));
+// peak_compression_gain_mono_db_post_test = no.noise*e : co.peak_compression_gain_mono_db(0.5, -24, 0.01, 0.1, 6, 1) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); };
+// peak_compression_gain_mono_db_modulated_test = no.noise*e : co.peak_compression_gain_mono_db(0.5, -24, 0.001, 0.001*pow(1000, tri), 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// peak_compression_gain_mono_db_jump_test = no.noise*e : co.peak_compression_gain_mono_db(0.5, -24, 0.001, 0.001*pow(1000, sq), 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -168,7 +177,7 @@ strength2ratio(strength) = 1/(1-strength);
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare peak_compression_gain_mono_db author "Bart Brouns";
-declare peak_compression_gain_mono_db license "GPLv3";
+declare peak_compression_gain_mono_db license "GPL-3.0-only";
 
 peak_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
   abs : ba.bypass1(prePost,si.onePoleSwitching(att,rel)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost !=1),si.onePoleSwitching(rel,att))
@@ -219,7 +228,8 @@ with {
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// peak_compression_gain_N_chan_db_test = (os.osc(440), os.osc(660)) : co.peak_compression_gain_N_chan_db(0.5, -12, 0.01, 0.1, 6, 0, 0.5, 2);
+// peak_compression_gain_N_chan_db_test = (os.tosc(440), os.tosc(660)) : co.peak_compression_gain_N_chan_db(0.5, -12, 0.01, 0.1, 6, 0, 0.5, 2);
+// peak_compression_gain_N_chan_db_slider_test = (os.tosc(440), os.tosc(660)) : co.peak_compression_gain_N_chan_db(hslider("peak_compression_gain_N_chan_db:strength", 0.5, 0, 1, 0.01), hslider("peak_compression_gain_N_chan_db:thresh", -12, -60, 0, 0.1), hslider("peak_compression_gain_N_chan_db:att", 0.01, 0, 1, 0.001), hslider("peak_compression_gain_N_chan_db:rel", 0.1, 0, 1, 0.001), hslider("peak_compression_gain_N_chan_db:knee", 6, 0, 30, 0.1), hslider("peak_compression_gain_N_chan_db:prePost", 0, 0, 1, 1), hslider("peak_compression_gain_N_chan_db:link", 0.5, 0, 1, 0.01), 2);
 // ```
 //
 // #### References
@@ -228,7 +238,7 @@ with {
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare peak_compression_gain_N_chan_db author "Bart Brouns";
-declare peak_compression_gain_N_chan_db license "GPLv3";
+declare peak_compression_gain_N_chan_db license "GPL-3.0-only";
 
 // generalise compression gains for N channels.
 // first we define a mono version:
@@ -284,7 +294,8 @@ peak_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
 // meter(x) = x;
-// FFcompressor_N_chan_test = (os.osc(440), os.osc(660)) : co.FFcompressor_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, meter, 2);
+// FFcompressor_N_chan_test = (os.tosc(440), os.tosc(660)) : co.FFcompressor_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, meter, 2);
+// FFcompressor_N_chan_slider_test = (os.tosc(440), os.tosc(660)) : co.FFcompressor_N_chan(hslider("FFcompressor_N_chan:strength", 0.5, 0, 1, 0.01), hslider("FFcompressor_N_chan:thresh", -12, -60, 0, 0.1), hslider("FFcompressor_N_chan:att", 0.01, 0, 1, 0.001), hslider("FFcompressor_N_chan:rel", 0.1, 0, 1, 0.001), hslider("FFcompressor_N_chan:knee", 6, 0, 30, 0.1), hslider("FFcompressor_N_chan:prePost", 0, 0, 1, 1), hslider("FFcompressor_N_chan:link", 0.5, 0, 1, 0.01), meter, 2);
 // ```
 //
 // #### References
@@ -293,7 +304,7 @@ peak_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare FFcompressor_N_chan author "Bart Brouns";
-declare FFcompressor_N_chan license "GPLv3";
+declare FFcompressor_N_chan license "GPL-3.0-only";
 
 // feed forward compressor
 FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
@@ -340,8 +351,14 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
 // meter(x) = x;
-// FBcompressor_N_chan_test = (os.osc(440), os.osc(660)) : co.FBcompressor_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, meter, 2);
+// FBcompressor_N_chan_test = (os.tosc(440), os.tosc(660)) : co.FBcompressor_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, meter, 2);
+// FBcompressor_N_chan_slider_test = (os.tosc(440), os.tosc(660)) : co.FBcompressor_N_chan(hslider("FBcompressor_N_chan:strength", 0.5, 0, 1, 0.01), hslider("FBcompressor_N_chan:thresh", -12, -60, 0, 0.1), hslider("FBcompressor_N_chan:att", 0.01, 0, 1, 0.001), hslider("FBcompressor_N_chan:rel", 0.1, 0, 1, 0.001), hslider("FBcompressor_N_chan:knee", 6, 0, 30, 0.1), hslider("FBcompressor_N_chan:prePost", 0, 0, 1, 1), hslider("FBcompressor_N_chan:link", 0.5, 0, 1, 0.01), meter, 2);
+// FBcompressor_N_chan_modulated_test = par(i, 2, no.noises(2, i)*e) : co.FBcompressor_N_chan(0.5, -24, 0.001*pow(100, tri), 0.001*pow(1000, 1 - tri), 6, 0, 0.5, meter, 2) with { meter(x) = x; e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// FBcompressor_N_chan_jump_test = par(i, 2, no.noises(2, i)*e) : co.FBcompressor_N_chan(0.5, -24, 0.001*pow(100, sq), 0.001*pow(1000, 1 - sq), 6, 0, 0.5, meter, 2) with { meter(x) = x; e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -350,7 +367,7 @@ FFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare FBcompressor_N_chan author "Bart Brouns";
-declare FBcompressor_N_chan license "GPLv3";
+declare FBcompressor_N_chan license "GPL-3.0-only";
 
 FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
   (peak_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N),si.bus(N) : (ro.interleave(N,2) : par(i,N,(meter : ba.db2linear)*_))) ~ si.bus(N);
@@ -398,7 +415,8 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
 // meter(x) = x;
-// FBFFcompressor_N_chan_test = (os.osc(440), os.osc(660)) : co.FBFFcompressor_N_chan(0.4, -12, 0.01, 0.1, 6, 0, 0.5, 0.3, meter, 2);
+// FBFFcompressor_N_chan_test = (os.tosc(440), os.tosc(660)) : co.FBFFcompressor_N_chan(0.4, -12, 0.01, 0.1, 6, 0, 0.5, 0.3, meter, 2);
+// FBFFcompressor_N_chan_slider_test = (os.tosc(440), os.tosc(660)) : co.FBFFcompressor_N_chan(hslider("FBFFcompressor_N_chan:strength", 0.4, 0, 1, 0.01), hslider("FBFFcompressor_N_chan:thresh", -12, -60, 0, 0.1), hslider("FBFFcompressor_N_chan:att", 0.01, 0, 1, 0.001), hslider("FBFFcompressor_N_chan:rel", 0.1, 0, 1, 0.001), hslider("FBFFcompressor_N_chan:knee", 6, 0, 30, 0.1), hslider("FBFFcompressor_N_chan:prePost", 0, 0, 1, 1), hslider("FBFFcompressor_N_chan:link", 0.5, 0, 1, 0.01), hslider("FBFFcompressor_N_chan:FBFF", 0.3, 0, 1, 0.01), meter, 2);
 // ```
 //
 // #### References
@@ -407,7 +425,7 @@ FBcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,meter,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare FBFFcompressor_N_chan author "Bart Brouns";
-declare FBFFcompressor_N_chan license "GPLv3";
+declare FBFFcompressor_N_chan license "GPL-3.0-only";
 
 FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
   si.bus(N) <: si.bus(N*2) :
@@ -453,7 +471,13 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// RMS_compression_gain_mono_db_test = os.osc(330) : co.RMS_compression_gain_mono_db(0.5, -18, 0.02, 0.12, 6, 0);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// RMS_compression_gain_mono_db_test = os.tosc(330) : co.RMS_compression_gain_mono_db(0.5, -18, 0.02, 0.12, 6, 0);
+// RMS_compression_gain_mono_db_slider_test = os.tosc(330) : co.RMS_compression_gain_mono_db(hslider("RMS_compression_gain_mono_db:strength", 0.5, 0, 1, 0.01), hslider("RMS_compression_gain_mono_db:thresh", -18, -60, 0, 0.1), hslider("RMS_compression_gain_mono_db:att", 0.02, 0, 1, 0.001), hslider("RMS_compression_gain_mono_db:rel", 0.12, 0, 1, 0.001), hslider("RMS_compression_gain_mono_db:knee", 6, 0, 30, 0.1), hslider("RMS_compression_gain_mono_db:prePost", 0, 0, 1, 1));
+// RMS_compression_gain_mono_db_modulated_test = no.noise*e : co.RMS_compression_gain_mono_db(0.5, -24, 0.001*pow(1000, tri), 0.12, 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// RMS_compression_gain_mono_db_jump_test = no.noise*e : co.RMS_compression_gain_mono_db(0.5, -24, 0.001*pow(1000, sq), 0.12, 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -462,7 +486,7 @@ FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_compression_gain_mono_db author "Bart Brouns";
-declare RMS_compression_gain_mono_db license "GPLv3";
+declare RMS_compression_gain_mono_db license "GPL-3.0-only";
 
 RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
   RMS(rel) : ba.bypass1(prePost,si.onePoleSwitching(att,0)) : ba.linear2db : gain_computer(strength,thresh,knee) : ba.bypass1((prePost!=1),si.onePoleSwitching(0,att))  
@@ -515,7 +539,8 @@ RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// RMS_compression_gain_N_chan_db_test = (os.osc(330), os.osc(550)) : co.RMS_compression_gain_N_chan_db(0.5, -18, 0.02, 0.12, 6, 0, 0.5, 2);
+// RMS_compression_gain_N_chan_db_test = (os.tosc(330), os.tosc(550)) : co.RMS_compression_gain_N_chan_db(0.5, -18, 0.02, 0.12, 6, 0, 0.5, 2);
+// RMS_compression_gain_N_chan_db_slider_test = (os.tosc(330), os.tosc(550)) : co.RMS_compression_gain_N_chan_db(hslider("RMS_compression_gain_N_chan_db:strength", 0.5, 0, 1, 0.01), hslider("RMS_compression_gain_N_chan_db:thresh", -18, -60, 0, 0.1), hslider("RMS_compression_gain_N_chan_db:att", 0.02, 0, 1, 0.001), hslider("RMS_compression_gain_N_chan_db:rel", 0.12, 0, 1, 0.001), hslider("RMS_compression_gain_N_chan_db:knee", 6, 0, 30, 0.1), hslider("RMS_compression_gain_N_chan_db:prePost", 0, 0, 1, 1), hslider("RMS_compression_gain_N_chan_db:link", 0.5, 0, 1, 0.01), 2);
 // ```
 //
 // #### References
@@ -524,7 +549,7 @@ RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_compression_gain_N_chan_db author "Bart Brouns";
-declare RMS_compression_gain_N_chan_db license "GPLv3";
+declare RMS_compression_gain_N_chan_db license "GPL-3.0-only";
 
 RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,1) =
   RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost);
@@ -582,7 +607,8 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
 // meter(x) = x;
-// RMS_FBFFcompressor_N_chan_test = (os.osc(330), os.osc(550)) : co.RMS_FBFFcompressor_N_chan(0.4, -18, 0.02, 0.12, 6, 0, 0.5, 0.3, meter, 2);
+// RMS_FBFFcompressor_N_chan_test = (os.tosc(330), os.tosc(550)) : co.RMS_FBFFcompressor_N_chan(0.4, -18, 0.02, 0.12, 6, 0, 0.5, 0.3, meter, 2);
+// RMS_FBFFcompressor_N_chan_slider_test = (os.tosc(330), os.tosc(550)) : co.RMS_FBFFcompressor_N_chan(hslider("RMS_FBFFcompressor_N_chan:strength", 0.4, 0, 1, 0.01), hslider("RMS_FBFFcompressor_N_chan:thresh", -18, -60, 0, 0.1), hslider("RMS_FBFFcompressor_N_chan:att", 0.02, 0, 1, 0.001), hslider("RMS_FBFFcompressor_N_chan:rel", 0.12, 0, 1, 0.001), hslider("RMS_FBFFcompressor_N_chan:knee", 6, 0, 30, 0.1), hslider("RMS_FBFFcompressor_N_chan:prePost", 0, 0, 1, 1), hslider("RMS_FBFFcompressor_N_chan:link", 0.5, 0, 1, 0.01), hslider("RMS_FBFFcompressor_N_chan:FBFF", 0.3, 0, 1, 0.01), meter, 2);
 // ```
 //
 // #### References
@@ -591,7 +617,7 @@ RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_FBFFcompressor_N_chan author "Bart Brouns";
-declare RMS_FBFFcompressor_N_chan license "GPLv3";
+declare RMS_FBFFcompressor_N_chan license "GPL-3.0-only";
 
 RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N) =
   si.bus(N) <: si.bus(N*2):
@@ -650,7 +676,8 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // os = library("oscillators.lib");
 // meter(x) = x;
 // meterLim(x) = x;
-// RMS_FBcompressor_peak_limiter_N_chan_test = (os.osc(330), os.osc(550)) : co.RMS_FBcompressor_peak_limiter_N_chan(0.4, -18, -2, 0.02, 0.12, 6, 0.5, meter, meterLim, 2);
+// RMS_FBcompressor_peak_limiter_N_chan_test = (os.tosc(330), os.tosc(550)) : co.RMS_FBcompressor_peak_limiter_N_chan(0.4, -18, -2, 0.02, 0.12, 6, 0.5, meter, meterLim, 2);
+// RMS_FBcompressor_peak_limiter_N_chan_slider_test = (os.tosc(330), os.tosc(550)) : co.RMS_FBcompressor_peak_limiter_N_chan(hslider("RMS_FBcompressor_peak_limiter_N_chan:strength", 0.4, 0, 1, 0.01), hslider("RMS_FBcompressor_peak_limiter_N_chan:thresh", -18, -60, 0, 0.1), hslider("RMS_FBcompressor_peak_limiter_N_chan:threshLim", -2, -60, 0, 0.1), hslider("RMS_FBcompressor_peak_limiter_N_chan:att", 0.02, 0, 1, 0.001), hslider("RMS_FBcompressor_peak_limiter_N_chan:rel", 0.12, 0, 1, 0.001), hslider("RMS_FBcompressor_peak_limiter_N_chan:knee", 6, 0, 30, 0.1), hslider("RMS_FBcompressor_peak_limiter_N_chan:link", 0.5, 0, 1, 0.01), meter, meterLim, 2);
 // ```
 //
 // #### References
@@ -659,7 +686,7 @@ RMS_FBFFcompressor_N_chan(strength,thresh,att,rel,knee,prePost,link,FBFF,meter,N
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_FBcompressor_peak_limiter_N_chan author "Bart Brouns";
-declare RMS_FBcompressor_peak_limiter_N_chan license "GPLv3";
+declare RMS_FBcompressor_peak_limiter_N_chan license "GPL-3.0-only";
 
 RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link,meter,meterLim,N) =
   (((RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,0,link,N)),si.bus(N)) : ro.interleave(N,2) : par(i,N,(meter : ba.db2linear)*_) : FFcompressor_N_chan(1,threshLim,0,att:min(rel),knee*0.5,0,link,meterLim,N))
@@ -706,7 +733,8 @@ RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// peak_compression_gain_mono_test = os.osc(440) : co.peak_compression_gain_mono(0.5, -12, 0.01, 0.1, 6, 0);
+// peak_compression_gain_mono_test = os.tosc(440) : co.peak_compression_gain_mono(0.5, -12, 0.01, 0.1, 6, 0);
+// peak_compression_gain_mono_slider_test = os.tosc(440) : co.peak_compression_gain_mono(hslider("peak_compression_gain_mono:strength", 0.5, 0, 1, 0.01), hslider("peak_compression_gain_mono:thresh", -12, -60, 0, 0.1), hslider("peak_compression_gain_mono:att", 0.01, 0, 1, 0.001), hslider("peak_compression_gain_mono:rel", 0.1, 0, 1, 0.001), hslider("peak_compression_gain_mono:knee", 6, 0, 30, 0.1), hslider("peak_compression_gain_mono:prePost", 0, 0, 1, 1));
 // ```
 //
 // #### References
@@ -715,7 +743,7 @@ RMS_FBcompressor_peak_limiter_N_chan(strength,thresh,threshLim,att,rel,knee,link
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare peak_compression_gain_mono author "Bart Brouns";
-declare peak_compression_gain_mono license "GPLv3";
+declare peak_compression_gain_mono license "GPL-3.0-only";
 
 peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
   peak_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost):ba.db2linear;
@@ -758,7 +786,8 @@ peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// peak_compression_gain_N_chan_test = (os.osc(440), os.osc(660)) : co.peak_compression_gain_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, 2);
+// peak_compression_gain_N_chan_test = (os.tosc(440), os.tosc(660)) : co.peak_compression_gain_N_chan(0.5, -12, 0.01, 0.1, 6, 0, 0.5, 2);
+// peak_compression_gain_N_chan_slider_test = (os.tosc(440), os.tosc(660)) : co.peak_compression_gain_N_chan(hslider("peak_compression_gain_N_chan:strength", 0.5, 0, 1, 0.01), hslider("peak_compression_gain_N_chan:thresh", -12, -60, 0, 0.1), hslider("peak_compression_gain_N_chan:att", 0.01, 0, 1, 0.001), hslider("peak_compression_gain_N_chan:rel", 0.1, 0, 1, 0.001), hslider("peak_compression_gain_N_chan:knee", 6, 0, 30, 0.1), hslider("peak_compression_gain_N_chan:prePost", 0, 0, 1, 1), hslider("peak_compression_gain_N_chan:link", 0.5, 0, 1, 0.01), 2);
 // ```
 //
 // #### References
@@ -767,7 +796,7 @@ peak_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare peak_compression_gain_N_chan author "Bart Brouns";
-declare peak_compression_gain_N_chan license "GPLv3";
+declare peak_compression_gain_N_chan license "GPL-3.0-only";
 
 // generalise compression gains for N channels.
 // first we define a mono version:
@@ -810,7 +839,8 @@ peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// RMS_compression_gain_mono_test = os.osc(330) : co.RMS_compression_gain_mono(0.5, -18, 0.02, 0.12, 6, 0);
+// RMS_compression_gain_mono_test = os.tosc(330) : co.RMS_compression_gain_mono(0.5, -18, 0.02, 0.12, 6, 0);
+// RMS_compression_gain_mono_slider_test = os.tosc(330) : co.RMS_compression_gain_mono(hslider("RMS_compression_gain_mono:strength", 0.5, 0, 1, 0.01), hslider("RMS_compression_gain_mono:thresh", -18, -60, 0, 0.1), hslider("RMS_compression_gain_mono:att", 0.02, 0, 1, 0.001), hslider("RMS_compression_gain_mono:rel", 0.12, 0, 1, 0.001), hslider("RMS_compression_gain_mono:knee", 6, 0, 30, 0.1), hslider("RMS_compression_gain_mono:prePost", 0, 0, 1, 1));
 // ```
 //
 // #### References
@@ -819,7 +849,7 @@ peak_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_compression_gain_mono author "Bart Brouns";
-declare RMS_compression_gain_mono license "GPLv3";
+declare RMS_compression_gain_mono license "GPL-3.0-only";
 
 RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
   RMS_compression_gain_mono_db(strength,thresh,att,rel,knee,prePost):ba.db2linear;
@@ -862,7 +892,8 @@ RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// RMS_compression_gain_N_chan_test = (os.osc(330), os.osc(550)) : co.RMS_compression_gain_N_chan(0.5, -18, 0.02, 0.12, 6, 0, 0.5, 2);
+// RMS_compression_gain_N_chan_test = (os.tosc(330), os.tosc(550)) : co.RMS_compression_gain_N_chan(0.5, -18, 0.02, 0.12, 6, 0, 0.5, 2);
+// RMS_compression_gain_N_chan_slider_test = (os.tosc(330), os.tosc(550)) : co.RMS_compression_gain_N_chan(hslider("RMS_compression_gain_N_chan:strength", 0.5, 0, 1, 0.01), hslider("RMS_compression_gain_N_chan:thresh", -18, -60, 0, 0.1), hslider("RMS_compression_gain_N_chan:att", 0.02, 0, 1, 0.001), hslider("RMS_compression_gain_N_chan:rel", 0.12, 0, 1, 0.001), hslider("RMS_compression_gain_N_chan:knee", 6, 0, 30, 0.1), hslider("RMS_compression_gain_N_chan:prePost", 0, 0, 1, 1), hslider("RMS_compression_gain_N_chan:link", 0.5, 0, 1, 0.01), 2);
 // ```
 //
 // #### References
@@ -871,7 +902,7 @@ RMS_compression_gain_mono(strength,thresh,att,rel,knee,prePost) =
 // * Digital Dynamic Range Compressor Design: A Tutorial and Analysis, Dimitrios GIANNOULIS (<Dimitrios.Giannoulis@eecs.qmul.ac.uk>), Michael MASSBERG (<michael@massberg.org>), and Josuah D.REISS (<josh.reiss@eecs.qmul.ac.uk>)
 //------------------------------------------------------------
 declare RMS_compression_gain_N_chan author "Bart Brouns";
-declare RMS_compression_gain_N_chan license "GPLv3";
+declare RMS_compression_gain_N_chan license "GPL-3.0-only";
 
 RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
   RMS_compression_gain_N_chan_db(strength,thresh,att,rel,knee,prePost,link,N)
@@ -909,7 +940,8 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// compressor_lad_mono_test = os.osc(440) : co.compressor_lad_mono(0.005, 4, -9, 0.01, 0.1);
+// compressor_lad_mono_test = os.tosc(440) : co.compressor_lad_mono(0.005, 4, -9, 0.01, 0.1);
+// compressor_lad_mono_slider_test = os.tosc(440) : co.compressor_lad_mono(hslider("compressor_lad_mono:lad", 0.005, 0, 0.1, 0.001), hslider("compressor_lad_mono:ratio", 4, 1, 20, 0.1), hslider("compressor_lad_mono:thresh", -9, -60, 0, 0.1), hslider("compressor_lad_mono:att", 0.01, 0, 1, 0.001), hslider("compressor_lad_mono:rel", 0.1, 0, 1, 0.001));
 // ```
 //
 // #### References
@@ -922,7 +954,7 @@ RMS_compression_gain_N_chan(strength,thresh,att,rel,knee,prePost,link,N) =
 declare compressor_lad_mono author "Julius O. Smith III";
 declare compressor_lad_mono copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare compressor_lad_mono license "MIT-style STK-4.3 license";
+declare compressor_lad_mono license "LicenseRef-STK-4.3";
 compressor_lad_mono(lad,ratio,thresh,att,rel,x)
   = x@max(0,floor(0.5+ma.SR*lad)) * compression_gain_mono(ratio,thresh,att,rel,x);
 
@@ -949,7 +981,8 @@ compressor_lad_mono(lad,ratio,thresh,att,rel,x)
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// compressor_mono_test = os.osc(440) : co.compressor_mono(4, -9, 0.01, 0.2);
+// compressor_mono_test = os.tosc(440) : co.compressor_mono(4, -9, 0.01, 0.2);
+// compressor_mono_slider_test = os.tosc(440) : co.compressor_mono(hslider("compressor_mono:ratio", 4, 1, 20, 0.1), hslider("compressor_mono:thresh", -9, -60, 0, 0.1), hslider("compressor_mono:att", 0.01, 0, 1, 0.001), hslider("compressor_mono:rel", 0.2, 0, 1, 0.001));
 // ```
 //
 // #### References
@@ -962,7 +995,7 @@ compressor_lad_mono(lad,ratio,thresh,att,rel,x)
 declare compressor_mono author "Julius O. Smith III";
 declare compressor_mono copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare compressor_mono license "MIT-style STK-4.3 license";
+declare compressor_mono license "LicenseRef-STK-4.3";
 compressor_mono = compressor_lad_mono(0);
 
 //--------------------`(co.)compressor_stereo`-------------------
@@ -985,7 +1018,8 @@ compressor_mono = compressor_lad_mono(0);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// compressor_stereo_test = (os.osc(440), os.osc(660)) : co.compressor_stereo(4, -9, 0.01, 0.2);
+// compressor_stereo_test = (os.tosc(440), os.tosc(660)) : co.compressor_stereo(4, -9, 0.01, 0.2);
+// compressor_stereo_slider_test = (os.tosc(440), os.tosc(660)) : co.compressor_stereo(hslider("compressor_stereo:ratio", 4, 1, 20, 0.1), hslider("compressor_stereo:thresh", -9, -60, 0, 0.1), hslider("compressor_stereo:att", 0.01, 0, 1, 0.001), hslider("compressor_stereo:rel", 0.2, 0, 1, 0.001));
 // ```
 //
 // #### References
@@ -998,7 +1032,7 @@ compressor_mono = compressor_lad_mono(0);
 declare compressor_stereo author "Julius O. Smith III";
 declare compressor_stereo copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare compressor_stereo license "MIT-style STK-4.3 license";
+declare compressor_stereo license "LicenseRef-STK-4.3";
 compressor_stereo(ratio,thresh,att,rel,x,y) = cgm*x, cgm*y with {
   cgm = compression_gain_mono(ratio,thresh,att,rel,abs(x)+abs(y));
 };
@@ -1023,7 +1057,13 @@ compressor_stereo(ratio,thresh,att,rel,x,y) = cgm*x, cgm*y with {
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// compression_gain_mono_test = os.osc(440) : co.compression_gain_mono(4, -9, 0.01, 0.2);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// compression_gain_mono_test = os.tosc(440) : co.compression_gain_mono(4, -9, 0.01, 0.2);
+// compression_gain_mono_slider_test = os.tosc(440) : co.compression_gain_mono(hslider("compression_gain_mono:ratio", 4, 1, 20, 0.1), hslider("compression_gain_mono:thresh", -9, -60, 0, 0.1), hslider("compression_gain_mono:att", 0.01, 0, 1, 0.001), hslider("compression_gain_mono:rel", 0.2, 0, 1, 0.001));
+// compression_gain_mono_modulated_test = no.noise*e : co.compression_gain_mono(4, -24, 0.001*pow(100, tri), 0.001*pow(1000, 1 - tri)) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// compression_gain_mono_jump_test = no.noise*e : co.compression_gain_mono(4, -24, 0.001*pow(100, sq), 0.001*pow(1000, 1 - sq)) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -1036,7 +1076,7 @@ compressor_stereo(ratio,thresh,att,rel,x,y) = cgm*x, cgm*y with {
 declare compression_gain_mono author "Julius O. Smith III";
 declare compression_gain_mono copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare compression_gain_mono license "MIT-style STK-4.3 license";
+declare compression_gain_mono license "LicenseRef-STK-4.3";
 compression_gain_mono(ratio,thresh,att,rel) =
   an.amp_follower_ar(att,rel) : ba.linear2db : outminusindb(ratio,thresh) :
   kneesmooth(att) : ba.db2linear
@@ -1087,7 +1127,7 @@ with {
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_1176_R4_mono_test = os.osc(440) : co.limiter_1176_R4_mono;
+// limiter_1176_R4_mono_test = os.tosc(440) : co.limiter_1176_R4_mono;
 // ```
 //
 // #### References
@@ -1097,7 +1137,7 @@ with {
 declare limiter_1176_R4_mono author "Julius O. Smith III";
 declare limiter_1176_R4_mono copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare limiter_1176_R4_mono license "MIT-style STK-4.3 license";
+declare limiter_1176_R4_mono license "LicenseRef-STK-4.3";
 limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 
 
@@ -1131,7 +1171,7 @@ limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_1176_R4_stereo_test = (os.osc(440), os.osc(660)) : co.limiter_1176_R4_stereo;
+// limiter_1176_R4_stereo_test = (os.tosc(440), os.tosc(660)) : co.limiter_1176_R4_stereo;
 // ```
 //
 // #### References
@@ -1141,7 +1181,7 @@ limiter_1176_R4_mono = compressor_mono(4,-6,0.0008,0.5);
 declare limiter_1176_R4_stereo author "Julius O. Smith III";
 declare limiter_1176_R4_stereo copyright
         "Copyright (C) 2014-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare limiter_1176_R4_stereo license "MIT-style STK-4.3 license";
+declare limiter_1176_R4_stereo license "LicenseRef-STK-4.3";
 limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 
 
@@ -1162,7 +1202,8 @@ limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 //
 // * `strength`: strength of the expansion (0 = no expansion, 100 means gating, <1 means upward compression)
 // * `thresh`: dB level threshold below which expansion kicks in
-// * `range`: maximum amount of expansion in dB
+// * `range`: maximum amount of expansion in dB, as an attenuation: 20 and -20 both
+// mean at most 20 dB of gain reduction (the sign is ignored)
 // * `att`: attack time = time constant (sec) coming out of expansion
 // * `hold` : hold time (sec)
 // * `rel`: release time = time constant (sec) going into expansion
@@ -1180,11 +1221,14 @@ limiter_1176_R4_stereo = compressor_stereo(4,-6,0.0008,0.5);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// peak_expansion_gain_N_chan_db_test = (os.osc(220), os.osc(330)) : co.peak_expansion_gain_N_chan_db(0.5, -40, 20, 0.05, 0.01, 0.2, 6, 0, 0.5, 2048, 2);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// peak_expansion_gain_N_chan_db_test = (os.tosc(220)*lv, os.tosc(330)*lv) : co.peak_expansion_gain_N_chan_db(0.5, -40, 20, 0.05, 0.01, 0.02, 6, 0, 0.5, 2048, 2) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// peak_expansion_gain_N_chan_db_slider_test = (os.tosc(220)*lv, os.tosc(330)*lv) : co.peak_expansion_gain_N_chan_db(hslider("peak_expansion_gain_N_chan_db:strength", 0.5, 0, 1, 0.01), hslider("peak_expansion_gain_N_chan_db:thresh", -40, -60, 0, 0.1), hslider("peak_expansion_gain_N_chan_db:range", 20, 0, 60, 0.1), hslider("peak_expansion_gain_N_chan_db:att", 0.05, 0, 1, 0.001), hslider("peak_expansion_gain_N_chan_db:hold", 0.01, 0, 1, 0.001), hslider("peak_expansion_gain_N_chan_db:rel", 0.02, 0, 1, 0.001), hslider("peak_expansion_gain_N_chan_db:knee", 6, 0, 30, 0.1), hslider("peak_expansion_gain_N_chan_db:prePost", 0, 0, 1, 1), hslider("peak_expansion_gain_N_chan_db:link", 0.5, 0, 1, 0.01), 2048, 2) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
 // ```
 //------------------------------------------------------------
 declare peak_expansion_gain_N_chan_db author "Bart Brouns";
-declare peak_expansion_gain_N_chan_db license "GPLv3";
+declare peak_expansion_gain_N_chan_db license "GPL-3.0-only";
 
 // generalise expansion gains for N channels.
 // first we define a mono version:
@@ -1201,15 +1245,59 @@ peak_expansion_gain_N_chan_db(strength,thresh,range,att,hold,rel,knee,prePost,li
   <: (si.bus(N),(ba.parallelMax(N) <: si.bus(N))) : ro.interleave(N,2) : par(i,N,(it.interpolate_linear(link)));
 
 
+//--------------------`(co.)peak_expansion_gain_mono_db`-------------------
+// Mono dynamic range expander gain computer with dB output. This is
+// the per-channel core of `peak_expansion_gain_N_chan_db`.
+//
+// #### Usage
+//
+// ```
+// _ : peak_expansion_gain_mono_db(maxHold,strength,thresh,range,attack,hold,release,knee,prePost) : _
+// ```
+//
+// Where:
+//
+// * `maxHold`: the maximum hold time in samples, known at compile time
+// * `strength`: strength of the expansion (0 = no expansion, 100 means gating, <1 means upward compression)
+// * `thresh`: dB level threshold below which expansion kicks in
+// * `range`: maximum amount of expansion in dB, as an attenuation: 20 and -20 both
+// mean at most 20 dB of gain reduction (the sign is ignored)
+// * `attack`: attack time = time constant (sec) coming out of expansion
+// * `hold`: hold time (sec)
+// * `release`: release time = time constant (sec) going into expansion
+// * `knee`: a gradual increase in gain reduction around the threshold:
+// above thresh+(knee/2) there is no gain reduction,
+// below thresh-(knee/2) there is the same gain reduction as without a knee,
+// and in between there is a gradual increase in gain reduction
+// * `prePost`: places the level detector either at the input or after the gain computer;
+// this turns it from a linear return-to-zero detector into a log domain return-to-range detector
+//
+// #### Test
+// ```
+// co = library("compressors.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// peak_expansion_gain_mono_db_test = os.tosc(220)*lv : co.peak_expansion_gain_mono_db(2048, 0.5, -40, 20, 0.05, 0.01, 0.02, 6, 0) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// peak_expansion_gain_mono_db_hardknee_test = os.tosc(220)*lv : co.peak_expansion_gain_mono_db(2048, 0.5, -40, -20, 0.05, 0.01, 0.02, 0, 0) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// peak_expansion_gain_mono_db_slider_test = os.tosc(220)*lv : co.peak_expansion_gain_mono_db(2048, hslider("peak_expansion_gain_mono_db:strength", 0.5, 0, 1, 0.01), hslider("peak_expansion_gain_mono_db:thresh", -40, -60, 0, 0.1), hslider("peak_expansion_gain_mono_db:range", 20, 0, 60, 0.1), hslider("peak_expansion_gain_mono_db:attack", 0.05, 0, 1, 0.001), hslider("peak_expansion_gain_mono_db:hold", 0.01, 0, 1, 0.001), hslider("peak_expansion_gain_mono_db:release", 0.02, 0, 1, 0.001), hslider("peak_expansion_gain_mono_db:knee", 6, 0, 30, 0.1), hslider("peak_expansion_gain_mono_db:prePost", 0, 0, 1, 1)) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// peak_expansion_gain_mono_db_modulated_test = no.noise*e : co.peak_expansion_gain_mono_db(2048, 0.5, -40, -40, 0.001, 0.01, 0.001*pow(1000, tri), 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// peak_expansion_gain_mono_db_jump_test = no.noise*e : co.peak_expansion_gain_mono_db(2048, 0.5, -40, -40, 0.001, 0.01, 0.001*pow(1000, sq), 6, 0) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//------------------------------------------------------------
+declare peak_expansion_gain_mono_db author "Bart Brouns";
+declare peak_expansion_gain_mono_db license "GPL-3.0-only";
+
 peak_expansion_gain_mono_db(maxHold,strength,thresh,range,attack,hold,release,knee,prePost) =
   level(hold,maxHold):ba.bypass1(prePost,si.lag_ud(attack,release)) :ba.linear2db : gain_computer(strength,thresh,range,knee) : ba.bypass1((prePost !=1),si.lag_ud(att,rel))
 with {
   gain_computer(strength,thresh,range,knee,level) =
     (select3((level>(thresh-(knee/2)))+(level>(thresh+(knee/2)))
              , (level-thresh)
-             , ((level-thresh-(knee/2)):pow(2) /(min(ma.EPSILON,knee*-2)))
+             , ((level-thresh-(knee/2)):pow(2) /(min(0 - ma.EPSILON,knee*-2)))
              , 0
-             ) *abs(strength):max(range) * (-1+(2*(strength>0)))
+             ) *abs(strength):max(0 - abs(range)) * (-1+(2*(strength>0)))
     );
   att = select2((strength>0),release,attack);
   rel = select2((strength>0),attack,release);
@@ -1231,9 +1319,10 @@ with {
 //
 // * `strength`: strength of the expansion (0 = no expansion, 100 means gating, <1 means upward compression)
 // * `thresh`: dB level threshold below which expansion kicks in
-// * `range`: maximum amount of expansion in dB
+// * `range`: maximum amount of expansion in dB, as an attenuation: 20 and -20 both
+// mean at most 20 dB of gain reduction (the sign is ignored)
 // * `att`: attack time = time constant (sec) coming out of expansion
-// * `hold` : hold time
+// * `hold` : hold time (sec), at most `maxHold` samples
 // * `rel`: release time = time constant (sec) going into expansion
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
@@ -1251,12 +1340,15 @@ with {
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
 // meter(x) = x;
-// expander_N_chan_test = (os.osc(220), os.osc(330)) : co.expander_N_chan(0.5, -40, 20, 0.05, 0.02, 0.2, 6, 0, 0.5, meter, 4096, 2);
+// expander_N_chan_test = (os.tosc(220)*lv, os.tosc(330)*lv) : co.expander_N_chan(0.5, -40, 20, 0.05, 0.02, 0.02, 6, 0, 0.5, meter, 4096, 2) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// expander_N_chan_slider_test = (os.tosc(220)*lv, os.tosc(330)*lv) : co.expander_N_chan(hslider("expander_N_chan:strength", 0.5, 0, 1, 0.01), hslider("expander_N_chan:thresh", -40, -60, 0, 0.1), hslider("expander_N_chan:range", 20, 0, 60, 0.1), hslider("expander_N_chan:att", 0.05, 0, 1, 0.001), hslider("expander_N_chan:hold", 0.02, 0, 1, 0.001), hslider("expander_N_chan:rel", 0.02, 0, 1, 0.001), hslider("expander_N_chan:knee", 6, 0, 30, 0.1), hslider("expander_N_chan:prePost", 0, 0, 1, 1), hslider("expander_N_chan:link", 0.5, 0, 1, 0.01), meter, 4096, 2) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
 // ```
 //------------------------------------------------------------
 declare expander_N_chan author "Bart Brouns";
-declare expander_N_chan license "GPLv3";
+declare expander_N_chan license "GPL-3.0-only";
 
 // Feed forward expander
 expander_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHold,N) =
@@ -1276,9 +1368,10 @@ expander_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHo
 //
 // * `strength`: strength of the expansion (0 = no expansion, 100 means gating, <1 means upward compression)
 // * `thresh`: dB level threshold below which expansion kicks in
-// * `range`: maximum amount of expansion in dB
+// * `range`: maximum amount of expansion in dB, as an attenuation: 20 and -20 both
+// mean at most 20 dB of gain reduction (the sign is ignored)
 // * `att`: attack time = time constant (sec) coming out of expansion
-// * `hold` : hold time
+// * `hold` : hold time (sec), at most `maxHold` samples
 // * `rel`: release time = time constant (sec) going into expansion
 // * `knee`: a gradual increase in gain reduction around the threshold:
 // above thresh+(knee/2) there is no gain reduction,
@@ -1299,13 +1392,16 @@ expander_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHo
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
 // meter(x) = x;
 // SCfunction(x) = x;
-// expanderSC_N_chan_test = (os.osc(220), os.osc(330)) : co.expanderSC_N_chan(0.5, -40, 20, 0.05, 0.02, 0.2, 6, 0, 0.5, meter, 4096, 2, SCfunction, 1, os.osc(880));
+// expanderSC_N_chan_test = (os.tosc(220), os.tosc(330)) : co.expanderSC_N_chan(0.5, -40, 20, 0.05, 0.02, 0.02, 6, 0, 0.5, meter, 4096, 2, SCfunction, 1, os.tosc(880)*lv) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
+// expanderSC_N_chan_slider_test = (os.tosc(220), os.tosc(330)) : co.expanderSC_N_chan(hslider("expanderSC_N_chan:strength", 0.5, 0, 1, 0.01), hslider("expanderSC_N_chan:thresh", -40, -60, 0, 0.1), hslider("expanderSC_N_chan:range", 20, 0, 60, 0.1), hslider("expanderSC_N_chan:att", 0.05, 0, 1, 0.001), hslider("expanderSC_N_chan:hold", 0.02, 0, 1, 0.001), hslider("expanderSC_N_chan:rel", 0.02, 0, 1, 0.001), hslider("expanderSC_N_chan:knee", 6, 0, 30, 0.1), hslider("expanderSC_N_chan:prePost", 0, 0, 1, 1), hslider("expanderSC_N_chan:link", 0.5, 0, 1, 0.01), meter, 4096, 2, SCfunction, hslider("expanderSC_N_chan:SCswitch", 1, 0, 1, 1), os.tosc(880)*lv) with { P = int(ma.SR/4); sq = ba.period(2*P) < P; lv = select2(sq, 0.001, 1); };
 // ```
 //------------------------------------------------------------
 declare expanderSC_N_chan author "Bart Brouns";
-declare expanderSC_N_chan license "GPLv3";
+declare expanderSC_N_chan license "GPL-3.0-only";
 
 // Feed forward expander with sidechain
 expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,maxHold,N,SCfunction,SCswitch,SCsignal) =
@@ -1373,7 +1469,13 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_lad_N_test = (os.osc(440), os.osc(660)) : co.limiter_lad_N(2, 0.01, 1, 0.01, 0.05, 0.2);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// limiter_lad_N_test = (os.tosc(440), os.tosc(660)) : co.limiter_lad_N(2, 0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_N_slider_test = (os.tosc(440), os.tosc(660)) : co.limiter_lad_N(2, hslider("limiter_lad_N:LD", 0.01, 0, 0.1, 0.001), hslider("limiter_lad_N:ceiling", 1, 0, 2, 0.01), hslider("limiter_lad_N:attack", 0.01, 0, 1, 0.001), hslider("limiter_lad_N:hold", 0.05, 0, 1, 0.001), hslider("limiter_lad_N:release", 0.2, 0, 1, 0.001));
+// limiter_lad_N_modulated_test = par(i, 2, no.noises(2, i)*e) : par(i, 2, *(2)) : co.limiter_lad_N(2, 0.01, 0.5, 0.001, 0.01, 0.01*pow(100, tri)) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// limiter_lad_N_jump_test = par(i, 2, no.noises(2, i)*e) : par(i, 2, *(2)) : co.limiter_lad_N(2, 0.01, 0.5, 0.001, 0.01, 0.01*pow(100, sq)) with { e = pow(0.001, float(ba.period(Q))/Q); Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -1384,7 +1486,7 @@ expanderSC_N_chan(strength,thresh,range,att,hold,rel,knee,prePost,link,meter,max
 declare limiter_lad_N author "Dario Sanfilippo";
 declare limiter_lad_N copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare limiter_lad_N license "GPLv3 license";
+declare limiter_lad_N license "GPL-3.0-only";
 limiter_lad_N(N, LD, ceiling, attack, hold, release) = 
       si.bus(N) <: par(i, N, @(LD * ma.SR)), 
                    (scaling <: si.bus(N)) : ro.interleave(N, 2) : par(i, N, *)
@@ -1421,7 +1523,8 @@ limiter_lad_N(N, LD, ceiling, attack, hold, release) =
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_lad_mono_test = os.osc(440) : co.limiter_lad_mono(0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_mono_test = os.tosc(440) : co.limiter_lad_mono(0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_mono_slider_test = os.tosc(440) : co.limiter_lad_mono(hslider("limiter_lad_mono:LD", 0.01, 0, 0.1, 0.001), hslider("limiter_lad_mono:ceiling", 1, 0, 2, 0.01), hslider("limiter_lad_mono:attack", 0.01, 0, 1, 0.001), hslider("limiter_lad_mono:hold", 0.05, 0, 1, 0.001), hslider("limiter_lad_mono:release", 0.2, 0, 1, 0.001));
 // ```
 //
 // #### References
@@ -1431,7 +1534,7 @@ limiter_lad_N(N, LD, ceiling, attack, hold, release) =
 declare limiter_lad_mono author "Dario Sanfilippo";
 declare limiter_lad_mono copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare limiter_lad_mono license "GPLv3 license";
+declare limiter_lad_mono license "GPL-3.0-only";
 limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 
 //-------------`(co.)limiter_lad_stereo`--------------------------------------
@@ -1456,8 +1559,8 @@ limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_lad_stereo_test = (os.osc(440), os.osc(660)) : co.limiter_lad_stereo(0.01, 1, 0.01, 0.05, 0.2);
-//
+// limiter_lad_stereo_test = (os.tosc(440), os.tosc(660)) : co.limiter_lad_stereo(0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_stereo_slider_test = (os.tosc(440), os.tosc(660)) : co.limiter_lad_stereo(hslider("limiter_lad_stereo:LD", 0.01, 0, 0.1, 0.001), hslider("limiter_lad_stereo:ceiling", 1, 0, 2, 0.01), hslider("limiter_lad_stereo:attack", 0.01, 0, 1, 0.001), hslider("limiter_lad_stereo:hold", 0.05, 0, 1, 0.001), hslider("limiter_lad_stereo:release", 0.2, 0, 1, 0.001));
 // ```
 // #### References
 //
@@ -1466,7 +1569,7 @@ limiter_lad_mono(LD) = limiter_lad_N(1, LD);
 declare limiter_lad_stereo author "Dario Sanfilippo";
 declare limiter_lad_stereo copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare limiter_lad_stereo license "GPLv3 license";
+declare limiter_lad_stereo license "GPL-3.0-only";
 limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 
 //-------------`(co.)limiter_lad_quad`----------------------------------------
@@ -1491,7 +1594,8 @@ limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_lad_quad_test = (os.osc(220), os.osc(330), os.osc(440), os.osc(550)) : co.limiter_lad_quad(0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_quad_test = (os.tosc(220), os.tosc(330), os.tosc(440), os.tosc(550)) : co.limiter_lad_quad(0.01, 1, 0.01, 0.05, 0.2);
+// limiter_lad_quad_slider_test = (os.tosc(220), os.tosc(330), os.tosc(440), os.tosc(550)) : co.limiter_lad_quad(hslider("limiter_lad_quad:LD", 0.01, 0, 0.1, 0.001), hslider("limiter_lad_quad:ceiling", 1, 0, 2, 0.01), hslider("limiter_lad_quad:attack", 0.01, 0, 1, 0.001), hslider("limiter_lad_quad:hold", 0.05, 0, 1, 0.001), hslider("limiter_lad_quad:release", 0.2, 0, 1, 0.001));
 // ```
 //
 // #### References
@@ -1501,7 +1605,7 @@ limiter_lad_stereo(LD) = limiter_lad_N(2, LD);
 declare limiter_lad_quad author "Dario Sanfilippo";
 declare limiter_lad_quad copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare limiter_lad_quad license "GPLv3 license";
+declare limiter_lad_quad license "GPL-3.0-only";
 limiter_lad_quad(LD) = limiter_lad_N(4, LD);
 
 //-------------`(co.)limiter_lad_bw`-----------------------------------------
@@ -1526,7 +1630,7 @@ limiter_lad_quad(LD) = limiter_lad_N(4, LD);
 // ```
 // co = library("compressors.lib");
 // os = library("oscillators.lib");
-// limiter_lad_bw_test = os.osc(440) : co.limiter_lad_bw;
+// limiter_lad_bw_test = os.tosc(440) : co.limiter_lad_bw;
 // ```
 //
 // #### References
@@ -1536,8 +1640,258 @@ limiter_lad_quad(LD) = limiter_lad_N(4, LD);
 declare limiter_lad_bw author "Dario Sanfilippo";
 declare limiter_lad_bw copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare limiter_lad_bw license "GPLv3 license";
+declare limiter_lad_bw license "GPL-3.0-only";
 limiter_lad_bw = limiter_lad_mono(.01, 1, 0.01/twopi, .1, 1/twopi)
 with {
     twopi = 2 * ma.PI;
 };
+
+//=================================Multiband Compressors====================================
+//========================================================================================
+
+//-------------------------------`(co.)xfer_ott`---------------------------------
+// Model of Xfer Records' free OTT (measured: version 1.3.1), a three-band
+// upward/downward compressor (the Ableton "OTT" preset lineage). Stereo in, stereo
+// out, channels linked. Not affiliated with or endorsed by Xfer Records.
+//
+// The input is split by series 4th-order Linkwitz-Riley crossovers at 88.3 Hz and
+// 2.5 kHz. Each band has a per-sample envelope follower on the channels' mean
+// square, an upward branch (a soft knee rising at about 4:1 below its threshold,
+// with a gain cap), a downward branch (a soft knee into an infinite-ratio
+// ceiling), a Depth-scaled makeup gain and a floor on the band's total gain; the
+// three gained bands are summed.
+//
+// Every constant was fitted to measurements of the plug-in binary. Static curves
+// (one band active at a time, 0 to -150 dBFS, across Upward, Depth and threshold
+// settings) match to 0.03-0.04 dB (median) and 1 dB at most. On stereo program
+// material (guitar on one channel, drums on the other), as the error of the 50 ms
+// envelope (median / 95th percentile) and the overall level, at 44.1 and 48 kHz:
+//
+// * default settings (Time 100 %): 0.1 / 0.8-1.0 dB, level within 0.1 dB
+// * Depth 50 %: 0.1 / 0.6-0.7 dB; upward or downward branch alone:
+//   0.1 / 0.2-1.0 dB; level within 0.1 dB
+// * Time 280 %: 0.4-0.5 / 1.3-1.4 dB; Time 640 %: 0.7-0.9 / 1.9-2.1 dB;
+//   level within 0.9 dB (the model is slightly quieter)
+//
+// Sample rate: OTT counts part of its release in samples, so it releases faster
+// at 96 kHz than at 48 kHz (its own envelope differs by 0.5 / 2.2 dB at default
+// settings and 1.9 / 5.2 dB at Time 640 %). This model's release is in seconds and
+// behaves at every sample rate like the plug-in at 48 kHz: at 96 kHz it is within
+// 0.1-0.9 / 0.7-1.9 dB of the plug-in at 48 kHz.
+//
+// Like the plug-in, the output can peak well above the input: the attack takes a
+// few ms, and quiet bands sit at up to about +50 dB of upward gain, so a tone
+// starting after silence overshoots its steady level by about 10 dB, and a sudden
+// drop in level brings a brief burst. Follow it with a limiter where peaks matter.
+//
+// Known divergences: the plug-in's steady-state gain on a sustained tone barely
+// depends on `time` (within 0.7 dB from 0 to 6.4); the model's moves by up to
+// 1.0 dB over `time` 0-1 and up to 1.7 dB between 1 and 6.4. The plug-in's
+// "Clean XOV" crossover option is not modeled.
+//
+// #### Usage
+//
+// ```
+// _,_ : xfer_ott(depth, time, ingain, outgain, upward, downward,
+//                threshL, threshM, threshH, gainL, gainM, gainH,
+//                bypUpL, bypUpM, bypUpH, bypDnL, bypDnM, bypDnH) : _,_
+// ```
+//
+// Where:
+//
+// * `depth`: compression depth (0-1; the plug-in's default is 1)
+// * `time`: release time scale (0-10, 1 = the plug-in's 100 %); it scales the release only, and the release is independent of the sample rate
+// * `ingain`: input gain in dB (up to +19.1)
+// * `outgain`: output gain in dB (up to +19.1)
+// * `upward`: upward-compression strength (0-2, 1 = 100 %); it scales the upward slope in proportion
+// * `downward`: downward-compression strength (0-2, 1 = 100 %); above 1 the downward ratio keeps steepening until it is infinite, which at depth 1 is already the case at 1
+// * `threshL`: low-band threshold (0-2, 1 = 100 %); 0 and 2 shift both of the band's knees by -23.0 and +23.0 dB. Raising it raises quiet signals more and lowers loud ones less, so at every input level the band's gain rises or holds, as on the plug-in
+// * `threshM`: mid-band threshold (0-2, 1 = 100 %); 0 and 2 shift both of the band's knees by -23.7 and +23.7 dB. Raising it raises quiet signals more and lowers loud ones less, so at every input level the band's gain rises or holds, as on the plug-in
+// * `threshH`: high-band threshold (0-2, 1 = 100 %); 0 and 2 shift both of the band's knees by -24.0 and +24.0 dB. Raising it raises quiet signals more and lowers loud ones less, so at every input level the band's gain rises or holds, as on the plug-in
+// * `gainL`: low-band output gain in dB (up to +6)
+// * `gainM`: mid-band output gain in dB (up to +6)
+// * `gainH`: high-band output gain in dB (up to +6)
+// * `bypUpL`: 1 bypasses the low band's upward branch, else 0
+// * `bypUpM`: 1 bypasses the mid band's upward branch, else 0
+// * `bypUpH`: 1 bypasses the high band's upward branch, else 0
+// * `bypDnL`: 1 bypasses the low band's downward branch, else 0
+// * `bypDnM`: 1 bypasses the mid band's downward branch, else 0
+// * `bypDnH`: 1 bypasses the high band's downward branch, else 0
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// co = library("compressors.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// xfer_ott_test = (os.tosc(220)*0.3, os.tosc(3000)*0.03)
+//    : co.xfer_ott(1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+// xfer_ott_slow_test = (os.tosc(220)*0.3, os.tosc(3000)*0.03)
+//    : co.xfer_ott(0.5, 2.8, 3, -3, 1.5, 0.5, 0.8, 1.2, 1, 1, 0, -2, 0, 1, 0, 0, 0, 1);
+// // 3 Hz bursts, gated by a sample counter so that float and double switch together
+// xfer_ott_burst_test = (os.tosc(220)*0.3*g, os.tosc(3000)*0.03*(1 - g))
+//    : co.xfer_ott(1, 2.8, 0, 0, 1, 1.5, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+// with { g = (ba.time % int(ma.SR / 3)) < int(ma.SR / 6); };
+// xfer_ott_slider_test = (os.tosc(220)*0.3, os.tosc(3000)*0.03)
+//    : co.xfer_ott(hslider("xfer_ott:depth", 1, 0, 1, 0.01), hslider("xfer_ott:time", 1, 0, 10, 0.01), 0, 0,
+//                  hslider("xfer_ott:upward", 1, 0, 2, 0.01), hslider("xfer_ott:downward", 1, 0, 2, 0.01),
+//                  1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+// xfer_ott_modulated_test = (os.tosc(220)*0.3, os.tosc(3000)*0.03) : co.xfer_ott(tri, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// xfer_ott_jump_test = (os.tosc(220)*0.3*g, os.tosc(3000)*0.03*(1 - g)) : co.xfer_ott(1, 10*sq, 0, 0, 1, 1.5, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; g = (ba.time % int(ma.SR / 3)) < int(ma.SR / 6); };
+// ```
+//
+// #### References
+//
+// * <https://xferrecords.com/freeware>
+//------------------------------------------------------------------------------
+/*
+Implementation Notes:
+
+- Envelope: a switching one-pole on the per-sample mean square (L^2 + R^2)/2 of
+  the band (the plug-in links the channels this way, not through the louder
+  channel). Attack is fixed per band (6.2 / 6.0 / 9.7 ms). The release follows a
+  fitted piecewise-linear law of `time` up to 100 %, then grows in proportion to
+  `time`. The release values come from a grid search, so bands that share a value
+  landed on the same grid point (resolution about +-15 %).
+- Gain (dB) = makeup + upward branch - downward branch, floored per band:
+  - makeup: a cubic in `depth` per band;
+  - upward: depth * upward * a soft knee of slope su below tu + shift, capped at
+    about 36 dB (the cap does not depend on `upward` or `depth`);
+  - downward: min(1, dnshape(depth) * fdstr(downward)) * a soft knee above
+    td + shift; a factor of 1 is the infinite-ratio ceiling. fdstr is fitted up
+    to 1 and continues linearly to 2, which matches the plug-in within 0.5 dB at
+    depths 0.25-1;
+  - floor: the band's total gain stops at -26.3 / -31.7 / -26.0 dB, reached with
+    loud input at low thresholds;
+  - shift: the threshold moves both knees together, by 23.0 / 23.7 / 24.0 dB per
+    unit of thresh.
+  The downward knee widths of the low and high bands (0.5 dB) sit on the lower
+  bound of the fit, so the plug-in's knees may be harder still.
+- The upward branch was fitted with one band active at a time: crossover leakage
+  makes band-centre tones measured with all bands active depend on the other
+  bands' gains. The model still sums all three gained bands, as the plug-in does.
+- Single precision: the envelope followers are flushed below 1e-30, and a -600 dB
+  signal (DC plus a quarter of the sample rate) is added before the crossovers, so
+  that no state lingers in the subnormal range after the input stops. Silence in
+  therefore gives about -540 dBFS out, not exactly zero.
+- Display laws of the plug-in's knobs, for reference: Time 0-1000 %, In/Out Gain
+  -inf to +19.1 dB, band gains -inf to +6 dB, Upwd/Dnwd/Thresh 0-200 %.
+*/
+xfer_ott(depth, time, ingain, outgain, upward, downward,
+         threshL, threshM, threshH, gainL, gainM, gainH,
+         bypUpL, bypUpM, bypUpH, bypDnL, bypDnM, bypDnH, xL, xR) = outL, outR
+with {
+    ia = ba.db2linear(ingain);
+    oa = ba.db2linear(outgain);
+    tp = 100.0 * max(0.0, time);            // release scale in percent
+
+    // Softplus hinge: asymptotes 0 / slope 1.
+    soft(w, z) = max(z, 0.0) + w * log(1.0 + exp(0.0 - abs(z) / w));
+
+    // Switching one-pole on the squared signal (per-sample attack/release).
+    envfollow(ta, tr, x2) = loop ~ _
+    with {
+        // flushed below 1e-30 so that it does not linger in the subnormal range
+        loop(e) = en * (en > 1e-30)
+        with {
+            en = e + ba.if(x2 > e, ca, cr) * (x2 - e);
+        };
+        // -expm1(-x) = 1 - exp(-x) without its cancellation in single precision
+        // (x is down to 2e-5 for a 300 ms release at 192 kHz)
+        ca = 0.0 - ma.expm1(-1.0 / (max(1e-5, ta) * ma.SR));
+        cr = 0.0 - ma.expm1(-1.0 / (max(1e-4, tr) * ma.SR));
+    };
+
+    // One band: K = 0 (low), 1 (mid), 2 (high).
+    band(K, thr, bu, bd, bl, br) = gl * bl, gl * br
+    with {
+        trel = tr(K, min(100.0, tp)) * max(1.0, tp / 100.0);
+        env = envfollow(ta(K), trel, 0.5 * (bl * bl + br * br));
+        E = 10.0 * log10(max(env, 1e-20));
+        tsh = tshift(K, thr);
+        mks = mkshape(K, depth);
+        ups = max(0.0, depth) * max(0.0, upward) * (1.0 - bu);
+        dns = min(1.0, dnshape(K, depth) * fdstr(downward)) * (1.0 - bd);
+        gdb = mks * mk(K)
+            + min(cu(K), ups * su(K) * soft(wu(K), tu(K) + tsh - E))
+            - dns * soft(wd(K), E - td(K) - tsh);
+        gl = ba.db2linear(max(gmin(K), gdb));
+    };
+
+    // A -600 dB signal (DC plus a quarter of the sample rate) keeps the crossover
+    // states out of the subnormal range after the input stops.
+    ad = 1e-30 * (1.0 + (((+(1) : %(4)) ~ _) == 0) - (((+(1) : %(4)) ~ _) == 2));
+    bnd(K, x) = x * ia + ad : fi.crossover3LR4(F1, F2) : ba.selector(K, 3);
+    proc(K) = band(K, thrsel(K), busel(K), bdsel(K), bnd(K, xL), bnd(K, xR));
+    thrsel(0) = threshL; thrsel(1) = threshM; thrsel(2) = threshH;
+    busel(0) = bypUpL; busel(1) = bypUpM; busel(2) = bypUpH;
+    bdsel(0) = bypDnL; bdsel(1) = bypDnM; bdsel(2) = bypDnH;
+    gsel(0) = gainL; gsel(1) = gainM; gsel(2) = gainH;
+    outL = oa * sum(k, 3, ba.db2linear(gsel(k)) * (proc(k) : _, !));
+    outR = oa * sum(k, 3, ba.db2linear(gsel(k)) * (proc(k) : !, _));
+
+    // Fitted constants (crossovers, per-band thresholds, knees, makeup, caps,
+    // floors, attack/release and Depth/strength/threshold laws).
+    F1 = 88.3;
+    F2 = 2500.0;
+
+    tu(0) = -46.0171;
+    tu(1) = -46.5885;
+    tu(2) = -47.4393;
+    wu(0) = 0.0552;
+    wu(1) = 0.4509;
+    wu(2) = 0.0338;
+    su(0) = 0.74786;
+    su(1) = 0.75601;
+    su(2) = 0.74738;
+    td(0) = -38.9401;
+    td(1) = -34.8204;
+    td(2) = -41.6879;
+    wd(0) = 0.5;
+    wd(1) = 0.530023;
+    wd(2) = 0.5;
+    mk(0) = 14.0348;
+    mk(1) = 9.05203;
+    mk(2) = 14.064;
+    cu(0) = 35.901;
+    cu(1) = 36.285;
+    cu(2) = 35.872;
+    gmin(0) = -26.26;
+    gmin(1) = -31.70;
+    gmin(2) = -25.95;
+
+    ta(0) = 0.00621537;
+    ta(1) = 0.006;
+    ta(2) = 0.0096577;
+
+    // Envelope release tau (s) vs Time in percent, 0-100 % (held above).
+    tr(0, pct) = pct : ba.bpf.start(0, 0.0100376) : ba.bpf.point(50, 0.0148167) : ba.bpf.end(100, 0.030877);
+    tr(1, pct) = pct : ba.bpf.start(0, 0.0118089) : ba.bpf.point(50, 0.0174314) : ba.bpf.end(100, 0.030877);
+    tr(2, pct) = pct : ba.bpf.start(0, 0.00702632) : ba.bpf.point(50, 0.00702632) : ba.bpf.end(100, 0.0103717);
+
+
+    // Makeup and downward Depth shapes (cubics through origin, 1 at depth 1)
+    mkshape(0, d) = d * (1.83819 + d * (-1.21424 + d * 0.37606));
+    mkshape(1, d) = d * (1.63851 + d * (-0.83224 + d * 0.19373));
+    mkshape(2, d) = d * (1.84440 + d * (-1.22723 + d * 0.38284));
+    dnshape(0, d) = d * (0.96509 + d * (0.03154 + d * 0.00337));
+    dnshape(1, d) = d * (0.96161 + d * (0.02205 + d * 0.01634));
+    dnshape(2, d) = d * (0.97286 + d * (0.05778 + d * -0.03064));
+
+    // Downward strength law (0-2), piecewise linear, 1 at 1 (the upward strength
+    // scales the upward slope directly).
+    fdstr(p) = p : ba.bpf.start(0, 0)
+        : ba.bpf.point(0.2, 0.189716)
+        : ba.bpf.point(0.4, 0.389364)
+        : ba.bpf.point(0.6, 0.590038)
+        : ba.bpf.point(0.8, 0.793116)
+        : ba.bpf.point(1, 1)
+        : ba.bpf.end(2, 2);
+
+    // Threshold shift in dB (both knees move together), linear in thresh.
+    tshift(0, p) = (p - 1.0) * 23.009;
+    tshift(1, p) = (p - 1.0) * 23.743;
+    tshift(2, p) = (p - 1.0) * 24.021;
+};
+declare xfer_ott author "David Braun";
+declare xfer_ott license "MIT";

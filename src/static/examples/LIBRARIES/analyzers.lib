@@ -7,14 +7,18 @@
 // computing statistics useful in visualization, diagnostics,
 // adaptive processing, and music information retrieval.
 //
-// The Analyzers library is organized into 7 sections:
+// The Analyzers library is organized into 11 sections:
 //
 // * [Amplitude Tracking](#amplitude-tracking)
 // * [Adaptive Frequency Analysis](#adaptive-frequency-analysis)
 // * [Spectrum-Analyzers](#spectrum-analyzers)
 // * [Mth-Octave Spectral Level](#mth-octave-spectral-level)
-// * [Arbritary-Crossover Filter-Banks and Spectrum Analyzers](#arbritary-crossover-filter-banks-and-spectrum-analyzers)
+// * [Arbitrary-Crossover Filter-Banks and Spectrum Analyzers](#arbitrary-crossover-filter-banks-and-spectrum-analyzers)
 // * [Fast Fourier Transform (fft) and its Inverse (ifft)](#fast-fourier-transform-fft-and-its-inverse-ifft)
+// * [Window Functions](#window-functions)
+// * [FFT Subsystem](#fft-subsystem)
+// * [Spectral Descriptors (filter-bank based)](#spectral-descriptors-filter-bank-based)
+// * [Loudness Metering (EBU R128 / ITU-R BS.1770)](#loudness-metering-ebu-r128-itu-r-bs1770)
 // * [Test signal generators](#test-signal-generators)
 // 
 // #### References
@@ -32,7 +36,7 @@ os = library("oscillators.lib");
 an = library("analyzers.lib"); // for compatible copy/paste out of this file
 
 declare name "Faust Analyzer Library";
-declare version "1.3.0";
+declare version "1.6.0";
 
 /************************************************************************
 FAUST library file, jos section
@@ -68,14 +72,15 @@ Michon and Julius O. Smith III, and is released under the
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// abs_envelope_rect_test = an.abs_envelope_rect(0.05, os.osc(220));
+// mono = os.tosc(220);
+// abs_envelope_rect_test = an.abs_envelope_rect(0.05, mono);
 // ```
 //-----------------------------------------------------------------------------
 declare abs_envelope_rect author "Dario Sanfilippo and Julius O. Smith III";
 declare abs_envelope_rect copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare abs_envelope_rect license "MIT-style STK-4.3 license";
+declare abs_envelope_rect license "LicenseRef-STK-4.3";
 abs_envelope_rect(period, x) = abs(x) : fi.avg_rect(period);
 
 
@@ -97,14 +102,15 @@ abs_envelope_rect(period, x) = abs(x) : fi.avg_rect(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// abs_envelope_tau_test = an.abs_envelope_tau(0.05, os.osc(220));
+// mono = os.tosc(220);
+// abs_envelope_tau_test = an.abs_envelope_tau(0.05, mono);
 // ```
 //-----------------------------------------------------------------------------
 declare abs_envelope_tau author "Dario Sanfilippo and Julius O. Smith III";
 declare abs_envelope_tau copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare abs_envelope_tau license "MIT-style STK-4.3 license";
+declare abs_envelope_tau license "LicenseRef-STK-4.3";
 abs_envelope_tau(period, x) = abs(x) : fi.avg_tau(period);
 
 
@@ -126,14 +132,15 @@ abs_envelope_tau(period, x) = abs(x) : fi.avg_tau(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// abs_envelope_t60_test = an.abs_envelope_t60(0.05, os.osc(220));
+// mono = os.tosc(220);
+// abs_envelope_t60_test = an.abs_envelope_t60(0.05, mono);
 // ```
 //-----------------------------------------------------------------------------
 declare abs_envelope_t60 author "Dario Sanfilippo and Julius O. Smith III";
 declare abs_envelope_t60 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare abs_envelope_t60 license "MIT-style STK-4.3 license";
+declare abs_envelope_t60 license "LicenseRef-STK-4.3";
 abs_envelope_t60(period, x) = abs(x) : fi.avg_t60(period);
 
 
@@ -155,18 +162,19 @@ abs_envelope_t60(period, x) = abs(x) : fi.avg_t60(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// abs_envelope_t19_test = an.abs_envelope_t19(0.05, os.osc(220));
+// mono = os.tosc(220);
+// abs_envelope_t19_test = an.abs_envelope_t19(0.05, mono);
 // ```
 //-----------------------------------------------------------------------------
 declare abs_envelope_t19 author "Dario Sanfilippo and Julius O. Smith III";
 declare abs_envelope_t19 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare abs_envelope_t19 license "MIT-style STK-4.3 license";
+declare abs_envelope_t19 license "LicenseRef-STK-4.3";
 abs_envelope_t19(period, x) = abs(x) : fi.avg_t19(period);
 
 
-//---------------------------`(an.)amp_follower`---------------------------
+//---------------------`(an.)amp_follower`, `(an.)peak_envelope`---------------------
 // Classic analog audio envelope follower with infinitely fast rise and
 // exponential decay.  The amplitude envelope instantaneously follows
 // the absolute value going up, but then floats down exponentially.
@@ -177,17 +185,27 @@ abs_envelope_t19(period, x) = abs(x) : fi.avg_t19(period);
 //
 // ```
 // _ : amp_follower(rel) : _
+// _ : peak_envelope(rel) : _
 // ```
 //
 // Where:
 //
 // * `rel`: release time = amplitude-envelope time-constant (sec) going down
 //
+// `peak_envelope` is a synonym of `amp_follower`, for more standard naming.
+//
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// amp_follower_test = os.osc(220) : an.amp_follower(0.05);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// mono = os.tosc(220);
+// amp_follower_test = mono : an.amp_follower(0.05);
+// amp_follower_slider_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower(hslider("amp_follower:rel", 0.05, 0.001, 1, 0.001)) with { Q = int(ma.SR/4); };
+// amp_follower_modulated_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower(0.001*pow(1000, tri)) with { Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// amp_follower_jump_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower(0.001*pow(1000, sq)) with { Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### References
@@ -222,7 +240,14 @@ peak_envelope = amp_follower; // Synonym for more standard naming
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// amp_follower_ud_test = os.osc(220) : an.amp_follower_ud(0.002, 0.05);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// mono = os.tosc(220);
+// amp_follower_ud_test = mono : an.amp_follower_ud(0.002, 0.05);
+// amp_follower_ud_slider_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower_ud(hslider("amp_follower_ud:att", 0.002, 0.0001, 0.01, 0.0001), hslider("amp_follower_ud:rel", 0.05, 0.01, 1, 0.001)) with { Q = int(ma.SR/4); };
+// amp_follower_ud_modulated_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower_ud(0.0005*pow(20, tri), 0.05) with { Q = int(ma.SR/4); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// amp_follower_ud_jump_test = no.noise*pow(0.001, float(ba.period(Q))/Q) : an.amp_follower_ud(0.0005*pow(20, sq), 0.05) with { Q = int(ma.SR/4); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### Note
@@ -260,7 +285,8 @@ amp_follower_ud(att,rel) = amp_follower(rel) : si.smooth(ba.tau2pole(att));
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// amp_follower_ar_test = os.osc(220) : an.amp_follower_ar(0.002, 0.05);
+// mono = os.tosc(220);
+// amp_follower_ar_test = mono : an.amp_follower_ar(0.002, 0.05);
 // ```
 //---------------------------------------------------------
 declare amp_follower_ar author "Jonatan Liljedahl, revised by Romain Michon";
@@ -284,14 +310,15 @@ amp_follower_ar(att,rel) = abs : si.onePoleSwitching(att,rel);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// ms_envelope_rect_test = an.ms_envelope_rect(0.05, os.osc(220));
+// mono = os.tosc(220);
+// ms_envelope_rect_test = an.ms_envelope_rect(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare ms_envelope_rect author "Dario Sanfilippo and Julius O. Smith III";
 declare ms_envelope_rect copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare ms_envelope_rect license "MIT-style STK-4.3 license";
+declare ms_envelope_rect license "LicenseRef-STK-4.3";
 ms_envelope_rect(period, x) = x * x : fi.avg_rect(period);
 
 
@@ -313,14 +340,15 @@ ms_envelope_rect(period, x) = x * x : fi.avg_rect(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// ms_envelope_tau_test = an.ms_envelope_tau(0.05, os.osc(220));
+// mono = os.tosc(220);
+// ms_envelope_tau_test = an.ms_envelope_tau(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare ms_envelope_tau author "Dario Sanfilippo and Julius O. Smith III";
 declare ms_envelope_tau copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare ms_envelope_tau license "MIT-style STK-4.3 license";
+declare ms_envelope_tau license "LicenseRef-STK-4.3";
 ms_envelope_tau(period, x) = x * x : fi.avg_tau(period);
 
 
@@ -342,14 +370,15 @@ ms_envelope_tau(period, x) = x * x : fi.avg_tau(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// ms_envelope_t60_test = an.ms_envelope_t60(0.05, os.osc(220));
+// mono = os.tosc(220);
+// ms_envelope_t60_test = an.ms_envelope_t60(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare ms_envelope_t60 author "Dario Sanfilippo and Julius O. Smith III";
 declare ms_envelope_t60 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare ms_envelope_t60 license "MIT-style STK-4.3 license";
+declare ms_envelope_t60 license "LicenseRef-STK-4.3";
 ms_envelope_t60(period, x) = x * x : fi.avg_t60(period);
 
 
@@ -371,14 +400,15 @@ ms_envelope_t60(period, x) = x * x : fi.avg_t60(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// ms_envelope_t19_test = an.ms_envelope_t19(0.05, os.osc(220));
+// mono = os.tosc(220);
+// ms_envelope_t19_test = an.ms_envelope_t19(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare ms_envelope_t19 author "Dario Sanfilippo and Julius O. Smith III";
 declare ms_envelope_t19 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare ms_envelope_t19 license "MIT-style STK-4.3 license";
+declare ms_envelope_t19 license "LicenseRef-STK-4.3";
 ms_envelope_t19(period, x) = x * x : fi.avg_t19(period);
 
 
@@ -399,14 +429,15 @@ ms_envelope_t19(period, x) = x * x : fi.avg_t19(period);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// rms_envelope_rect_test = an.rms_envelope_rect(0.05, os.osc(220));
+// mono = os.tosc(220);
+// rms_envelope_rect_test = an.rms_envelope_rect(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare rms_envelope_rect author "Dario Sanfilippo and Julius O. Smith III";
 declare rms_envelope_rect copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare rms_envelope_rect license "MIT-style STK-4.3 license";
+declare rms_envelope_rect license "LicenseRef-STK-4.3";
 rms_envelope_rect(period, x) = ms_envelope_rect(period, x) : sqrt;
 
 
@@ -428,14 +459,15 @@ rms_envelope_rect(period, x) = ms_envelope_rect(period, x) : sqrt;
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// rms_envelope_tau_test = an.rms_envelope_tau(0.05, os.osc(220));
+// mono = os.tosc(220);
+// rms_envelope_tau_test = an.rms_envelope_tau(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare rms_envelope_tau author "Dario Sanfilippo and Julius O. Smith III";
 declare rms_envelope_tau copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare rms_envelope_tau license "MIT-style STK-4.3 license";
+declare rms_envelope_tau license "LicenseRef-STK-4.3";
 rms_envelope_tau(period, x) = ms_envelope_tau(period, x) : sqrt;
 
 
@@ -457,14 +489,15 @@ rms_envelope_tau(period, x) = ms_envelope_tau(period, x) : sqrt;
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// rms_envelope_t60_test = an.rms_envelope_t60(0.05, os.osc(220));
+// mono = os.tosc(220);
+// rms_envelope_t60_test = an.rms_envelope_t60(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare rms_envelope_t60 author "Dario Sanfilippo and Julius O. Smith III";
 declare rms_envelope_t60 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare rms_envelope_t60 license "MIT-style STK-4.3 license";
+declare rms_envelope_t60 license "LicenseRef-STK-4.3";
 rms_envelope_t60(period, x) = ms_envelope_t60(period, x) : sqrt;
 
 
@@ -486,14 +519,15 @@ rms_envelope_t60(period, x) = ms_envelope_t60(period, x) : sqrt;
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// rms_envelope_t19_test = an.rms_envelope_t19(0.05, os.osc(220));
+// mono = os.tosc(220);
+// rms_envelope_t19_test = an.rms_envelope_t19(0.05, mono);
 // ```
 //---------------------------------------------------------
 declare rms_envelope_t19 author "Dario Sanfilippo and Julius O. Smith III";
 declare rms_envelope_t19 copyright "Copyright (C) 2020 Dario Sanfilippo 
       <sanfilippo.dario@gmail.com> and 
        2003-2020 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare rms_envelope_t19 license "MIT-style STK-4.3 license";
+declare rms_envelope_t19 license "LicenseRef-STK-4.3";
 rms_envelope_t19(period, x) = ms_envelope_t19(period, x) : sqrt;
 
 
@@ -521,13 +555,14 @@ rms_envelope_t19(period, x) = ms_envelope_t19(period, x) : sqrt;
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// zcr_test = an.zcr(0.01, os.osc(220));
+// mono = os.tosc(220);
+// zcr_test = an.zcr(0.01, mono);
 // ```
 //---------------------------------------------------------
 declare zcr author "Dario Sanfilippo";
 declare zcr copyright "Copyright (C) 2020 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare zcr license "MIT-style STK-4.3 license";
+declare zcr license "LicenseRef-STK-4.3";
 zcr(period, x) = ma.zc(x) : fi.lptau(period);
 
 
@@ -553,21 +588,27 @@ zcr(period, x) = ma.zc(x) : fi.lptau(period);
 //  stronger than the fundamental frequency.
 // * `tau`: response time in seconds based on exponentially-weighted averaging with tau time-constant. See <https://ccrma.stanford.edu/~jos/st/Exponentials.html>.
 //
+// The estimate fed back to the low-pass cutoff is smoothed by `si.smoo`: an
+// abrupt cutoff change makes the filter ring near its (low) cutoff, and those
+// zero crossings could otherwise hold the estimate there.
+//
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// pitchTracker_test = an.pitchTracker(4, 0.02, os.osc(220));
+// mono = os.tosc(220);
+// pitchTracker_test = an.pitchTracker(4, 0.02, mono);
+// pitchTracker_slider_test = an.pitchTracker(4, hslider("pitchTracker:tau", 0.02, 0.001, 1, 0.001), os.tosc(220));
 // ```
 //---------------------------------------------------------
 declare pitchTracker author "Dario Sanfilippo";
 declare pitchTracker copyright "Copyright (C) 2022 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare pitchTracker license "MIT License";
+declare pitchTracker license "MIT";
 pitchTracker(N, t, x) = loop ~ _
     with {
         xHighpassed = fi.highpass(1, 20.0, x);
-        loop(y) = an.zcr(t, fi.lowpass(N, max(20.0, y), xHighpassed)) * ma.SR * .5;
+        loop(y) = an.zcr(t, fi.lowpass(N, max(20.0, y) : si.smoo, xHighpassed)) * ma.SR * .5;
     };
 
 
@@ -607,7 +648,9 @@ pitchTracker(N, t, x) = loop ~ _
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// spectralCentroid_test = (os.osc(440) + os.osc(880)) : an.spectralCentroid(1, 0.01);
+// rich = os.tosc(440) + os.tosc(880);
+// spectralCentroid_test = rich : an.spectralCentroid(1, 0.01);
+// spectralCentroid_slider_test = os.tosc(440) + os.tosc(880) : an.spectralCentroid(1, hslider("spectralCentroid:tau", 0.01, 0.001, 1, 0.001));
 // ```
 //
 // #### References
@@ -618,7 +661,7 @@ pitchTracker(N, t, x) = loop ~ _
 declare spectralCentroid author "Dario Sanfilippo";
 declare spectralCentroid copyright "Copyright (C) 2022 Dario Sanfilippo
       <sanfilippo.dario@gmail.com>";
-declare spectralCentroid license "MIT License";
+declare spectralCentroid license "MIT";
 spectralCentroid(nonlinearity, t, x) = loop ~ _
     with {
         loop(fb) = centroid
@@ -651,7 +694,7 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
 // The documentation of this library contains more details about the implementation.
 // The parameters are:
 //
-// * `M`: number of band-slices per octave (>1)
+// * `M`: number of band-slices per octave (>=1)
 // * `N`: total number of bands (>2)
 // * `ftop` = upper bandlimit of the Mth-octave bands (<SR/2)
 //
@@ -660,7 +703,7 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
 // containing frequencies from 0 (dc) up to the start of the Mth-octave bands.
 // Thus, the N output signals are:
 // ```
-// highpass(ftop), MthOctaveBands(M,N-2,ftop), dcBand(ftop*2^(-M*(N-1)))
+// highpass(ftop), MthOctaveBands(M,N-2,ftop), dcBand(ftop*2^(-(N-2)/M))
 // ```
 //
 // A Spectrum-Analyzer is defined here as any band-split whose bands span
@@ -684,9 +727,12 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
 //========================================================================================
 
 
-//-------------------------`(an.)mth_octave_analyzer`----------------------------
+//---`(an.)mth_octave_analyzer`, `(an.)mth_octave_analyzer3`, `(an.)mth_octave_analyzer5`, `(an.)mth_octave_analyzer6e`, `(an.)mth_octave_analyzer_default`---
 // Octave analyzer.
 // `mth_octave_analyzer[N]` are standard Faust functions.
+// Splits whose crossover is at or above `fi.tpt_df_fmin` (2304 Hz in single
+// precision, 0 in double) are direct form, the others trapezoidal: see
+// `mth_octave_analyzer_tpt_df`.
 //
 // #### Usage
 // ```
@@ -699,7 +745,7 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
 // ```
 // _ : mth_octave_analyzer3(M,ftop,N) : par(i,N,_) // 3d-order Butterworth
 // _ : mth_octave_analyzer5(M,ftop,N) : par(i,N,_) // 5th-order Butterworth
-// mth_octave_analyzer_default = mth_octave_analyzer6e;
+// _ : mth_octave_analyzer_default(M,ftop,N) : par(i,N,_) // = mth_octave_analyzer6e
 // ```
 //
 // Where:
@@ -713,30 +759,71 @@ spectralCentroid(nonlinearity, t, x) = loop ~ _
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// mth_octave_analyzer_test = os.osc(440) : an.mth_octave_analyzer(3, 3, 8000, 5);
+// mono = os.tosc(220);
+// mth_octave_analyzer_test = mono : an.mth_octave_analyzer(3, 3, 8000, 5);
 // ```
 //------------------------------------------------------------
-mth_octave_analyzer6e(M,ftop,N) = _ <: bsplit(N-1) with {
-  fc(n) = ftop * 2^(float(n-N+1)/float(M)); // -3dB crossover frequencies
-  lp(n) = fi.lowpass6e(fc(n));  // 6th-order elliptic - see other choices above
-  hp(n) = fi.highpass6e(fc(n)); //   (search for lowpass* and highpass*)
-  bsplit(0)  = _;
-  bsplit(i) = hp(i), (lp(i) <: bsplit(i-1));
-};
+mth_octave_analyzer6e(M,ftop,N) = mth_octave_analyzer6e_tpt_df(fi.tpt_df_fmin,M,ftop,N);
 
 // Butterworth analyzers may be cascaded with allpass
 // delay-equalizers to make (allpass-complementary) filter banks:
-mth_octave_analyzer(O,M,ftop,N) = _ <: bsplit(N-1) with {
-  fc(n) = ftop * 2^(float(n-N+1)/float(M));
-  lp(n) = fi.lowpass(O,fc(n)); // Order O Butterworth
-  hp(n) = fi.highpass(O,fc(n));
-  bsplit(0)  = _;
-  bsplit(i) = hp(i), (lp(i) <: bsplit(i-1));
-};
+mth_octave_analyzer(O,M,ftop,N) = mth_octave_analyzer_tpt_df(fi.tpt_df_fmin,O,M,ftop,N);
 
 mth_octave_analyzer3(M,ftop,N) = mth_octave_analyzer(3,M,ftop,N);
 mth_octave_analyzer5(M,ftop,N) = mth_octave_analyzer(5,M,ftop,N);
 mth_octave_analyzer_default = mth_octave_analyzer6e; // default analyzer
+
+//---`(an.)mth_octave_analyzer_tpt_df`, `(an.)mth_octave_analyzer6e_tpt_df`---
+// `mth_octave_analyzer` and `mth_octave_analyzer6e` with an explicit cutoff
+// limit `L`: the band splits whose crossover is below `L` use trapezoidal
+// sections, the others the cheaper direct-form sections
+// (`fi.lowpass_tpt_df`, `fi.lowpass6e_tpt_df`). The analyzers above are
+// these with `L = fi.tpt_df_fmin`: trapezoidal below 2304 Hz in single
+// precision, direct form everywhere in double precision. Each split is
+// compiled in one form only when its crossover is a constant; for a varying
+// `ftop`, pass `L = ma.MAX` (trapezoidal) or `L = 0` (direct form), or both
+// forms run.
+//
+// #### Usage
+// ```
+// _ : mth_octave_analyzer_tpt_df(L,O,M,ftop,N) : par(i,N,_)
+// _ : mth_octave_analyzer6e_tpt_df(L,M,ftop,N) : par(i,N,_)
+// ```
+//
+// Where:
+//
+// * `L`: cutoff limit in Hz, usually `fi.tpt_df_fmin`; `L <= 0` selects
+//   the direct form and `L >= ma.MAX` the trapezoidal form for every crossover
+// * `O`, `M`, `ftop`, `N`: as for `mth_octave_analyzer`
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// fi = library("filters.lib");
+// no = library("noises.lib");
+// mth_octave_analyzer_tpt_df_test = no.noise : an.mth_octave_analyzer_tpt_df(fi.tpt_df_fmin, 5, 2, 10000, 12);
+// mth_octave_analyzer6e_tpt_df_test = no.noise : an.mth_octave_analyzer6e_tpt_df(fi.tpt_df_fmin, 2, 10000, 12);
+// ```
+//------------------------------------------------------------
+declare mth_octave_analyzer_tpt_df author "Julius O. Smith III";
+declare mth_octave_analyzer_tpt_df license "MIT";
+mth_octave_analyzer_tpt_df(L,O,M,ftop,N) = _ <: bsplit(N-1) with {
+  fc(n) = ftop * 2^(float(n-N+1)/float(M));
+  lp(n) = fi.lowpass_tpt_df(L,O,fc(n)); // Order O Butterworth
+  hp(n) = fi.highpass_tpt_df(L,O,fc(n));
+  bsplit(0)  = _;
+  bsplit(i) = hp(i), (lp(i) <: bsplit(i-1));
+};
+
+declare mth_octave_analyzer6e_tpt_df author "Julius O. Smith III";
+declare mth_octave_analyzer6e_tpt_df license "MIT";
+mth_octave_analyzer6e_tpt_df(L,M,ftop,N) = _ <: bsplit(N-1) with {
+  fc(n) = ftop * 2^(float(n-N+1)/float(M)); // crossovers (-0.2 dB passband edges)
+  lp(n) = fi.lowpass6e_tpt_df(L,fc(n));  // 6th-order elliptic - see other choices above
+  hp(n) = fi.highpass6e_tpt_df(L,fc(n)); //   (search for lowpass* and highpass*)
+  bsplit(0)  = _;
+  bsplit(i) = hp(i), (lp(i) <: bsplit(i-1));
+};
 
 
 //============================Mth-Octave Spectral Level===================================
@@ -744,13 +831,17 @@ mth_octave_analyzer_default = mth_octave_analyzer6e; // default analyzer
 //========================================================================================
 
 
-//------------------------`(an.)mth_octave_spectral_level6e`-------------------------
-// Spectral level display.
+//---`(an.)mth_octave_spectral_level6e`, `(an.)mth_octave_spectral_level_default`, `(an.)spectral_level`---
+// Spectral level display. `spectral_level` is
+// `mth_octave_spectral_level_default(2,10000,20)`: half-octave bands, the
+// top one at 10 kHz, 20 bands in all.
 //
-// #### Usage:
+// #### Usage
 //
 // ```
 // _ : mth_octave_spectral_level6e(M,ftop,NBands,tau,dB_offset) : _
+// _ : mth_octave_spectral_level_default(M,ftop,NBands,tau,dB_offset) : _
+// _ : spectral_level(tau,dB_offset) : _
 // ```
 //
 // Where:
@@ -765,14 +856,16 @@ mth_octave_analyzer_default = mth_octave_analyzer6e; // default analyzer
 //
 // ```
 // mth_octave_spectral_level_default = mth_octave_spectral_level6e;
-// spectral_level = mth_octave_spectral_level(2,10000,20);
+// spectral_level = mth_octave_spectral_level_default(2,10000,20);
 // ```
 //
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// mth_octave_spectral_level6e_test = os.osc(440) : an.mth_octave_spectral_level6e(3, 8000, 5, 0.05, 0);
+// mono = os.tosc(220);
+// mth_octave_spectral_level6e_test = mono : an.mth_octave_spectral_level6e(3, 8000, 5, 0.05, 0);
+// spectral_level_test = os.tosc(220) : an.spectral_level(0.05, 0);
 // ```
 //------------------------------------------------------------
 mth_octave_spectral_level6e(M,ftop,N,tau,dB_offset) = _<:
@@ -790,27 +883,50 @@ mth_octave_spectral_level6e(M,ftop,N,tau,dB_offset) = _<:
 };
 
 mth_octave_spectral_level_default = mth_octave_spectral_level6e;
-spectral_level = mth_octave_spectral_level(2,10000,20);  // simple default
+spectral_level = mth_octave_spectral_level_default(2,10000,20);  // simple default
 
 
-//---------------`(an.)[third|half]_octave_[analyzer|filterbank]`----------------
+//---`(an.)octave_analyzer`, `(an.)half_octave_analyzer`, `(an.)third_octave_analyzer`, `(an.)octave_filterbank`, `(an.)half_octave_filterbank`, `(an.)third_octave_filterbank`---
 // A bunch of special cases based on the different analyzer functions described above:
 //
 // ```
 // third_octave_analyzer(N) = mth_octave_analyzer_default(3,10000,N);
-// third_octave_filterbank(N) = mth_octave_filterbank_default(3,10000,N);
+// third_octave_filterbank(N) = fi.mth_octave_filterbank_default(3,10000,N);
 // half_octave_analyzer(N) = mth_octave_analyzer_default(2,10000,N);
-// half_octave_filterbank(N) = mth_octave_filterbank_default(2,10000,N);
-// octave_filterbank(N) = mth_octave_filterbank_default(1,10000,N);
+// half_octave_filterbank(N) = fi.mth_octave_filterbank_default(2,10000,N);
+// octave_filterbank(N) = fi.mth_octave_filterbank_default(1,10000,N);
 // octave_analyzer(N) = mth_octave_analyzer_default(1,10000,N);
 // ```
 //
 // #### Usage
 //
-// See `mth_octave_spectral_level_demo` in `demos.lib`.
+// ```
+// _ : octave_analyzer(N) : par(i,N,_)
+// _ : half_octave_analyzer(N) : par(i,N,_)
+// _ : third_octave_analyzer(N) : par(i,N,_)
+// _ : octave_filterbank(N) : par(i,N,_)
+// _ : half_octave_filterbank(N) : par(i,N,_)
+// _ : third_octave_filterbank(N) : par(i,N,_)
+// ```
+//
+// Where:
+//
+// * `N`: total number of bands (including dc and Nyquist)
+//
+// See `mth_octave_spectral_level_demo` in `demos.lib` for an example.
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// octave_filterbank_test = os.tosc(440) : an.octave_filterbank(5);
+// half_octave_filterbank_test = os.tosc(440) : an.half_octave_filterbank(6);
+// third_octave_filterbank_test = os.tosc(440) : an.third_octave_filterbank(8);
+// ```
+//
 //------------------------------------------------------------
 third_octave_analyzer(N) = mth_octave_analyzer_default(3,10000,N);
-third_octave_filterbank(N) = mth_octave_filterbank_default(3,10000,N);
+third_octave_filterbank(N) = fi.mth_octave_filterbank_default(3,10000,N);
 // Third-Octave Filter-Banks have been used in audio for over a century.
 // See, e.g.,
 //   Acoustics [the book], by L. L. Beranek
@@ -820,13 +936,13 @@ third_octave_filterbank(N) = mth_octave_filterbank_default(3,10000,N);
 // Third-octave bands across the audio spectrum are too wide for current
 // typical computer screens, so half-octave bands are the default:
 half_octave_analyzer(N) = mth_octave_analyzer_default(2,10000,N);
-half_octave_filterbank(N) = mth_octave_filterbank_default(2,10000,N);
+half_octave_filterbank(N) = fi.mth_octave_filterbank_default(2,10000,N);
 
-octave_filterbank(N) = mth_octave_filterbank_default(1,10000,N);
+octave_filterbank(N) = fi.mth_octave_filterbank_default(1,10000,N);
 octave_analyzer(N) = mth_octave_analyzer_default(1,10000,N);
 
 
-//===============Arbritary-Crossover Filter-Banks and Spectrum Analyzers==================
+//===============Arbitrary-Crossover Filter-Banks and Spectrum Analyzers==================
 // These are similar to the Mth-octave analyzers above, except that the
 // band-split frequencies are passed explicitly as arguments.
 //========================================================================================
@@ -837,11 +953,14 @@ octave_analyzer(N) = mth_octave_analyzer_default(1,10000,N);
 
 //---------------`(an.)analyzer`--------------------------
 // Analyzer.
+// Splits whose crossover is at or above `fi.tpt_df_fmin` (2304 Hz in single
+// precision, 0 in double) are direct form, the others trapezoidal: see
+// `analyzer_tpt_df`.
 //
 // #### Usage
 //
 // ```
-// _ : analyzer(O,freqs) : par(i,N,_) // No delay equalizer
+// _ : analyzer(O,freqs) : par(i,ba.count(freqs)+1,_) // No delay equalizer
 // ```
 //
 // Where:
@@ -849,7 +968,7 @@ octave_analyzer(N) = mth_octave_analyzer_default(1,10000,N);
 // * `O`: band-split filter order (ODD integer required for filterbank[i])
 // * `freqs`: (fc1,fc2,...,fcNs) [in numerically ascending order], where
 //           Ns=N-1 is the number of octave band-splits
-//           (total number of bands N=Ns+1).
+//           (total number of bands N=Ns+1, the number of outputs).
 //
 // If frequencies are listed explicitly as arguments, enclose them in parens:
 //
@@ -861,15 +980,52 @@ octave_analyzer(N) = mth_octave_analyzer_default(1,10000,N);
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// analyzer_test = os.osc(440) : an.analyzer(3, (500, 2000));
+// mono = os.tosc(220);
+// analyzer_test = mono : an.analyzer(3, (500, 2000));
 // ```
 //------------------------------------------------------------
-analyzer(O,lfreqs) = _ <: bsplit(nb) 
+analyzer(O,lfreqs) = analyzer_tpt_df(fi.tpt_df_fmin,O,lfreqs);
+
+//---------------`(an.)analyzer_tpt_df`--------------------------
+// `analyzer` with an explicit cutoff limit `L`, as
+// `mth_octave_analyzer_tpt_df` is to `mth_octave_analyzer`:
+// `analyzer(O,freqs)` is `analyzer_tpt_df(fi.tpt_df_fmin,O,freqs)`. For
+// crossovers that vary (sliders), pass `L = ma.MAX` (trapezoidal) or
+// `L = 0` (direct form), or both forms run.
+//
+// #### Usage
+//
+// ```
+// _ : analyzer_tpt_df(L,O,freqs) : par(i,ba.count(freqs)+1,_)
+// ```
+//
+// Where:
+//
+// * `L`: cutoff limit in Hz, usually `fi.tpt_df_fmin`; `L <= 0` selects
+//   the direct form and `L >= ma.MAX` the trapezoidal form for every crossover
+// * `O`, `freqs`: as for `analyzer`
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// fi = library("filters.lib");
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// analyzer_tpt_df_test = no.noise : an.analyzer_tpt_df(fi.tpt_df_fmin, 3, (50, 500, 4000));
+// analyzer_tpt_df_slider_test = no.noise : an.analyzer_tpt_df(fi.tpt_df_fmin, 3, (hslider("f1", 500, 20, 10000, 1), hslider("f2", 4000, 20, 20000, 1)));
+// analyzer_tpt_df_modulated_test = no.noise : an.analyzer_tpt_df(0, 3, (f1, 4*f1)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); f1 = 2500*pow(2, tri); };
+// analyzer_tpt_df_jump_test = no.noise : an.analyzer_tpt_df(ma.MAX, 3, (f1, 4*f1)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; f1 = 100*pow(10, sq); };
+// ```
+//------------------------------------------------------------
+declare analyzer_tpt_df author "Julius O. Smith III";
+declare analyzer_tpt_df license "MIT";
+analyzer_tpt_df(L,O,lfreqs) = _ <: bsplit(nb)
 with {
    nb = ba.count(lfreqs);
    fc(n) = ba.take(n, lfreqs);
-   lp(n) = fi.lowpass(O,fc(n));
-   hp(n) = fi.highpass(O,fc(n));
+   lp(n) = fi.lowpass_tpt_df(L,O,fc(n));
+   hp(n) = fi.highpass_tpt_df(L,O,fc(n));
    bsplit(0) = _;
    bsplit(i) = hp(i), (lp(i) <: bsplit(i-1));
 };
@@ -889,14 +1045,14 @@ with {
 //
 // Where:
 //
-// * `freq`: frequency to be analyzed
+// * `freq`: frequency to be analyzed (rounded to the nearest DFT bin, `freq*n/SR`)
 // * `n`: the Goertzel block size
 //
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// goertzelOpt_test = an.goertzelOpt(440, 128, os.osc(440));
+// goertzelOpt_test = an.goertzelOpt(440, 128, os.tosc(440));
 // ```
 //
 // #### References
@@ -905,11 +1061,13 @@ with {
 //---------------------------------------------------
 goertzelOpt(freq,n,x) = mg 
 with {
-  mg = sqrt(eq^2 + eq'^2-eq*eq'*c) : ba.sAndH(reset0); // magnitude
+  // magnitude; max(0, .) since rounding can make the sum slightly negative,
+  // e.g. (eq - eq')^2 in float at the dc bin (k = 0, c = 2):
+  mg = sqrt(max(0, eq^2 + eq'^2-eq*eq'*c)) : ba.sAndH(reset0);
   cnt = ba.time%n; // counter for windowing
   reset0 = cnt == (n-1); // reset when end of window
   reset1 = 1-(cnt == 0); // reset when beginning of window
-  k = 0.5 + n*freq/ma.SR;
+  k = int(0.5 + n*freq/ma.SR); // nearest bin
   w = (2*ma.PI/n)*k;
   c = 2*cos(w);
   eq = s // equation
@@ -929,14 +1087,14 @@ with {
 //
 // Where:
 //
-// * `freq`: frequency to be analyzed
+// * `freq`: frequency to be analyzed (rounded to the nearest DFT bin, `freq*n/SR`)
 // * `n`: the Goertzel block size
 //
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// goertzelComp_test = an.goertzelComp(440, 128, os.osc(440));
+// goertzelComp_test = an.goertzelComp(440, 128, os.tosc(440));
 // ```
 //
 // #### References
@@ -949,7 +1107,7 @@ with {
   cnt = ba.time%n; // counter for windowing
   reset0 = cnt == (n-1); // reset when end of window
   reset1 = 1-(cnt == 0); // reset when beginning of window
-  k = 0.5 + n*freq/ma.SR;
+  k = int(0.5 + n*freq/ma.SR); // nearest bin
   w = (2*ma.PI/n)*k;
   sine = sin(w);
   cosine = cos(w);
@@ -980,7 +1138,7 @@ with {
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// goertzel_test = an.goertzel(440, 128, os.osc(440));
+// goertzel_test = an.goertzel(440, 128, os.tosc(440));
 // ```
 //
 // #### References
@@ -1012,7 +1170,14 @@ goertzel = goertzelOpt;
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// resonator_test = os.osc(440) : an.resonator(2, 440);
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
+// mono = os.tosc(220);
+// resonator_test = mono : an.resonator(2, 440);
+// resonator_slider_test = os.tosc(220) : an.resonator(2, hslider("resonator:f", 440, 20, 5000, 1)) : _, !;
+// resonator_modulated_test = no.noise : an.resonator(2, 20*pow(250, tri)) : _, ! with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// resonator_jump_test = no.noise : an.resonator(2, 20*pow(250, sq)) : _, ! with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // #### Algorithm
@@ -1069,49 +1234,440 @@ with {
     ang = atan2;
 };
 
-// Undocumented utility functions used by fft and ifft:
+//==================================== Window Functions ==================================
+// Continuous window functions, defined on the normalized abscissa x in [0,1]
+// and evaluating to their peak at x = 1/2. Each is a pure arithmetic
+// expression, so it can be applied to a constant (to weight the taps of an
+// FIR or the grains of a granular engine at compile time) as well as to a
+// signal (a phase ramp, for run-time windowing):
+//
+// ```
+// // N compile-time weights (symmetric window):
+// w(i) = an.window_hann(i/(N-1));
+// // run-time windowing of a stream, with ph a 0..1 phase ramp:
+// process = _ * an.window_hann(ph);
+// ```
+//
+// For DFT-even (periodic) windows, evaluate at i/N instead of i/(N-1).
+//========================================================================================
+
+//---------------`(an.)window_rect`, `(an.)window_hann`, `(an.)window_hamming`, `(an.)window_blackman`, `(an.)window_blackman_harris`, `(an.)window_nuttall`, `(an.)window_flattop`, `(an.)window_bartlett`--------------------------
+// The classic fixed window functions:
+//
+// * `window_rect`: rectangular (boxcar) window, 1 inside [0,1], 0 outside
+// * `window_hann`: Hann (raised cosine), -31.5 dB first sidelobe
+// * `window_hamming`: Hamming (0.54/0.46), -42.7 dB first sidelobe
+// * `window_blackman`: classic Blackman (3-term, 0.42/0.50/0.08), -58 dB
+//   (not Harris's "exact Blackman", 7938/9240/1430 over 18608)
+// * `window_blackman_harris`: minimum 4-term Blackman-Harris, -92 dB
+// * `window_nuttall`: Nuttall's continuous-first-derivative 4-term, -93 dB
+// * `window_flattop`: 5-term flat-top (amplitude-accurate spectral peaks,
+//    scalloping loss < 0.01 dB, very wide main lobe)
+// * `window_bartlett`: Bartlett (triangular, reaching 0 at both ends)
+//
+// #### Usage
+//
+// ```
+// window_rect(x) : _
+// window_hann(x) : _
+// window_hamming(x) : _
+// window_blackman(x) : _
+// window_blackman_harris(x) : _
+// window_nuttall(x) : _
+// window_flattop(x) : _
+// window_bartlett(x) : _
+// ```
+//
+// Where:
+//
+// * `x`: normalized abscissa, the window support being [0,1]
+//   (values outside [0,1] return 0)
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// window_hann_test = an.window_hann(os.lf_sawpos(100));
+// window_rect_test = an.window_rect(os.lf_sawpos(100));
+// window_hamming_test = an.window_hamming(os.lf_sawpos(100));
+// window_blackman_test = an.window_blackman(os.lf_sawpos(100));
+// window_blackman_harris_test = an.window_blackman_harris(os.lf_sawpos(100));
+// window_nuttall_test = an.window_nuttall(os.lf_sawpos(100));
+// window_flattop_test = an.window_flattop(os.lf_sawpos(100));
+// window_bartlett_test = an.window_bartlett(os.lf_sawpos(100));
+// ```
+//
+// #### References
+//
+// * F.J. Harris, "On the use of windows for harmonic analysis with the
+//   discrete Fourier transform", Proc. IEEE 66(1), 1978.
+// * A.H. Nuttall, "Some windows with very good sidelobe behavior",
+//   IEEE Trans. ASSP 29(1), 1981.
+// * <https://en.wikipedia.org/wiki/Window_function>
+//---------------------------------------------------
+window_rect(x) = in01(x)
+with { in01(x) = (x >= 0.0) & (x <= 1.0); };
+window_hann(x) = window_cosN((0.5, -0.5), x);
+window_hamming(x) = window_cosN((0.54, -0.46), x);
+window_blackman(x) = window_cosN((0.42, -0.50, 0.08), x);
+window_blackman_harris(x) = window_cosN((0.35875, -0.48829, 0.14128, -0.01168), x);
+window_nuttall(x) = window_cosN((0.355768, -0.487396, 0.144232, -0.012604), x);
+window_flattop(x) = window_cosN((0.21557895, -0.41663158, 0.277263158,
+                                 -0.083578947, 0.006947368), x);
+window_bartlett(x) = max(0.0, 1.0 - abs(2.0*x - 1.0)) * ((x >= 0.0) & (x <= 1.0));
+
+//---------------`(an.)window_cosN`--------------------------
+// Generic sum-of-cosines window: given the coefficient list `(a0, a1, ..., aK)`,
+// evaluates `a0 + a1*cos(2*PI*x) + a2*cos(4*PI*x) + ...` inside [0,1] and 0
+// outside. All the fixed windows above are instances of this function; use it
+// directly for custom sidelobe trade-offs.
+//
+// #### Usage
+//
+// ```
+// window_cosN(coeffs, x) : _
+// ```
+//
+// Where:
+//
+// * `coeffs`: the list `(a0, a1, ..., aK)` of cosine-series coefficients,
+//   alternating in sign for the usual windows (peak value at x = 1/2 is
+//   a0 - a1 + a2 - ...)
+// * `x`: normalized abscissa in [0,1]
+//
+// #### Example
+//
+// ```
+// window_cosN((0.42, -0.50, 0.08), x) : _ // the Blackman window
+// ```
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// window_cosN_test = an.window_cosN((0.5, -0.5), os.lf_sawpos(100));
+// ```
+//---------------------------------------------------
+window_cosN(coeffs, x) = sum(k, K, ba.take(k+1, coeffs) * cos(k*ma.PI*2.0*x))
+                         * ((x >= 0.0) & (x <= 1.0))
+with { K = ba.count(coeffs); };
+window_cosN(a0, x) = a0 * ((x >= 0.0) & (x <= 1.0));
+
+//---------------`(an.)window_tukey`--------------------------
+// Tukey (cosine-tapered) window: flat at 1 over the central `1-a` fraction of
+// the support, with raised-cosine tapers of total length `a` at the edges.
+// `window_tukey(0)` degenerates to the rectangular window and
+// `window_tukey(1)` to the Hann window.
+//
+// #### Usage
+//
+// ```
+// window_tukey(a, x) : _
+// ```
+//
+// Where:
+//
+// * `a`: taper fraction between 0 and 1
+// * `x`: normalized abscissa in [0,1]
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// window_tukey_test = an.window_tukey(0.5, os.lf_sawpos(100));
+// window_tukey_rect_test = an.window_tukey(0, os.lf_sawpos(100));
+// ```
+//---------------------------------------------------
+window_tukey(a, x) = taper(min(x, 1.0 - x)) * ((x >= 0.0) & (x <= 1.0))
+with {
+    // distance d from the nearest edge; cosine taper while d < a/2
+    // (2.0*d < a, not a1: with a = 0 no sample is tapered, the end points included)
+    taper(d) = select2(2.0*d < a, 1.0, 0.5*(1.0 + cos(ma.PI*(2.0*d/a1 - 1.0))));
+    a1 = max(a, ma.EPSILON);
+};
+
+//---------------`(an.)window_kaiser`--------------------------
+// Kaiser window of shape parameter `beta`, computed with a fixed-length
+// series for the modified Bessel function I0 (40 terms: exact to double
+// precision for any useful `beta`, and pure arithmetic, so usable at compile
+// time). Larger `beta` trades main-lobe width for sidelobe attenuation:
+// beta = 0 is rectangular, 5 approximates Hamming, 8.6 approximates
+// Blackman.
+//
+// #### Usage
+//
+// ```
+// window_kaiser(beta, x) : _
+// ```
+//
+// Where:
+//
+// * `beta`: shape parameter (>= 0), typically between 2 and 16
+// * `x`: normalized abscissa in [0,1]
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// window_kaiser_test = an.window_kaiser(8.6, os.lf_sawpos(100));
+// ```
+//
+// #### References
+//
+// * J.F. Kaiser and R.W. Schafer, "On the use of the I0-sinh window for
+//   spectrum analysis", IEEE Trans. ASSP 28(1), 1980.
+//---------------------------------------------------
+window_kaiser(beta, x) = besselI0(beta * sqrt(max(0.0, 1.0 - z*z))) / besselI0(beta)
+                         * ((x >= 0.0) & (x <= 1.0))
+with {
+    z = 2.0*x - 1.0;
+    // I0(v) = sum_k ((v/2)^k / k!)^2 for k = 0..40, in Horner form:
+    // 1 + q/1^2 (1 + q/2^2 (1 + ... (1 + q/40^2))) with q = (v/2)^2. No
+    // intermediate value exceeds I0(v), where the power-over-factorial form
+    // overflowed single precision ((v/2)^80 and 40!^2 = 6.7e95) to inf/inf.
+    besselI0(v) = horner(0)
+    with {
+        q = 0.25*v*v;
+        horner(40) = 1.0;
+        horner(k) = 1.0 + q / ((k+1)*(k+1)) * horner(k+1);
+    };
+};
+
+//==================================== FFT Subsystem =====================================
+// Sliding FFT/IFFT for complex and real signals, with the conversion and display
+// helpers they rely on.
+//
+// **Complex vector representation.** Throughout this section, a *complex vector
+// signal* of length `N` is a bank of `2*N` parallel real signals holding
+// interleaved (real, imaginary) pairs: `(r0,i0), (r1,i1), ..., (rN-1,iN-1)`.
+// This is the convention enforced by `si.cbus(N)`, and it is the input and
+// output format of `an.fft` and `an.ifft`. A *real vector signal* of length `N`
+// is simply `N` parallel real signals (`si.bus(N)`). The `rtorv`/`rtocv`/`rvtocv`
+// functions convert a scalar signal or a real vector into these formats, and the
+// `c_*` functions operate on complex vectors.
+//========================================================================================
+
+//---------------`(an.)c_magsq`--------------------------
+// Squared magnitude of each bin of a complex vector signal.
+//
+// #### Usage
+//
+// ```
+// si.cbus(N) : c_magsq(N) : si.bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of complex bins (power of 2 in FFT contexts)
+// * input: `N` complex signals as interleaved (real, imaginary) pairs
+// * output: `N` real signals, the `k`-th one being `r(k)^2 + i(k)^2`
+//---------------------------------------------------
 c_magsq(N) = si.cbus(N) : par(i,N,(par(j,2,abs<:_*_):>_)) :> si.bus(N);
+
+//---------------`(an.)c_magdb`--------------------------
+// Magnitude in dB (power) of each bin of a complex vector signal:
+// `10*log10(r^2 + i^2)`, floored at `ma.EPSILON` to avoid `log10(0)`.
+//
+// #### Usage
+//
+// ```
+// si.cbus(N) : c_magdb(N) : si.bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of complex bins
+// * input: `N` complex signals as interleaved (real, imaginary) pairs
+// * output: `N` real signals giving the power of each bin in dB
+//---------------------------------------------------
 c_magdb(N) = si.cbus(N) : an.c_magsq(N) : par(i,N,(max(ma.EPSILON):log10:*(10.0)));
+
+//---------------`(an.)c_select_pos_freqs`--------------------------
+// Select the `N/2+1` non-negative-frequency bins (dc up to and including
+// Nyquist) out of an `N`-bin complex spectrum, discarding the redundant
+// negative-frequency bins of a real signal's spectrum.
+// `select_pos_freqs(N)` is the same selection for a real vector
+// (e.g. a power spectrum).
+//
+// #### Usage
+//
+// ```
+// si.cbus(N) : c_select_pos_freqs(N) : si.cbus(N/2+1)
+// si.bus(N) : select_pos_freqs(N) : si.bus(N/2+1)
+// ```
+//
+// Where:
+//
+// * `N`: full spectrum size (power of 2)
+// * output: bins `0..N/2` (dc and Nyquist included)
+//---------------------------------------------------
 c_select_pos_freqs(2) = (_,_), (_,_); // both dc and SR/2 included with "positive frequencies"
 c_select_pos_freqs(N) = si.cbus(N) : par(i,N/2+1,(_,_)),par(i,N/2-1,(!,!)) : si.cbus(N/2+1); // for complex spectra
   select_pos_freqs(2) = _,_; // both dc and SR/2 included
   select_pos_freqs(N) = si.bus(N) : par(i,N/2+1, _), par(i,N/2-1, !) : si. bus(N/2+1); // real power spectra etc.
 
+//---------------`(an.)rtorv`, `(an.)rtocv`, `(an.)rvtocv`--------------------------
+// Convert a real signal to the vector formats used by `an.fft`:
+//
+// * `rtorv(N,x)`: real scalar signal to length-`N` real vector holding the last
+//   `N` samples of `x`, newest first: `(x, x@1, ..., x@(N-1))`
+// * `rtocv(N,x)`: real scalar signal to length-`N` complex vector holding the
+//   last `N` samples of `x`, newest first, with zero imaginary parts:
+//   `(x,0), (x@1,0), ..., (x@(N-1),0)`
+// * `rvtocv(N)`: length-`N` real vector to length-`N` complex vector with zero
+//   imaginary parts
+//
+// Because the newest sample comes first, `rtocv(N) : an.fft(N)` is the DFT of the
+// time-reversed window, `V(k,n) = sum(i=0..N-1) x(n-i) exp(-j*2*pi*k*i/N)`, and
+// for a real `x` it equals `exp(j*2*pi*k/N) * conj(X(k,n))`, where
+// `X(k,n) = sum(m=0..N-1) x(n-N+1+m) exp(-j*2*pi*k*m/N)` is the standard sliding
+// DFT (`numpy.fft.fft(x[n-N+1:n+1])`). Magnitudes are those of `X(k,n)`; phases
+// are conjugated and offset by `2*pi*k/N`, so a sinusoid's phase turns backwards.
+// For the chronological (oldest-first) order and the standard sliding DFT, use
+// `an.rtorv_chrono` and `an.rtocv_chrono`.
+//
+// #### Usage
+//
+// ```
+// rtorv(N,x) : si.bus(N)
+// rtocv(N,x) : si.cbus(N)
+// si.bus(N) : rvtocv(N) : si.cbus(N)
+// ```
+//
+// Where:
+//
+// * `N`: vector size (power of 2 in FFT contexts, known at compile time)
+// * `x`: a real (scalar) input signal
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// no = library("noises.lib");
+// rtocv_test = an.rtocv(8, os.tosc(220));
+// rtorv_test = an.rtorv(4, no.noise);
+// ```
+//---------------------------------------------------
 rtorv(N,x) = par(i,N,x@i); // convert real scalar signal to length N real vector
 rtocv(N,x) = par(i,N,(x@i,0)); // convert real scalar signal to length N complex vector with 0 imag part
 rvtocv(N) = si.bus(N), par(i,N,0) : ro.interleave(N,2); // convert real N-vector to complex with 0 imag part
 
+//---------------`(an.)rtorv_chrono`--------------------------
+// Real scalar signal to length-`N` real vector holding the last `N` samples of
+// `x` in chronological order, oldest first: `(x@(N-1), ..., x@1, x)`.
+// Element `m` is `x(n-N+1+m)` at time `n`, the order a DFT expects.
+// `an.rtorv` holds the same samples newest first.
+//
+// #### Usage
+//
+// ```
+// rtorv_chrono(N,x) : si.bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: vector size (power of 2 in FFT contexts, known at compile time)
+// * `x`: a real (scalar) input signal
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// no = library("noises.lib");
+// rtorv_chrono_test = an.rtorv_chrono(4, no.noise);
+// ```
+//---------------------------------------------------
+declare rtorv_chrono license "LicenseRef-STK-4.3";
+rtorv_chrono(N,x) = par(i,N,x@(N-1-i));
+
+//---------------`(an.)rtocv_chrono`--------------------------
+// Real scalar signal to length-`N` complex vector holding the last `N` samples
+// of `x` in chronological order, oldest first, with zero imaginary parts:
+// `(x@(N-1),0), ..., (x@1,0), (x,0)`.
+// `rtocv_chrono(N) : an.fft(N)` is the standard sliding DFT
+// `X(k,n) = sum(m=0..N-1) x(n-N+1+m) exp(-j*2*pi*k*m/N)`, i.e.,
+// `numpy.fft.fft(x[n-N+1:n+1])`, its phase referred to the oldest sample of the
+// window, and `rtocv_chrono(N) : an.fft(N) : an.ifft(N)` returns the window,
+// oldest first (the test keeps its real parts: the imaginary parts are rounding
+// noise). `an.rtocv` holds the same samples newest first.
+//
+// #### Usage
+//
+// ```
+// rtocv_chrono(N,x) : si.cbus(N)
+// ```
+//
+// Where:
+//
+// * `N`: vector size (power of 2 in FFT contexts, known at compile time)
+// * `x`: a real (scalar) input signal
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// no = library("noises.lib");
+// rtocv_chrono_test = an.rtocv_chrono(8, no.noise);
+// rtocv_chrono_ifft_test = an.rtocv_chrono(8, no.noise) : an.fft(8) : an.ifft(8) : par(i, 8, (_, !));
+// ```
+//---------------------------------------------------
+declare rtocv_chrono license "LicenseRef-STK-4.3";
+rtocv_chrono(N,x) = par(i,N,(x@(N-1-i),0));
+
 bit_reverse_selector(N,0) = 0;
 bit_reverse_selector(N,i) = int(int(N)>>1)*(i&1) + bit_reverse_selector(int(N)>>1,(i>>1));
 
+//---`(an.)bit_reverse_shuffle`, `(an.)c_bit_reverse_shuffle`, `(an.)bit_reverse_selector`---
+// Bit-reversal permutation of a vector signal, as performed on the input of a
+// decimation-in-time radix-2 FFT. `bit_reverse_shuffle(N)` permutes a real
+// vector, `c_bit_reverse_shuffle(N)` a complex vector. Used internally by
+// `an.fft` and `an.ifft`. `bit_reverse_selector(N,i)` is the constant index
+// (in 0..N-1) of the channel that the permutation sends to channel `i`:
+// `i` with its log2(N) bits reversed, e.g. `bit_reverse_selector(8,1)` is 4.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : bit_reverse_shuffle(N) : si.bus(N)
+// si.cbus(N) : c_bit_reverse_shuffle(N) : si.cbus(N)
+// bit_reverse_selector(N,i) : _
+// ```
+//
+// Where:
+//
+// * `N`: vector size (must be a power of 2)
+// * `i`: a channel index in 0..N-1, known at compile time
+//---------------------------------------------------
 // decimation in time does this to the input:
-bit_reverse_shuffle(N) = si.bus(N) <: par(i,N,bit_reverse_permuter(N,i)) with {
-    bit_reverse_permuter(N,k) = ba.selector(bit_reverse_selector(N,k),N);
-};
+// `route` expresses the permutation with one connection per channel, so the
+// graph is O(N); the previous `par(i,N,ba.selector(...,N))` form built N N-way
+// selectors and was O(N^2) (an.fft(1024) needed >2M nodes and ~55s).
+bit_reverse_shuffle(N) = route(N, N, par(i, N, (bit_reverse_selector(N,i)+1, i+1)));
 
-c_bit_reverse_shuffle(N) = si.cbus(N) <: par(i,N,c_bit_reverse_permuter(N,i)) with {
-    c_bit_reverse_permuter(N,k) = ba.cselector(bit_reverse_selector(N,k),N);
-};
+c_bit_reverse_shuffle(N) = route(2*N, 2*N,
+                                 par(i, N, (2*bit_reverse_selector(N,i)+1, 2*i+1)),
+                                 par(i, N, (2*bit_reverse_selector(N,i)+2, 2*i+2)));
 
 
-//---------------`(an.)fft` --------------------------
+//---------------`(an.)fft`, `(an.)fftb`--------------------------
 // Fast Fourier Transform (FFT).
+//
+// `fft(N)` is a length-`N` FFT for complex signals (radix 2). Its input,
+// `si.cbus(N)`, is a bus of N complex signals, each specified by real and
+// imaginary parts: (r0,i0), (r1,i1), (r2,i2), ... Its output is a bank of N
+// complex signals containing the complex spectrum over time: (R0, I0),
+// (R1,I1), ... The dc component is (R0,I0), where I0=0 for real input signals.
+// `fftb(N)` is the butterfly core of `fft(N)`: same buses, but it expects its
+// input already in bit-reversed order (see the implementation notes).
 //
 // #### Usage
 //
 // ```
 // si.cbus(N) : fft(N) : si.cbus(N)
+// si.cbus(N) : fftb(N) : si.cbus(N)
 // ```
 //
 // Where:
 //
-// * `si.cbus(N)` is a bus of N complex signals, each specified by real and imaginary parts:
-//   (r0,i0), (r1,i1), (r2,i2), ...
-// * `N` is the FFT size (must be a power of 2: 2,4,8,16,... known at compile time) 
-// * `fft(N)` performs a length `N` FFT for complex signals (radix 2)
-// * The output is a bank of N complex signals containing the complex spectrum over time:
-//   (R0, I0), (R1,I1), ...
-//   - The dc component is (R0,I0), where I0=0 for real input signals.
+// * `N`: FFT size (must be a power of 2: 2,4,8,16,... known at compile time)
 //
 // FFTs of Real Signals:
 //
@@ -1120,6 +1676,12 @@ c_bit_reverse_shuffle(N) = si.cbus(N) <: par(i,N,c_bit_reverse_permuter(N,i)) wi
 // process = signal : an.rtocv(N) : an.fft(N);
 // ```
 // where `an.rtocv` converts a real (scalar) signal to a complex vector signal having a zero imaginary part.
+//   `an.rtocv` puts the newest sample first, so this is the DFT of the time-reversed window:
+//   for real input it equals `exp(j*2*pi*k/N) * conj(X(k,n))`, where `X(k,n)` is the standard
+//   sliding DFT (same magnitudes; see `an.rtocv`).
+//
+//   * For the standard sliding DFT `X(k,n) = sum(m=0..N-1) x(n-N+1+m) exp(-j*2*pi*k*m/N)`,
+//     i.e., `numpy.fft.fft(x[n-N+1:n+1])`, say `process = signal : an.rtocv_chrono(N) : an.fft(N);`
 //
 //   * See `an.rfft_analyzer_c` (in `analyzers.lib`) and related functions for more detailed usage examples.
 //
@@ -1131,12 +1693,18 @@ c_bit_reverse_shuffle(N) = si.cbus(N) <: par(i,N,c_bit_reverse_permuter(N,i)) wi
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// fft_test = an.rtocv(8, os.osc(220)) : an.fft(8);
+// mono = os.tosc(220);
+// fft_test = an.rtocv(8, mono) : an.fft(8);
 // ```
 //
 // #### References
 //
 // * [Decimation-in-time (DIT) Radix-2 FFT](https://cnx.org/contents/zmcmahhR@7/Decimation-in-time-DIT-Radix-2)
+//
+// #### Implementation notes
+//
+// `fft(N)` is `c_bit_reverse_shuffle(N)` followed by `fftb(N)`, the radix-2
+// butterfly core, which expects its input already in bit-reversed order.
 //---------------------------------------------------
 fft(N) = si.cbus(N) : an.c_bit_reverse_shuffle(N) : an.fftb(N); // shuffle off to the butterflies:
 fftb(1) = _,_; // each complex number is represented as (real,imag)
@@ -1156,29 +1724,41 @@ with {
 // Order of magnitude faster to compile but takes a scalar input, so too different from fft:
 // rfft(N) = an.rtocv(N) : an.fft(N);
 
-//---------------`(an.)ifft`--------------------------
+//---------------`(an.)ifft`, `(an.)ifftb`--------------------------
 // Inverse Fast Fourier Transform (IFFT).
+// `ifftb(N)` is the butterfly core of `ifft(N)`: same buses, but it expects
+// its input already in bit-reversed order (see the implementation notes).
 //
 // #### Usage
 //
 // ```
 // si.cbus(N) : ifft(N) : si.cbus(N)
+// si.cbus(N) : ifftb(N) : si.cbus(N)
 // ```
 //
 // Where:
 //
-// * N is the IFFT size (power of 2)
+// * `N`: IFFT size (power of 2)
 // * Input is a complex spectrum represented as interleaved real and imaginary parts:
 //   (R0, I0), (R1,I1), (R2,I2), ...
 // * Output is a bank of N complex signals giving the complex signal in the time domain:
 //   (r0, i0), (r1,i1), (r2,i2), ...
+//   - `an.fft(N) : an.ifft(N)` is the identity, so the round trip keeps the order of the
+//     window: newest sample first after `an.rtocv(N,x)`, oldest first after `an.rtocv_chrono(N,x)`.
 //
 // #### Test
 // ```
 // an = library("analyzers.lib");
 // os = library("oscillators.lib");
-// ifft_test = (an.rtocv(8, os.osc(220)) : an.fft(8)) : an.ifft(8);
+// mono = os.tosc(220);
+// ifft_test = (an.rtocv(8, mono) : an.fft(8)) : an.ifft(8);
 // ```
+//
+// #### Implementation notes
+//
+// `ifft(N)` is `c_bit_reverse_shuffle(N)` followed by `ifftb(N)`, the
+// conjugate butterfly core (which also applies the `1/N` scaling), so that
+// `an.fft(N) : an.ifft(N)` is the identity.
 //---------------------------------------------------
 ifft(N) = si.cbus(N) : an.c_bit_reverse_shuffle(N) : an.ifftb(N); // input is shuffled off to the butterflies:
 ifftb(1) = _,_;
@@ -1195,10 +1775,106 @@ with {
 
 
 // ========== FFT Analyzers ==========
+
+//---`(an.)rfft_analyzer_c`, `(an.)rfft_analyzer_db`, `(an.)rfft_analyzer_magsq`---
+// Sliding FFT analyzers for a real input signal, built from `an.fft`:
+//
+// * `rfft_analyzer_c(N)`: complex spectrum, bins 0 to N/2 (dc to Nyquist)
+// * `rfft_analyzer_db(N)`: power of each bin in dB
+// * `rfft_analyzer_magsq(N)`: squared magnitude of each bin
+//
+// "Sliding" means the `N`-point FFT is recomputed every sample over the last
+// `N` input samples, with no windowing (rectangular window) and no hop.
+//
+// The window is built by `an.rtocv`, newest sample first, so `rfft_analyzer_c(N)`
+// returns the DFT of the time-reversed window: for bin `k` at time `n`,
+// `exp(j*2*pi*k/N) * conj(X(k,n))`, where
+// `X(k,n) = sum(m=0..N-1) x(n-N+1+m) exp(-j*2*pi*k*m/N)` is the standard sliding
+// DFT. Its magnitudes are those of `X(k,n)`, so `rfft_analyzer_db` and
+// `rfft_analyzer_magsq` give the sliding-DFT power spectrum; its phases are
+// conjugated and offset. `an.rfft_analyzer_c_chrono` returns `X(k,n)` itself.
+//
+// #### Usage
+//
+// ```
+// _ : rfft_analyzer_c(N) : si.cbus(N/2+1)
+// _ : rfft_analyzer_db(N) : si.bus(N/2+1)
+// _ : rfft_analyzer_magsq(N) : si.bus(N/2+1)
+// ```
+//
+// Where:
+//
+// * `N`: FFT size (must be a power of 2 known at compile time)
+// * input: a real (scalar) signal
+// * output: the `N/2+1` non-negative-frequency bins, complex for
+//   `rfft_analyzer_c` (interleaved real/imaginary pairs), real for the others
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// ba = library("basics.lib");
+// no = library("noises.lib");
+// rfft_analyzer_db_test = 2 * ba.pulse(8) + 0.5 * ba.pulse(4) : an.rfft_analyzer_db(8); // bins of 3 and 2: 9.54 and 6.02 dB
+// rfft_analyzer_c_test = no.noise : an.rfft_analyzer_c(8);
+// rfft_analyzer_magsq_test = no.noise : an.rfft_analyzer_magsq(8);
+// ```
+//---------------------------------------------------
 rfft_analyzer_c(N) = an.rtocv(N) : an.fft(N) : an.c_select_pos_freqs(N); // complex spectral bins 0 to N/2
 rfft_analyzer_db(N) = an.rfft_analyzer_c(N) : an.c_magdb(N/2+1); // assumes real input
 rfft_analyzer_magsq(N) = an.rfft_analyzer_c(N) : an.c_magsq(N/2+1); // assumes real input
 
+//---------------`(an.)rfft_analyzer_c_chrono`--------------------------
+// Standard sliding DFT of a real signal, bins 0 to N/2 (dc to Nyquist):
+// `X(k,n) = sum(m=0..N-1) x(n-N+1+m) exp(-j*2*pi*k*m/N)`, i.e.,
+// `numpy.fft.fft(x[n-N+1:n+1])[0:N/2+1]`, recomputed every sample over the last
+// `N` samples (rectangular window, no hop). The phase is referred to the oldest
+// sample of the window: a sinusoid at the bin frequency `2*pi*k/N` advances it
+// by `2*pi*k/N` per sample. Built from `an.rtocv_chrono`, it is the chronological
+// counterpart of `an.rfft_analyzer_c`, which returns
+// `exp(j*2*pi*k/N) * conj(X(k,n))`; the magnitudes of the two are the same.
+//
+// #### Usage
+//
+// ```
+// _ : rfft_analyzer_c_chrono(N) : si.cbus(N/2+1)
+// ```
+//
+// Where:
+//
+// * `N`: FFT size (must be a power of 2 known at compile time)
+// * input: a real (scalar) signal
+// * output: the `N/2+1` non-negative-frequency bins as interleaved
+//   (real, imaginary) pairs
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// no = library("noises.lib");
+// rfft_analyzer_c_chrono_test = no.noise : an.rfft_analyzer_c_chrono(8);
+// ```
+//---------------------------------------------------
+declare rfft_analyzer_c_chrono license "LicenseRef-STK-4.3";
+rfft_analyzer_c_chrono(N) = an.rtocv_chrono(N) : an.fft(N) : an.c_select_pos_freqs(N);
+
+//---------------`(an.)rfft_spectral_level`--------------------------
+// Real-signal FFT power spectrum display: passes the signal through unchanged
+// and shows the smoothed level of each of the `N/2+1` non-negative-frequency
+// bins in a bank of dB bargraphs.
+//
+// #### Usage
+//
+// ```
+// _ : rfft_spectral_level(N,tau,dB_offset) : _
+// ```
+//
+// Where:
+//
+// * `N`: FFT size (must be a power of 2 known at compile time)
+// * `tau`: display averaging-time (time constant) in seconds
+// * `dB_offset`: constant dB offset applied to all band level meters
+//
+// See `dm.fft_spectral_level_demo(N)` in `demos.lib` for an example GUI.
+//---------------------------------------------------
 rfft_spectral_level(N,tau,dB_offset) = _<: _, an.rfft_analyzer_db(N) : _,(display:>_):attach with {
   display = par(i,N/2+1,dbmeter(i));
   dbmeter(i) = si.smooth(ba.tau2pole(tau)) : +(dB_offset) : meter(i);
@@ -1210,6 +1886,279 @@ rfft_spectral_level(N,tau,dB_offset) = _<: _, an.rfft_analyzer_db(N) : _,(displa
 
 // end jos section
 
+
+//========================= Spectral Descriptors (filter-bank based) =====================
+// Low-level MIR descriptors computed on the constant-Q filter banks of this
+// library rather than on an FFT: monorate, sample-accurate, no framing. The
+// M-per-octave analyzer splits the signal into N bands (highest band first,
+// dc band last); the descriptors combine the smoothed band powers with the
+// geometric band-center frequencies.
+//========================================================================================
+
+//---------------`(an.)spectral_centroid`, `(an.)spectral_spread`--------------------------
+// Spectral centroid and spread of a signal, in Hz, computed from the band
+// powers of `an.mth_octave_analyzer(O,M,ftop,N)`: the centroid is the
+// power-weighted mean of the band center frequencies, the spread the
+// power-weighted standard deviation around it. Frequency resolution is that
+// of the filter bank (M bands per octave).
+//
+// #### Usage
+//
+// ```
+// _ : spectral_centroid(O,M,ftop,N,T) : _
+// _ : spectral_spread(O,M,ftop,N,T) : _
+// ```
+//
+// Where:
+//
+// * `O`: band-split filter order (a constant numerical expression)
+// * `M`: bands per octave (a constant numerical expression)
+// * `ftop`: highest band-split crossover frequency in Hz
+// * `N`: total number of bands, including dc and top (a constant numerical expression)
+// * `T`: power averaging time in seconds
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// spectral_centroid_test = os.tosc(1000) : an.spectral_centroid(3, 1, 8000, 6, 0.1);
+// spectral_spread_test = os.tosc(800) + os.tosc(5000) : an.spectral_spread(3, 1, 8000, 6, 0.1);
+// ```
+//---------------------------------------------------
+declare spectral_centroid license "MIT";
+declare spectral_spread license "MIT";
+spectral_centroid(O,M,ftop,N,T) = band_powers(O,M,ftop,N,T) <: moment(M,ftop,N,1), moment(M,ftop,N,0) : safe_div;
+spectral_spread(O,M,ftop,N,T) = band_powers(O,M,ftop,N,T) <:
+    (moment(M,ftop,N,2), moment(M,ftop,N,0) : safe_div),
+    (moment(M,ftop,N,1), moment(M,ftop,N,0) : safe_div <: * ) : - : max(0.0) : sqrt;
+
+//---------------`(an.)band_powers`, `(an.)band_center`, `(an.)moment`, `(an.)safe_div`--------------------------
+// The machinery shared by the descriptors: `band_powers(O,M,ftop,N,T)` is
+// the bank of smoothed band powers (highest band first, like the analyzer
+// itself), `band_center(M,ftop,N,i)` the geometric center frequency in Hz
+// of band `i` (top and dc bands use their edges), `moment(M,ftop,N,K)` sums
+// N band powers weighted by `center^K`, and `safe_div` divides with an
+// epsilon-guarded denominator.
+//
+// #### Usage
+//
+// ```
+// _ : band_powers(O,M,ftop,N,T) : si.bus(N)
+// band_center(M,ftop,N,i) : _
+// si.bus(N) : moment(M,ftop,N,K) : _
+// safe_div(num, den) : _
+// ```
+//
+// Where:
+//
+// * `O`: band-split filter order (a constant numerical expression)
+// * `M`: bands per octave (a constant numerical expression)
+// * `ftop`: highest band-split crossover frequency in Hz
+// * `N`: total number of bands, including dc and top (a constant numerical expression)
+// * `T`: power averaging time in seconds
+// * `i`: band index, from 0 (top band) to N-1 (dc band)
+// * `K`: exponent of the band center frequencies in the moment
+// * `num`, `den`: numerator and denominator signals of `safe_div`
+//---------------------------------------------------
+// smoothed band powers (highest band first, like the analyzer itself)
+band_powers(O,M,ftop,N,T) = an.mth_octave_analyzer(O,M,ftop,N) : par(i, N, (_ <: *) : fi.avg_rect(T));
+// geometric center frequency of band i (top and dc bands use their edges)
+band_center(M,ftop,N,0) = sqrt(ftop * ma.SR/2.0);
+band_center(M,ftop,N,i) = ba.if(i == N-1,
+    0.5 * ftop * pow(2.0, (2.0-float(N))/float(M)),
+    ftop * pow(2.0, (1.0-2.0*float(i))/(2.0*float(M))));
+// sum of band powers weighted by center^K
+moment(M,ftop,N,K) = par(i, N, *(pow(band_center(M,ftop,N,i), K))) :> _;
+safe_div(num, den) = num / max(den, ma.EPSILON);
+
+//---------------`(an.)spectral_flux`--------------------------
+// Spectral flux: the half-wave-rectified increase of each band amplitude
+// over a `hop`-second interval, summed across the bands of
+// `an.mth_octave_analyzer(O,M,ftop,N)`. Rises sharply on note onsets and
+// broadband transients; threshold it for a simple onset detector.
+//
+// #### Usage
+//
+// ```
+// _ : spectral_flux(O,M,ftop,N,hop) : _
+// ```
+//
+// Where:
+//
+// * `O`, `M`, `ftop`, `N`: filter bank parameters as above
+// * `hop`: comparison interval in seconds (also used as the amplitude
+//   smoothing time; 10-50 ms typical)
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// spectral_flux_test = os.tosc(1000) * ((ba.time % 24000) > 12000) : an.spectral_flux(3, 1, 8000, 6, 0.02);
+// ```
+//---------------------------------------------------
+declare spectral_flux license "MIT";
+spectral_flux(O,M,ftop,N,hop) = an.mth_octave_analyzer(O,M,ftop,N)
+    : par(i, N, abs : fi.avg_rect(hop) <: (_ - _@D) : max(0.0)) :> _
+with { D = int(hop * ma.SR); };
+
+//================== Loudness Metering (EBU R128 / ITU-R BS.1770) ========================
+// Multichannel loudness measurement after Recommendation ITU-R BS.1770-4 /
+// EBU R128: each channel is prefiltered with the K-filter
+// (`fi.itu_r_bs_1770_4_kfilter`, normalized so that no -0.691 dB correction
+// is needed), mean-squared over the measurement window, channel-weighted
+// (1.0 for the first three channels, 1.41 for surround channels 4 and 5,
+// LFE not handled) and summed; loudness is `10*log10` of that sum, in LUFS.
+//========================================================================================
+
+//---------------`(an.)loudness_momentary`, `(an.)loudness_shortterm`--------------------------
+// Momentary (400 ms window) and short-term (3 s window) loudness of an
+// N-channel signal, in LUFS, per ITU-R BS.1770-4.
+//
+// A 997 Hz full-scale sine reads -3.01 LUFS on one channel and 0.0 LUFS on
+// two channels, matching the BS.1770 compliance points.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : loudness_momentary(N) : _
+// si.bus(N) : loudness_shortterm(N) : _
+// ```
+//
+// Where:
+//
+// * `N`: number of channels, in BS.1770 order (L, R, C, Ls, Rs), a constant numerical expression
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// loudness_momentary_test = os.tosc(997), os.tosc(997) : an.loudness_momentary(2);
+// loudness_shortterm_test = os.tosc(997), os.tosc(997) : an.loudness_shortterm(2);
+// ```
+//
+// #### References
+//
+// * <https://www.itu.int/rec/R-REC-BS.1770>
+// * EBU R128 / EBU Tech 3341.
+//---------------------------------------------------
+declare loudness_momentary license "MIT";
+declare loudness_shortterm license "MIT";
+loudness_momentary(N) = loudness_meansquare(0.400, N) : meansquare2lufs;
+loudness_shortterm(N) = loudness_meansquare(3.000, N) : meansquare2lufs;
+
+//---------------`(an.)loudness_meansquare`, `(an.)meansquare2lufs`--------------------------
+// The machinery shared by the loudness meters: `loudness_meansquare(T,N)`
+// is the channel-weighted, K-filtered mean square of an N-channel signal
+// over a `T`-second rectangular window (the linear-domain quantity BS.1770
+// calls the sum of `G_i z_i`), and `meansquare2lufs` converts it to LUFS
+// (`10*log10`, floored at -100).
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : loudness_meansquare(T,N) : _
+// _ : meansquare2lufs : _
+// si.bus(N) : loudness_meansquare(T,N) : meansquare2lufs : _ // loudness in LUFS
+// ```
+//
+// Where:
+//
+// * `T`: averaging window in seconds
+// * `N`: number of channels, in BS.1770 order, a constant numerical expression
+//---------------------------------------------------
+loudness_meansquare(T, N) = par(i, N, fi.itu_r_bs_1770_4_kfilter <: * : fi.avg_rect(T) : *(weight(i))) :> _
+with { weight(i) = ba.if(i >= 3, 1.41, 1.0); };
+meansquare2lufs = max(1e-10) : log10 : *(10.0);
+
+//---------------`(an.)loudness_integrated`--------------------------
+// Streaming approximation of the gated integrated (programme) loudness of
+// EBU R128, in LUFS: the 400 ms mean square is accumulated under the -70
+// LUFS absolute gate, a relative threshold is derived 10 LU below the
+// absolute-gated running mean, and a second accumulation under that
+// threshold yields the integrated value.
+//
+// This is the usual real-time meter construction: it differs from the
+// offline two-pass measurement in that already-accumulated blocks are not
+// re-gated when the relative threshold later moves, and gating is applied
+// per sample rather than on 75%-overlapped 400 ms blocks. On programme
+// material the deviation is typically well under 0.5 LU.
+//
+// The measurement starts at power-up and never resets; restart the DSP to
+// restart the measurement.
+//
+// #### Usage
+//
+// ```
+// si.bus(N) : loudness_integrated(N) : _
+// ```
+//
+// Where:
+//
+// * `N`: number of channels, in BS.1770 order, a constant numerical expression
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// loudness_integrated_test = os.tosc(997), os.tosc(997) : an.loudness_integrated(2);
+// ```
+//
+// #### References
+//
+// * <https://www.itu.int/rec/R-REC-BS.1770> (gating: BS.1770-4, section 2)
+// * EBU Tech 3341, "Loudness Metering: 'EBU Mode' metering".
+//---------------------------------------------------
+declare loudness_integrated license "MIT";
+loudness_integrated(N) = loudness_meansquare(0.400, N) : gate : meansquare2lufs
+with {
+    gate(z) = sr / cr
+    with {
+        ga = z > 1e-7;               // absolute gate: -70 LUFS
+        ca = (ga : +~_) : max(1.0);
+        sa = (z*ga : +~_);
+        zthr = (sa/ca) * 0.1;        // relative gate: 10 LU below
+        gr = ga & (z > zthr);
+        cr = (gr : +~_) : max(1.0);
+        sr = (z*gr : +~_);
+    };
+};
+
+//---------------`(an.)true_peak`--------------------------
+// True-peak estimate per ITU-R BS.1770-4 Annex 2: the signal is 4x
+// oversampled with a 48-tap polyphase windowed-sinc interpolator (12 taps
+// per phase, Kaiser window beta = 10, each phase normalized to unity DC
+// gain, all weights computed at compile time with `an.window_kaiser`), and
+// the output is the largest absolute value among the four inter-sample
+// phases. Feed it to a max-hold for a dBTP meter reading:
+// `an.true_peak : max ~ _ : ba.linear2db`.
+//
+// #### Usage
+//
+// ```
+// _ : true_peak : _
+// ```
+//
+// #### Test
+// ```
+// an = library("analyzers.lib");
+// os = library("oscillators.lib");
+// true_peak_test = os.tosc(12000)*0.97 : an.true_peak;
+// ```
+//
+// #### References
+//
+// * <https://www.itu.int/rec/R-REC-BS.1770> (Annex 2)
+//---------------------------------------------------
+declare true_peak license "MIT";
+true_peak(x) = max(max(ph(0, x), ph(1, x)), max(ph(2, x), ph(3, x)))
+with {
+    L = 12;                          // taps per phase
+    sinc(z) = sin(ma.PI*z) / (ma.PI*z);   // z is never 0 here (offsets are half-integer)
+    hh(j) = an.window_kaiser(10.0, j/47.0) * sinc((j - 23.5)/4.0);
+    psum(p) = sum(k, L, hh(4*k+p));
+    ph(p, x) = abs(sum(k, L, x@k * (hh(4*k+p)/psum(p))));
+};
 
 //================ Test signal generators ===================
 // Signal generators for testing purposes.

@@ -4,14 +4,13 @@
 // This library provides virtual analog (VA) audio effects modeled after classic
 // analog circuitry. It includes nonlinear filters and effects.
 //
-// The virtual analog filter library is organized into 7 sections:
+// The virtual analog filter library is organized into 6 sections:
 //
 // * [Moog Filters](#moog-filters)
 // * [Korg 35 Filters](#korg-35-filters)
 // * [Oberheim Filters](#oberheim-filters)
 // * [Sallen Key Filters](#sallen-key-filters)
-// * [Korg 35 Filters](#korg-35-filters)
-// * [Vicanek's matched (decramped) second-order filters](#vicaneks-matched-decramped-second-order-filters)
+// * [Vicanek's Matched (Decramped) Second-Order Filters](#vicaneks-matched-decramped-second-order-filters)
 // * [Effects](#effects)
 //
 // #### References
@@ -25,9 +24,12 @@ si = library("signals.lib");
 an = library("analyzers.lib");
 fi = library("filters.lib");
 ef = library("misceffects.lib");
+wd = library("wdmodels.lib");
+it = library("interpolators.lib");
+os = library("oscillators.lib");
 
 declare name "Faust Virtual Analog Filter Effect Library";
-declare version "1.4.0";
+declare version "1.7.1";
 
 //########################################################################################
 /************************************************************************
@@ -66,17 +68,26 @@ Michon and Julius O. Smith III, and are released under the
 //
 // * `res`: normalized amount of corner-resonance between 0 and 1 
 // (0 is no resonance, 1 is maximum)
-// * `fr`: corner-resonance frequency in Hz (less than SR/6.3 or so)
+// * `fr`: corner-resonance frequency in Hz. The filter is stable for `fr` below
+// SR/6.28 at `res` <= 0.25, SR/6.88 at 0.5, SR/7.34 at 0.8 and SR/7.58 as `res`
+// approaches 1, so keep `fr` below about SR/7.6
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// moog_vcf_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// moog_vcf_test = os.tosc(440) : ve.moog_vcf(0.5, 1000);
+// moog_vcf_slider_test = os.tosc(440)
 //   : ve.moog_vcf(
 //       hslider("moog_vcf:res", 0.5, 0, 1, 0.01),
 //       hslider("moog_vcf:freq", 1000, 50, 4000, 1)
 //     );
+// moog_vcf_modulated_test = no.noise : ve.moog_vcf(0.9, 50*pow(100, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// moog_vcf_jump_test = no.noise : ve.moog_vcf(0.9, 50*pow(100, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// moog_vcf_audio_modulated_test = 0.1*no.noise : ve.moog_vcf(0.9, max(20, 1000*(1 + 0.9*os.tosc(500))));
 // ```
 //
 // #### References
@@ -86,22 +97,26 @@ Michon and Julius O. Smith III, and are released under the
 //------------------------------------------------------------
 declare moog_vcf author "Julius O. Smith III";
 declare moog_vcf copyright "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare moog_vcf license "MIT-style STK-4.3 license";
-moog_vcf(res,fr) = (+ : seq(i,4,fi.pole(p)) : *(unitygain(p))) ~ *(mk)
+declare moog_vcf license "LicenseRef-STK-4.3";
+moog_vcf(res,fr) = (+ : seq(i,4, *(1.0-p) : fi.pole(p))) ~ *(mk)
 with {
      p = 1.0 - fr * 2.0 * ma.PI / ma.SR; // good approximation for fr << SR
-     unitygain(p) = pow(1.0-p,4.0); // one-pole unity-gain scaling
+     // one-pole unity-gain scaling, (1-p) at the input of each pole rather than
+     // (1-p)^4 after the four: the same filter for a fixed fr, but the states
+     // stay at the level of the signal. With the gain at the output they grew
+     // as 1/(1-p)^4 (about 1e9 at 50 Hz), and a jump of fr to a higher value
+     // multiplied them by the new, larger gain: an output of 1e6 on noise.
      mk = -4.0*max(0,min(res,0.999999)); // need mk > -4 for stability
 };
 
-//-----------------------`(ve.)moog_vcf_2b[n]`---------------------------
+//-----------------------`(ve.)moog_vcf_2b`, `(ve.)moog_vcf_2bn`---------------------------
 // Moog "Voltage Controlled Filter" (VCF) as two biquads. Implementation
 // of the ideal Moog VCF transfer function factored into second-order
 // sections. As a result, it is more accurate than `moog_vcf` above, but
 // its coefficient formulas are more complex when one or both parameters
 // are varied.  Here, res is the fourth root of that in `moog_vcf`, so, as
-// the sampling rate approaches infinity, `moog_vcf(res,fr)` becomes equivalent
-// to `moog_vcf_2b[n](res^4,fr)` (when res and fr are constant).
+// the sampling rate approaches infinity, `moog_vcf(res^4,fr)` becomes equivalent
+// to `moog_vcf_2b[n](res,fr)` (when res and fr are constant).
 // `moog_vcf_2b` uses two direct-form biquads (`tf2`).
 // `moog_vcf_2bn` uses two protected normalized-ladder biquads (`tf2np`).
 //
@@ -122,21 +137,32 @@ with {
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// moog_vcf_2b_test = os.osc(330)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// moog_vcf_2b_test = os.tosc(330) : ve.moog_vcf_2b(0.4, 1200);
+// moog_vcf_2b_slider_test = os.tosc(330)
 //   : ve.moog_vcf_2b(
 //       hslider("moog_vcf_2b:res", 0.4, 0, 1, 0.01),
 //       hslider("moog_vcf_2b:freq", 1200, 50, 6000, 1)
 //     );
-// moog_vcf_2bn_test = os.osc(330)
+// moog_vcf_2b_modulated_test = no.noise : ve.moog_vcf_2b(0.95, 20*pow(500, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// moog_vcf_2b_jump_test = no.noise : ve.moog_vcf_2b(0.95, 20*pow(500, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// moog_vcf_2bn_test = os.tosc(330) : ve.moog_vcf_2bn(0.4, 1200);
+// moog_vcf_2bn_slider_test = os.tosc(330)
 //   : ve.moog_vcf_2bn(
 //       hslider("moog_vcf_2bn:res", 0.4, 0, 1, 0.01),
 //       hslider("moog_vcf_2bn:freq", 1200, 50, 6000, 1)
 //     );
+// moog_vcf_2bn_modulated_test = no.noise : ve.moog_vcf_2bn(0.95, 20*pow(500, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// moog_vcf_2bn_jump_test = no.noise : ve.moog_vcf_2bn(0.95, 20*pow(500, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// moog_vcf_2b_audio_modulated_test = 0.1*no.noise : ve.moog_vcf_2b(0.95, max(20, 1000*(1 + 0.9*os.tosc(500))));
+// moog_vcf_2bn_audio_modulated_test = 0.1*no.noise : ve.moog_vcf_2bn(0.95, max(20, 1000*(1 + 0.9*os.tosc(500))));
 // ```
 //------------------------------------------------------------
 declare moog_vcf_2b author "Julius O. Smith III";
 declare moog_vcf_2b copyright "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare moog_vcf_2b license "MIT-style STK-4.3 license";
+declare moog_vcf_2b license "LicenseRef-STK-4.3";
 moog_vcf_2b(res,fr) = fi.tf2s(0,0,b0,a11,a01,w1) : fi.tf2s(0,0,b0,a12,a02,w1)
 with {
  s = 1; // minus the open-loop location of all four poles
@@ -155,7 +181,7 @@ with {
 
 declare moog_vcf_2bn author "Julius O. Smith III";
 declare moog_vcf_2bn copyright "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>";
-declare moog_vcf_2bn license "MIT-style STK-4.3 license";
+declare moog_vcf_2bn license "LicenseRef-STK-4.3";
 moog_vcf_2bn(res,fr) = fi.tf2snp(0,0,b0,a11,a01,w1) : fi.tf2snp(0,0,b0,a12,a02,w1)
 with {
  s = 1; // minus the open-loop location of all four poles
@@ -184,28 +210,35 @@ with {
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: quality factor between .707 (0 feedback coefficient) to 25 (feedback = 4, which is the self-oscillating threshold).
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// moogLadder_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// moogLadder_test = os.tosc(220) : ve.moogLadder(0.3, 4);
+// moogLadder_slider_test = os.tosc(220)
 //   : ve.moogLadder(
 //       hslider("moogLadder:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("moogLadder:Q", 4, 0.7, 20, 0.1)
 //     );
+// moogLadder_modulated_test = no.noise : ve.moogLadder(0.8*tri, 20) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// moogLadder_jump_test = no.noise : ve.moogLadder(0.8*sq, 20) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// moogLadder_audio_modulated_test = 0.1*no.noise : ve.moogLadder(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 10);
 // ```
 //
 // #### References
 //
 // * [Zavalishin 2012] (revision 2.1.2, February 2020)
-// * <https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.2.pdf>
+// * <https://www.discodsp.net/VAFilterDesign_2.1.2.pdf>
 // * Lorenzo Della Cioppa's correction to Pirkle's implementation: <https://www.kvraudio.com/forum/viewtopic.php?f=33&t=571909>
 //---------------------------------------------------------------------
 declare moogLadder author "Dario Sanfilippo";
-declare moogLadder license "MIT-style STK-4.3 license";
+declare moogLadder license "LicenseRef-STK-4.3";
 moogLadder(normFreq, Q, x) = loop ~ si.bus(4) : (!,!,!,!,_)
 with {
     loop(s1, s2, s3, s4) =  v1 + lp1 , // define s1
@@ -256,11 +289,18 @@ with {
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// lowpassLadder4_test = os.osc(110)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// lowpassLadder4_test = os.tosc(110) : ve.lowpassLadder4(2.0, 800);
+// lowpassLadder4_slider_test = os.tosc(110)
 //   : ve.lowpassLadder4(
 //       hslider("lowpassLadder4:k", 2.0, 0, 4, 0.1),
 //       hslider("lowpassLadder4:freq", 800, 50, 5000, 1)
 //     );
+// lowpassLadder4_modulated_test = no.noise : ve.lowpassLadder4(3.9, 20*pow(250, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// lowpassLadder4_jump_test = no.noise : ve.lowpassLadder4(3.9, 20*pow(250, sq)) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// lowpassLadder4_audio_modulated_test = 0.1*no.noise : ve.lowpassLadder4(3.9, max(20, 1000*(1 + 0.9*os.tosc(500))));
 // ```
 //
 // Notes:
@@ -275,10 +315,10 @@ with {
 // #### References
 //
 // * [Zavalishin 2012] (revision 2.1.2, February 2020)
-// * <https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.2.pdf>
+// * <https://www.discodsp.net/VAFilterDesign_2.1.2.pdf>
 //---------------------------------------------------------------------
 declare lowpassLadder4 author "Dario Sanfilippo";
-declare lowpassLadder4 license "MIT License";
+declare lowpassLadder4 license "MIT";
 lowpassLadder4(k, CF, x) = loop ~ si.bus(4) : si.block(4) , _
     with {
         loop(s0, s1, s2, s3) = u0 , u1 , u2 , u3 , LP3
@@ -326,18 +366,25 @@ lowpassLadder4(k, CF, x) = loop ~ si.bus(4) : si.block(4) , _
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// moogHalfLadder_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// moogHalfLadder_test = os.tosc(220) : ve.moogHalfLadder(0.3, 4);
+// moogHalfLadder_slider_test = os.tosc(220)
 //   : ve.moogHalfLadder(
 //       hslider("moogHalfLadder:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("moogHalfLadder:Q", 4, 0.7, 20, 0.1)
 //     );
+// moogHalfLadder_modulated_test = no.noise : ve.moogHalfLadder(0.8*tri, 20) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// moogHalfLadder_jump_test = no.noise : ve.moogHalfLadder(0.8*sq, 20) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// moogHalfLadder_audio_modulated_test = 0.1*no.noise : ve.moogHalfLadder(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 10);
 // ```
 //
 // #### References
@@ -346,7 +393,7 @@ lowpassLadder4(k, CF, x) = loop ~ si.bus(4) : si.block(4) , _
 // * <http://www.willpirkle.com/Downloads/AN-8MoogHalfLadderFilter.pdf>
 //---------------------------------------------------------------------
 declare moogHalfLadder author "Eric Tarr";
-declare moogHalfLadder license "MIT-style STK-4.3 license";
+declare moogHalfLadder license "LicenseRef-STK-4.3";
 moogHalfLadder(normFreq,Q) = _ <: (s1,s2,s3,y) : !,!,!,_ 
 letrec{
   's1 = -(s3*B3*k):-(s2*B2*k):-(s1*B1*k):*(alpha0):-(s1):*(alpha*2):+(s1);
@@ -391,18 +438,25 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// diodeLadder_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// diodeLadder_test = os.tosc(220) : ve.diodeLadder(0.4, 4);
+// diodeLadder_slider_test = os.tosc(220)
 //   : ve.diodeLadder(
 //       hslider("diodeLadder:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("diodeLadder:Q", 4, 0.7, 20, 0.1)
 //     );
+// diodeLadder_modulated_test = no.noise : ve.diodeLadder(0.8*tri, 20) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// diodeLadder_jump_test = no.noise : ve.diodeLadder(0.8*sq, 20) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// diodeLadder_audio_modulated_test = 0.1*no.noise : ve.diodeLadder(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 10);
 // ```
 //
 // #### References
@@ -411,7 +465,7 @@ with{
 // * <http://www.willpirkle.com/Downloads/AN-6DiodeLadderFilter.pdf>
 //---------------------------------------------------------------------
 declare diodeLadder author "Eric Tarr";
-declare diodeLadder license "MIT-style STK-4.3 license";
+declare diodeLadder license "LicenseRef-STK-4.3";
 diodeLadder(normFreq,Q) = ef.cubicnl(1,0)*1.5 <:(s1,s2,s3,s4,y)  : !,!,!,!,_ 
 letrec{
   's1 = _-(s4*B4*SG4*k) : 
@@ -541,22 +595,29 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// korg35LPF_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// korg35LPF_test = os.tosc(220) : ve.korg35LPF(0.35, 3.5);
+// korg35LPF_slider_test = os.tosc(220)
 //   : ve.korg35LPF(
 //       hslider("korg35LPF:normFreq", 0.35, 0, 1, 0.001),
 //       hslider("korg35LPF:Q", 3.5, 0.7, 10, 0.1)
 //     );
+// korg35LPF_modulated_test = no.noise : ve.korg35LPF(0.8*tri, 9.5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// korg35LPF_jump_test = no.noise : ve.korg35LPF(0.8*sq, 9.5) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// korg35LPF_audio_modulated_test = 0.1*no.noise : ve.korg35LPF(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 9.5);
 // ```
 //---------------------------------------------------------------------
 declare korg35LPF author "Eric Tarr";
-declare korg35LPF license "MIT-style STK-4.3 license";
+declare korg35LPF license "LicenseRef-STK-4.3";
 korg35LPF(normFreq,Q) = _ <: (s1,s2,s3,y) : !,!,!,_
 letrec{
   's1 = _-s1:_*(alpha*2):_+s1;
@@ -592,22 +653,29 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// korg35HPF_test = os.osc(330)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// korg35HPF_test = os.tosc(330) : ve.korg35HPF(0.4, 3.5);
+// korg35HPF_slider_test = os.tosc(330)
 //   : ve.korg35HPF(
 //       hslider("korg35HPF:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("korg35HPF:Q", 3.5, 0.7, 10, 0.1)
 //     );
+// korg35HPF_modulated_test = no.noise : ve.korg35HPF(0.8*tri, 9.5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// korg35HPF_jump_test = no.noise : ve.korg35HPF(0.8*sq, 9.5) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// korg35HPF_audio_modulated_test = 0.1*no.noise : ve.korg35HPF(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 9.5);
 // ```
 //---------------------------------------------------------------------
 declare korg35HPF author "Eric Tarr";
-declare korg35HPF license "MIT-style STK-4.3 license";
+declare korg35HPF license "LicenseRef-STK-4.3";
 korg35HPF(normFreq,Q) = _ <: (s1,s2,s3,y) : !,!,!,_
 letrec{
   's1 = _-s1:_*(alpha*2):_+s1;
@@ -655,22 +723,29 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// oberheim_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// oberheim_test = os.tosc(220) : ve.oberheim(0.4, 1.5);
+// oberheim_slider_test = os.tosc(220)
 //   : ve.oberheim(
 //       hslider("oberheim:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("oberheim:Q", 1.5, 0.5, 10, 0.1)
 //     );
+// oberheim_modulated_test = no.noise : ve.oberheim(0.8*tri, 10) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// oberheim_jump_test = no.noise : ve.oberheim(0.8*sq, 10) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// oberheim_audio_modulated_test = 0.1*no.noise : ve.oberheim(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 10);
 // ```
 //---------------------------------------------------------------------
 declare oberheim author "Eric Tarr";
-declare oberheim license "MIT-style STK-4.3 license";
+declare oberheim license "LicenseRef-STK-4.3";
 oberheim(normFreq,Q) = _<:(s1,s2,ybsf,ybpf,yhpf,ylpf) : !,!,_,_,_,_  
 letrec{
   's1 = _-s2:_-(s1*FBs1):_*alpha0:_*g<:_,(_+s1:ef.cubicnl(0.0,0)):>_;
@@ -707,14 +782,15 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// oberheimBSF_test = os.osc(220)
+// oberheimBSF_test = os.tosc(220) : ve.oberheimBSF(0.4, 1.5);
+// oberheimBSF_slider_test = os.tosc(220)
 //   : ve.oberheimBSF(
 //       hslider("oberheimBSF:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("oberheimBSF:Q", 1.5, 0.5, 10, 0.1)
@@ -722,7 +798,7 @@ with{
 // ```
 //---------------------------------------------------------------------
 declare oberheimBSF author "Eric Tarr";
-declare oberheimBSF license "MIT-style STK-4.3 license";
+declare oberheimBSF license "LicenseRef-STK-4.3";
 oberheimBSF(normFreq,Q) = oberheim(normFreq,Q):_,!,!,!;
 
 
@@ -739,14 +815,15 @@ oberheimBSF(normFreq,Q) = oberheim(normFreq,Q):_,!,!,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// oberheimBPF_test = os.osc(220)
+// oberheimBPF_test = os.tosc(220) : ve.oberheimBPF(0.4, 1.5);
+// oberheimBPF_slider_test = os.tosc(220)
 //   : ve.oberheimBPF(
 //       hslider("oberheimBPF:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("oberheimBPF:Q", 1.5, 0.5, 10, 0.1)
@@ -754,7 +831,7 @@ oberheimBSF(normFreq,Q) = oberheim(normFreq,Q):_,!,!,!;
 // ```
 //---------------------------------------------------------------------
 declare oberheimBPF author "Eric Tarr";
-declare oberheimBPF license "MIT-style STK-4.3 license";
+declare oberheimBPF license "LicenseRef-STK-4.3";
 oberheimBPF(normFreq,Q) = oberheim(normFreq,Q):!,_,!,!;
 
 
@@ -771,14 +848,15 @@ oberheimBPF(normFreq,Q) = oberheim(normFreq,Q):!,_,!,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// oberheimHPF_test = os.osc(220)
+// oberheimHPF_test = os.tosc(220) : ve.oberheimHPF(0.4, 1.5);
+// oberheimHPF_slider_test = os.tosc(220)
 //   : ve.oberheimHPF(
 //       hslider("oberheimHPF:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("oberheimHPF:Q", 1.5, 0.5, 10, 0.1)
@@ -786,7 +864,7 @@ oberheimBPF(normFreq,Q) = oberheim(normFreq,Q):!,_,!,!;
 // ```
 //---------------------------------------------------------------------
 declare oberheimHPF author "Eric Tarr";
-declare oberheimHPF license "MIT-style STK-4.3 license";
+declare oberheimHPF license "LicenseRef-STK-4.3";
 oberheimHPF(normFreq,Q) = oberheim(normFreq,Q):!,!,_,!;
 
 
@@ -803,14 +881,15 @@ oberheimHPF(normFreq,Q) = oberheim(normFreq,Q):!,!,_,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: q
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// oberheimLPF_test = os.osc(220)
+// oberheimLPF_test = os.tosc(220) : ve.oberheimLPF(0.4, 1.5);
+// oberheimLPF_slider_test = os.tosc(220)
 //   : ve.oberheimLPF(
 //       hslider("oberheimLPF:normFreq", 0.4, 0, 1, 0.001),
 //       hslider("oberheimLPF:Q", 1.5, 0.5, 10, 0.1)
@@ -818,7 +897,7 @@ oberheimHPF(normFreq,Q) = oberheim(normFreq,Q):!,!,_,!;
 // ```
 //---------------------------------------------------------------------
 declare oberheimLPF author "Eric Tarr";
-declare oberheimLPF license "MIT-style STK-4.3 license";
+declare oberheimLPF license "LicenseRef-STK-4.3";
 oberheimLPF(normFreq,Q) = oberheim(normFreq,Q):!,!,!,_;
 
 
@@ -838,7 +917,7 @@ oberheimLPF(normFreq,Q) = oberheim(normFreq,Q):!,!,!,_;
 // #### Resources:
 //
 // * Vadim Zavalishin (2018) "The Art of VA Filter Design", v2.1.0
-// <https://www.native-instruments.com/fileadmin/ni_media/downloads/pdf/VAFilterDesign_2.1.0.pdf>
+// <https://www.discodsp.net/VAFilterDesign_2.1.0.pdf>
 // * Will Pirkle (2014) "Resolving Delay-Free Loops in Recursive Filters Using 
 // the Modified Härmä Method", AES 137 <http://www.aes.org/e-lib/browse.cfm?elib=17517>
 // * Description and diagrams of 1st- and 2nd-order TPT filters: 
@@ -860,7 +939,7 @@ oberheimLPF(normFreq,Q) = oberheim(normFreq,Q):!,!,!,_;
 // requires independently calculating the output and each state during each 
 // recursive step. However, it works as a way to store and use "states"
 // within the constraints of Faust. 
-
+//
 // The simplest example is the 1st-order LPF (shown on the cover of Zavalishin 
 // 2018 and Fig 4.3 of <https://www.willpirkle.com/706-2/>).
 //
@@ -881,20 +960,26 @@ oberheimLPF(normFreq,Q) = oberheim(normFreq,Q):!,!,!,_;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKeyOnePole_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// sallenKeyOnePole_test = os.tosc(440) : ve.sallenKeyOnePole(0.25);
+// sallenKeyOnePole_slider_test = os.tosc(440)
 //   : ve.sallenKeyOnePole(
 //       hslider("sallenKeyOnePole:normFreq", 0.25, 0, 1, 0.001)
 //     );
+// sallenKeyOnePole_modulated_test = no.noise : ve.sallenKeyOnePole(0.8*tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// sallenKeyOnePole_jump_test = no.noise : ve.sallenKeyOnePole(0.8*sq) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //---------------------------------------------------------------------
 declare sallenKeyOnePole author "Eric Tarr";
-declare sallenKeyOnePole license "MIT-style STK-4.3 license";
+declare sallenKeyOnePole license "LicenseRef-STK-4.3";
 sallenKeyOnePole(normFreq) = _<:(s,ylpf,-(ylpf)) : !,_,_
 letrec {  
   's = -(s):*(2*G):+(s);
@@ -923,20 +1008,21 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKeyOnePoleLPF_test = os.osc(440)
+// sallenKeyOnePoleLPF_test = os.tosc(440) : ve.sallenKeyOnePoleLPF(0.25);
+// sallenKeyOnePoleLPF_slider_test = os.tosc(440)
 //   : ve.sallenKeyOnePoleLPF(
 //       hslider("sallenKeyOnePoleLPF:normFreq", 0.25, 0, 1, 0.001)
 //     );
 // ```
 //---------------------------------------------------------------------
 declare sallenKeyOnePoleLPF author "Eric Tarr";
-declare sallenKeyOnePoleLPF license "MIT-style STK-4.3 license";
+declare sallenKeyOnePoleLPF license "LicenseRef-STK-4.3";
 sallenKeyOnePoleLPF(normFreq) = sallenKeyOnePole(normFreq) : _,!;
 
 
@@ -955,20 +1041,21 @@ sallenKeyOnePoleLPF(normFreq) = sallenKeyOnePole(normFreq) : _,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKeyOnePoleHPF_test = os.osc(440)
+// sallenKeyOnePoleHPF_test = os.tosc(440) : ve.sallenKeyOnePoleHPF(0.25);
+// sallenKeyOnePoleHPF_slider_test = os.tosc(440)
 //   : ve.sallenKeyOnePoleHPF(
 //       hslider("sallenKeyOnePoleHPF:normFreq", 0.25, 0, 1, 0.001)
 //     );
 // ```
 //---------------------------------------------------------------------
 declare sallenKeyOnePoleHPF author "Eric Tarr";
-declare sallenKeyOnePoleHPF license "MIT-style STK-4.3 license";
+declare sallenKeyOnePoleHPF license "LicenseRef-STK-4.3";
 sallenKeyOnePoleHPF(normFreq) = sallenKeyOnePole(normFreq) : !,_;
 
 
@@ -998,22 +1085,29 @@ sallenKeyOnePoleHPF(normFreq) = sallenKeyOnePole(normFreq) : !,_;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: quality factor controlling the sharpness/resonance of the filter around the center frequency (CF). For bandpass filters, higher Q increases the gain at the center frequency. Must be in the range `[ma.EPSILON, ma.MAX]`
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKey2ndOrder_test = os.osc(330)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// sallenKey2ndOrder_test = os.tosc(330) : ve.sallenKey2ndOrder(0.3, 1.0);
+// sallenKey2ndOrder_slider_test = os.tosc(330)
 //   : ve.sallenKey2ndOrder(
 //       hslider("sallenKey2ndOrder:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("sallenKey2ndOrder:Q", 1.0, 0.1, 10, 0.1)
 //     );
+// sallenKey2ndOrder_modulated_test = no.noise : ve.sallenKey2ndOrder(0.8*tri, 10) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// sallenKey2ndOrder_jump_test = no.noise : ve.sallenKey2ndOrder(0.8*sq, 10) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// sallenKey2ndOrder_audio_modulated_test = 0.1*no.noise : ve.sallenKey2ndOrder(log10(max(20, 1000*(1 + 0.9*os.tosc(500)))/20)/3, 10);
 // ```
 //---------------------------------------------------------------------
 declare sallenKey2ndOrder author "Eric Tarr";
-declare sallenKey2ndOrder license "MIT-style STK-4.3 license";
+declare sallenKey2ndOrder license "LicenseRef-STK-4.3";
 sallenKey2ndOrder(normFreq,Q) = _<:(s1,s2,ylpf,ybpf,yhpf) : !,!,_,_,_ 
 letrec{
   's1 = -(s2):-(s1*FBs1):*(alpha0):*(g*2):+(s1);
@@ -1048,14 +1142,15 @@ with{
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: quality factor controlling the sharpness/resonance of the filter around the center frequency (CF). For bandpass filters, higher Q increases the gain at the center frequency. Must be in the range `[ma.EPSILON, ma.MAX]`
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKey2ndOrderLPF_test = os.osc(330)
+// sallenKey2ndOrderLPF_test = os.tosc(330) : ve.sallenKey2ndOrderLPF(0.3, 0.8);
+// sallenKey2ndOrderLPF_slider_test = os.tosc(330)
 //   : ve.sallenKey2ndOrderLPF(
 //       hslider("sallenKey2ndOrderLPF:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("sallenKey2ndOrderLPF:Q", 0.8, 0.1, 10, 0.1)
@@ -1063,7 +1158,7 @@ with{
 // ```
 //---------------------------------------------------------------------
 declare sallenKey2ndOrderLPF author "Eric Tarr";
-declare sallenKey2ndOrderLPF license "MIT-style STK-4.3 license";
+declare sallenKey2ndOrderLPF license "LicenseRef-STK-4.3";
 sallenKey2ndOrderLPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : _,!,!;
 
 
@@ -1080,14 +1175,15 @@ sallenKey2ndOrderLPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : _,!,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: quality factor controlling the sharpness/resonance of the filter around the center frequency (CF). For bandpass filters, higher Q increases the gain at the center frequency. Must be in the range `[ma.EPSILON, ma.MAX]`
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKey2ndOrderBPF_test = os.osc(330)
+// sallenKey2ndOrderBPF_test = os.tosc(330) : ve.sallenKey2ndOrderBPF(0.3, 1.5);
+// sallenKey2ndOrderBPF_slider_test = os.tosc(330)
 //   : ve.sallenKey2ndOrderBPF(
 //       hslider("sallenKey2ndOrderBPF:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("sallenKey2ndOrderBPF:Q", 1.5, 0.1, 10, 0.1)
@@ -1095,7 +1191,7 @@ sallenKey2ndOrderLPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : _,!,!;
 // ```
 //---------------------------------------------------------------------
 declare sallenKey2ndOrderBPF author "Eric Tarr";
-declare sallenKey2ndOrderBPF license "MIT-style STK-4.3 license";
+declare sallenKey2ndOrderBPF license "LicenseRef-STK-4.3";
 sallenKey2ndOrderBPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,_,!;
 
 
@@ -1112,14 +1208,15 @@ sallenKey2ndOrderBPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,_,!;
 //
 // Where:
 //
-// * `normFreq`: normalized frequency (0-1)
+// * `normFreq`: normalized frequency (0-1), mapped logarithmically to `20*1000^normFreq` Hz whatever the sample rate: 20 Hz at 0, 632 Hz at 0.5, 20 kHz at 1 (from a frequency `f` in Hz: `log10(f/20)/3`)
 // * `Q`: quality factor controlling the sharpness/resonance of the filter around the center frequency (CF). For bandpass filters, higher Q increases the gain at the center frequency. Must be in the range `[ma.EPSILON, ma.MAX]`
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// sallenKey2ndOrderHPF_test = os.osc(330)
+// sallenKey2ndOrderHPF_test = os.tosc(330) : ve.sallenKey2ndOrderHPF(0.3, 0.8);
+// sallenKey2ndOrderHPF_slider_test = os.tosc(330)
 //   : ve.sallenKey2ndOrderHPF(
 //       hslider("sallenKey2ndOrderHPF:normFreq", 0.3, 0, 1, 0.001),
 //       hslider("sallenKey2ndOrderHPF:Q", 0.8, 0.1, 10, 0.1)
@@ -1127,13 +1224,13 @@ sallenKey2ndOrderBPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,_,!;
 // ```
 //---------------------------------------------------------------------
 declare sallenKey2ndOrderHPF author "Eric Tarr";
-declare sallenKey2ndOrderHPF license "MIT-style STK-4.3 license";
+declare sallenKey2ndOrderHPF license "LicenseRef-STK-4.3";
 sallenKey2ndOrderHPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,!,_;
 
 //====================Vicanek's Matched (Decramped) Second-Order Filters========
 // Vicanek's Matched (Decramped) Second-Order Filters.
 //
-// This collection implements high-quality, double-precision second-order filters
+// This collection implements high-quality second-order filters
 // based on the work of Vicanek, offering improved frequency accuracy and dynamic
 // response over traditional biquads—especially near Nyquist.
 //
@@ -1156,7 +1253,10 @@ sallenKey2ndOrderHPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,!,_;
 // Each filter relies on carefully derived coefficient formulas that guarantee
 // accurate placement of the frequency response peak and preserve Q and gain behavior.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Their coefficients are computed without cancellation and their recurrence
+// runs on small increments, so that they are accurate in single precision too,
+// at every sample rate: a low `CF` or a high `Q` stays within about 1e-5 of the
+// double-precision output (1e-4 for `bandpass2Matched`).
 //
 // #### References
 //
@@ -1175,27 +1275,268 @@ sallenKey2ndOrderHPF(normFreq,Q) = sallenKey2ndOrder(normFreq,Q) : !,!,_;
 //
 // Where:
 //
-// * `b0, b1, b2, a1, a2` are the coefficients of the difference equation above
+// * `b0`: feedforward coefficient for `x[n]`
+// * `b1`: feedforward coefficient for `x[n-1]`
+// * `b2`: feedforward coefficient for `x[n-2]`
+// * `a1`: feedback coefficient for `y[n-1]`
+// * `a2`: feedback coefficient for `y[n-2]`
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// biquad_test = os.osc(440)
+// biquad_test = os.tosc(440)
 //   : ve.biquad(0.5, 0.3, 0.2, -0.3, 0.2);
 // ```
 //---------------------------------------------------------------------
 declare biquad author "Dario Sanfilippo";
-declare biquad license "MIT License";
+declare biquad license "MIT";
 biquad(b0, b1, b2, a1, a2, x) = f ~ _
     with {
         f(s) = b0 * x + b1 * x' + b2 * x'' - a1 * s - a2 * s';
     };
 
+// Internal helper shared by the four resonant matched filters below
+// (lowpass2Matched, highpass2Matched, bandpass2Matched, peaking2Matched).
+//
+// Vicanek's analog prototype has the denominator s^2 + (w0/Q)*s + w0^2; its
+// poles, mapped by z = exp(s*T), give the digital denominator
+//   A(z) = 1 + a1*z^-1 + a2*z^-2,   a2 = exp(-2*q*w),
+//   a1 = -2*exp(-q*w)*cos(sqrt(1 - q^2)*w)    (q <= 1, complex poles),
+//   a1 = -2*exp(-q*w)*cosh(sqrt(q^2 - 1)*w)   (q > 1, real poles),
+// with q = 1/(2*Q) and w = 2*pi*CF/SR. The numerators are then chosen to
+// match the analog magnitude at DC, at w and at Nyquist, from quantities
+// such as 1 + a1 + a2 = A(1) and |A(exp(j*w))|^2.
+//
+// Why this helper exists: at a low CF or a high SR, w is small and the poles
+// come within about q*w of z = 1. a1 is then close to -2 and a2 close to 1,
+// and every quantity the numerators depend on is a tiny difference of terms
+// of order 1 to 16: 1 + a1 + a2 is of order w^2, and some combinations used
+// by the numerators of order w^6 or w^8. Computed from a1 and a2, or from
+// Vicanek's polynomial forms, they lose all their digits in single
+// precision (non-finite outputs) and up to a few percent in double. Here
+// each one is computed directly from small arguments (q*w, w/2, th/2...)
+// as a product or a sum of positive terms, so that its relative error stays
+// a few ulps whatever CF, Q and SR. scripts/verify_matched2.py (make
+// verify-matched) proves the identities used and checks the resulting
+// coefficients against a 60-digit evaluation of Vicanek's formulas.
+//
+// Notations: rho = exp(-q*w) is the pole radius (the geometric mean of the
+// two radii when the poles are real), th = sqrt(1 - q^2)*w the pole angle,
+// and phi = sin(w/2)^2.
+//
+// The environment provides:
+// - w, rho, phi and a1, a2 themselves;
+// - P = 1 + a1 + a2 = A(1) = |1 - pole|^2, the DC value of A;
+// - fq = 1 - a2 = 1 - rho^2, the damping;
+// - sA1 = 1 - a1 + a2 = A(-1), close to 4 and harmless;
+// - RA = |A(exp(j*w))|^2;
+// - a = sinh(q*w/2)^2, b = sin(th/2)^2 (-sinh(sqrt(q^2 - 1)*w/2)^2 for real
+//   poles), so that P = 4*rho*(a + b);
+// - X = (q*w/2)^2, ex = a - X, ew = (w/2)^2 - phi: the deviations of
+//   sinh^2 and sin^2 from their first-order terms;
+// - K = (P - 4*rho*phi)/(4*rho) = a + b - phi, of order w^4;
+_matched2(CF, Q) = environment {
+    q = 1.0 / (2.0 * Q);
+    w = 2.0 * ma.PI * CF * ma.T;
+    qw = q * w;
+    rho = exp(-1.0 * qw);
+    phi = sin(.5 * w) ^ 2.0;
+    oc = om(qw); // 1 - rho, without the cancellation of 1 - exp(-q*w)
+    cplx = q <= 1.0;
+
+    // Complex poles rho*exp(+-j*th), q <= 1. dm = w - th is written as
+    // w*q^2/(1 + sqrt(1 - q^2)) since w and th are close at a high Q, and
+    // sm = (w + th)/2.
+    sq = sqrt(max(.0, 1.0 - q * q));
+    th = sq * w;
+    dm = w * q * q / (1.0 + sq);
+    sm = .5 * (w + th);
+    // Real poles exp(-y1) and exp(-y2), q > 1, with y1 = (q - sr)*w written
+    // as w/(q + sr) (q and sr are close at a low Q) and y1 + y2 = 2*q*w.
+    sr = sqrt(max(.0, q * q - 1.0));
+    y1 = w / (q + sr);
+    y2 = w * (q + sr);
+    o1 = om(y1); // 1 - exp(-y1)
+    o2 = om(y2); // 1 - exp(-y2)
+
+    a1 = ba.if(cplx, -2.0 * rho * cos(th), -2.0 * rho * ma.cosh(sr * w));
+    a2 = rho * rho;
+    fq = oc * (2.0 - oc); // 1 - rho^2 = (1 - rho)*(1 + rho)
+    sA1 = 1.0 - a1 + a2;
+    // P = 1 - 2*rho*cos(th) + rho^2 = (1 - rho)^2 + 4*rho*sin(th/2)^2 for
+    // complex poles, (1 - exp(-y1))*(1 - exp(-y2)) for real ones.
+    P = ba.if(cplx, oc * oc + 4.0 * rho * sin(.5 * th) ^ 2.0, o1 * o2);
+    // RA = |1 - p1*exp(-j*w)|^2 * |1 - p2*exp(-j*w)|^2, one factor per pole:
+    // |1 - rho*exp(j*(th -+ w))|^2 = (1 - rho)^2 + 4*rho*sin((w -+ th)/2)^2
+    // for complex poles, (1 - p)^2 + 4*p*phi for a real pole p.
+    RA = ba.if(cplx,
+        (oc * oc + 4.0 * rho * sin(.5 * dm) ^ 2.0) * (oc * oc + 4.0 * rho * sin(sm) ^ 2.0),
+        (o1 * o1 + 4.0 * exp(-1.0 * y1) * phi) * (o2 * o2 + 4.0 * exp(-1.0 * y2) * phi));
+
+    // a, b and their deviations. (1 - rho)^2 = 4*rho*a, hence P = 4*rho*(a + b).
+    hx = .5 * qw;
+    X = hx * hx;
+    a = ma.sinh(hx) ^ 2.0;
+    ex = shdef(hx) * (ma.sinh(hx) + hx); // sinh(h)^2 - h^2 = (sinh(h) - h)*(sinh(h) + h)
+    hw = .5 * w;
+    ew = sdef(hw) * (hw + sin(hw));      // h^2 - sin(h)^2 = (h - sin(h))*(h + sin(h))
+    b = ba.if(cplx, sin(.5 * th) ^ 2.0, -1.0 * ma.sinh(.5 * sr * w) ^ 2.0);
+    // K = a + b - phi. Its first-order terms cancel exactly, since
+    // (q*w/2)^2 + (th/2)^2 = (w/2)^2, so it is computed from the deviations:
+    // - complex poles: K = ex + g(w/2) - g(th/2) with g(h) = h^2 - sin(h)^2,
+    //   and g(w/2) - g(th/2) = sm*d - sin(sm)*sin(d), d = dm/2,
+    //   = (sm - sin(sm))*d + sin(sm)*(d - sin(d)): three positive terms;
+    // - real poles: a + b = sinh(y1/2)*sinh(y2/2) with (y1/2)*(y2/2) = (w/2)^2,
+    //   so K = sinh(y1/2)*sinh(y2/2) - (y1/2)*(y2/2) + ew
+    //   = (sinh(y1/2) - y1/2)*sinh(y2/2) + (y1/2)*(sinh(y2/2) - y2/2) + ew.
+    K = ba.if(cplx,
+        ex + sdef(.5 * dm) * sin(sm) + .5 * dm * sdef(sm),
+        shdef(.5 * y1) * ma.sinh(.5 * y2) + .5 * y1 * shdef(.5 * y2) + ew);
+
+    // 1 - exp(-y) = 2*t/(1 + t) with t = tanh(y/2): exact, and accurate for
+    // a small y where 1 - exp(-y) would cancel.
+    om(y) = 2.0 * t / (1.0 + t) with { t = ma.tanh(.5 * y); };
+    // h - sin(h) and sinh(h) - h. Below 1, by their Taylor series
+    // h^3/6*(1 -+ h^2/20*(1 -+ h^2/42*(1 -+ h^2/72*(1 -+ h^2/110)))),
+    // truncated with a relative error below 1e-9; from 1 on, directly, the
+    // subtraction then losing at most a factor 6.
+    sdef(h) = ba.if(abs(h) < 1.0, h * h2 / 6.0 * ser, h - sin(h))
+    with {
+        h2 = h * h;
+        ser = 1.0 - h2 / 20.0 * (1.0 - h2 / 42.0 * (1.0 - h2 / 72.0 * (1.0 - h2 / 110.0)));
+    };
+    shdef(h) = ba.if(abs(h) < 1.0, h * h2 / 6.0 * ser, ma.sinh(h) - h)
+    with {
+        h2 = h * h;
+        ser = 1.0 + h2 / 20.0 * (1.0 + h2 / 42.0 * (1.0 + h2 / 72.0 * (1.0 + h2 / 110.0)));
+    };
+};
+
+// Internal helper of the matched filters: the biquad
+// y = b0*x + b1*x' + b2*x'' - a1*y' - a2*y'' given by P = 1 + a1 + a2 and
+// fq = 1 - a2, which are small when the poles are close to z = 1 while
+// a1 and a2 are then close to -2 and 1. With v = y - y' the increment of y,
+// the same recurrence reads
+//   v = v' + (b0*x + b1*x' + b2*x'') - P*y' - fq*v',
+//   y = y' + v,
+// where only the small P and fq multiply the states: the rounding of a1
+// and a2 would move the poles. It is algebraically the direct form, so it
+// gives the same output even when the coefficients change every sample. P
+// is factored out, the other coefficients being divided by it: written as
+// v - fq*v', the Faust normalizer would rebuild v'*(1 - fq) and lose fq to
+// the rounding of 1 - fq. The min() keeps each quotient a single constant:
+// the normalizer would otherwise fold its division into the per-sample
+// expression.
+// Rounding: the error made on v enters the filter like its input, through
+// 1/A, whose DC gain 1/P is large; v = y - y' is small when y is smooth, so
+// the recurrence is accurate as long as its output is a lowpass-like signal.
+// A filter whose output keeps strong high frequencies (highpass, shelves) is
+// therefore written as a direct term plus a lowpass-like remainder given to
+// this recurrence.
+_matchedRun(P, fq, b0, b1, b2, x) = tick ~ (_, _) : _, !
+with {
+    qq = min(fq / P, ma.MAX);
+    g0 = min(b0 / P, ma.MAX);
+    g1 = min(b1 / P, ma.MAX);
+    g2 = min(b2 / P, ma.MAX);
+    tick(y, v) = y + vn, vn // y' and v' in, y and v out
+    with {
+        vn = v + P * (g0 * x + g1 * x' + g2 * x'' - y - qq * v);
+    };
+};
+
+// Internal helper of the matched filters: the filter described by an
+// environment e of coefficients, y = e.k*x + (n0 + n1*z^-1 + n2*z^-2)/A
+// applied to x, with A given by e.P and e.fq (see _matchedRun). Each filter
+// computes its environment in an internal helper (_lowpass2MatchedCoefs,
+// ..., _shelf2Matched), which scripts/verify_matched2.py reads to check the
+// coefficients against a high-precision evaluation of Vicanek's formulas.
+_matched2Filter(e, x) = e.k * x + _matchedRun(e.P, e.fq, e.n0, e.n1, e.n2, x);
+
+// Internal helper shared by lowshelf2Matched and highshelf2Matched.
+// Vicanek's Butterworth shelf is a fit, not a mapping of analog poles: with
+// A and B normalized to A(1) = B(1) = 1, their squared magnitudes are
+// polynomials in phi = sin(w/2)^2 with the same linear term,
+//   |A|^2 = 1 + (al - 1)*phi + (aa1 - al)*phi^2, aa1 = A(-1)^2,
+//   |B|^2 = 1 + (al - 1)*phi + (bb1 - al)*phi^2, bb1 = B(-1)^2,
+// matched to the analog shelf (f^4 + fx^4*gn)/(f^4 + fx^4*Gd) at Nyquist
+// (bb1 = hny*aa1) and at two frequencies f1 and f2 placed by Vicanek (a
+// 2x2 linear system for al and aa1). gn and Gd are 1/G and G for the low
+// shelf (normalized to a DC gain 1), G and 1/G for the high shelf.
+// At a low CF, aa1 grows as 1/f^4 while the coefficients are then
+// recovered as a0 = (v + sqrt(v^2 + (al - aa1)/4))/2, v = (1 + sqrt(aa1))/2,
+// a difference of terms of order 1/f^4 that should give one of order 1/f^2:
+// the output was non-finite in single precision. Here, exactly,
+//   (a0 - a2)^2 = (1 + al + 2*sqrt(aa1))/4,
+// a sum of positive terms in which the inaccurate al (its linear system
+// cancels, but al stays of order 1) weighs nothing. The environment
+// provides, for _matched2Filter, P = 1 + a1 + a2 and fq = 1 - a2 of the
+// normalized A, and B/A = k + (n0 + n1*z^-1 + n2*z^-2)/A (DC gain 1).
+_shelf2Matched(gn, Gd, CF) = environment {
+    halfPi = ma.PI * .5;
+    f = CF / (ma.SR * .5);
+    f4 = f ^ 4.0;
+    dg = gn - Gd;
+    dny = f4 + Gd;
+    hny = (f4 + gn) / dny;
+    f1 = f / sqrt(.160 + 1.543 * f * f);
+    f14 = f1 ^ 4.0;
+    phi1 = sin(halfPi * f1) ^ 2.0;
+    f2 = f / sqrt(.947 + 3.806 * f * f);
+    f24 = f2 ^ 4.0;
+    phi2 = sin(halfPi * f2) ^ 2.0;
+    // Vicanek's 2x2 system, d = (h - 1)*(1 - phi), c1 = -phi*d and
+    // c2 = phi^2*(hny - h) at f1 and f2, for al and aa1. Every d and c2
+    // carries the factor gn - Gd, zero at G = 1, which cancels in al and aa1:
+    // it is divided out here, with h - 1 = fx^4*(gn - Gd)/(f^4 + fx^4*Gd)
+    // and hny - h = (gn - Gd)*f^4*(1 - fx^4)/((f^4 + Gd)*(f^4 + fx^4*Gd)),
+    // so that G = 1 gives the identity instead of 0/0.
+    k1 = f14 / (f4 + f14 * Gd);
+    k2 = f24 / (f4 + f24 * Gd);
+    e1 = (1.0 - phi1) * k1;                     // d/(gn - Gd) at f1
+    e2 = (1.0 - phi2) * k2;
+    q11 = -1.0 * phi1 * e1;                     // c1/(gn - Gd)
+    q21 = -1.0 * phi2 * e2;
+    q12 = phi1 * phi1 * f4 * (1.0 - f14) / (dny * (f4 + f14 * Gd)); // c2/(gn - Gd)
+    q22 = phi2 * phi2 * f4 * (1.0 - f24) / (dny * (f4 + f24 * Gd));
+    al = (q22 * e1 - q12 * e2) / (q11 * q22 - q12 * q21);
+    aa1 = (e1 - q11 * al) / q12;
+    bb1 = hny * aa1;
+
+    sa = sqrt(aa1);                          // A(-1)
+    sb = sqrt(bb1);                          // B(-1)
+    v = .5 * (1.0 + sa);                     // a0 + a2
+    na = .5 * sqrt(1.0 + al + 2.0 * sa);     // a0 - a2
+    nb = .5 * sqrt(1.0 + al + 2.0 * sb);     // b0 - b2
+    a0 = .5 * (v + na);
+    P = 1.0 / a0;                            // 1 + a1 + a2 once divided by a0
+    fq = na / a0;                            // 1 - a2 once divided by a0
+    // B/A = c + R/A with c = B(-1)/A(-1) = sqrt(hny), the gain at Nyquist,
+    // and R = B - c*A, zero at Nyquist: the state of run() then carries the
+    // smooth R/A*x (see _matchedRun). R = r0 + r1*z^-1 + r2*z^-2 with
+    // r0 - r1 + r2 = 0 and r0 + r1 + r2 = 1 - c, and
+    // r0 - r2 = nb - c*na = (nb^2 - c^2*na^2)/(nb + c*na), where
+    // nb^2 - c^2*na^2 = (1 - c)*((1 + c)*(1 + al) + 2*sb)/4.
+    c = sqrt(hny);
+    omc = -1.0 * dg / (dny * (1.0 + c)); // 1 - c = (1 - hny)/(1 + c)
+    r1 = .5 * omc;
+    rm = omc * ((1.0 + c) * (1.0 + al) + 2.0 * sb) / (4.0 * (nb + c * na)); // r0 - r2
+    r0 = .5 * (r1 + rm);
+    r2 = .5 * (r1 - rm);
+    k = c;
+    n0 = r0 / a0;
+    n1 = r1 / a0;
+    n2 = r2 / a0;
+};
+
 //----------`(ve.)lowpass2Matched`----------------------------------------------
 // Vicanek's decramped second-order resonant lowpass filter.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` or a high `Q` at a high sample rate stays within about 1e-5 of the
+// double-precision output.
 //
 // #### Usage:
 // ```
@@ -1211,41 +1552,58 @@ biquad(b0, b1, b2, a1, a2, x) = f ~ _
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// lowpass2Matched_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// lowpass2Matched_test = os.tosc(440) : ve.lowpass2Matched(1000, 0.707);
+// lowpass2Matched_slider_test = os.tosc(440)
 //   : ve.lowpass2Matched(
 //       hslider("lowpass2Matched:CF", 1000, 50, 5000, 1),
 //       hslider("lowpass2Matched:Q", 0.707, 0.1, 5, 0.01)
 //     );
+// lowpass2Matched_modulated_test = no.noise : ve.lowpass2Matched(20*pow(250, tri), 5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// lowpass2Matched_low_test = no.noise : ve.lowpass2Matched(50, 10);
 // ```
 //---------------------------------------------------------------------
 declare lowpass2Matched author "Dario Sanfilippo";
-declare lowpass2Matched license "MIT License";
-lowpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
-    with {
-        q = 1.0 / (2.0 * Q);
-        w = 2.0 * ma.PI * CF * ma.T;
-        a1Less = -2.0 * exp(-1.0 * q * w) * cos(sqrt(max(.0, 1.0 - q * q)) * w);
-        a1More = -2.0 * exp(-1.0 * q * w) * ma.cosh(sqrt(max(.0, q * q - 1.0)) * w);
-        a1 = ba.if(q <= 1.0, a1Less, a1More);
-        a2 = exp(-2.0 * q * w);
-        phi0 = 1.0 - sin(.5 * w) ^ 2.0;
-        phi1 = sin(.5 * w) ^ 2.0;
-        phi2 = 4.0 * phi0 * phi1;
-        A0 = (1.0 + a1 + a2) ^ 2.0;
-        A1 = (1.0 - a1 + a2) ^ 2.0;
-        A2 = -4.0 * a2;
-        R1 = (A0 * phi0 + A1 * phi1 + A2 * phi2) * Q * Q;
-        B0 = A0;
-        B1 = (R1 - B0 * phi0) / phi1;
-        b0 = .5 * (sqrt(B0) + sqrt(B1));
-        b1 = sqrt(B0) - b0;
-        b2 = .0;
-    };
+declare lowpass2Matched license "MIT";
+lowpass2Matched(CF, Q, x) = _matched2Filter(_lowpass2MatchedCoefs(CF, Q), x);
+
+// Internal helper of lowpass2Matched: its coefficients, for _matched2Filter.
+_lowpass2MatchedCoefs(CF, Q) = environment {
+    m = _matched2(CF, Q);
+    P = m.P;
+    fq = m.fq;
+    k = .0;
+    n0 = b0;
+    n1 = b1;
+    n2 = .0;
+    // Vicanek's numerator b0 + b1*z^-1 matches the DC gain, b0 + b1 = P,
+    // and the gain Q at w: b0*b1 = (P^2 - Q^2*RA)/(4*phi). Computed as a
+    // difference, P^2 - Q^2*RA cancels down to 1e-8 of its terms at a low
+    // CF; it is written here as rho^2*L/X, with L a sum of terms of the
+    // same order, the leading ones having cancelled in closed form.
+    s = m.P / (4.0 * m.rho); // a + b
+    L = (3.0 * m.a - m.b) * m.K * (2.0 * s - m.K) + m.phi * m.phi * (4.0 * m.a * m.b + m.K)
+        + (m.K - 4.0 * m.ex) * s * s
+        - m.ew * (s * (m.a + m.K) - m.a * m.K + m.phi * (3.0 * m.a - 4.0 * m.a * m.b - m.K));
+    // B1 = (b0 - b1)^2 = P^2 - 4*b0*b1; above w = 1, where Vicanek's
+    // direct form no longer cancels and L would lose its large terms
+    // (q*w beyond 10), B1 = (Q^2*RA - P^2*(1 - phi))/phi.
+    B1 = ba.if(m.w < 1.0,
+        m.P * m.P - 4.0 * m.rho * m.rho * L / (m.X * m.phi),
+        (Q * Q * m.RA - m.P * m.P * (1.0 - m.phi)) / m.phi);
+    b0 = .5 * (m.P + sqrt(max(.0, B1)));
+    b1 = (m.P * m.P - B1) / (4.0 * b0);
+};
 
 //----------`(ve.)highpass2Matched`----------------------------------------------
 // Vicanek's decramped second-order resonant highpass filter.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` or a high `Q` at a high sample rate stays within about 1e-5 of the
+// double-precision output.
 //
 // #### Usage:
 // ```
@@ -1261,38 +1619,46 @@ lowpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// highpass2Matched_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// highpass2Matched_test = os.tosc(440) : ve.highpass2Matched(500, 0.707);
+// highpass2Matched_slider_test = os.tosc(440)
 //   : ve.highpass2Matched(
 //       hslider("highpass2Matched:CF", 500, 50, 5000, 1),
 //       hslider("highpass2Matched:Q", 0.707, 0.1, 5, 0.01)
 //     );
+// highpass2Matched_modulated_test = no.noise : ve.highpass2Matched(20*pow(250, tri), 5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// highpass2Matched_low_test = no.noise : ve.highpass2Matched(50, 10);
 // ```
 //---------------------------------------------------------------------
 declare highpass2Matched author "Dario Sanfilippo";
-declare highpass2Matched license "MIT License";
-highpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
-    with {
-        q = 1.0 / (2.0 * Q);
-        w = 2.0 * ma.PI * CF * ma.T;
-        a1Less = -2.0 * exp(-1.0 * q * w) * cos(sqrt(max(.0, 1.0 - q * q)) * w);
-        a1More = -2.0 * exp(-1.0 * q * w) * ma.cosh(sqrt(max(.0, q * q - 1.0)) * w);
-        a1 = ba.if(q <= 1.0, a1Less, a1More);
-        a2 = exp(-2.0 * q * w);
-        phi0 = 1.0 - sin(.5 * w) ^ 2.0;
-        phi1 = sin(.5 * w) ^ 2.0;
-        phi2 = 4.0 * phi0 * phi1;
-        A0 = (1.0 + a1 + a2) ^ 2.0;
-        A1 = (1.0 - a1 + a2) ^ 2.0;
-        A2 = -4.0 * a2;
-        b0 = Q * sqrt(A0 * phi0 + A1 * phi1 + A2 * phi2) / (4.0 * phi1);
-        b1 = -2.0 * b0;
-        b2 = b0;
-    };
+declare highpass2Matched license "MIT";
+highpass2Matched(CF, Q, x) = _matched2Filter(_highpass2MatchedCoefs(CF, Q), x);
+
+// Internal helper of highpass2Matched: its coefficients, for _matched2Filter.
+_highpass2MatchedCoefs(CF, Q) = environment {
+    m = _matched2(CF, Q);
+    P = m.P;
+    fq = m.fq;
+    // Vicanek's numerator b0*(1 - z^-1)^2 matches the gain Q at w
+    b0 = Q * sqrt(m.RA) / (4.0 * m.phi);
+    // The recurrence is accurate as long as its state is smooth (see
+    // _matchedRun): the filter is written as b0*(1 - C/A), with the lowpass
+    // C/A, C = A - (1 - z^-1)^2 = (P + fq)*z^-1 - fq*z^-2.
+    k = b0;
+    n0 = .0;
+    n1 = -1.0 * b0 * (m.P + m.fq);
+    n2 = b0 * m.fq;
+};
 
 //----------`(ve.)bandpass2Matched`----------------------------------------------
 // Vicanek's decramped second-order resonant bandpass filter.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` or a high `Q` at a high sample rate stays within about 1e-4 of the
+// double-precision output.
 //
 // #### Usage:
 // ```
@@ -1308,42 +1674,56 @@ highpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// bandpass2Matched_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// bandpass2Matched_test = os.tosc(440) : ve.bandpass2Matched(1200, 2.0);
+// bandpass2Matched_slider_test = os.tosc(440)
 //   : ve.bandpass2Matched(
 //       hslider("bandpass2Matched:CF", 1200, 50, 5000, 1),
 //       hslider("bandpass2Matched:Q", 2.0, 0.1, 10, 0.01)
 //     );
+// bandpass2Matched_modulated_test = no.noise : ve.bandpass2Matched(20*pow(250, tri), 5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// bandpass2Matched_low_test = no.noise : ve.bandpass2Matched(50, 10);
 // ```
 //---------------------------------------------------------------------
 declare bandpass2Matched author "Dario Sanfilippo";
-declare bandpass2Matched license "MIT License";
-bandpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
-    with {
-        q = 1.0 / (2.0 * Q);
-        w = 2.0 * ma.PI * CF * ma.T;
-        a1Less = -2.0 * exp(-1.0 * q * w) * cos(sqrt(max(.0, 1.0 - q * q)) * w);
-        a1More = -2.0 * exp(-1.0 * q * w) * ma.cosh(sqrt(max(.0, q * q - 1.0)) * w);
-        a1 = ba.if(q <= 1.0, a1Less, a1More);
-        a2 = exp(-2.0 * q * w);
-        phi0 = 1.0 - sin(.5 * w) ^ 2.0;
-        phi1 = sin(.5 * w) ^ 2.0;
-        phi2 = 4.0 * phi0 * phi1;
-        A0 = (1.0 + a1 + a2) ^ 2.0;
-        A1 = (1.0 - a1 + a2) ^ 2.0;
-        A2 = -4.0 * a2;
-        R1 = A0 * phi0 + A1 * phi1 + A2 * phi2;
-        R2 = -1.0 * A0 + A1 + 4.0 * (phi0 - phi1) * A2;
-        B1 = R2 + 4.0 * (phi1 - phi0) * B2;
-        B2 = (R1 - R2 * phi1) / (4.0 * phi1 * phi1);
-        b0 = .5 * (sqrt(B2 + b1 * b1) - b1);
-        b1 = -.5 * sqrt(B1);
-        b2 = -1.0 * (b0 + b1);
-    };
+declare bandpass2Matched license "MIT";
+bandpass2Matched(CF, Q, x) = _matched2Filter(_bandpass2MatchedCoefs(CF, Q), x);
+
+// Internal helper of bandpass2Matched: its coefficients, for _matched2Filter.
+_bandpass2MatchedCoefs(CF, Q) = environment {
+    m = _matched2(CF, Q);
+    P = m.P;
+    fq = m.fq;
+    k = .0;
+    n0 = b0;
+    n1 = b1;
+    n2 = b2;
+    // Vicanek's numerator, b2 = -(b0 + b1), matches the analog peak:
+    // |B|^2 = RA at w, with a zero derivative there. Written as
+    // B(z) = (1 - z^-1)(b0 - b2*z^-1), with u = b0 - b2 and v = -b0*b2:
+    //   u^2 = (RA + D)/(4*phi), v = D/(16*phi^2),
+    // D = P^2 - 16*a2*phi^2 = 4*rho*K*(P + 4*rho*phi). Computed from
+    // Vicanek's polynomial form, RA and D are differences of terms up to
+    // 16 whose result can be below 1e-9: in double the coefficients were
+    // up to 2 % off (CF = 50 Hz, Q = 10 at 192 kHz), in single precision
+    // the output was non-finite.
+    D = 4.0 * m.rho * m.K * (m.P + 4.0 * m.rho * m.phi);
+    u2 = (m.RA + D) / (4.0 * m.phi);
+    v = D / (16.0 * m.phi * m.phi);
+    b1 = -1.0 * sqrt(max(.0, u2 - 4.0 * v));
+    b0 = .5 * (sqrt(u2) - b1);
+    b2 = -1.0 * (b0 + b1);
+};
 
 //----------`(ve.)peaking2Matched`----------------------------------------------
-// Vicanek's decramped second-order resonant bandpass filter.
+// Vicanek's decramped second-order peaking equalizer.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` or a high `Q` at a high sample rate stays within about 1e-5 of the
+// double-precision output.
 //
 // #### Usage:
 // ```
@@ -1360,45 +1740,66 @@ bandpass2Matched(CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// peaking2Matched_test = os.osc(440)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// peaking2Matched_test = os.tosc(440) : ve.peaking2Matched(1.5, 1000, 2.0);
+// peaking2Matched_slider_test = os.tosc(440)
 //   : ve.peaking2Matched(
 //       hslider("peaking2Matched:G", 1.5, 0.1, 4, 0.01),
 //       hslider("peaking2Matched:CF", 1000, 50, 5000, 1),
 //       hslider("peaking2Matched:Q", 2.0, 0.1, 10, 0.01)
 //     );
+// peaking2Matched_modulated_test = no.noise : ve.peaking2Matched(2, 20*pow(250, tri), 5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// peaking2Matched_low_test = no.noise : ve.peaking2Matched(4, 50, 10);
 // ```
 //---------------------------------------------------------------------
 declare peaking2Matched author "Dario Sanfilippo";
-declare peaking2Matched license "MIT License";
-peaking2Matched(G, CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
-    with {
-        q = 1.0 / (2.0 * Q);
-        w = 2.0 * ma.PI * CF * ma.T;
-        a1Less = -2.0 * exp(-1.0 * q * w) * cos(sqrt(max(.0, 1.0 - q * q)) * w);
-        a1More = -2.0 * exp(-1.0 * q * w) * ma.cosh(sqrt(max(.0, q * q - 1.0)) * w);
-        a1 = ba.if(q <= 1.0, a1Less, a1More);
-        a2 = exp(-2.0 * q * w);
-        phi0 = 1.0 - sin(.5 * w) ^ 2.0;
-        phi1 = sin(.5 * w) ^ 2.0;
-        phi2 = 4.0 * phi0 * phi1;
-        A0 = (1.0 + a1 + a2) ^ 2.0;
-        A1 = (1.0 - a1 + a2) ^ 2.0;
-        A2 = -4.0 * a2;
-        B0 = A0;
-        R1 = (A0 * phi0 + A1 * phi1 + A2 * phi2) * G * G;
-        R2 = (-1.0 * A0 + A1 + 4.0 * (phi0 - phi1) * A2) * G * G;
-        B1 = R2 + B0 + 4.0 * (phi1 - phi0) * B2;
-        B2 = (R1 - R2 * phi1 - B0) / (4.0 * phi1 * phi1);
-        W = .5 * (sqrt(B0) + sqrt(B1));
-        b0 = .5 * (W + sqrt(W * W + B2));
-        b1 = .5 * (sqrt(B0) - sqrt(B1));
-        b2 = (-1.0 * B2) / (4.0 * b0);
-    };
+declare peaking2Matched license "MIT";
+peaking2Matched(G, CF, Q, x) = _matched2Filter(_peaking2MatchedCoefs(G, CF, Q), x);
+
+// Internal helper of peaking2Matched: its coefficients, for _matched2Filter.
+_peaking2MatchedCoefs(G, CF, Q) = environment {
+    m = _matched2(CF, Q);
+    P = m.P;
+    fq = m.fq;
+    k = 1.0;
+    n0 = d0;
+    n1 = -1.0 * (d0 + d2);
+    n2 = d2;
+    // Vicanek's numerator B matches the DC gain, B(1) = A(1) = P, and
+    // the peak G at w with a zero derivative there. Its coefficients are
+    // close to those of A, 1 + a1 + a2 away from each other at a low CF,
+    // and computed as sums of the old ones they were destroyed in single
+    // precision. The filter is written as y = x + (B - A)/A applied to x,
+    // B - A = d0 + d1*z^-1 + d2*z^-2 with d0 + d1 + d2 = 0, the same
+    // recurrence as B/A, and d0, d2 are computed directly:
+    //   d0 + d2 = (sqrt(B1) - sA1)/2, d0 - d2 = n - fq,
+    // B1 = |B(-1)|^2 = sA1^2 + (G^2 - 1)*An and n^2 = (b0 - b2)^2, with
+    // An = sA1^2 - P^2*(1 - phi)^2/phi^2 and n^2 - fq^2 as products of
+    // positive factors.
+    G21 = G * G - 1.0;
+    dA = 2.0 * m.rho * (4.0 * m.a * m.phi - 2.0 * m.K) / m.phi; // sA1 - P*(1 - phi)/phi
+    An = dA * (m.sA1 + m.P * (1.0 - m.phi) / m.phi);
+    sB1 = sqrt(max(.0, m.sA1 * m.sA1 + G21 * An));
+    T1 = An / (2.0 * (sB1 + m.sA1));
+    s02 = G21 * T1; // d0 + d2
+    mB = .5 * (m.P + sB1);
+    mA = .5 * (m.P + m.sA1);
+    dn2 = G21 * (T1 * (mB + mA) + (2.0 * m.rho * m.K / m.phi) * (m.P / (2.0 * m.phi) + 2.0 * m.rho));
+    n = sqrt(max(.0, m.fq * m.fq + dn2));
+    m02 = dn2 / (n + m.fq); // d0 - d2
+    d0 = .5 * (s02 + m02);
+    d2 = .5 * (s02 - m02);
+};
 
 //----------`(ve.)lowshelf2Matched`---------------------------------------------
 // Vicanek's decramped second-order Butterworth lowshelf filter.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` at a high sample rate stays within about 1e-5 of the double-precision
+// output. `G = 1` gives the identity.
 //
 // #### Usage:
 // ```
@@ -1414,58 +1815,31 @@ peaking2Matched(G, CF, Q, x) = biquad(b0, b1, b2, a1, a2, x)
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// lowshelf2Matched_test = os.osc(330)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// lowshelf2Matched_test = os.tosc(330) : ve.lowshelf2Matched(1.5, 500);
+// lowshelf2Matched_slider_test = os.tosc(330)
 //   : ve.lowshelf2Matched(
 //       hslider("lowshelf2Matched:G", 1.5, 0.5, 4, 0.01),
 //       hslider("lowshelf2Matched:CF", 500, 50, 5000, 1)
 //     );
+// lowshelf2Matched_modulated_test = no.noise : ve.lowshelf2Matched(0.25*pow(16, tri), 1000) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// lowshelf2Matched_low_test = no.noise : ve.lowshelf2Matched(4, 20);
+// lowshelf2Matched_unity_test = no.noise : ve.lowshelf2Matched(1, 500);
 // ```
 //---------------------------------------------------------------------
 declare lowshelf2Matched author "Dario Sanfilippo";
-declare lowshelf2Matched license "MIT License";
-lowshelf2Matched(G, CF, x) =  biquad(b0, b1, b2, a1, a2, x)
-    with {
-        safeG = ba.if(G < 1.0, min(1.0 - ma.EPSILON, G), max(1.0 + ma.EPSILON, G));
-        g = 1.0 / safeG;
-        halfPi = ma.PI * .5;
-        f = CF / (ma.SR * .5);
-        f4 = f ^ 4.0;
-        hny = (f4 + g) / (f4 + safeG);
-        f1 = f / sqrt(.160 + 1.543 * f * f);
-        f14 = f1 ^ 4.0;
-        h1 = (f4 + f14 * g) / (f4 + f14 * safeG);
-        phi1 = sin(halfPi * f1) ^ 2.0;
-        f2 = f / sqrt(.947 + 3.806 * f * f);
-        f24 = f2 ^ 4.0;
-        h2 = (f4 + f24 * g) / (f4 + f24 * safeG);
-        phi2 = sin(halfPi * f2) ^ 2.0;
-        d1 = (h1 - 1.0) * (1.0 - phi1);
-        c11 = -1.0 * phi1 * d1;
-        c12 = phi1 * phi1 * (hny - h1);
-        d2 = (h2 - 1.0) * (1.0 - phi2);
-        c21 = -1.0 * phi2 * d2;
-        c22 = phi2 * phi2 * (hny - h2);
-        alpha1 = (c22 * d1 - c12 * d2) / (c11 * c22 - c12 * c21);
-        aa1 = (d1 - c11 * alpha1) / c12;
-        bb1 = hny * aa1;
-        aa2 = .25 * (alpha1 - aa1);
-        bb2 = .25 * (alpha1 - bb1);
-        v = .5 * (1.0 + sqrt(aa1));
-        w = .5 * (1.0 + sqrt(bb1));
-        a0 = .5 * (v + sqrt(v * v + aa2));
-        a0Inv = 1.0 / a0;
-        a1 = (1.0 - v) * a0Inv;
-        a2 = -.25 * aa2 * a0Inv * a0Inv;
-        b0Temp = .5 * (w + sqrt(w * w + bb2)) * a0Inv;
-        b1 = safeG * (1.0 - w) * a0Inv;
-        b2 = safeG * (-.25 * bb2 / b0Temp) * a0Inv * a0Inv;
-        b0 = safeG * b0Temp;
-    };
+declare lowshelf2Matched license "MIT";
+lowshelf2Matched(G, CF, x) = G * _matched2Filter(_shelf2Matched(1.0 / G, G, CF), x);
 
 //----------`(ve.)highshelf2Matched`--------------------------------------------
 // Vicanek's decramped second-order Butterworth highshelf filter.
 //
-// ⚠️ **Note:** These filters require **double-precision** support.
+// Accurate in single precision too: its coefficients are computed without
+// cancellation and its recurrence runs on small increments, so that a low
+// `CF` at a high sample rate stays within about 1e-5 of the double-precision
+// output. `G = 1` gives the identity.
 //
 // #### Usage:
 // ```
@@ -1481,53 +1855,23 @@ lowshelf2Matched(G, CF, x) =  biquad(b0, b1, b2, a1, a2, x)
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// highshelf2Matched_test = os.osc(330)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// highshelf2Matched_test = os.tosc(330) : ve.highshelf2Matched(1.5, 1500);
+// highshelf2Matched_slider_test = os.tosc(330)
 //   : ve.highshelf2Matched(
 //       hslider("highshelf2Matched:G", 1.5, 0.5, 4, 0.01),
 //       hslider("highshelf2Matched:CF", 1500, 50, 10000, 1)
 //     );
+// highshelf2Matched_modulated_test = no.noise : ve.highshelf2Matched(0.25*pow(16, tri), 1000) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// highshelf2Matched_low_test = no.noise : ve.highshelf2Matched(0.25, 20);
+// highshelf2Matched_unity_test = no.noise : ve.highshelf2Matched(1, 500);
 // ```
 //---------------------------------------------------------------------
 declare highshelf2Matched author "Dario Sanfilippo";
-declare highshelf2Matched license "MIT License";
-highshelf2Matched(G, CF, x) =  biquad(b0, b1, b2, a1, a2, x)
-    with {
-        safeG = ba.if(G < 1.0, min(1.0 - ma.EPSILON, G), max(1.0 + ma.EPSILON, G));
-        g = safeG;
-        gInv = 1.0 / g;
-        halfPi = ma.PI * .5;
-        f = CF / (ma.SR * .5);
-        f4 = f ^ 4.0;
-        hny = (f4 + g) / (f4 + gInv);
-        f1 = f / sqrt(.160 + 1.543 * f * f);
-        f14 = f1 ^ 4.0;
-        h1 = (f4 + f14 * g) / (f4 + f14 * gInv);
-        phi1 = sin(halfPi * f1) ^ 2.0;
-        f2 = f / sqrt(.947 + 3.806 * f * f);
-        f24 = f2 ^ 4.0;
-        h2 = (f4 + f24 * g) / (f4 + f24 * gInv);
-        phi2 = sin(halfPi * f2) ^ 2.0;
-        d1 = (h1 - 1.0) * (1.0 - phi1);
-        c11 = -1.0 * phi1 * d1;
-        c12 = phi1 * phi1 * (hny - h1);
-        d2 = (h2 - 1.0) * (1.0 - phi2);
-        c21 = -1.0 * phi2 * d2;
-        c22 = phi2 * phi2 * (hny - h2);
-        alpha1 = (c22 * d1 - c12 * d2) / (c11 * c22 - c12 * c21);
-        aa1 = (d1 - c11 * alpha1) / c12;
-        bb1 = hny * aa1;
-        aa2 = .25 * (alpha1 - aa1);
-        bb2 = .25 * (alpha1 - bb1);
-        v = .5 * (1.0 + sqrt(aa1));
-        w = .5 * (1.0 + sqrt(bb1));
-        a0 = .5 * (v + sqrt(v * v + aa2));
-        a0Inv = 1.0 / a0;
-        a1 = (1.0 - v) * a0Inv;
-        a2 = -.25 * aa2 * a0Inv * a0Inv;
-        b0 = .5 * (w + sqrt(w * w + bb2)) * a0Inv;
-        b1 = (1.0 - w) * a0Inv;
-        b2 = (-.25 * bb2 / b0) * a0Inv * a0Inv;
-    };
+declare highshelf2Matched license "MIT";
+highshelf2Matched(G, CF, x) = _matched2Filter(_shelf2Matched(G, 1.0 / G, CF), x);
 
 //=========================================Effects========================================
 //========================================================================================
@@ -1544,16 +1888,22 @@ highshelf2Matched(G, CF, x) =  biquad(b0, b1, b2, a1, a2, x)
 //
 // Where:
 //
-// * `fr`: resonance frequency in Hz
+// * `fr`: resonance frequency in Hz, between 0 and SR/7.34 (about 6 kHz at
+//   44.1 kHz). Above, or below 0, the filter is unstable.
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// wah4_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// wah4_test = os.tosc(220) : ve.wah4(800);
+// wah4_slider_test = os.tosc(220)
 //   : ve.wah4(
 //       hslider("wah4:freq", 800, 200, 2000, 1)
 //     );
+// wah4_modulated_test = no.noise : ve.wah4(200*pow(10, tri)) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //
 // #### References
@@ -1563,7 +1913,9 @@ highshelf2Matched(G, CF, x) =  biquad(b0, b1, b2, a1, a2, x)
 wah4(fr) = 4*moog_vcf((3.2/4),fr:si.smooth(0.999));
 
 //------------------------`(ve.)autowah`-----------------------------
-// Auto-wah effect.
+// Auto-wah effect: `crybaby` with its `wah` parameter driven by the
+// input's amplitude envelope (`an.amp_follower`). Input peaks above 1
+// hold the pedal fully forward (`crybaby` clamps `wah` to [0,1]).
 // `autowah` is a standard Faust function.
 //
 // #### Usage
@@ -1580,10 +1932,13 @@ wah4(fr) = 4*moog_vcf((3.2/4),fr:si.smooth(0.999));
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// autowah_test = os.osc(220)
+// no = library("noises.lib");
+// autowah_test = os.tosc(220) : ve.autowah(0.7);
+// autowah_slider_test = os.tosc(220)
 //   : ve.autowah(
 //       hslider("autowah:level", 0.7, 0, 1, 0.01)
 //     );
+// autowah_hot_test = 4*no.noise : ve.autowah(1);
 // ```
 //------------------------------------------------------------
 autowah(level,x) = level * crybaby(an.amp_follower(0.1,x),x) + (1.0-level)*x;
@@ -1600,42 +1955,68 @@ autowah(level,x) = level * crybaby(an.amp_follower(0.1,x),x) + (1.0-level)*x;
 //
 // Where:
 //
-// * `wah`: "pedal angle" from 0 to 1
+// * `wah`: "pedal angle" from 0 to 1. Values outside are clamped to
+//   this range: without the clamp, the poles leave the unit circle
+//   above about 2.08 at 44.1 kHz (2.58 at 192 kHz).
 //
 // #### Test
 // ```
 // ve = library("vaeffects.lib");
 // os = library("oscillators.lib");
-// crybaby_test = os.osc(220)
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// crybaby_test = os.tosc(220) : ve.crybaby(0.3);
+// crybaby_slider_test = os.tosc(220)
 //   : ve.crybaby(
 //       hslider("crybaby:wah", 0.3, 0, 1, 0.01)
 //     );
+// crybaby_modulated_test = no.noise : ve.crybaby(tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// crybaby_jump_test = no.noise : ve.crybaby(sq) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// crybaby_noise_test = no.noise : ve.crybaby(0);
+// crybaby_clamp_test = no.noise <: ve.crybaby(-1), ve.crybaby(3);
 // ```
 //
 // #### References
 //
 // * <https://ccrma.stanford.edu/~jos/pasp/vegf.html>
 //------------------------------------------------------------
-crybaby(wah) = *(gs) : fi.tf2(1,-1,0,a1s,a2s)
+crybaby(wah,x) = tick ~ (_,_) : !,_
 with {
-  Q  = pow(2.0,(2.0*(1.0-wah)+1.0)); // Resonance "quality factor"
-  fr = 450.0*pow(2.0,2.3*wah);       // Resonance tuning
-  g  = 0.1*pow(4.0,wah);             // gain (optional)
+  // Documented range. Above it the pole radius 1 - d goes below -1,
+  // d = ma.PI*450*2^(4.3*wah)/(8*ma.SR) = 2 at wah = 2.08 (44.1 kHz).
+  wc = max(0.0, min(1.0, wah));
+  Q  = pow(2.0,(2.0*(1.0-wc)+1.0)); // Resonance "quality factor"
+  fr = 450.0*pow(2.0,2.3*wc);       // Resonance tuning
+  g  = 0.1*pow(4.0,wc);             // gain (optional)
 
   // Biquad fit using z = exp(s T) ~ 1 + sT for low frequencies:
   frn = fr/ma.SR; // Normalized pole frequency (cycles per sample)
-  R = 1 - ma.PI*frn/Q; // pole radius
-  theta = 2*ma.PI*frn; // pole angle
-  a1 = 0-2.0*R*cos(theta); // biquad coeff
-  a2 = R*R;                // biquad coeff
+  // pole radius R = 1 - d, pole angle theta = 2*ma.PI*frn, and the biquad
+  // (1 - z^-1)/(1 + a1*z^-1 + a2*z^-2), a1 = -2*R*cos(theta), a2 = R*R,
+  // written with the two small quantities it depends on, so that nothing
+  // cancels in single precision:
+  d  = ma.PI*frn/Q;
+  f2 = d*d + 4.0*(1.0-d)*sin(ma.PI*frn)^2; // 1 + a1 + a2 = |1 - pole|^2
+  fq = d*(2.0-d);                          // 1 - a2 = 1 - R^2
 
-  // dezippering of slider-driven signals:
+  // dezippering of slider-driven signals: smoothing a1 and a2 themselves
+  // stalls in single precision up to 4e-5 away from their targets, as much
+  // as a few percent of f2. Smoothing f2 and fq instead gives the same a1s
+  // and a2s, since smooth(1) = 1 - e with e = s^(n+1).
   s = 0.999; // smoothing parameter (one-pole pole location)
-  a1s = a1 : si.smooth(s);
-  a2s = a2 : si.smooth(s);
+  e = (1.0-1.0') : (+ : *(s)) ~ _ : ma.FTZ;
+  f2s = (f2 : si.smooth(s)) + e;
+  fqs = (fq : si.smooth(s)) + e;
   gs =  g  : si.smooth(s);
 
-  //tf2 = component("filters.lib").tf2;
+  // Direct form II, a1s = f2s + fqs - 2, a2s = 1 - fqs, written on its
+  // state w and its output v = w - w' so that a1s is never formed.
+  tick(w,v) = wn, vn
+  with {
+    vn = v + (gs*x - f2s*w - fqs*v);
+    wn = w + vn;
+  };
 };
 
 // end jos section
@@ -1679,11 +2060,14 @@ closed source license or any other license if you decide so.
 // A very simple vocoder where the spectrum of the modulation signal
 // is analyzed using a filter bank.
 // `vocoder` is a standard Faust function.
+// The two signals can also be given as inputs, by partial application
+// (second form below, as in the Test section).
 //
 // #### Usage
 //
 // ```
-// _ : vocoder(nBands,att,rel,BWRatio,source,excitation) : _
+// vocoder(nBands,att,rel,BWRatio,source,excitation) : _
+// source, excitation : vocoder(nBands,att,rel,BWRatio) : _
 // ```
 //
 // Where:
@@ -1700,7 +2084,8 @@ closed source license or any other license if you decide so.
 // ve = library("vaeffects.lib");
 // no = library("noises.lib");
 // os = library("oscillators.lib");
-// vocoder_test = (no.noise, os.osc(220))
+// vocoder_test = (no.noise, os.tosc(220)) : ve.vocoder(8, 0.01, 0.1, 1.0);
+// vocoder_slider_test = (no.noise, os.tosc(220))
 //   : ve.vocoder(
 //       8,
 //       hslider("vocoder:att", 0.01, 0.001, 0.1, 0.001),
@@ -1709,15 +2094,16 @@ closed source license or any other license if you decide so.
 //     );
 // ```
 //------------------------------------------------------------
-declare oneVocoderBand author "Romain Michon";
-oneVocoderBand(band,bandsNumb,bwRatio,bandGain,x) = x : fi.resonbp(bandFreq,bandQ,bandGain) with {
+declare vocoder author "Romain Michon";
+vocoder(nBands,att,rel,BWRatio,source,excitation) = source <: par(i,nBands,oneBand(i,nBands,BWRatio,1) :
+    an.amp_follower_ar(att,rel) : _,excitation : oneBand(i,nBands,BWRatio)) :> _
+with {
+    oneBand(band,bandsNumb,bwRatio,bandGain,x) = x : fi.resonbp(bandFreq,bandQ,bandGain) with {
         bandFreq = 25*pow(2,(band+1)*(9/bandsNumb));
         BW = (bandFreq - 25*pow(2,(band)*(9/bandsNumb)))*bwRatio;
         bandQ = bandFreq/BW;
+    };
 };
-
-vocoder(nBands,att,rel,BWRatio,source,excitation) = source <: par(i,nBands,oneVocoderBand(i,nBands,BWRatio,1) :
-    an.amp_follower_ar(att,rel) : _,excitation : oneVocoderBand(i,nBands,BWRatio)) :> _ ;
 
 //########################################################################################
 /************************************************************************
@@ -1732,3 +2118,939 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 ************************************************************************/
 
 // end further further contributions section
+
+
+//-----------------------`(ve.)mxrPhase90`---------------------------
+// MXR Phase 90 phaser pedal circuit model (1974 "script logo" version).
+//
+// Four first-order all-pass stages whose corner frequencies are swept by
+// 2N5952 JFETs used as voltage-controlled resistors, summed with the dry
+// signal. Following Giampiccolo et al. (DAFx-24), each JFET's channel
+// resistance depends on its gate voltage (the LFO) and on its own
+// drain-source voltage (the audio at that stage), so the sweep is
+// signal-dependent: nearly linear for quiet inputs, increasingly distorted
+// at guitar levels, most strongly at the bottom of the sweep. Mono.
+//
+// Input and output are in volts, a sample of ±1 being treated as ±1 V. Like
+// the pedal, the model inverts the polarity of the signal.
+//
+// Accuracy: relative to an ngspice simulation of the reference schematic, on
+// guitar DI at 48 kHz, the error is 1 % at 10 mV peak, 2 % at 0.1 V, 5 % at
+// 0.3 V and 9 % at 1 V, and it halves with each doubling of the sample rate.
+// Tested from 8 kHz to 192 kHz.
+//
+// #### Usage
+//
+// ```
+// _ : mxrPhase90(rate) : _
+// ```
+//
+// Where:
+//
+// * `rate`: LFO rate in Hz (the reference plug-in spans 0.1 to 10 Hz)
+//
+// #### Test
+// ```
+// ve = library("vaeffects.lib");
+// os = library("oscillators.lib");
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// mxrPhase90_test = os.tosc(440) * 0.3 : ve.mxrPhase90(1.5);
+// mxrPhase90_slider_test = os.tosc(440) * 0.3
+//    : ve.mxrPhase90(hslider("mxrPhase90:rate", 1.5, 0.1, 10, 0.01));
+// mxrPhase90_modulated_test = 0.3*no.noise : ve.mxrPhase90(0.1 + 9.9*tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// mxrPhase90_jump_test = 0.3*no.noise : ve.mxrPhase90(0.1 + 9.9*sq) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//
+// #### References
+//
+// * R. Giampiccolo, S. Del Moro, C. Eutizi, M. Massimi, O. Massi,
+//   A. Bernardini, "Wave Digital Model of the MXR Phase 90 Based on a
+//   Time-Varying Resistor Approximation of JFET Elements," Proc. 27th Int.
+//   Conf. Digital Audio Effects (DAFx24), Guildford, UK, 2024
+// * <https://github.com/polimi-ispl/mxrphase90>
+//------------------------------------------------------------
+/*
+Implementation Notes:
+
+Circuit (all voltages referenced to the 5.1 V bias rail):
+
+  in -> input coupling (R3 10k, C5 10n, R14 470k) -> unity buffer   = dry
+     -> 4 x phase-shift stage                                        = wet
+     -> PNP summing stage: -1.788 x (dry + wet)/2, AC-coupled by C2 47n
+        into R2 150k (22.6 Hz)
+
+Each phase-shift stage is an inverting all-pass: C 47n from the stage input
+x to the op-amp's + input, which is tied to the rail by 24k in parallel with
+the JFET channel. With vc the capacitor voltage, the + input sits at
+x - vc = v_ds and the output is x - 2 vc; vc is a one-pole lowpass of x with
+time constant (24k || R_JFET) * 47n.
+
+- JFET channel conductance: the approximation of the reference model,
+  G = k (v_ov - v_ds/2) for v_ds <= v_ov, Is0 (1 - v_gs/Vp)^2
+  (1 + lambda v_ds) / v_ds beyond, and 0 below pinch-off, with v_ov =
+  v_gs - Vp, k = 2 Is0 / Vp^2 and the 2N5952 parameters Vp = -2.021 V,
+  Is0 = 5.367 mA, lambda = 4e-3. As in the reference model, each JFET uses
+  its stage's v_ds from the previous sample, which keeps the model explicit.
+- Each stage is discretized in its circuit variables (a trapezoidal,
+  topology-preserving integrator whose state is the capacitor's), not as a
+  direct-form all-pass: the JFET resistance changes at signal rate, and a
+  direct form, whose state is not the capacitor's, then misbehaves. The
+  integrator is pre-warped at the stage corner, capped at a quarter of the
+  sample rate so the update stays passive whatever the signal level.
+- LFO: asymmetric triangle (65 % rising), 3.25 V +- 0.15 V on the gates, as
+  in the reference model; the corners sweep from about 330 Hz to 3.3 kHz.
+  Its phase is os.lf_sawpos(rate), whose fixed-point phasor keeps the
+  frequency exact in single precision: a float phase accumulator drifts,
+  and made the float output differ from the double one by up to 1.8 %
+  of the peak at 176.4 kHz (4e-6 with os.lf_sawpos).
+- The output-stage gain was measured by simulating the reference LTspice
+  schematic (with the 2N4125 PNP stage) in ngspice; the PNP stage itself adds
+  no measurable distortion there, as the reference paper states.
+- Accuracy and tested sample rates: see the documentation above. Above
+  192 kHz ma.SR saturates (see pl.SR), so this model, like every
+  sample-rate-dependent function in the libraries, is mistuned there.
+*/
+mxrPhase90(rate) =
+    inbuf                                              // input coupling
+    <: _, (stage : stage : stage : stage)              // dry, wet
+    : + : *(0.5)
+    : fi.highpass(1, FC_OUT) : *(-G_OUT)               // PNP summing stage
+with {
+    VREF = 5.1;                                        // bias rail
+    R3 = 10e3; C5 = 10e-9; R14 = 470e3;                // input coupling
+    RS = 24e3; CS = 47e-9;                             // phase-shift stages
+    VP = -2.021; IS0 = 5.367e-3; LAMBDA = 4e-3;        // 2N5952
+    K = 2.0 * IS0 / (VP * VP);
+    G_OUT = 1.788;                                     // PNP stage gain (ngspice)
+    FC_OUT = 1.0 / (2.0 * ma.PI * 150e3 * 47e-9);      // C2 into R2
+
+    // Input coupling: H(s) = s C5 R14 / (1 + s C5 (R3 + R14)).
+    inbuf = fi.tf1s(R14 / (R3 + R14), 0.0, 1.0, w1)
+    with { w1 = 1.0 / (C5 * (R3 + R14)); };
+
+    // LFO: asymmetric triangle, gate-source voltage. The phase is
+    // os.lf_sawpos, exact in single precision (fixed-point phasor).
+    phase = os.lf_sawpos(rate);
+    tri(p) = ba.if(p < 0.65, -1.0 + 2.0 * p / 0.65, 1.0 - 2.0 * (p - 0.65) / 0.35);
+    vgs = 3.25 + 0.15 * tri(phase) - VREF;
+
+    // JFET channel conductance, zero below pinch-off.
+    gj(vd) = ba.if(vov < 0.0, 0.0, ba.if(vd <= vov, K * (vov - 0.5 * vd), gsat))
+    with {
+        vov = vgs - VP;
+        gsat = IS0 * (1.0 - vgs / VP) ^ 2 * (1.0 + LAMBDA * vd) / max(vd, 1e-9);
+    };
+
+    // One phase-shift stage; state: integrator s and the previous v_ds d.
+    stage = core ~ (_, _) : (!, !, _)
+    with {
+        core(sprev, dprev, x) = s, d, y
+        with {
+            wb = (1.0 / RS + gj(dprev)) / CS;
+            g = tan(min(0.5 * wb / ma.SR, 0.25 * ma.PI));   // g <= 1: passive
+            vc = (g * x + sprev) / (1.0 + g);               // capacitor voltage
+            s = 2.0 * vc - sprev;
+            d = x - vc;                                     // JFET v_ds
+            y = x - 2.0 * vc;                               // stage output
+        };
+    };
+};
+declare mxrPhase90 author "David Braun";
+declare mxrPhase90 license "MIT";
+
+
+//-----------------------`(ve.)klonCentaur`---------------------------
+// Klon Centaur overdrive pedal circuit model.
+//
+// The Klon Centaur is a guitar overdrive pedal known for adding gain and
+// harmonic distortion while preserving the instrument's natural tone. This is a
+// port of the "Traditional" (circuit model) mode of Jatin Chowdhury's
+// ChowCentaur: the gain stage is modeled with wave digital filters (WDF), with
+// the diode clipper running at twice the sample rate, and the input buffer,
+// amplifier, tone and output stages as bilinear-transformed filters.
+//
+// The controls are smoothed over 50 ms, as in ChowCentaur, starting from their
+// initial values. The input is scaled by 0.5, as in ChowCentaur; a sample of
+// ±1 is treated as ±1 V.
+//
+// Accuracy: against the ChowCentaur 1.4.0 plug-in (Traditional mode), the output
+// level is within 0.13 dB and the waveform within 1.6 % for gain up to 0.5;
+// at gain 1 with loud input the model is up to 0.9 dB louder (waveform within
+// 11 %). The remaining difference comes from the plug-in's fast log/exp
+// approximations in the diode model, which this port evaluates accurately: a
+// variant using the plug-in's approximations matches it within 0.02 %.
+//
+// Single precision: the output stays within 2.3e-4 of double precision at the
+// default settings from 44.1 to 192 kHz. At low gain the preamp's wave digital
+// tree loses precision in float (a 1 µF capacitor next to 15 kΩ), and with gain
+// and treble at 0 the gap grows from 3e-4 of the peak at 44.1 kHz to 6e-3 at
+// 192 kHz; ChowCentaur runs its wave digital filters in double precision.
+//
+// #### Usage
+//
+// ```
+// _ : klonCentaur(gain, treble, level) : _
+// ```
+//
+// Where:
+//
+// * `gain`: Gain control (0-1), where 0 is minimum gain and 1 is maximum gain.
+//   Controls the resistance of the gain potentiometer (R10b) in the preamp stage,
+//   ranging from 2kΩ at maximum gain to 102kΩ at minimum gain.
+// * `treble`: Treble/tone control (0-1), where 0 is dark/warm tone and 1 is bright tone.
+//   Controls the frequency response of the active tone shaping filter.
+// * `level`: Output level/volume control (0-1), where 0 is minimum output and 1 is maximum output.
+//   Controls the output potentiometer resistance, setting the final output amplitude.
+//
+// #### Test
+// ```
+// ve = library("vaeffects.lib");
+// os = library("oscillators.lib");
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// klonCentaur_test = os.tosc(330) : ve.klonCentaur(0.5, 0.5, 0.5);
+// klonCentaur_slider_test = os.tosc(330)
+//    : ve.klonCentaur(
+//        hslider("klonCentaur:gain", 0.5, 0, 1, 0.01),
+//        hslider("klonCentaur:treble", 0.5, 0, 1, 0.01),
+//        hslider("klonCentaur:level", 0.5, 0, 1, 0.01)
+//      );
+// klonCentaur_modulated_test = 0.5*no.noise : ve.klonCentaur(0.1 + 0.9*tri, 0.5, 0.5) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// klonCentaur_jump_test = 0.5*no.noise : ve.klonCentaur(0.1 + 0.9*sq, 0.5, 0.5) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// klonCentaur_hot_test = os.tosc(110)*0.5 : ve.klonCentaur(1, 0, 1);
+// ```
+//
+// #### References
+//
+// * J. Chowdhury, "chowdsp_wdf: An Advanced C++ Library for Wave Digital Circuit
+//   Modelling," arXiv:2210.12554, 2022
+// * <https://github.com/jatinchowdhury18/KlonCentaur/tree/master/ChowCentaur>
+//------------------------------------------------------------
+/*
+Implementation Notes:
+
+This is a port of Jatin Chowdhury's ChowCentaur C++ implementation (version
+1.4.0, "Traditional" mode), which uses wave digital filters (WDF) to model the
+analog circuitry.
+
+Circuit Modeling Approach:
+- Input: scaled by 0.5, then a high-pass buffer (R1=10kΩ, R2=1MΩ, C1=0.1µF)
+- Gain stage: WDF-modeled preamp and feed-forward paths, amplifier, and diode
+  clipper (2x oversampled), summed by an inverting amplifier
+- Tone control: Active filter with variable frequency response (Rpot=10kΩ, C=3.9nF)
+- Output stage: Level control with passive filter (Rpot=10kΩ, C1=4.7µF)
+- DC blocker: 35 Hz high-pass filter (Q=0.707)
+
+Technical Details:
+- The antiparallel diode pair uses the Wright omega function, evaluated to a
+  relative error below 2e-7; ChowCentaur uses a lookup table near 0 and fast
+  log/exp approximations elsewhere, which is where the two differ.
+- The clipping stage runs at twice the sample rate between JUCE's polyphase IIR
+  half-band filters, as in ChowCentaur. Its tree is written out by hand with
+  chowdsp_wdf's adaptor equations, since wd.buildtree cannot be sub-stepped.
+- The clipping stage's bias is 0 V, as in ChowCentaur: behind C10 a DC bias
+  would only charge the capacitor at startup, an audible transient.
+- The preamp's output voltage is one sample late, as in ChowCentaur, which
+  reads it before propagating the incident waves.
+- JUCE-style parameter smoothing (linear for treble, multiplicative for
+  gain/level), starting at the initial control values as JUCE's SmoothedValue
+  does after prepare().
+- The input buffer and output stage are first-order high-passes a few Hz
+  wide, computed in TPT form (the same bilinear filters as ChowCentaur's), and
+  the 35 Hz DC blocker is a TPT state-variable filter, all accurate in float.
+- Outputs current from clipping stage capacitor C10.
+*/
+klonCentaur(gain, treble, level) =
+    *(0.5)                // Input scaling (as in ChowCentaur)
+    : input_buffer        // High-pass input coupling
+    : saturate_input      // Prevent excessive input levels
+    : gain_stage(gain)    // Preamp, feed-forward, amplifier, and clipping
+    : tone_filter(treble) // Active tone control
+    : *(-1.0)             // Phase inversion (circuit artifact)
+    : saturate_core       // Core saturation limiting
+    : output_stage(level) // Level control and output coupling
+    : dc_blocker_hp35     // Remove DC offset
+with {
+    SR = ma.SR;
+
+    // Utility functions
+    clip(l, h, x) = max(l, min(h, x));  // Hard clipping limiter
+    saturate_input = clip(-4.5, 4.5);   // Input stage saturation (±4.5 V)
+    saturate_core = clip(-13.1, 11.7);  // Core stage saturation (asymmetric)
+
+    // JUCE-style Parameter Smoothing
+    // As in JUCE's SmoothedValue after prepare(), each control starts at its
+    // first value and only later changes are ramped: the ramp runs on the
+    // difference from the first value, which is 0 at startup.
+    first = 1 - 1';                       // 1 on the first sample only
+    ramp_from_first(n, x) = x0 + ba.line(n, x - x0)
+    with {
+        x0 = x : ba.sAndH(first);
+    };
+
+    // Linear smoothing for parameters with additive behavior (e.g., treble)
+    smoothed_linear(time, target) = ramp_from_first(ba.sec2samp(time), target);
+
+    // Multiplicative smoothing for parameters with scaling behavior (e.g., gain, level)
+    // Smooths in log domain to provide perceptually linear response
+    smoothed_multiplicative(time, min_val, target) =
+        exp(ramp_from_first(ba.sec2samp(time), log(max(target, min_val))));
+
+    // ============= Stage Implementations =============
+
+    // Input Buffer Stage
+    // High-pass filter formed by input coupling network
+    // Rejects DC and very low frequencies while passing guitar signal
+    // Reference: ChowCentaur/CommonProcessors/InputBufferProcessor.cpp
+    input_buffer = hp1_bilinear(R2 / (R1 + R2), 1.0 / (C1 * (R1 + R2)))
+    with {
+        R1 = 10000.0;    // 10 kΩ - Series input resistor
+        R2 = 1000000.0;  // 1 MΩ - Bias resistor to ground
+        C1 = 0.1e-6;     // 0.1 µF - Input coupling capacitor
+    };
+
+    // First-order high-pass H(s) = k * s / (s + wc), bilinear-transformed with
+    // K = 2 * SR as in ChowCentaur, computed in TPT form: the direct form loses
+    // precision in single precision because the pole (a few Hz) is close to z = 1.
+    hp1_bilinear(k, wc, x) = k * (x - 0.5 * (st + st'))
+    with {
+        g = wc / (2.0 * SR);
+        G = g / (1.0 + g);
+        st = (\(s).(s + 2.0 * G * (x - s))) ~ _;  // TPT integrator state
+    };
+
+    // Tone Control Stage
+    // Active tone filter with variable frequency response
+    // Treble control adjusts the balance between bass and treble frequencies
+    // Reference: ChowCentaur/CommonProcessors/ToneFilterProcessor.cpp
+    tone_filter(treble_val) = fi.tf1(b0_tone, b1_tone, a1_tone)
+    with {
+        Rpot = 10e3;         // 10 kΩ - Treble potentiometer
+        C = 3.9e-9;          // 3.9 nF - Tone shaping capacitor
+        G1 = 1.0 / 100e3;    // Conductance: 100 kΩ resistor
+        treble_s = treble_val
+            : clip(0.0, 1.0)
+            : smoothed_linear(0.05);  // 50 ms smoothing time
+        G2 = 1.0 / (1800.0 + (1.0 - treble_s) * Rpot);  // 1.8 kΩ + variable
+        G3 = 1.0 / (4700.0 + treble_s * Rpot);          // 4.7 kΩ + variable
+        G4 = 1.0 / 100e3;    // Conductance: 100 kΩ resistor
+
+        // Frequency warping to match critical transition frequency
+        wc = G1 / C;
+        K = wc / tan(wc / (2.0 * SR));
+
+        // Analog prototype coefficients
+        bs0 = C * (G1 + G2);
+        bs1 = G1 * (G2 + G3);
+        as0 = C * (G3 - G4);
+        as1 = -G4 * (G2 + G3);
+
+        // Bilinear transform
+        a0_temp = as0 * K + as1;
+        b0_temp = (bs0 * K + bs1) / a0_temp;
+        b1_temp = (-bs0 * K + bs1) / a0_temp;
+        a1_temp = (-as0 * K + as1) / a0_temp;
+
+        // Pole flip to ensure stability (keep pole inside unit circle)
+        a1_tone = 1.0 / a1_temp;
+        b0_tone = b0_temp / a1_temp;
+        b1_tone = b1_temp / a1_temp;
+    };
+
+    // Output Stage
+    // Level control with passive RC filter
+    // Controls final output amplitude via variable voltage divider
+    // Reference: ChowCentaur/CommonProcessors/OutputStageProcessor.cpp
+    output_stage(level_val) = hp1_bilinear(R2 / (R1 + R2), 1.0 / (C1 * (R1 + R2)))
+    with {
+        level_s = level_val
+            : clip(0.00001, 1.0)
+            : smoothed_multiplicative(0.05, 0.00001);  // 50 ms smoothing time
+        R1 = 560.0 + (1.0 - level_s) * 10000.0;  // 560 Ω + variable (top of pot)
+        R2 = level_s * 10000.0 + 1.0;            // Variable (bottom of pot) + 1 Ω floor
+        C1 = 4.7e-6;                             // 4.7 µF - Output coupling capacitor
+    };
+
+    // Calculate pole frequency for frequency-warped bilinear transform
+    // Used to match the critical frequency in 2nd-order systems
+    // Returns imaginary part of complex pole pair: Im(pole) = sqrt(-discriminant) / (2*a0)
+    calcPoleFreq(as0, as1, as2) = sqrt(-radicand) / (2.0 * as0)
+    with {
+        radicand = as1 * as1 - 4.0 * as0 * as2 : min(0.);  // Force non-positive for complex poles
+    };
+
+    // Amplifier Stage
+    // Second-order filter modeling the op-amp gain stage before clipping
+    // Gain control adjusts feedback network impedance
+    // Reference: ChowCentaur/TeensyCentaur/src/GainStageProcessors/AmpStage.h
+    amp_stage(gain_val, sig) = sig : fi.tf2(b0_amp, b1_amp, b2_amp, a1_amp, a2_amp)
+    with {
+        // R10b: Gain potentiometer (100 kΩ)
+        // Maps gain parameter [0,1] to resistance [102 kΩ, 2 kΩ]
+        // At minimum gain (0): maximum resistance (102 kΩ) for less feedback
+        // At maximum gain (1): minimum resistance (2 kΩ) for more feedback
+        r10b = gain_val
+            : clip(0, 1)
+            : it.remap(0, 1, 102000.0, 2000.0)
+            : smoothed_multiplicative(0.05, 2000.0);  // 50 ms smoothing time
+        R11 = 15000.0;   // 15 kΩ - Feedback network resistor
+        R12 = 422000.0;  // 422 kΩ - Feedback network resistor
+        C7 = 82e-9;      // 82 nF - Feedback network capacitor
+        C8 = 390e-12;    // 390 pF - Feedback network capacitor
+
+        // Analog prototype coefficients for 2nd-order system
+        as0 = C7 * C8 * r10b * R11 * R12;
+        as1 = C7 * r10b * R11 + C8 * R12 * (r10b + R11);
+        as2 = r10b + R11;
+        bs0 = as0;
+        bs1 = C7 * R11 * R12 + as1;
+        bs2 = R12 + as2;
+
+        // Frequency-warped bilinear transform to preserve critical frequency
+        wc = calcPoleFreq(as0, as1, as2);
+        K = wc_safe / tan(wc_safe / (2.0 * SR))
+        with {
+            wc_safe = max(wc, 1e-10);  // Prevent division by zero
+        };
+        K2 = K * K;
+
+        // Bilinear transform with frequency warping
+        a0 = as0 * K2 + as1 * K + as2;
+        b0_amp = (bs0 * K2 + bs1 * K + bs2) / a0;
+        b1_amp = 2.0 * (bs2 - bs0 * K2) / a0;
+        b2_amp = (bs0 * K2 - bs1 * K + bs2) / a0;
+        a1_amp = 2.0 * (as2 - as0 * K2) / a0;
+        a2_amp = (as0 * K2 - as1 * K + as2) / a0;
+    };
+
+    // Summing Amplifier
+    // First-order filter that sums the feed-forward currents
+    // Models the inverting summing amplifier in the gain stage
+    // Reference: ChowCentaur/TeensyCentaur/src/GainStageProcessors/SummingAmp.h
+    summing_amp = fi.tf1(b0_sum, b1_sum, a1_sum)
+    with {
+        R20 = 392000.0;  // 392 kΩ - Summing junction resistor
+        C13 = 820e-12;   // 820 pF - Feedback capacitor
+        K = 2.0 * SR;    // Bilinear transform frequency factor
+
+        // Analog prototype coefficients
+        as0 = C13 * R20;
+        as1 = 1.0;
+        bs0 = 0.0;
+        bs1 = R20;
+
+        // Bilinear transform
+        a0 = as0 * K + as1;
+        b0_sum = (bs0 * K + bs1) / a0;
+        b1_sum = (-bs0 * K + bs1) / a0;
+        a1_sum = (-as0 * K + as1) / a0;
+    };
+
+    // DC Blocker
+    // 35 Hz high-pass filter (Butterworth, Q=0.707)
+    // Removes any DC offset accumulated through the gain stage
+    // Reference: ChowCentaur/ChowCentaurPlugin.cpp (line 66)
+    // The TPT state-variable form computes the same bilinear filter as the
+    // direct-form biquad of the reference (prewarped at 35 Hz), but stays
+    // accurate in single precision: the direct form's poles approach z = 1 as
+    // the sample rate grows, and its float output drifted by up to 12% of the
+    // peak at 192 kHz.
+    dc_blocker_hp35 = fi.SVFTPT.HP2(35.0, 1.0 / sqrt(2.0));
+
+    // Preamp Stage (Wave Digital Filter)
+    // Models the input preamp circuit using WDF topology
+    // Outputs: (voltage at gain node, feed-forward 1 current)
+    // WDF topology: vin-[C3]-(parallel: (series: (parallel: (C5, R6), Vbias)),
+    //                                   (series: (parallel: (Vbias2, C16), R7)))
+    // Reference: ChowCentaur/TeensyCentaur/src/GainStageProcessors/PreAmpStage.h
+    preamp_stage(gain_val, sig) = wd.buildtree(tree) : combine_outputs
+    with {
+        // Vbias resistance varies with gain (0-100 kΩ)
+        vb_res = max(gain_val * 100e3, 1.0e-9);  // Floor at ~0 Ω to avoid singularity
+
+        // WDF components
+        vin(i) = wd.u_voltage(i, -1.0 * sig);      // Input voltage source (inverted)
+        c3(i) = wd.capacitor(i, 0.1e-6);           // 0.1 µF - Input coupling capacitor
+        c5(i) = wd.capacitor(i, 68e-9);            // 68 nF - Preamp capacitor
+        c16(i) = wd.capacitor(i, 1e-6);            // 1 µF - Bypass capacitor
+        r6(i) = wd.resistor_Vout(i, 10000.0);      // 10 kΩ - Output resistor (voltage output)
+        r7(i) = wd.resistor(i, 1500.0);            // 1.5 kΩ - Bias resistor
+        vbias(i) = wd.resVoltage_Vout(i, vb_res, 0.0);  // Variable bias (voltage output)
+        vbias2(i) = wd.resistor_Iout(i, 15000.0);  // 15 kΩ - Bias resistor (current output)
+
+        // Build WDF tree structure matching circuit topology
+        tree = vin : wd.series : (
+            c3,
+            (wd.parallel : (
+                (wd.series : ((wd.parallel : (c5, r6)), vbias)),
+                (wd.series : ((wd.parallel : (vbias2, c16)), r7))
+            ))
+        );
+
+        // Combine voltage and current outputs
+        // v_r6 + v_vbias = voltage at gain node
+        // i_ff1 = feed-forward path 1 current
+        combine_outputs(v_r6, v_vbias, i_ff1) = v_r6 + v_vbias, i_ff1;
+    };
+
+    // Feed-Forward Stage 2 (Wave Digital Filter)
+    // Models the second feed-forward path circuit
+    // Outputs current for summing at the gain stage
+    // Complex WDF topology with multiple RC networks and gain-dependent voltage divider
+    // Reference: ChowCentaur/TeensyCentaur/src/GainStageProcessors/FeedForward2.h
+    ff2_stage(gain_val, sig) = wd.buildtree(tree)
+    with {
+        // Split gain potentiometer (100 kΩ total)
+        rv_top_val = max(gain_val * 100e3, 1.0);        // Top portion (0-100 kΩ)
+        rv_bot_val = max((1.0 - gain_val) * 100e3, 1.0);  // Bottom portion (100-0 kΩ)
+
+        // WDF components
+        vin(i) = wd.u_voltage(i, -1.0 * sig);   // Input voltage source (inverted)
+        c4(i) = wd.capacitor(i, 68e-9);         // 68 nF
+        c6(i) = wd.capacitor(i, 390e-9);        // 390 nF
+        c11(i) = wd.capacitor(i, 2.2e-9);       // 2.2 nF
+        c12(i) = wd.capacitor(i, 27e-9);        // 27 nF
+        r5(i) = wd.resistor(i, 5100.0);         // 5.1 kΩ
+        r8(i) = wd.resistor(i, 1500.0);         // 1.5 kΩ
+        r9(i) = wd.resistor(i, 1000.0);         // 1 kΩ
+        rv_top(i) = wd.resistor(i, rv_top_val); // Variable (top of pot)
+        rv_bot(i) = wd.resistor(i, rv_bot_val); // Variable (bottom of pot)
+        r15(i) = wd.resistor(i, 22000.0);       // 22 kΩ
+        r16(i) = wd.resistor_Iout(i, 47000.0);  // 47 kΩ (current output)
+        r17(i) = wd.resistor(i, 27000.0);       // 27 kΩ
+        r18(i) = wd.resistor(i, 12000.0);       // 12 kΩ
+        vbias(i) = wd.resVoltage(i, 1.0e-9, 0.0);  // Ground reference (~0 Ω, 0 V)
+
+        // Build WDF tree structure with series/parallel combinations
+        s1 = wd.series : (c12, r18);
+        p1 = wd.parallel : (s1, r17);
+        s2 = wd.series : (c11, r15);
+        s3 = wd.series : (s2, r16);
+        p2 = wd.parallel : (s3, p1);
+        p3 = wd.parallel : (p2, rv_bot);
+        s4 = wd.series : (p3, rv_top);
+        s5 = wd.series : (c6, r9);
+        p4 = wd.parallel : (s4, s5);
+        p5 = wd.parallel : (p4, r8);
+        s6 = wd.series : (p5, vbias);
+        p6 = wd.parallel : (r5, c4);
+
+        tree = vin : wd.series : (p6, s6);
+    };
+
+    // ============= Clipping Stage (Wave Digital Filter, 2x oversampled) =============
+    // Diode clipping stage using antiparallel diode pair (D2, D3)
+    // Topology: diodes (root) in parallel with:
+    //   - Input path: vin (inverted) -> C9 -> R13
+    //   - Bias path: C10 -> 47 kΩ to the bias, 0 V as in ChowCentaur (behind C10 a
+    //     DC bias only charges the capacitor, at startup)
+    // Outputs the current through C10 for the summing amplifier.
+    // As in ChowCentaur, the stage runs at twice the sample rate between JUCE's
+    // polyphase IIR half-band filters (maximum-quality settings: transition width
+    // 0.05 / -90 dB up, 0.06 / -75 dB down). wd.buildtree cannot be sub-stepped, so
+    // the tree is written out with chowdsp_wdf's adaptor equations.
+    // Reference: ChowCentaur/GainStageProcessors/ClippingStage.h, GainStageProc.cpp
+    clipping_stage(sig) = sig <: (up_direct, up_delayed) : clip2x : down
+    with {
+        Is = 15e-6;         // Diode reverse saturation current (A), as in ChowCentaur
+        Vt = 0.02585;       // Thermal voltage at room temperature (V)
+        fs2 = 2.0 * SR;     // The stage's sample rate
+
+        // Port resistances (capacitors: 1 / (2 C fs))
+        R0 = 1.0e-9;                     // vin: ideal source (chowdsp default)
+        Rc9 = 1.0 / (2.0 * 1.0e-6 * fs2);
+        Rc10 = 1.0 / (2.0 * 1.0e-6 * fs2);
+        R13 = 1000.0;
+        Rb = 47000.0;
+        RS1 = R0 + Rc9;                  // series(vin, C9)
+        RS2 = RS1 + R13;                 // series(S1, R13)
+        RS3 = Rc10 + Rb;                 // series(C10, Rbias)
+        Rp = 1.0 / (1.0 / RS2 + 1.0 / RS3);
+        p1R = (1.0 / RS2) / (1.0 / RS2 + 1.0 / RS3);
+
+        // Antiparallel diode pair as root (chowdsp CustomDiodePairT). The Wright
+        // omega is wd.omega followed by two more Newton steps on
+        // omega = exp(x - omega): relative error below 2e-7 everywhere. (ChowCentaur
+        // uses a lookup table near 0 and fast log/exp approximations elsewhere.)
+        newton(x, y) = y - (y - exp(x - y)) / (y + 1.0);
+        omega(x) = newton(x, newton(x, max(wd.omega(x), 1e-12)));
+        R_Is = Rp * Is;
+        diode(a) = a + 2.0 * lam * (R_Is - Vt * omega(win))
+        with {
+            lam = ma.signum(a);
+            win = log(R_Is / Vt) + lam * a / Vt + R_Is / Vt;
+        };
+
+        // One step of the tree: states z9, z10 (capacitor waves), input x
+        step(z9, z10, x) = z9n, z10n, i10
+        with {
+            bS2 = z9 - x;                // reflected up by series(series(-x, C9), R13)
+            bS3 = 0.0 - z10;             // reflected up by series(C10, 0 V)
+            bDiff = bS3 - bS2;
+            bTemp = 0.0 - p1R * bDiff;
+            bP = bS3 + bTemp;            // reflected up by the parallel adaptor
+            aD = diode(bP);              // the root's reflected wave
+            b2 = aD + bTemp;
+            a10 = z10 - (Rc10 / RS3) * (b2 + z10);   // incident on C10
+            i10 = (a10 - z10) * 0.5 / Rc10;           // current through C10
+            z10n = a10;
+            xS2 = bDiff + b2;            // incident on series(S1, R13)
+            xS1 = (x - z9) - (RS1 / RS2) * (xS2 + (x - z9));
+            a1 = (0.0 - x) - (R0 / RS1) * (xS1 + (0.0 - x) + z9);
+            z9n = 0.0 - (xS1 + a1);      // incident on C9
+        };
+        // Two steps per sample: even then odd sub-sample; outputs (even, odd)
+        clip2x(e, o) = (loop ~ (_, _)) : (!, !, \(yo, ye).(ye, yo))
+        with {
+            loop(z9, z10) = step(z9, z10, e) : \(z9e, z10e, ye).(step(z9e, z10e, o), ye);
+        };
+
+        // JUCE Oversampling2TimesPolyphaseIIR (float coefficients)
+        ap(a) = _ <: *(a), mem : + : (+ ~ *(0.0 - a));
+        up_direct = ap(0.04572814702987671) : ap(0.3325011134147644)
+            : ap(0.6632020473480225) : ap(0.9338558316230774);
+        up_delayed = ap(0.16808754205703735) : ap(0.5044857263565063)
+            : ap(0.8037808537483215);
+        down(e, o) = 0.5 * (dd + mem(dl))
+        with {
+            dd = e : ap(0.05421752482652664) : ap(0.3830873370170593)
+                : ap(0.7487209439277649);
+            dl = o : ap(0.19679796695709229) : ap(0.5731363892555237)
+                : ap(0.9142937064170837);
+        };
+    };
+
+    // Gain Stage - Complete signal path
+    // Combines preamp, amplifier, clipping, and feed-forward paths
+    // Signal flow:
+    //   1. Preamp stage generates voltage and FF1 current
+    //   2. Preamp voltage -> amplifier -> saturation -> diode clipper -> diode current
+    //   3. FF2 stage generates FF2 current directly from input
+    //   4. All currents summed (diode + FF1 + FF2) -> summing amp -> output saturation
+    // This architecture creates the characteristic Klon Centaur overdrive response
+    // Reference: ChowCentaur/GainStageProcessors/GainStageProc.cpp
+    gain_stage(gain_val, sig) = diode_current + ff1_current + ff2_current
+        : summing_amp
+        : saturate_core
+    with {
+        gain_clamped = gain_val : clip(0.0, 1.0);  // Ensure gain in valid range
+
+        // Preamp stage outputs: (voltage, FF1 current)
+        preamp_outputs = preamp_stage(gain_clamped, sig);
+        // ChowCentaur reads this voltage before propagating the incident waves,
+        // and R6 and Vbias reflect 0, so it reads the previous sample's value.
+        preamp_voltage = preamp_outputs : ba.selector(0, 2) : mem;  // Extract voltage
+        ff1_current = preamp_outputs : ba.selector(1, 2);     // Extract FF1 current
+
+        // Feed-forward path 2 current
+        ff2_current = ff2_stage(gain_clamped, sig);
+
+        // Main signal path: amp -> saturation -> diode clipper
+        // The clipping stage outputs the current through C10 for feedback
+        diode_current = amp_stage(gain_clamped, preamp_voltage)
+            : saturate_input
+            : clipping_stage;
+    };
+};
+declare klonCentaur author "David Braun";
+declare klonCentaur copyright "Chowdhury-DSP";
+declare klonCentaur license "BSD-3-Clause";
+
+
+//-----------------------`(ve.)fulltoneOCD`---------------------------
+// Fulltone OCD (Obsessive Compulsive Drive) v2 overdrive pedal circuit model.
+//
+// The OCD is a two-op-amp overdrive. Its clipping network shunts the signal to
+// the half-supply rail: a diode-connected 2N7000 MOSFET in parallel with a
+// second diode-connected 2N7000 in series with a 1N34A germanium diode, which
+// makes the clipping asymmetric. A passive tone network with a high-peak /
+// low-peak (HP/LP) switch follows. This implementation follows the explicit
+// wave digital (WD) model of Giampiccolo et al. (DAFx-26): the clipping node and
+// the passive output network are wave digital trees, the clipping network is a
+// single canonical piecewise-linear (CPWL) element evaluated without iteration,
+// and the clipping node runs 4x oversampled. Mono.
+//
+// It models the circuit as idealized in that paper: ideal op-amps, and
+// square-law MOSFETs without body diodes. The paper validates it against a
+// simulation of the same idealized circuit, not against a pedal. In a real
+// pedal the second op-amp saturates at its supply rails, on 9 V before the
+// clipping network conducts; this model has no rail saturation.
+//
+// `drive`, `tone` and `hp` are clamped to [0, 1]; otherwise the controls are
+// used as given: smooth them (e.g. with `si.smoo`) when they are driven from
+// a UI. Input and output are in volts, a sample of
+// ±1 being treated as ±1 V as in the reference model.
+//
+// Output level: the op-amps are ideal, so nothing limits the output to the
+// ±4.5 V a 9 V pedal can swing. At `volume` = 1 and `tone` = 0.5, in HP, a
+// 330 Hz sine of 1 V peak comes out at about 6.3 V peak (Drive 0) to 9 V
+// (Drive 1). On a 10.7 s guitar DI recording scaled to 0.3 V peak, the RMS
+// level rises by 17 dB (Drive 0), 32 dB (Drive 0.5) and 37 dB (Drive 1) in HP,
+// and by 11, 26 and 31 dB in LP; the peak level rises less (16, 24 and 27 dB
+// in HP), since the clipping flattens the peaks. `volume` around 0.14
+// (Drive 0) down to 0.014 (Drive 1) thus gives roughly unity RMS gain in HP,
+// twice that in LP.
+//
+// Latency: the 4x oversampling of the clipping node delays the output by
+// 11 samples, at every sample rate.
+//
+// Accuracy: the small-signal response is within 0.1 dB of the analog circuit
+// from 30 Hz to 2 kHz at 44.1 kHz and above. The top octave rolls off (about
+// -1 to -4 dB at 10 kHz at 48 kHz, depending on the controls; under 1 dB at
+// 96 kHz). Relative to a converged simulation of the reference circuit, the
+// harmonics of a 1 kHz tone are within 0.3-0.8 % at 48 kHz and 0.1-0.3 % at
+// 96 kHz, and the error falls quadratically with the sample rate. Tested from
+// 8 kHz to 192 kHz.
+//
+// Data: the I-V curve of the clipping network (current into the network versus
+// node voltage) is computed from the paper's device equations and parameters
+// (Eq. (15) and Table 2 for the 2N7000s, Eq. (8) and Table 2 for the 1N34A;
+// the paper is CC BY 4.0), at 20 voltage knots taken from the authors'
+// `singleNL_char.mat` (see References), then shifted by 1.21 µA so that the
+// CPWL passes through I(0) = 0. The authors' table was simulated with a
+// slightly different diode (Is = 2.68 µA, eta = 1.5975); using it instead
+// changes the output by less than 0.1 %.
+//
+// #### Usage
+//
+// ```
+// _ : fulltoneOCD(drive, tone, volume, hp) : _
+// ```
+//
+// Where:
+//
+// * `drive`: Drive knob (0-1), audio taper: the Drive pot resistance is
+//   500 kΩ * drive^2 in the feedback of the first op-amp stage, as in the
+//   reference model (v1.x pedals used a 1 MΩ pot)
+// * `tone`: Tone knob (0-1), linear; 0 is darkest, 1 is brightest
+// * `volume`: Volume knob (0-1), a linear output gain (the v2 output is buffered,
+//   so the pot wiper is unloaded)
+// * `hp`: high-peak/low-peak switch, 1 = high peak (brighter and louder), 0 =
+//   low peak; intermediate values crossfade the series resistance, so a
+//   smoothed switch clicks less. The paper models the high-peak position only
+//   (switch closed); the low-peak position extends it
+//
+// #### Test
+// ```
+// ve = library("vaeffects.lib");
+// os = library("oscillators.lib");
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// fulltoneOCD_test = os.tosc(330) : ve.fulltoneOCD(0.4, 0.5, 0.35, 1);
+// fulltoneOCD_slider_test = os.tosc(330)
+//    : ve.fulltoneOCD(
+//        hslider("fulltoneOCD:drive", 0.4, 0, 1, 0.01),
+//        hslider("fulltoneOCD:tone", 0.5, 0, 1, 0.01),
+//        hslider("fulltoneOCD:volume", 0.35, 0, 1, 0.01),
+//        checkbox("fulltoneOCD:hp")
+//      );
+// fulltoneOCD_lp_test = os.tosc(110)*0.5 : ve.fulltoneOCD(1, 0, 0.1, 0);
+// fulltoneOCD_bright_test = no.noise*0.05 : ve.fulltoneOCD(0.7, 1, 0.1, 1);
+// fulltoneOCD_modulated_test = 0.1*no.noise : ve.fulltoneOCD(0.1 + 0.9*tri, 0.5, 0.35, 1) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// fulltoneOCD_jump_test = 0.1*no.noise : ve.fulltoneOCD(0.1 + 0.9*sq, 0.5, 0.35, 1) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//
+// #### References
+//
+// * R. Giampiccolo, S. Polimeno, C. Macrì, A. Lenoci, O. Massi, A. Bernardini, "Explicit Wave Digital Model of the Fulltone OCD Pedal Based on Canonical Piecewise-Linear Functions," Proc. 29th Int. Conf. Digital Audio Effects (DAFx-26), Cambridge, MA, USA, 2026, pp. 193-200
+// * <https://github.com/polimi-ispl/fulltoneocd>
+// * L. O. Chua, S. M. Kang, "Section-wise piecewise-linear functions: canonical representation, properties, and applications," Proc. IEEE, 65(6), pp. 915-929, 1977
+// * A. Bernardini, A. Sarti, "Canonical Piecewise-Linear Representation of Curves in the Wave Digital Domain," Proc. EUSIPCO 2017, pp. 1125-1129
+//------------------------------------------------------------
+/*
+Implementation Notes:
+
+Signal path (every internal voltage is referenced to the 4.5 V half-supply
+rail, so the clipping curve is centered on 0 and no DC bias state exists):
+
+  in -> input coupling (C1, R1, R3)
+     -> op-amp 1, non-inverting, Drive pot in the feedback
+     -> clipping node: R7 into a node shunted to the rail by C4 || Q1 || (Q2 + D1),
+        tapped by the R9/R8 divider                        [WD junction, 4x OS]
+     -> op-amp 2, non-inverting, fixed gain
+     -> output network: C7, series R (R12 || R13 in HP, R12 in LP), node loaded
+        by the 500k Volume pot || (C8 + Tone rheostat)     [wd.buildtree]
+     -> 5 Hz DC blocker -> Volume
+
+- Component values are those of the reference model (OCD v2), including its
+  500 kΩ Drive pot (its plug-in's Drive maximum too). No v2 source gives the
+  pot value; the AionFX schematic of the v1.7 has 1 MΩ (audio taper).
+- The op-amps are ideal (no rail saturation), as in the reference model. Being
+  linear, they are realized as bilinear-transformed biquads of their analytic
+  transfer functions (wdmodels.lib has no nullor), pre-warped at 1 kHz:
+  pre-warping at the feedback poles (1.4 to 40 kHz) rescales the low corners
+  (and near or above Nyquist, at low sample rates, breaks the stage).
+- The clipping node is a three-port parallel junction (trapezoidal C4, R9+R8,
+  R7 Thevenin source) whose root is the CPWL clipping network,
+  b = mu0 + mu1*a + sum_k eta_k |a - a_k|. The knots are the I-V
+  table mapped to the wave domain at the root port resistance, which depends
+  only on the sample rate, so every coefficient folds at init. The junction is
+  unrolled by hand because wd.buildtree cannot be sub-stepped: per sample, the
+  input is polyphase-interpolated to 4 sub-samples, each scatters through the
+  junction, and the node voltages are polyphase-decimated. The filter is a
+  48-tap Kaiser (beta 7) lowpass at 0.9x the base Nyquist (-0.2 dB at 15 kHz,
+  > 53 dB rejection above 30 kHz at 48 kHz); latency 11 samples. The
+  sub-steps are chained by routing so that each CPWL evaluation appears once
+  in the expression tree (nesting them as function calls blows up compile
+  time).
+- The I-V table (see Data above) keeps knots at least 1 mV apart.
+- Accuracy details: the top-octave roll-off comes from bilinear warping of the
+  linear stages; the oversampling filter pair adds -0.4 dB at 15 kHz. The
+  full-chain error on guitar, relative to a converged simulation of the
+  reference circuit, is under 1 % at 48 kHz.
+- Sample rate: above 192 kHz ma.SR saturates
+  (see pl.SR), so this model, like every sample-rate-dependent function in
+  the libraries, is mistuned there.
+- The 5 Hz DC blocker replaces the circuit's 0.03 Hz output corner (C7 into
+  the 500k pot, tau ~ 5 s), which would otherwise let the DC produced by the
+  asymmetric clipping linger for seconds after a loud passage.
+*/
+fulltoneOCD(drive, tone, volume, hp) =
+    inhp                              // input coupling
+    : stage1(RDRIVE_MAX * d * d)      // op-amp 1 with the Drive pot
+    : clipnode                        // clipping node, 4x oversampled
+    : stage2                          // op-amp 2
+    : outnet(Rser, RTONE_MAX * t)     // passive tone / HP-LP network
+    : fi.dcblockerat(5.0)
+    : *(volume)
+with {
+    // Component values (reference model, OCD v2)
+    R1 = 10e3;    R3 = 470e3;  C1 = 22e-9;                    // input coupling
+    R4 = 18e3;    R6 = 2.2e3;  C2 = 220e-12; C3 = 100e-9;     // op-amp 1
+    R7 = 10e3;    R8 = 220e3;  R9 = 10e3;    C4 = 10e-9;      // clipping node
+    R10 = 150e3;  R11 = 39e3;  C5 = 220e-12; C6 = 100e-9;     // op-amp 2
+    R12 = 33e3;   R13 = 22e3;  C7 = 10e-6;   C8 = 47e-9;      // output network (R13 switched)
+    RDRIVE_MAX = 500e3;    // Drive pot
+    RTONE_MAX = 10e3;      // Tone pot, wired as a rheostat
+    RVOL = 500e3;          // Volume pot, loading the output node
+    RSER_HP = 1.0 / (1.0 / R12 + 1.0 / R13);   // R12 || R13
+    RSER_LP = R12;
+    // Controls, clamped: hp > 1 would drive Rser negative (unstable tree).
+    clamp01(x) = max(0.0, min(1.0, x));
+    d = clamp01(drive);
+    t = clamp01(tone);
+    Rser = RSER_LP + clamp01(hp) * (RSER_HP - RSER_LP);
+
+    // Input coupling: H(s) = s C1 R3 / (1 + s C1 (R1 + R3)), pre-warped at fc.
+    inhp = fi.tf1s(R3 / (R1 + R3), 0.0, 1.0, w1)
+    with { w1 = 1.0 / (C1 * (R1 + R3)); };
+
+    // Non-inverting op-amp stage with Zf = Rf || Cf and Zg = Rg + 1/(s Cg):
+    // G(s) = [(1 + s Rf Cf)(1 + s Rg Cg) + s Rf Cg] / [(1 + s Rf Cf)(1 + s Rg Cg)]
+    // fi.tf2s takes the prototype normalized to the pre-warp frequency w1.
+    opamp_ni(Rf, Cf, Rg, Cg) = fi.tf2s(1.0, b1 / w1, a0 / (w1 * w1), a1 / w1, a0 / (w1 * w1), w1)
+    with {
+        d2 = Rf * Cf * Rg * Cg;
+        a1 = (Rf * Cf + Rg * Cg) / d2;
+        a0 = 1.0 / d2;
+        b1 = (Rf * Cf + Rg * Cg + Rf * Cg) / d2;
+        w1 = 2.0 * ma.PI * 1000.0;
+    };
+    stage1(Rdrive) = opamp_ni(R4 + Rdrive, C2, R6, C3);
+    stage2 = opamp_ni(R10, C5, R11, C6);
+
+    // Clipping network Q1 || (Q2 + D1) of Giampiccolo et al. (DAFx-26, CC BY 4.0),
+    // current into the network (A) versus node voltage (V), strictly monotone in
+    // both: computed from the paper's Eq. (15) (diode-connected 2N7000s) and
+    // Eq. (8) (1N34A) with its Table 2 parameters, at the voltage knots of the
+    // authors' singleNL_char.mat, then shifted by 1.21 uA so that the CPWL passes
+    // through I(0) = 0. That file was simulated with a slightly different diode
+    // (Is = 2.68 uA, eta = 1.5975): using it instead changes the output by less
+    // than 0.1 %.
+    nlN = 20;
+    nlV = (-4.0, -3.83165788, -3.6452573, -3.45708638, -3.26709398, -3.07522643,
+           -2.88142737, -2.68563754, -2.4877946, -2.28783285, -2.02398048,
+           2.14189819, 2.59183671, 2.84510824, 3.07430243, 3.29227325,
+           3.50320045, 3.70899582, 3.9107084, 3.99998958);
+    nlI = (-0.0487362103139599, -0.04035663768224597, -0.03202501653779945,
+           -0.024613968035306553, -0.018140098795119613, -0.01262072896447979,
+           -0.008073940083459361, -0.004518626085753378, -0.0019745499924853855,
+           -0.00046240441858301745, -1.2103139598983047e-06, 1.2808272143207188e-06,
+           0.0008290630730540757, 0.002728376651676526, 0.005652899196433998,
+           0.009581551575848451, 0.014495345471295782, 0.020376167550775797,
+           0.027206595274231842, 0.030572416432994097);
+
+    // Reflected wave of the CPWL nonlinearity at port resistance R, with
+    // linear extrapolation beyond the outer knots (whose kinks are zero).
+    cpwl_reflect(R, a) = mu0 + mu1 * a + sum(k, nlN - 2, eta(k + 1) * abs(a - av(k + 1)))
+    with {
+        av(k) = ba.take(k + 1, nlV) + R * ba.take(k + 1, nlI);
+        bv(k) = ba.take(k + 1, nlV) - R * ba.take(k + 1, nlI);
+        m(k) = (bv(k + 1) - bv(k)) / (av(k + 1) - av(k));   // segment k slope
+        eta(k) = 0.5 * (m(k) - m(k - 1));                   // kink at knot k
+        mu1 = 0.5 * (m(0) + m(nlN - 2));
+        mu0 = bv(0) - mu1 * av(0) - sum(k, nlN - 2, eta(k + 1) * abs(av(0) - av(k + 1)));
+    };
+
+    // 4x oversampling polyphase filter (48-tap Kaiser lowpass, symmetric).
+    OS = 4;
+    osFIR = (-6.308626527e-05, -3.784630668e-05, 0.0001820684253, 0.0005972141621,
+             0.0009471059494, 0.0007420357709, -0.0004282012255, -0.002413547866,
+             -0.004190612168, -0.004113731, -0.0008640530619, 0.005280837633,
+             0.01168694666, 0.01395448963, 0.008085398626, -0.006563330529,
+             -0.02516401995, -0.03778155471, -0.03281910589, -0.002463250963,
+             0.05237470303, 0.1203567394, 0.1826983549, 0.2199964457,
+             0.2199964457, 0.1826983549, 0.1203567394, 0.05237470303,
+             -0.002463250963, -0.03281910589, -0.03778155471, -0.02516401995,
+             -0.006563330529, 0.008085398626, 0.01395448963, 0.01168694666,
+             0.005280837633, -0.0008640530619, -0.004113731, -0.004190612168,
+             -0.002413547866, -0.0004282012255, 0.0007420357709, 0.0009471059494,
+             0.0005972141621, 0.0001820684253, -3.784630668e-05, -6.308626527e-05);
+    osTaps(p) = par(m, 12, ba.take(OS * m + p + 1, osFIR));
+
+    // Clipping node, returning the voltage at the R9/R8 tap.
+    clipnode(v1) = (fb ~ _) : !, dec : *(R8 / (R8 + R9))
+    with {
+        Gc = 2.0 * OS * ma.SR * C4;      // C4 port conductance at the oversampled rate
+        Gt = 1.0 / (R8 + R9);
+        Gs = 1.0 / R7;
+        Rup = 1.0 / (Gc + Gt + Gs);      // junction up-port (root) resistance
+        up(p) = v1 : fi.fir(par(m, 12, OS * ba.take(OS * m + p + 1, osFIR)));
+        // One sub-step: source voltage e and C4's reflected wave bc (its state)
+        // -> (next bc, node voltage).
+        step(e, bc) = 2.0 * v - bc, v
+        with {
+            b_up = (Gc * bc + Gs * e) * Rup;   // R9+R8 is adapted: reflects 0
+            v = 0.5 * (cpwl_reflect(Rup, b_up) + b_up);
+        };
+        // -> bc4, y3, y2, y1, y0
+        fb(bc) = bc : step(up(0)) : (step(up(1)), _) : (step(up(2)), _, _) : (step(up(3)), _, _, _);
+        dec = par(i, OS, fi.fir(osTaps(i))) :> _;   // input i is sub-sample 3-i
+    };
+
+    // Output network: op-amp 2 output (ideal source) -> C7 -> Rser -> node,
+    // loaded by the Volume pot || (C8 + Tone rheostat). Returns the voltage
+    // across the Volume pot.
+    outnet(Rs, Rtone, v2) = wd.buildtree(tree)
+    with {
+        src(i) = wd.u_voltage(i, v2);
+        c7(i) = wd.capacitor(i, C7);
+        rs(i) = wd.resistor(i, Rs);
+        rv(i) = wd.resistor_Vout(i, RVOL);
+        c8(i) = wd.capacitor(i, C8);
+        rt(i) = wd.resistor(i, max(1.0, Rtone));   // no 0-ohm port
+        s1(i) = wd.series(i);
+        s2(i) = wd.series(i);
+        s3(i) = wd.series(i);
+        p1(i) = wd.parallel(i);
+        tree = src : (s1 : (c7, (s2 : (rs, (p1 : (rv, (s3 : (c8, rt))))))));
+    };
+};
+declare fulltoneOCD author "David Braun";
+declare fulltoneOCD license "MIT";
+
+
+// Deprecated backward-compatibility alias, kept for one version and scheduled
+// for removal: a frozen copy of the internal band filter that was folded into
+// ve.vocoder (see CONTRIBUTING.md, "Variables and identifiers scoping").
+declare oneVocoderBand author "Romain Michon";
+declare oneVocoderBand deprecated "internal helper, folded into ve.vocoder";
+oneVocoderBand(band,bandsNumb,bwRatio,bandGain,x) = x : fi.resonbp(bandFreq,bandQ,bandGain) with {
+        bandFreq = 25*pow(2,(band+1)*(9/bandsNumb));
+        BW = (bandFreq - 25*pow(2,(band)*(9/bandsNumb)))*bwRatio;
+        bandQ = bandFreq/BW;
+};

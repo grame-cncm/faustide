@@ -256,7 +256,7 @@ ma = library("maths.lib");
 si = library("signals.lib");
 
 declare name "Faust Wave Digital Model Library";
-declare version "1.2.1";
+declare version "1.4.1";
 
 
 //=============================Algebraic One Port Adaptors=================================
@@ -285,15 +285,18 @@ declare version "1.2.1";
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
 //
-// drive = os.osc(220);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1000);
-// probe(i) = wd.resistor_Vout(i, 1000);
-//
-// resistor_test = wd.buildtree(vsrc : (series_node : (res_leaf, probe)));
+// resistor_test = wd.buildtree(vsrc : (series_node : (res_leaf, probe)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   series_node(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1000);
+//   probe(i) = wd.resistor_Vout(i, 1000);
+// };
+// resistor_modulated_test = wd.buildtree(vsrc : (series_node : (res_leaf, probe))) with { vsrc(i) = wd.u_voltage(i, no.noise); series_node(i) = wd.series(i); res_leaf(i) = wd.resistor(i, 100*pow(1000, tri)); probe(i) = wd.resistor_Vout(i, 1000); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -305,7 +308,7 @@ declare version "1.2.1";
 //----------------------------------------------------------
 declare resistor author "Dirk Roosenburg";
 declare resistor copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resistor license "MIT-style STK-4.3 license";
+declare resistor license "LicenseRef-STK-4.3";
 resistor = 
 case{
     (0, R) => !, 0; 
@@ -342,14 +345,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(220);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// res_probe(i) = wd.resistor_Vout(i, 820);
-// res_load(i) = wd.resistor(i, 1800);
-//
-// resistor_Vout_test = wd.buildtree(vsrc : (series_node : (res_probe, res_load)));
+// resistor_Vout_test = wd.buildtree(vsrc : (series_node : (res_probe, res_load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   series_node(i) = wd.series(i);
+//   res_probe(i) = wd.resistor_Vout(i, 820);
+//   res_load(i) = wd.resistor(i, 1800);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -361,7 +363,7 @@ case{
 //----------------------------------------------------------
 declare resistor_Vout author "Dirk Roosenburg";
 declare resistor_Vout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resistor_Vout license "MIT-style STK-4.3 license";
+declare resistor_Vout license "LicenseRef-STK-4.3";
 resistor_Vout = 
 case{
     (0, R) => 0, _*.5; 
@@ -400,14 +402,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(220);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// current_probe(i) = wd.resistor_Iout(i, 1000);
-// load(i) = wd.resistor_Vout(i, 1500);
-//
-// resistor_Iout_test = wd.buildtree(vsrc : (series_node : (current_probe, load)));
+// resistor_Iout_test = wd.buildtree(vsrc : (series_node : (current_probe, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   series_node(i) = wd.series(i);
+//   current_probe(i) = wd.resistor_Iout(i, 1000);
+//   load(i) = wd.resistor_Vout(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -419,7 +420,7 @@ case{
 //----------------------------------------------------------
 declare resistor_Iout author "Dirk Roosenburg";
 declare resistor_Iout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resistor_Iout license "MIT-style STK-4.3 license";
+declare resistor_Iout license "LicenseRef-STK-4.3";
 resistor_Iout = 
 case{
     (0, R) => 0, _*.5/R; 
@@ -442,7 +443,7 @@ case{
 // #### Usage
 //
 // ```
-// v1(i) = u_Voltage(i, ein);
+// v1(i) = u_voltage(i, ein);
 // buildtree( v1 : B );
 // ```
 //
@@ -456,14 +457,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(330);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1200);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_voltage_test = wd.buildtree(vsrc : (series_node : (branch_a, branch_b)));
+// u_voltage_test = wd.buildtree(vsrc : (series_node : (branch_a, branch_b)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(330));
+//   series_node(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1200);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -476,7 +476,7 @@ case{
 //----------------------------------------------------------
 declare u_voltage author "Dirk Roosenburg";
 declare u_voltage copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_voltage license "MIT-style STK-4.3 license";
+declare u_voltage license "LicenseRef-STK-4.3";
 u_voltage = 
 case{
     (0 , ein) => b0
@@ -515,14 +515,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(110);
-//
-// isrc(i) = wd.u_current(i, drive);
-// parallel_node(i) = wd.parallel(i);
-// branch_a(i) = wd.resistor(i, 560);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_current_test = wd.buildtree(isrc : (parallel_node : (branch_a, branch_b)));
+// u_current_test = wd.buildtree(isrc : (parallel_node : (branch_a, branch_b)))
+// with {
+//   isrc(i) = wd.u_current(i, os.tosc(110));
+//   parallel_node(i) = wd.parallel(i);
+//   branch_a(i) = wd.resistor(i, 560);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -535,7 +534,7 @@ case{
 //----------------------------------------------------------
 declare u_current author "Dirk Roosenburg";
 declare u_current copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_current license "MIT-style STK-4.3 license";
+declare u_current license "LicenseRef-STK-4.3";
 u_current = 
 case{
     (0 , jin) => b0
@@ -575,14 +574,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(440);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// branch_source(i) = wd.resVoltage(i, 1000, 0.5);
-// probe(i) = wd.resistor_Vout(i, 1800);
-//
-// resVoltage_test = wd.buildtree(vsrc : (series_node : (branch_source, probe)));
+// resVoltage_test = wd.buildtree(vsrc : (series_node : (branch_source, probe)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(440));
+//   series_node(i) = wd.series(i);
+//   branch_source(i) = wd.resVoltage(i, 1000, 0.5);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -594,7 +592,7 @@ case{
 //----------------------------------------------------------
 declare resVoltage author "Dirk Roosenburg";
 declare resVoltage copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resVoltage license "MIT-style STK-4.3 license";
+declare resVoltage license "LicenseRef-STK-4.3";
 resVoltage = 
 case{
     (0, R, ein) => !, R^(1-rho)*ein;
@@ -635,14 +633,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(330);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// branch_source(i) = wd.resVoltage_Vout(i, 1500, 0.3);
-// load(i) = wd.resistor(i, 2200);
-//
-// resVoltage_Vout_test = wd.buildtree(vsrc : (series_node : (branch_source, load)));
+// resVoltage_Vout_test = wd.buildtree(vsrc : (series_node : (branch_source, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(330));
+//   series_node(i) = wd.series(i);
+//   branch_source(i) = wd.resVoltage_Vout(i, 1500, 0.3);
+//   load(i) = wd.resistor(i, 2200);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -654,7 +651,7 @@ case{
 //----------------------------------------------------------
 declare resVoltage_Vout author "Dirk Roosenburg";
 declare resVoltage_Vout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resVoltage_Vout license "MIT-style STK-4.3 license";
+declare resVoltage_Vout license "LicenseRef-STK-4.3";
 resVoltage_Vout = 
 case{
     (0, R, ein) => R^(1-rho)*ein, _*.5 + R^(1-rho)*ein*.5;
@@ -694,14 +691,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(220);
-//
-// root(i) = wd.u_resVoltage(i, 1800, drive);
-// series_node(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1500);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_resVoltage_test = wd.buildtree(root : (series_node : (branch_a, branch_b)));
+// u_resVoltage_test = wd.buildtree(root : (series_node : (branch_a, branch_b)))
+// with {
+//   root(i) = wd.u_resVoltage(i, 1800, os.tosc(220));
+//   series_node(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1500);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -714,7 +710,7 @@ case{
 //----------------------------------------------------------
 declare u_resVoltage author "Dirk Roosenburg";
 declare u_resVoltage copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_resVoltage license "MIT-style STK-4.3 license";
+declare u_resVoltage license "LicenseRef-STK-4.3";
 u_resVoltage =
 case {
     (0, R, ein) => b0
@@ -756,14 +752,13 @@ case {
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(110);
-//
-// root(i) = wd.u_current(i, drive);
-// parallel_node(i) = wd.parallel(i);
-// source_branch(i) = wd.resCurrent(i, 2200, 0.15);
-// probe(i) = wd.resistor_Vout(i, 1500);
-//
-// resCurrent_test = wd.buildtree(root : (parallel_node : (source_branch, probe)));
+// resCurrent_test = wd.buildtree(root : (parallel_node : (source_branch, probe)))
+// with {
+//   root(i) = wd.u_current(i, os.tosc(110));
+//   parallel_node(i) = wd.parallel(i);
+//   source_branch(i) = wd.resCurrent(i, 2200, 0.15);
+//   probe(i) = wd.resistor_Vout(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -775,7 +770,7 @@ case {
 //----------------------------------------------------------
 declare resCurrent author "Dirk Roosenburg";
 declare resCurrent copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare resCurrent license "MIT-style STK-4.3 license";
+declare resCurrent license "LicenseRef-STK-4.3";
 resCurrent =
 case {
     (0, R, jin) => !, R^(rho)*jin;
@@ -815,14 +810,13 @@ case {
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(150);
-//
-// root(i) = wd.u_resCurrent(i, 2000, drive);
-// parallel_node(i) = wd.parallel(i);
-// branch_a(i) = wd.resistor(i, 1200);
-// branch_b(i) = wd.resistor_Vout(i, 1800);
-//
-// u_resCurrent_test = wd.buildtree(root : (parallel_node : (branch_a, branch_b)));
+// u_resCurrent_test = wd.buildtree(root : (parallel_node : (branch_a, branch_b)))
+// with {
+//   root(i) = wd.u_resCurrent(i, 2000, os.tosc(150));
+//   parallel_node(i) = wd.parallel(i);
+//   branch_a(i) = wd.resistor(i, 1200);
+//   branch_b(i) = wd.resistor_Vout(i, 1800);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -835,7 +829,7 @@ case {
 //----------------------------------------------------------
 declare u_resCurrent author "Dirk Roosenburg";
 declare u_resCurrent copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_resCurrent license "MIT-style STK-4.3 license";
+declare u_resCurrent license "LicenseRef-STK-4.3";
 u_resCurrent =
 case {
     (0, R, jin) => b0
@@ -862,7 +856,7 @@ case {
 // #### Usage
 //
 // ```
-// s1(i) = u_resCurrent(i, lambda);
+// s1(i) = u_switch(i, lambda);
 // buildtree( s1 : B );
 // ```
 //
@@ -876,15 +870,15 @@ case {
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(330);
-// lambda = hslider("u_switch:lambda", -1, -1, 1, 0.01);
-//
-// root(i) = wd.u_switch(i, lambda);
-// series_node(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1000);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_switch_test = wd.buildtree(root : (series_node : (branch_a, branch_b)));
+// u_switch_test = wd.buildtree(root : (series_node : (branch_a, branch_b))) + os.tosc(110) * 0.001
+// with {
+//   drive = os.tosc(330);
+//   lambda = hslider("u_switch:lambda", -1, -1, 1, 0.01);
+//   root(i) = wd.u_switch(i, lambda);
+//   series_node(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1000);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -897,7 +891,7 @@ case {
 //----------------------------------------------------------
 declare u_switch author "Dirk Roosenburg";
 declare u_switch copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_switch license "MIT-style STK-4.3 license";
+declare u_switch license "LicenseRef-STK-4.3";
 u_switch = 
 case {
     (0, lambda) => b0
@@ -936,15 +930,19 @@ case {
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
 //
-// drive = os.osc(440);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// cap_branch(i) = wd.capacitor(i, 1e-7);
-// probe(i) = wd.resistor_Vout(i, 1800);
-//
-// capacitor_test = wd.buildtree(vsrc : (series_node : (cap_branch, probe)));
+// capacitor_test = wd.buildtree(vsrc : (series_node : (cap_branch, probe)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(440));
+//   series_node(i) = wd.series(i);
+//   cap_branch(i) = wd.capacitor(i, 1e-7);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+// };
+// capacitor_modulated_test = wd.buildtree(vsrc : (series_node : (cap_branch, probe))) with { vsrc(i) = wd.u_voltage(i, no.noise); series_node(i) = wd.series(i); cap_branch(i) = wd.capacitor(i, 1e-9*pow(1000, tri)); probe(i) = wd.resistor_Vout(i, 1800); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// capacitor_jump_test = wd.buildtree(vsrc : (series_node : (cap_branch, probe))) with { vsrc(i) = wd.u_voltage(i, no.noise); series_node(i) = wd.series(i); cap_branch(i) = wd.capacitor(i, 1e-9*pow(1000, sq)); probe(i) = wd.resistor_Vout(i, 1800); P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -956,7 +954,7 @@ case {
 //----------------------------------------------------------
 declare capacitor author "Dirk Roosenburg";
 declare capacitor copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare capacitor license "MIT-style STK-4.3 license";
+declare capacitor license "LicenseRef-STK-4.3";
 capacitor =
 case{
     (0, R) => _*1; 
@@ -995,14 +993,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(330);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// cap_branch(i) = wd.capacitor_Vout(i, 2e-7);
-// load(i) = wd.resistor(i, 1500);
-//
-// capacitor_Vout_test = wd.buildtree(vsrc : (series_node : (cap_branch, load)));
+// capacitor_Vout_test = wd.buildtree(vsrc : (series_node : (cap_branch, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(330));
+//   series_node(i) = wd.series(i);
+//   cap_branch(i) = wd.capacitor_Vout(i, 2e-7);
+//   load(i) = wd.resistor(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a seperate function before integration into the connection tree.
@@ -1014,7 +1011,7 @@ case{
 //----------------------------------------------------------
 declare capacitor_Vout author "Dirk Roosenburg";
 declare capacitor_Vout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare capacitor_Vout license "MIT-style STK-4.3 license";
+declare capacitor_Vout license "LicenseRef-STK-4.3";
 capacitor_Vout = 
 case{
     (0, R) => b0
@@ -1025,6 +1022,66 @@ case{
     (2, R) => R0
     with {
         R0 = t/(2*R); 
+    };
+}with{
+    t = 1/ma.SR; //sampling interval
+};
+
+//----------------------`(wd.)capacitor_Iout`--------------------------
+// Adapted Capacitor + current out.
+//
+// A basic adaptor implementing a capacitor for use within Wave Digital Filter connection trees.
+//
+// It should be used as a leaf/terminating element of the connection tree.
+// The capacitor will also pass the current through itself as an output of the model.
+// This capacitor model was digitized using the bi-linear transform.
+//
+// #### Usage
+//
+// ```
+// cout(i) = capacitor_Iout(i, C);
+// buildtree( A : cout ) : _, _
+// ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
+// * `C` : Capacitance of the capacitor being modeled in Farads.
+//
+// #### Test
+// ```
+// wd = library("wdmodels.lib");
+// os = library("oscillators.lib");
+//
+// capacitor_Iout_test = wd.buildtree(vsrc : (series_node : (cap_branch, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(440));
+//   series_node(i) = wd.series(i);
+//   cap_branch(i) = wd.capacitor_Iout(i, 1e-6);
+//   load(i) = wd.resistor(i, 1000);
+// };
+// ```
+//
+// Note: the adaptor must be declared as a separate function before integration into the connection tree.
+// Correct implementation is shown above.
+//
+// #### References
+//
+// K. Werner, "Virtual Analog Modeling of Audio Circuitry Using Wave Digital Filters"
+//----------------------------------------------------------
+declare capacitor_Iout license "LicenseRef-STK-4.3";
+capacitor_Iout =
+case{
+    (0, C) => b0
+    with{
+        R0 = t/(2*C);
+        // b = a (reflected wave), I = (a - a')/(2*R0) (current through capacitor)
+        b0(a1) = a1*1, (a1 - a1')/(2*R0);
+    };
+    (1, C) => _, !;
+    (2, C) => R0
+    with {
+        R0 = t/(2*C);
     };
 }with{
     t = 1/ma.SR; //sampling interval
@@ -1054,15 +1111,18 @@ case{
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// no = library("noises.lib");
 //
-// drive = os.osc(260);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// inductive_branch(i) = wd.inductor(i, 0.01);
-// probe(i) = wd.resistor_Vout(i, 2200);
-//
-// inductor_test = wd.buildtree(vsrc : (series_node : (inductive_branch, probe)));
+// inductor_test = wd.buildtree(vsrc : (series_node : (inductive_branch, probe)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(260));
+//   series_node(i) = wd.series(i);
+//   inductive_branch(i) = wd.inductor(i, 0.01);
+//   probe(i) = wd.resistor_Vout(i, 2200);
+// };
+// inductor_modulated_test = wd.buildtree(vsrc : (series_node : (inductive_branch, probe))) with { vsrc(i) = wd.u_voltage(i, no.noise); series_node(i) = wd.series(i); inductive_branch(i) = wd.inductor(i, 1e-3*pow(100, tri)); probe(i) = wd.resistor_Vout(i, 1000); P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1074,7 +1134,7 @@ case{
 //----------------------------------------------------------
 declare inductor author "Dirk Roosenburg";
 declare inductor copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare inductor license "MIT-style STK-4.3 license";
+declare inductor license "LicenseRef-STK-4.3";
 inductor =
 case{
     (0, R) => _*(-1); 
@@ -1113,14 +1173,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// drive = os.osc(280);
-//
-// vsrc(i) = wd.u_voltage(i, drive);
-// series_node(i) = wd.series(i);
-// inductive_branch(i) = wd.inductor_Vout(i, 0.02);
-// load(i) = wd.resistor(i, 1500);
-//
-// inductor_Vout_test = wd.buildtree(vsrc : (series_node : (inductive_branch, load)));
+// inductor_Vout_test = wd.buildtree(vsrc : (series_node : (inductive_branch, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(280));
+//   series_node(i) = wd.series(i);
+//   inductive_branch(i) = wd.inductor_Vout(i, 0.02);
+//   load(i) = wd.resistor(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1132,7 +1191,7 @@ case{
 //----------------------------------------------------------
 declare inductor_Vout author "Dirk Roosenburg";
 declare inductor_Vout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare inductor_Vout license "MIT-style STK-4.3 license";
+declare inductor_Vout license "LicenseRef-STK-4.3";
 inductor_Vout = 
 case{
     (0, R) => b0
@@ -1143,6 +1202,66 @@ case{
     (2, R) => R0
     with {
         R0 = (2*R)/t; 
+    };
+}with{
+    t = 1/ma.SR; //sampling interval
+};
+
+//----------------------`(wd.)inductor_Iout`--------------------------
+// Unadapted Inductor + current out.
+//
+// A basic adaptor implementing an inductor for use within Wave Digital Filter connection trees.
+//
+// It should be used as a leaf/terminating element of the connection tree.
+// The inductor will also pass the current through itself as an output of the model.
+// This inductor model was digitized using the bi-linear transform.
+//
+// #### Usage
+//
+// ```
+// lout(i) = inductor_Iout(i, L);
+// buildtree( A : lout ) : _, _
+// ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
+// * `L` : Inductance of the inductor being modeled in Henries.
+//
+// #### Test
+// ```
+// wd = library("wdmodels.lib");
+// os = library("oscillators.lib");
+//
+// inductor_Iout_test = wd.buildtree(vsrc : (series_node : (inductive_branch, load)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(280));
+//   series_node(i) = wd.series(i);
+//   inductive_branch(i) = wd.inductor_Iout(i, 0.02);
+//   load(i) = wd.resistor(i, 1500);
+// };
+// ```
+//
+// Note: the adaptor must be declared as a separate function before integration into the connection tree.
+// Correct implementation is shown above.
+//
+// #### References
+//
+// K. Werner, "Virtual Analog Modeling of Audio Circuitry Using Wave Digital Filters"
+//----------------------------------------------------------
+declare inductor_Iout license "LicenseRef-STK-4.3";
+inductor_Iout =
+case{
+    (0, L) => b0
+    with{
+        R0 = (2*L)/t;
+        // b = -a (reflected wave inverted), I = (a + a')/(2*R0) (current through inductor)
+        b0(a1) = a1*(-1), (a1 + a1')/(2*R0);
+    };
+    (1, L) => _, !;
+    (2, L) => R0
+    with {
+        R0 = (2*L)/t;
     };
 }with{
     t = 1/ma.SR; //sampling interval
@@ -1161,8 +1280,13 @@ case{
 // #### Usage
 //
 // ```
-// buildtree( u_idealDiode : B );
+// diode(i) = u_idealDiode(i);
+// buildtree( diode : B );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: only usable as the root of a tree.
 // Correct implementation is shown above.
@@ -1172,12 +1296,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// diode(i) = wd.u_idealDiode(i);
-// series_node(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1200);
-// branch_b(i) = wd.resistor_Vout(i, 1800);
-//
-// u_idealDiode_test = wd.buildtree(diode : (series_node : (branch_a, branch_b)));
+// u_idealDiode_test = wd.buildtree(diode : (series_node : (branch_a, branch_b))) + os.tosc(110) * 0.001
+// with {
+//   diode(i) = wd.u_idealDiode(i);
+//   series_node(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1200);
+//   branch_b(i) = wd.resistor_Vout(i, 1800);
+// };
 // ```
 //
 // #### References
@@ -1186,7 +1311,7 @@ case{
 //----------------------------------------------------------
 declare u_idealDiode author "Dirk Roosenburg";
 declare u_idealDiode copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_idealDiode license "MIT-style STK-4.3 license";
+declare u_idealDiode license "LicenseRef-STK-4.3";
 u_idealDiode =
 case{
     (0) => b1
@@ -1223,12 +1348,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// chua_node(i) = wd.u_chua(i, 1e-3, 5e-4, 0.2);
-// series_node(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1500);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_chua_test = wd.buildtree(chua_node : (series_node : (branch_a, branch_b)));
+// u_chua_test = wd.buildtree(chua_node : (series_node : (branch_a, branch_b))) + os.tosc(110) * 0.001
+// with {
+//   chua_node(i) = wd.u_chua(i, 1e-3, 5e-4, 0.2);
+//   series_node(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1500);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -1241,7 +1367,7 @@ case{
 //----------------------------------------------------------
 declare u_chua author "Dirk Roosenburg";
 declare u_chua copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_chua license "MIT-style STK-4.3 license";
+declare u_chua license "LicenseRef-STK-4.3";
 u_chua = 
 case{
     (0, G1, G2, V0) => b1
@@ -1279,13 +1405,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// lambert_gain = wd.lambert(0.5, 6);
-// lambert_test = os.osc(220) * lambert_gain;
+// lambert_test = os.tosc(220) * wd.lambert(0.5, 6);
 // ```
 //----------------------------------------------------------
 declare lambert author "Dirk Roosenburg";
 declare lambert copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare lambert license "MIT-style STK-4.3 license";
+declare lambert license "LicenseRef-STK-4.3";
 lambert(z, itr) = ba.if((z<(-em1+.0001)), less_approx, greater_approx)
 with{
     less_approx = -1.0
@@ -1295,8 +1420,9 @@ with{
      -2.353551201881614516821543561516*q2
     with{
         q = z+em1;
-        r = sqrt(q);
-        q2 = q*q; 
+        // Clamp to non-negative before sqrt to avoid NaN when z < -em1
+        r = sqrt(max(0.0, q));
+        q2 = q*q;
     };
     eps=4.0e-16; 
     em1=0.3678794411714423215955237701614608;
@@ -1306,7 +1432,8 @@ with{
         with{
             init1 = -1.0+p*(1.0+p*(-0.333333333333333333333+p*0.152777777777777777777777))
             with{
-                p = sqrt(2.0*(2.7182818284590452353602874713526625*z+1.0));
+                // Clamp to non-negative before sqrt to avoid NaN when z < -1/e
+                p = sqrt(max(0.0, 2.0*(2.7182818284590452353602874713526625*z+1.0)));
             };
             init2 = log(abs(z));
         };
@@ -1342,8 +1469,8 @@ with{
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
-//
-// u_diodePair_test = wd.u_diodePair(2, 1e-12, 0.025);
+// os = library("oscillators.lib");
+// u_diodePair_test = wd.u_diodePair(2, 1e-12, 0.025) + os.tosc(110) * 0.001;
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -1355,7 +1482,7 @@ with{
 //----------------------------------------------------------
 declare u_diodePair author "Dirk Roosenburg";
 declare u_diodePair copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_diodePair license "MIT-style STK-4.3 license";
+declare u_diodePair license "LicenseRef-STK-4.3";
 u_diodePair = 
 case{
     (0, Is, Vt) => b1
@@ -1389,8 +1516,8 @@ case{
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
-//
-// u_diodeSingle_test = wd.u_diodeSingle(2, 8e-13, 0.026);
+// os = library("oscillators.lib");
+// u_diodeSingle_test = wd.u_diodeSingle(2, 8e-13, 0.026) + os.tosc(110) * 0.001;
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -1402,7 +1529,7 @@ case{
 //----------------------------------------------------------
 declare u_diodeSingle author "Dirk Roosenburg";
 declare u_diodeSingle copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_diodeSingle license "MIT-style STK-4.3 license";
+declare u_diodeSingle license "LicenseRef-STK-4.3";
 u_diodeSingle = 
 case{
     (0, Is, Vt) => b1
@@ -1435,7 +1562,8 @@ case{
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
-// u_diodeAntiparallel_test = wd.u_diodeAntiparallel(2, 1e-12, 0.025, 2, 2);
+// os = library("oscillators.lib");
+// u_diodeAntiparallel_test = wd.u_diodeAntiparallel(2, 1e-12, 0.025, 2, 2) + os.tosc(110) * 0.001;
 // ```
 //
 // Note: only usable as the root of a tree.
@@ -1447,7 +1575,7 @@ case{
 //----------------------------------------------------------
 declare u_diodeAntiparallel author "Dirk Roosenburg";
 declare u_diodeAntiparallel copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_diodeAntiparallel license "MIT-style STK-4.3 license";
+declare u_diodeAntiparallel license "LicenseRef-STK-4.3";
 u_diodeAntiparallel =
 case{
     (0, Is, Vt, M, N) => b1
@@ -1460,8 +1588,119 @@ case{
             mu1 = ba.if((a1 > 0), M, N);
         };
     };
-    (1, Is, Vt, M, N) => !, !; 
-    (2, Is, Vt, M, N) => 0; 
+    (1, Is, Vt, M, N) => !, !;
+    (2, Is, Vt, M, N) => 0;
+};
+
+
+//----------------------`(wd.)omega`--------------------------
+// Wright Omega function approximation for diode modeling.
+//
+// An attempt at the Wright Omega function using a piecewise 
+// approach with third‑order polynomials and Newton‑Raphson refinement. 
+// This matches the approach used in chowdsp::wdf for diode modeling.
+//
+// #### Usage
+//
+// ```
+// y = omega(x) : _;
+// ```
+//
+// Where:
+//
+// * `x`: input value
+//
+// #### Test
+//
+// ```
+// wd = library("wdmodels.lib");
+// omega_test = wd.omega(0.5);
+// ```
+//
+// #### Reference
+//
+// * S. D'Angelo, L. Gabrielli, L. Turchet, "Fast Approximation of the Lambert W
+//   Function for Virtual Analog Modelling," Proc. 22nd Intl. Conf. Digital Audio
+//   Effects (DAFx-19), Birmingham, UK, 2019
+//----------------------------------------------------------
+declare omega license "LicenseRef-STK-4.3";
+omega(x) = omega4(x)
+with {
+    x1 = -3.341459552768620;
+    x2 = 8.0;
+    a = -1.314293149877800e-3;
+    b = 4.775931364975583e-2;
+    c = 3.631952663804445e-1;
+    d = 6.313183464296682e-1;
+
+    // Third-order polynomial approximation
+    omega3(xx) = ba.if(xx < x1, 0.0,
+                 ba.if(xx < x2,
+                     d + xx * (c + xx * (b + xx * a)),
+                     xx - log(max(xx, 1e-10))));
+
+    // Newton-Raphson refinement
+    omega4(xx) = y - (y - exp(xx - y)) / (y + 1.0)
+    with {
+        y = omega3(xx);
+    };
+};
+
+
+//----------------------`(wd.)u_diodeAntiparallel_omega`--------------------------
+// Unadapted antiparallel diodes using Wright Omega function.
+//
+// An unadapted adaptor implementing antiparallel diodes for Wave Digital Filter connection trees.
+// Uses the Wright Omega function instead of Lambert W.
+//
+// #### Usage
+//
+// ```
+// d1(i) = u_diodeAntiparallel_omega(i, Is, Vt);
+// buildtree( d1 : B );
+// ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared
+// * `Is` : saturation current of the diodes (e.g., 2.52e-9 for 1N4148)
+// * `Vt` : thermal voltage (typically 0.02585 at room temperature)
+//
+// #### Test
+// ```
+// wd = library("wdmodels.lib");
+// os = library("oscillators.lib");
+// u_diodeAntiparallel_omega_test = wd.u_diodeAntiparallel_omega(2, 2.52e-9, 0.02585, 1, 1) + os.tosc(110) * 0.001;
+// ```
+//
+// Note: only usable as the root of a tree.
+// Assumes symmetric diodes (M = N = 1). For asymmetric configurations, use `u_diodeAntiparallel`.
+//
+// #### Reference
+//
+// * S. D'Angelo, L. Gabrielli, L. Turchet, "Fast Approximation of the Lambert W
+//   Function for Virtual Analog Modelling," Proc. 22nd Intl. Conf. Digital Audio
+//   Effects (DAFx-19), Birmingham, UK, 2019
+// * J. Chowdhury, "chowdsp_wdf: An Advanced C++ Library for Wave Digital Circuit
+//   Modelling," arXiv:2210.12554, 2022
+//----------------------------------------------------------
+declare u_diodeAntiparallel_omega license "LicenseRef-STK-4.3";
+u_diodeAntiparallel_omega =
+case{
+    (0, Is, Vt, M, N) => b1
+    with{
+        b1(R1, a1) = a1 + 2 * lam * (R_Is - Vt * omega(wright_in))
+        with{
+            lam = ma.signum(a1);
+            mu = 1.0;  // Symmetric M = N = 1
+            R_Is = (R1 * Is) / mu;
+            R_Is_overVt = R_Is / Vt;
+            safe_ln(x) = log(max(x, 1e-18));
+            wright_in = safe_ln(R_Is_overVt) + lam * (a1 / (Vt * mu)) + R_Is_overVt;
+        };
+    };
+    (1, Is, Vt, M, N) => !, !;
+    (2, Is, Vt, M, N) => 0;
 };
 
 
@@ -1478,8 +1717,13 @@ case{
 // #### Usage
 //
 // ```
-// buildtree( u_parallel2Port : (A, B) );
+// root(i) = u_parallel2Port(i);
+// buildtree( root : (A, B) );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: only usable as the root of a tree.
 // This adaptor has no user-accessible parameters. 
@@ -1490,11 +1734,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// root(i) = wd.u_parallel2Port(i);
-// branch_source(i) = wd.resVoltage_Vout(i, 1500, 0.2 * os.osc(220));
-// branch_load(i) = wd.resistor(i, 1800);
-//
-// u_parallel2Port_test = wd.buildtree(root : (branch_source, branch_load));
+// u_parallel2Port_test = wd.buildtree(root : (branch_source, branch_load))
+// with {
+//   root(i) = wd.u_parallel2Port(i);
+//   branch_source(i) = wd.resVoltage_Vout(i, 1500, 0.2 * os.tosc(220));
+//   branch_load(i) = wd.resistor(i, 1800);
+// };
 // ```
 //
 // #### References
@@ -1503,7 +1748,7 @@ case{
 //----------------------------------------------------------
 declare u_parallel2Port author "Dirk Roosenburg";
 declare u_parallel2Port copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_parallel2Port license "MIT-style STK-4.3 license";
+declare u_parallel2Port license "LicenseRef-STK-4.3";
 u_parallel2Port = 
 case{
     (0) => u_par
@@ -1528,8 +1773,13 @@ case{
 // #### Usage
 //
 // ```
-// buildtree( A : parallel2Port : B );
+// connector(i) = parallel2Port(i);
+// buildtree( A : connector : B );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: this adaptor has no user-accessible parameters. 
 // It should be used within the connection tree with one previous and one forward adaptor.
@@ -1540,11 +1790,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(260));
-// connector(i) = wd.parallel2Port(i);
-// load(i) = wd.resistor_Vout(i, 1800);
-//
-// parallel2Port_test = wd.buildtree(vsrc : (connector : load));
+// parallel2Port_test = wd.buildtree(vsrc : (connector : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(260));
+//   connector(i) = wd.parallel2Port(i);
+//   load(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // #### References
@@ -1553,7 +1804,7 @@ case{
 //----------------------------------------------------------
 declare parallel2Port author "Dirk Roosenburg";
 declare parallel2Port copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare parallel2Port license "MIT-style STK-4.3 license";
+declare parallel2Port license "LicenseRef-STK-4.3";
 parallel2Port = 
 case{
     (0) => par_down
@@ -1581,8 +1832,13 @@ case{
 // #### Usage
 //
 // ```
-// buildtree( u_series2Port : (A, B) );
+// root(i) = u_series2Port(i);
+// buildtree( root : (A, B) );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: only usable as the root of a tree.
 // This adaptor has no user-accessible parameters. 
@@ -1593,11 +1849,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// root(i) = wd.u_series2Port(i);
-// branch_source(i) = wd.resVoltage_Vout(i, 1200, 0.25 * os.osc(180));
-// branch_load(i) = wd.resistor(i, 1800);
-//
-// u_series2Port_test = wd.buildtree(root : (branch_source, branch_load));
+// u_series2Port_test = wd.buildtree(root : (branch_source, branch_load))
+// with {
+//   root(i) = wd.u_series2Port(i);
+//   branch_source(i) = wd.resVoltage_Vout(i, 1200, 0.25 * os.tosc(180));
+//   branch_load(i) = wd.resistor(i, 1800);
+// };
 // ```
 //
 // #### References
@@ -1606,7 +1863,7 @@ case{
 //----------------------------------------------------------
 declare u_series2Port author "Dirk Roosenburg";
 declare u_series2Port copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_series2Port license "MIT-style STK-4.3 license";
+declare u_series2Port license "LicenseRef-STK-4.3";
 u_series2Port = 
 case{
     (0) => u_ser
@@ -1631,8 +1888,13 @@ case{
 // #### Usage
 //
 // ```
-// buildtree( A : series2Port : B );
+// connector(i) = series2Port(i);
+// buildtree( A : connector : B );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: this adaptor has no user-accessible parameters. 
 // It should be used within the connection tree with one previous and one forward adaptor.
@@ -1643,11 +1905,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(200));
-// connector(i) = wd.series2Port(i);
-// load(i) = wd.resistor_Vout(i, 2200);
-//
-// series2Port_test = wd.buildtree(vsrc : (connector : load));
+// series2Port_test = wd.buildtree(vsrc : (connector : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(200));
+//   connector(i) = wd.series2Port(i);
+//   load(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // #### References
@@ -1656,7 +1919,7 @@ case{
 //----------------------------------------------------------
 declare series2Port author "Dirk Roosenburg";
 declare series2Port copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare series2Port license "MIT-style STK-4.3 license";
+declare series2Port license "LicenseRef-STK-4.3";
 series2Port = 
 case{
     (0) => ser_down
@@ -1699,11 +1962,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(240));
-// connector(i) = wd.parallelCurrent(i, 0.1);
-// load(i) = wd.resistor_Vout(i, 1500);
-//
-// parallelCurrent_test = wd.buildtree(vsrc : (connector : load));
+// parallelCurrent_test = wd.buildtree(vsrc : (connector : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(240));
+//   connector(i) = wd.parallelCurrent(i, 0.1);
+//   load(i) = wd.resistor_Vout(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1716,7 +1980,7 @@ case{
 //----------------------------------------------------------
 declare parallelCurrent author "Dirk Roosenburg";
 declare parallelCurrent copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare parallelCurrent license "MIT-style STK-4.3 license";
+declare parallelCurrent license "LicenseRef-STK-4.3";
 parallelCurrent = 
 case{
     (0, jin) => par_current_down
@@ -1761,11 +2025,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(210));
-// connector(i) = wd.seriesVoltage(i, 0.3);
-// load(i) = wd.resistor_Vout(i, 1500);
-//
-// seriesVoltage_test = wd.buildtree(vsrc : (connector : load));
+// seriesVoltage_test = wd.buildtree(vsrc : (connector : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(210));
+//   connector(i) = wd.seriesVoltage(i, 0.3);
+//   load(i) = wd.resistor_Vout(i, 1500);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1777,7 +2042,7 @@ case{
 //----------------------------------------------------------
 declare seriesVoltage author "Dirk Roosenburg";
 declare seriesVoltage copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare seriesVoltage license "MIT-style STK-4.3 license";
+declare seriesVoltage license "LicenseRef-STK-4.3";
 seriesVoltage = 
 case{
     (0, vin) => ser_down
@@ -1821,11 +2086,12 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// root(i) = wd.u_transformer(i, 2.0);
-// primary(i) = wd.resVoltage_Vout(i, 1500, 0.2 * os.osc(220));
-// secondary(i) = wd.resistor_Vout(i, 2200);
-//
-// u_transformer_test = wd.buildtree(root : (primary, secondary));
+// u_transformer_test = wd.buildtree(root : (primary, secondary))
+// with {
+//   root(i) = wd.u_transformer(i, 2.0);
+//   primary(i) = wd.resVoltage_Vout(i, 1500, 0.2 * os.tosc(220));
+//   secondary(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1837,7 +2103,7 @@ case{
 //----------------------------------------------------------
 declare u_transformer author "Dirk Roosenburg";
 declare u_transformer copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_transformer license "MIT-style STK-4.3 license";
+declare u_transformer license "LicenseRef-STK-4.3";
 u_transformer(i, n) = u_genericNode(i, transformer_scatter)
 with{
     matrix(M,N,f) = si.bus(N) <: ro.interleave(N,M) : par(n,N, par(m,M,*(f(m+1,n+1)))) :> si.bus(M);
@@ -1877,11 +2143,12 @@ with{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(180));
-// xfmr(i) = wd.transformer(i, 2.5);
-// load(i) = wd.resistor_Vout(i, 2200);
-//
-// transformer_test = wd.buildtree(vsrc : (xfmr : load));
+// transformer_test = wd.buildtree(vsrc : (xfmr : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(180));
+//   xfmr(i) = wd.transformer(i, 2.5);
+//   load(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1893,7 +2160,7 @@ with{
 //----------------------------------------------------------
 declare transformer author "Dirk Roosenburg";
 declare transformer copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare transformer license "MIT-style STK-4.3 license";
+declare transformer license "LicenseRef-STK-4.3";
 transformer(i, n) = genericNode(i, transformer_scatter, transformer_upPortRes)
 with{
     matrix(M,N,f) = si.bus(N) <: ro.interleave(N,M) : par(n,N, par(m,M,*(f(m+1,n+1)))) :> si.bus(M);
@@ -1939,11 +2206,12 @@ with{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// root(i) = wd.u_transformerActive(i, 0.9, 0.8);
-// primary(i) = wd.resVoltage_Vout(i, 1200, 0.18 * os.osc(190));
-// secondary(i) = wd.resistor_Vout(i, 2200);
-//
-// u_transformerActive_test = wd.buildtree(root : (primary, secondary));
+// u_transformerActive_test = wd.buildtree(root : (primary, secondary))
+// with {
+//   root(i) = wd.u_transformerActive(i, 0.9, 0.8);
+//   primary(i) = wd.resVoltage_Vout(i, 1200, 0.18 * os.tosc(190));
+//   secondary(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -1955,7 +2223,7 @@ with{
 //----------------------------------------------------------
 declare u_transformerActive author "Dirk Roosenburg";
 declare u_transformerActive copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_transformerActive license "MIT-style STK-4.3 license";
+declare u_transformerActive license "LicenseRef-STK-4.3";
 u_transformerActive(i, gamma1, gamma2) = u_genericNode(i, transformerActive_scatter)
 with{
     matrix(M,N,f) = si.bus(N) <: ro.interleave(N,M) : par(n,N, par(m,M,*(f(m+1,n+1)))) :> si.bus(M);
@@ -1997,11 +2265,12 @@ with{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(175));
-// xfmr(i) = wd.transformerActive(i, 0.9, 0.8);
-// load(i) = wd.resistor_Vout(i, 2200);
-//
-// transformerActive_test = wd.buildtree(vsrc : (xfmr : load));
+// transformerActive_test = wd.buildtree(vsrc : (xfmr : load))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(175));
+//   xfmr(i) = wd.transformerActive(i, 0.9, 0.8);
+//   load(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // Note: the adaptor must be declared as a separate function before integration into the connection tree.
@@ -2013,7 +2282,7 @@ with{
 //----------------------------------------------------------
 declare transformerActive author "Dirk Roosenburg";
 declare transformerActive copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare transformerActive license "MIT-style STK-4.3 license";
+declare transformerActive license "LicenseRef-STK-4.3";
 transformerActive(i, gamma1, gamma2) = genericNode(i, transformerActive_scatter, transformerActive_upPortRes)
 with{
     matrix(M,N,f) = si.bus(N) <: ro.interleave(N,M) : par(n,N, par(m,M,*(f(m+1,n+1)))) :> si.bus(M);
@@ -2048,8 +2317,13 @@ with{
 // #### Usage
 //
 // ```
-// buildtree( A : parallel : (B, C) );
+// junction(i) = parallel(i);
+// buildtree( A : junction : (B, C) );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: this adaptor has no user-accessible parameters. 
 // It should be used within the connection tree with one previous and two forward adaptors.
@@ -2059,12 +2333,13 @@ with{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(220));
-// junction(i) = wd.parallel(i);
-// branch_a(i) = wd.resistor(i, 1200);
-// branch_b(i) = wd.resistor_Vout(i, 1800);
-//
-// parallel_test = wd.buildtree(vsrc : (junction : (branch_a, branch_b)));
+// parallel_test = wd.buildtree(vsrc : (junction : (branch_a, branch_b)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   junction(i) = wd.parallel(i);
+//   branch_a(i) = wd.resistor(i, 1200);
+//   branch_b(i) = wd.resistor_Vout(i, 1800);
+// };
 // ```
 //
 // #### References
@@ -2073,7 +2348,7 @@ with{
 //----------------------------------------------------------
 declare parallel author "Dirk Roosenburg";
 declare parallel copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare parallel license "MIT-style STK-4.3 license";
+declare parallel license "LicenseRef-STK-4.3";
 parallel= 
 case{
     (0) => par_down
@@ -2104,9 +2379,13 @@ case{
 // #### Usage
 //
 // ```
-//
-// tree = A : (series : (B, C));
+// junction(i) = series(i);
+// buildtree( A : junction : (B, C) );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: this adaptor has no user-accessible parameters. 
 // It should be used within the connection tree with one previous and two forward adaptors.
@@ -2116,12 +2395,13 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(260));
-// junction(i) = wd.series(i);
-// branch_a(i) = wd.resistor(i, 1000);
-// branch_b(i) = wd.resistor_Vout(i, 2200);
-//
-// series_test = wd.buildtree(vsrc : (junction : (branch_a, branch_b)));
+// series_test = wd.buildtree(vsrc : (junction : (branch_a, branch_b)))
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(260));
+//   junction(i) = wd.series(i);
+//   branch_a(i) = wd.resistor(i, 1000);
+//   branch_b(i) = wd.resistor_Vout(i, 2200);
+// };
 // ```
 //
 // #### References
@@ -2130,7 +2410,7 @@ case{
 //----------------------------------------------------------
 declare series author "Dirk Roosenburg";
 declare series copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare series license "MIT-style STK-4.3 license";
+declare series license "LicenseRef-STK-4.3";
 series = 
 case{
 
@@ -2165,9 +2445,13 @@ case{
 // #### Usage
 //
 // ```
-//
-// tree = u_sixportPassive : (A, B, C, D, E, F));
+// rtype(i) = u_sixportPassive(i);
+// buildtree( rtype : (A, B, C, D, E, F) );
 // ```
+//
+// Where:
+//
+// * `i`: index used by model-building functions. Should never be user declared.
 //
 // Note: this adaptor has no user-accessible parameters. 
 // It should be used within the connection tree with six forward adaptors.
@@ -2176,9 +2460,8 @@ case{
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
-//
-// u_sixportPassive_test = (1000, 1200, 1400, 1600, 1800, 2000, os.osc(220), 0, 0, 0, 0, 0, 0)
-//   : wd.u_sixportPassive(0) : _, !, !, !, !;
+// u_sixportPassive_test = ((1000, 1200, 1400, 1600, 1800, 2000, os.tosc(220), 0, 0, 0, 0, 0, 0)
+//   : wd.u_sixportPassive(0) : _, !, !, !, !), os.tosc(110) * 0.001;
 // ```
 //
 // #### References
@@ -2187,7 +2470,7 @@ case{
 //----------------------------------------------------------
 declare u_sixportPassive author "Dirk Roosenburg";
 declare u_sixportPassive copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_sixportPassive license "MIT-style STK-4.3 license";
+declare u_sixportPassive license "LicenseRef-STK-4.3";
 u_sixportPassive(i) = genericNode(i, sixport_scatter)
 with{
     sixport_scatter(Ra, Rb, Rc, Rd, Re, Rf) =  matrix(6, 6, mtx)
@@ -2262,47 +2545,11 @@ with{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// scatter(a) = -a * 0.3;
-// upRes = 1400;
-//
-// node_iout(i) = wd.genericNode_Iout(i, scatter, upRes);
-// vsrc(i) = wd.u_voltage(i, os.osc(230));
-// branch(i) = wd.series(i);
-// load(i) = wd.resistor(i, 1800);
-//
-// genericNode_Iout_test = wd.buildtree(vsrc : (branch : (node_iout, load)));
-// ```
-//
-// #### Test
-// ```
-// wd = library("wdmodels.lib");
-// os = library("oscillators.lib");
-//
-// scatter(a) = -a * 0.4;
-// upRes = 1600;
-//
-// node_vout(i) = wd.genericNode_Vout(i, scatter, upRes);
-// vsrc(i) = wd.u_voltage(i, os.osc(200));
-// branch(i) = wd.series(i);
-// load(i) = wd.resistor(i, 1800);
-//
-// genericNode_Vout_test = wd.buildtree(vsrc : (branch : (node_vout, load)));
-// ```
-//
-// #### Test
-// ```
-// wd = library("wdmodels.lib");
-// os = library("oscillators.lib");
-//
-// scatter(a) = -a * 0.5;
-// upRes = 1200;
-//
-// node(i) = wd.genericNode(i, scatter, upRes);
-// vsrc(i) = wd.u_voltage(i, os.osc(220));
-// branch(i) = wd.series(i);
-// probe(i) = wd.resistor_Vout(i, 1800);
-//
-// genericNode_test = wd.buildtree(vsrc : (branch : (node, probe)));
+// genericNode_test = wd.genericNode(0, scatter, upRes)(os.tosc(220))
+// with {
+//   scatter(a) = -a * 0.5;
+//   upRes = 1200;
+// };
 // ```
 //
 // Note: `scatter` must be a function with n inputs, n outputs, and n-1 parameter inputs. 
@@ -2320,7 +2567,7 @@ with{
 //----------------------------------------------------------
 declare genericNode author "Dirk Roosenburg";
 declare genericNode copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare genericNode license "MIT-style STK-4.3 license";
+declare genericNode license "LicenseRef-STK-4.3";
 genericNode =
 case{
     (0, scatter, upRes) => down(inputs(scatter))
@@ -2352,6 +2599,8 @@ with{
 // #### Usage
 //
 // ```
+// scatter = *(-0.4);
+// upRes = 1600;
 // n1(i) = genericNode_Vout(i, scatter, upRes);
 // ```
 //
@@ -2370,10 +2619,22 @@ with{
 //
 // `upRes` must be a function with no inputs and 1 output.
 //  The output should give the upward-facing port resistance of the node.
+//
+// #### Test
+// ```
+// wd = library("wdmodels.lib");
+// os = library("oscillators.lib");
+//
+// genericNode_Vout_test = wd.genericNode_Vout(0, scatter, upRes)(os.tosc(200)) : _, !
+// with {
+//   scatter(a) = -a * 0.4;
+//   upRes = 1600;
+// };
+// ```
 //----------------------------------------------------------
 declare genericNode_Vout author "Dirk Roosenburg";
 declare genericNode_Vout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare genericNode_Vout license "MIT-style STK-4.3 license";
+declare genericNode_Vout license "LicenseRef-STK-4.3";
 genericNode_Vout =
 case{
     (0, scatter, upRes) => _ <: b, voltage
@@ -2394,6 +2655,8 @@ case{
 // #### Usage
 //
 // ```
+// scatter = *(-0.3);
+// upRes = 1400;
 // n1(i) = genericNode_Iout(i, scatter, upRes);
 // ```
 //
@@ -2412,10 +2675,22 @@ case{
 //
 // `upRes` must be a function with no inputs and 1 output.
 //  The output should give the upward-facing port resistance of the node.
+//
+// #### Test
+// ```
+// wd = library("wdmodels.lib");
+// os = library("oscillators.lib");
+//
+// genericNode_Iout_test = wd.genericNode_Iout(0, scatter, upRes)(os.tosc(230)) : _, !
+// with {
+//   scatter(a) = -a * 0.3;
+//   upRes = 1400;
+// };
+// ```
 //----------------------------------------------------------
 declare genericNode_Iout author "Dirk Roosenburg";
 declare genericNode_Iout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare genericNode_Iout license "MIT-style STK-4.3 license";
+declare genericNode_Iout license "LicenseRef-STK-4.3";
 genericNode_Iout =
 case{
     (0, scatter, upRes) => _ <: b, current
@@ -2449,14 +2724,10 @@ case{
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// scatter(a) = -a * 0.5;
-//
-// root(i) = wd.u_genericNode(i, scatter);
-// branch(i) = wd.series(i);
-// load_a(i) = wd.resistor(i, 1500);
-// load_b(i) = wd.resistor_Vout(i, 2200);
-//
-// u_genericNode_test = wd.buildtree(root : (branch : (load_a, load_b)));
+// u_genericNode_test = wd.u_genericNode(0, scatter)(os.tosc(220))
+// with {
+//   scatter(a) = -a * 0.5;
+// };
 // ```
 //
 // Note: 
@@ -2466,7 +2737,7 @@ case{
 //----------------------------------------------------------
 declare u_genericNode author "Dirk Roosenburg";
 declare u_genericNode copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare u_genericNode license "MIT-style STK-4.3 license";
+declare u_genericNode license "LicenseRef-STK-4.3";
 u_genericNode =
 case{
     (0, scatter) => scatter;
@@ -2492,29 +2763,32 @@ with{
 // #### Usage
 //
 // ```
-// builddown(A : B)~buildup(A : B);
+// builddown(tree) ~ buildup(tree) : buildout(tree) : _, ...
 // ```
 //
-// Where: 
-//  `(A : B)` : is a connection tree composed of WD adaptors
+// Where:
+//
+// * `tree`: a connection tree composed of WD adaptors, such as
+//   `vsrc : (branch : (res_leaf, probe))`
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(220));
-// branch(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1200);
-// probe(i) = wd.resistor_Vout(i, 1800);
-// tree = vsrc : (branch : (res_leaf, probe));
-//
-// builddown_test = wd.builddown(tree) ~ wd.buildup(tree) : wd.buildout(tree);
+// builddown_test = wd.builddown(tree) ~ wd.buildup(tree) : wd.buildout(tree)
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   branch(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1200);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+//   tree = vsrc : (branch : (res_leaf, probe));
+// };
 // ```
 //----------------------------------------------------------
 declare builddown author "Dirk Roosenburg";
 declare builddown copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare builddown license "MIT-style STK-4.3 license";
+declare builddown license "LicenseRef-STK-4.3";
 builddown(A : As) = ((upPortRes, addins(inputs(A(0)) - outputs(upPortRes))) :  A(0)) , addins(inputs(pardown(As)) - outputs(A(0))) : route(mtxsum(s_mtx(As)), mtxsum(s_mtx(As)), gencross(0, 0, 0, 0, 0, s_mtx(As))) : pardown(As)
 with{
 
@@ -2577,29 +2851,32 @@ builddown(A) = A(0);
 // #### Usage
 //
 // ```
-// builddown(A : B)~buildup(A : B);
+// builddown(tree) ~ buildup(tree) : buildout(tree) : _, ...
 // ```
 //
-// Where: 
-// `(A : B)` : is a connection tree composed of WD adaptors
+// Where:
+//
+// * `tree`: a connection tree composed of WD adaptors, such as
+//   `vsrc : (branch : (res_leaf, probe))`
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(220));
-// branch(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1200);
-// probe(i) = wd.resistor_Vout(i, 1800);
-// tree = vsrc : (branch : (res_leaf, probe));
-//
-// buildup_test = wd.builddown(tree) ~ wd.buildup(tree) : wd.buildout(tree);
+// buildup_test = wd.builddown(tree) ~ wd.buildup(tree) : wd.buildout(tree)
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   branch(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1200);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+//   tree = vsrc : (branch : (res_leaf, probe));
+// };
 // ```
 //----------------------------------------------------------
-declare builddown author "Dirk Roosenburg";
-declare builddown copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare builddown license "MIT-style STK-4.3 license";
+declare buildup author "Dirk Roosenburg";
+declare buildup copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
+declare buildup license "LicenseRef-STK-4.3";
 buildup(A : As) = upPortRes, (parup(As) : route(mtxsum(s_mtx(As)), mtxsum(s_mtx(As)), gencross_up(0, 0, 0, 0, 0, s_mtx(As))) : split(s_mtx(As))) : A(1), addins(outputs(split(s_mtx(As))) + outputs(upPortRes) - inputs(A(1))) 
 with{
 
@@ -2671,24 +2948,27 @@ buildup(A) = A(1);
 // #### Usage
 //
 // ```
-// getres(A : B)~getres(A : B);
+// getres(subtree) : _
 // ```
 //
-// Where: 
-// `(A : B)` : is a partial connection tree composed of WD adaptors
+// Where:
+//
+// * `subtree`: a partial connection tree composed of WD adaptors, such as
+//   `branch : (res_leaf, probe)`
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// branch(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1200);
-// probe(i) = wd.resistor_Vout(i, 1800);
-// subtree = branch : (res_leaf, probe);
-//
-// getres_value = wd.getres(subtree);
-// getres_test = os.osc(110) * (1.0/(1.0 + getres_value));
+// getres_test = os.tosc(110) * (1.0/(1.0 + getres_value))
+// with {
+//   branch(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1200);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+//   subtree = branch : (res_leaf, probe);
+//   getres_value = wd.getres(subtree);
+// };
 // ```
 //
 // Note:
@@ -2696,7 +2976,7 @@ buildup(A) = A(1);
 //----------------------------------------------------------
 declare getres author "Dirk Roosenburg";
 declare getres copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare getres license "MIT-style STK-4.3 license";
+declare getres license "LicenseRef-STK-4.3";
 getres(A: As) = parres(As) : A(2);
 getres(A) = A(2); 
 
@@ -2711,35 +2991,37 @@ getres(A) = A(2);
 // #### Usage
 //
 // ```
-// parres((A , B))~parres((A , B));
+// parres((subtree_left, subtree_right)) : _,_
 // ```
 //
-// Where: 
-// `(A , B)` : is a partial connection tree composed of WD adaptors
+// Where:
+//
+// * `subtree_left`, `subtree_right`: partial connection trees composed of WD adaptors
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// branchLeft(i) = wd.series(i);
-// res_left(i) = wd.resistor(i, 1200);
-// probe_left(i) = wd.resistor(i, 1800);
-// subtree_left = branchLeft : (res_left, probe_left);
+// parres_test = wd.parres((subtree_left, subtree_right)) : _, !
+// with {
+//   left_branch(i) = wd.series(i);
+//   left_res(i) = wd.resistor(i, 1200);
+//   left_probe(i) = wd.resistor_Vout(i, 1800);
+//   subtree_left = left_branch : (left_res, left_probe);
 //
-// branchRight(i) = wd.parallel(i);
-// res_right(i) = wd.resistor(i, 1500);
-// probe_right(i) = wd.resistor(i, 2200);
-// subtree_right = branchRight : (res_right, probe_right);
-//
-// parres_test = wd.parres((subtree_left, subtree_right)) : _, !;
+//   right_branch(i) = wd.parallel(i);
+//   right_res(i) = wd.resistor(i, 1500);
+//   right_probe(i) = wd.resistor(i, 2200);
+//   subtree_right = right_branch : (right_res, right_probe);
+// };
 // ```
 //
 // Note: this function cannot be used on a complete WD tree. When called on an unadapted adaptor (u_ prefix), it will create errors.
 //----------------------------------------------------------
 declare parres author "Dirk Roosenburg";
 declare parres copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare parres license "MIT-style STK-4.3 license";
+declare parres license "LicenseRef-STK-4.3";
 parres((Ap1, Ap2)) = getres(Ap1) , parres(Ap2);
 parres(Ap) = getres(Ap);
 
@@ -2752,30 +3034,33 @@ parres(Ap) = getres(Ap);
 // #### Usage
 //
 // ```
-// buildout( A : B );
+// builddown(tree) ~ buildup(tree) : buildout(tree) : _, ...
 // ```
 //
-// Where: 
-// `(A : B)` : is a connection tree composed of WD adaptors
+// Where:
+//
+// * `tree`: a connection tree composed of WD adaptors, such as
+//   `vsrc : (branch : (res_leaf, probe))`
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(240));
-// branch(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1200);
-// probe(i) = wd.resistor_Vout(i, 1800);
-// tree = vsrc : (branch : (res_leaf, probe));
-//
-// buildout_matrix = wd.buildout(tree);
-// buildout_test = wd.builddown(tree) ~ wd.buildup(tree) : buildout_matrix;
+// buildout_test = wd.builddown(tree) ~ wd.buildup(tree) : buildout_matrix
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(240));
+//   branch(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1200);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+//   tree = vsrc : (branch : (res_leaf, probe));
+//   buildout_matrix = wd.buildout(tree);
+// };
 // ```
 //----------------------------------------------------------
 declare buildout author "Dirk Roosenburg";
 declare buildout copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare buildout license "MIT-style STK-4.3 license";
+declare buildout license "LicenseRef-STK-4.3";
 buildout(A: As) = parout(As)
 with{
     parout((A, Ap)) = buildout(A), parout(Ap);
@@ -2796,29 +3081,34 @@ with{
 // #### Usage
 //
 // ```
-// buildtree(A : B);
+// buildtree(tree) : _, ...
 // ```
 //
-// Where: 
-// `(A : B)` : a connection tree composed of WD adaptors
+// Where:
+//
+// * `tree`: a connection tree composed of WD adaptors, such as
+//   `vsrc : (branch : (res_leaf, probe))`
+//
+// The outputs are those of the output adaptors of the tree (`_Vout`, `_Iout`), one each.
 //
 // #### Test
 // ```
 // wd = library("wdmodels.lib");
 // os = library("oscillators.lib");
 //
-// vsrc(i) = wd.u_voltage(i, os.osc(220));
-// branch(i) = wd.series(i);
-// res_leaf(i) = wd.resistor(i, 1200);
-// probe(i) = wd.resistor_Vout(i, 1800);
-// tree = vsrc : (branch : (res_leaf, probe));
-//
-// buildtree_test = wd.buildtree(tree);
+// buildtree_test = wd.buildtree(tree)
+// with {
+//   vsrc(i) = wd.u_voltage(i, os.tosc(220));
+//   branch(i) = wd.series(i);
+//   res_leaf(i) = wd.resistor(i, 1200);
+//   probe(i) = wd.resistor_Vout(i, 1800);
+//   tree = vsrc : (branch : (res_leaf, probe));
+// };
 // ```
 //----------------------------------------------------------
 declare buildtree author "Dirk Roosenburg";
 declare buildtree copyright "Copyright (C) 2020 by Dirk Roosenburg <dirk.roosenburg.30@gmail.com>";
-declare buildtree license "MIT-style STK-4.3 license";
+declare buildtree license "LicenseRef-STK-4.3";
 buildtree((A : B)) = builddown(A : B)~buildup(A : B) : buildout(A : B);
 
 

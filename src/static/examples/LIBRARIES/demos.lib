@@ -5,13 +5,15 @@
 // used to illustrate Faust features, syntax, and best practices. It includes simple
 // oscillators, filters, effects, and synthesis examples useful for learning and testing.
 //
-// The Demos library is organized into 5 sections:
+// The Demos library is organized into 7 sections:
 //
 // * [Analyzers](#analyzers)
 // * [Filters](#filters)
 // * [Effects](#effects)
 // * [Reverbs](#reverbs)
 // * [Generators](#generators)
+// * [Motion](#motion)
+// * [Hysteresis](#hysteresis)
 // 
 // #### References
 //
@@ -71,9 +73,12 @@ en = library("envelopes.lib");
 it = library("interpolators.lib");
 aa = library("aanl.lib");
 sp = library("spats.lib");
+mo = library("motion.lib");
+hy = library("hysteresis.lib");
+pt = library("pinktrombone.lib");
 
 declare name "Faust Demos Library";
-declare version "1.2.0";
+declare version "1.8.0";
 
 //########################################################################################
 /************************************************************************
@@ -102,12 +107,15 @@ Michon and Julius O. Smith III, and are released under the
 // _ : spectral_level_demo : _ // 2/3 octave
 //
 // ```
+// Where:
+//
+// * `BandsPerOctave`: number of spectral bands per octave
+//
 // #### Test
 // ```
 // dm = library("demos.lib");
 // no = library("noises.lib");
 // mth_octave_spectral_level_demo_test = no.noise : dm.mth_octave_spectral_level_demo(1.5);
-// spectral_level_demo_test = no.noise : dm.spectral_level_demo;
 // ```
 //------------------------------------------------------------
 declare mth_octave_spectral_level_demo author "Julius O. Smith III and Yann Orlarey";
@@ -128,6 +136,26 @@ with{
     [tooltip: Level offset in decibels]",
     50,-50,100,1));
 };
+
+//------------------------`(dm.)spectral_level_demo`---------------------------
+// Spectral level display, 2/3 octave. Synonym for
+// `mth_octave_spectral_level_demo(1.5)`.
+//
+// #### Usage
+//
+// ```
+// _ : spectral_level_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// no = library("noises.lib");
+// spectral_level_demo_test = no.noise : dm.spectral_level_demo;
+// ```
+//------------------------------------------------------------
+declare spectral_level_demo author "Julius O. Smith III and Yann Orlarey";
+declare spectral_level_demo licence "MIT";
 
 spectral_level_demo = mth_octave_spectral_level_demo(1.5); // 2/3 octave
 
@@ -220,7 +248,7 @@ with{
 };
 
 
-//---------`(dm.)mth_octave_filterbank_demo` and `(dm.)filterbank_demo`-------------
+//---------`(dm.)mth_octave_filterbank_demo`, `(dm.)filterbank_demo`-------------
 // Graphic Equalizer: each filter-bank output signal routes through a fader.
 //
 // #### Usage
@@ -265,6 +293,83 @@ with{
 };
 
 filterbank_demo = mth_octave_filterbank_demo(1); // octave-bands = default
+
+//--------------------------`(dm.)tf2_tpt_demo`------------------------------
+// A resonator swept by a sinusoid, realized with `fi.tf2_tpt`. Pink noise
+// (or the input) drives a second-order resonator of unity peak gain whose
+// resonance frequency is modulated by up to 4 octaves either way, at rates
+// up to 2 kHz, with Q from 0.1 to 100. The topology-preserving realization
+// stays stable and accurate under this audio-rate modulation, and runs
+// mirrored above SR/4, so the resonance can reach the Nyquist limit.
+//
+// With the pink-noise source, Level is the output RMS in dBFS: pink noise has
+// the same power in every octave, so a constant-Q band passes about the same
+// power at every frequency, and a table of the measured level versus Q
+// normalizes it (within 1.5 dB from 100 Hz to 15 kHz at 44.1 to 192 kHz,
+// 1 dB for Q >= 1).
+// With the input as source, Level is the gain at the resonance peak.
+//
+// #### Usage
+//
+// ```
+// _ : tf2_tpt_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// no = library("noises.lib");
+// tf2_tpt_demo_test = no.noise : dm.tf2_tpt_demo;
+// ```
+//
+// #### References
+//
+// * Julius O. Smith III, "Digital State-Variable Filters", on the trapezoidal
+//   (TPT) state-variable filter and its time-varying behavior:
+//   <https://ccrma.stanford.edu/~jos/svf/>
+//------------------------------------------------------------
+declare tf2_tpt_demo author "Julius O. Smith III";
+declare tf2_tpt_demo licence "MIT";
+
+tf2_tpt_demo(x) = select2(src, no.pink_noise*norm, x) : resonator : *(level)
+with {
+    tpt_group(w) = vgroup("MODULATED RESONATOR [tooltip: A second-order resonator
+        realized with fi.tf2_tpt, its resonance frequency modulated by a sinusoid.
+        See Faust's filters.lib for documentation and references]", w);
+    src = tpt_group(nentry("[0] Source [style:menu{'Pink noise':0;'Input':1}]
+        [tooltip: Pink noise, normalized to the Level; or the input]", 0, 0, 1, 1));
+    level = tpt_group(hslider("[1] Level [unit:dB] [tooltip: Output RMS level with
+        the pink-noise source; gain at the resonance peak with the input]",
+        -20, -60, 0, 0.1)) : ba.db2linear : si.smoo;
+    freq = tpt_group(hslider("[2] Resonance Frequency [unit:Hz] [scale:log]
+        [tooltip: Center of the modulation]", 1000, 20, 20000, 1)) : si.smoo;
+    logQ = tpt_group(hslider("[3] log10(Q) [tooltip: Q = 0.1 to 100; the bandwidth
+        is the resonance frequency divided by Q]", 1, -1, 2, 0.01)) : si.smoo;
+    modfreq = tpt_group(hslider("[4] Modulation Frequency [unit:Hz] [scale:log]
+        [tooltip: Rate of the sinusoidal modulation]", 1, 0.1, 2000, 0.1));
+    depth = tpt_group(hslider("[5] Modulation Amplitude [unit:octaves] [tooltip:
+        Peak deviation of the resonance frequency]", 1, 0, 4, 0.01)) : si.smoo;
+
+    Q = pow(10, logQ);
+    // minus the output level (dB) of the unit-peak resonator on no.pink_noise
+    // at log10(Q) = -1, -0.75, ..., 2 (mean over 100 Hz to 10 kHz at 48 and
+    // 96 kHz): about 1/Q in power above Q = 3, flattening below Q = 1
+    norm = ba.listInterp((33.01, 32.90, 33.03, 33.62, 34.84, 36.59, 38.67,
+        40.95, 43.34, 45.78, 48.26, 50.76, 53.31), 4*(logQ + 1)) : ba.db2linear;
+    fc = max(10, min(freq*pow(2, depth*os.tosc(modfreq)), 0.5*ma.SR));
+
+    // (1 - r^2)/2 (1 - z^-2)/A(z), poles r*exp(+-j*2*PI*fc/SR), om = 1 - r
+    // computed without cancellation, S from the complementary angle so that
+    // it stays accurate near SR/2
+    resonator = fi.tf2_tpt(P, S, fq, 0, 0, fq)
+    with {
+        om = 0 - ma.expm1(0 - ma.PI*fc/Q/ma.SR);
+        r = 1 - om;
+        P = om*om + 4*r*sin(ma.PI*fc/ma.SR)^2;
+        S = om*om + 4*r*sin(ma.PI*(0.5*ma.SR - fc)/ma.SR)^2;
+        fq = om*(2 - om);
+    };
+};
 
 
 //======================================Effects===========================================
@@ -315,7 +420,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // no = library("noises.lib");
-// gate_demo_test = no.noise, no.noise : dm.gate_demo;
+// stereoNoise = no.noise, no.noise;
+// gate_demo_test = stereoNoise : dm.gate_demo;
 // ```
 //------------------------------------------------------------
 declare gate_demo author "Julius O. Smith III";
@@ -372,7 +478,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // no = library("noises.lib");
-// compressor_demo_test = no.noise, no.noise : dm.compressor_demo;
+// stereoNoise = no.noise, no.noise;
+// compressor_demo_test = stereoNoise : dm.compressor_demo;
 // ```
 //------------------------------------------------------------
 declare compressor_demo author "Julius O. Smith III";
@@ -392,11 +499,9 @@ with{
     meter_group(hbargraph("[1] Compressor Gain Before Makeup [unit:dB] [tooltip: Current gain of
     the compressor in dB]",-50,+10));
 
-    displaygain = _,_ <: _,_,(abs,abs:+) : _,_,gainview : _,attach;
-
-    compressor_stereo_demo =
-    displaygain(co.compressor_stereo(ratio,threshold,attack,release)) :
-    *(makeupgain), *(makeupgain);
+    // the meter shows the gain computed from the input, not from the compressed output
+    compressor_stereo_demo = _,_ <: co.compressor_stereo(ratio,threshold,attack,release),
+        (abs,abs :> gainview) : _,attach : *(makeupgain),*(makeupgain);
 
     ctl_group(x) = knob_group(hgroup("[3] Compression Control", x));
 
@@ -425,7 +530,71 @@ with{
     makeupgain = comp_group(hslider("[5] Makeup Gain [unit:dB]
     [tooltip: The compressed-signal output level is increased by this amount
     (in dB) to make up for the level lost due to compression]",
-    40, -96, 96, 0.1)) : ba.db2linear;
+    12, -96, 96, 0.1)) : ba.db2linear; // default: about unity at -20 dBFS input
+};
+
+//----------------------------`(dm.)xfer_ott_demo`-------------------------
+// Demo application for `co.xfer_ott`, the model of Xfer Records' OTT, with the
+// plug-in's controls in its own units and at its defaults: Depth, Time, In/Out
+// Gain and Upward/Downward strength, and per band (Low / Mid / High) Threshold,
+// Gain and the two branch bypasses. Continuous controls are smoothed; Bypass
+// switches the whole effect off for A/B comparison.
+//
+// #### Usage
+//
+// ```
+// _,_ : xfer_ott_demo : _,_
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// os = library("oscillators.lib");
+// xfer_ott_demo_test = (os.tosc(220)*0.3, os.tosc(3000)*0.03) : dm.xfer_ott_demo;
+// ```
+//------------------------------------------------------------
+declare xfer_ott_demo author "David Braun";
+declare xfer_ott_demo license "MIT";
+
+xfer_ott_demo = ba.bypass2(bp, ott)
+with {
+    ott_group(x) = vgroup("OTT [tooltip: Model of Xfer Records' OTT (co.xfer_ott);
+        not affiliated with or endorsed by Xfer Records]", x);
+    global_group(x) = ott_group(hgroup("[0] Global", x));
+    band_group(0, x) = ott_group(hgroup("[1] Low", x));
+    band_group(1, x) = ott_group(hgroup("[2] Mid", x));
+    band_group(2, x) = ott_group(hgroup("[3] High", x));
+
+    bp = global_group(checkbox("[0] Bypass [tooltip: When checked, OTT has no effect]"));
+    depth = global_group(hslider("[1] Depth [unit:%] [style:knob]
+        [tooltip: Amount of compression, like a dry/wet control on the gain]",
+        100, 0, 100, 1)) / 100 : si.smoo;
+    time = global_group(hslider("[2] Time [unit:%] [style:knob]
+        [tooltip: Release time scale; 100 % is the plug-in's default]",
+        100, 0, 1000, 1)) / 100 : si.smoo;
+    ingain = global_group(hslider("[3] In Gain [unit:dB] [style:knob]",
+        0, -24, 19.1, 0.1)) : si.smoo;
+    outgain = global_group(hslider("[4] Out Gain [unit:dB] [style:knob]",
+        0, -24, 19.1, 0.1)) : si.smoo;
+    upward = global_group(hslider("[5] Upward [unit:%] [style:knob]
+        [tooltip: Strength of the upward compression (quiet parts raised)]",
+        100, 0, 200, 1)) / 100 : si.smoo;
+    downward = global_group(hslider("[6] Downward [unit:%] [style:knob]
+        [tooltip: Strength of the downward compression (loud parts lowered)]",
+        100, 0, 200, 1)) / 100 : si.smoo;
+
+    // The same four controls in each band's group (distinct paths per band).
+    thresh(k) = band_group(k, vslider("[0] Thresh [unit:%] [style:knob]
+        [tooltip: Band threshold; higher raises quiet parts more and lowers loud parts less]",
+        100, 0, 200, 1)) / 100 : si.smoo;
+    gain(k) = band_group(k, vslider("[1] Gain [unit:dB] [style:knob]",
+        0, -24, 6, 0.1)) : si.smoo;
+    bypUp(k) = band_group(k, checkbox("[2] Bypass Upward"));
+    bypDn(k) = band_group(k, checkbox("[3] Bypass Downward"));
+
+    ott = co.xfer_ott(depth, time, ingain, outgain, upward, downward,
+                      thresh(0), thresh(1), thresh(2), gain(0), gain(1), gain(2),
+                      bypUp(0), bypUp(1), bypUp(2), bypDn(0), bypDn(1), bypDn(2));
 };
 
 
@@ -442,7 +611,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// moog_vcf_demo_test = os.osc(440) : dm.moog_vcf_demo;
+// monoOsc(freq) = os.tosc(freq);
+// moog_vcf_demo_test = monoOsc(440) : dm.moog_vcf_demo;
 // ```
 //------------------------------------------------------------
 declare moog_vcf_demo author "Julius O. Smith III";
@@ -492,7 +662,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// wah4_demo_test = os.osc(440) : dm.wah4_demo;
+// monoOsc(freq) = os.tosc(freq);
+// wah4_demo_test = monoOsc(440) : dm.wah4_demo;
 // ```
 //------------------------------------------------------------
 declare wah4_demo author "Julius O. Smith III";
@@ -522,7 +693,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// crybaby_demo_test = os.osc(440) : dm.crybaby_demo;
+// monoOsc(freq) = os.tosc(freq);
+// crybaby_demo_test = monoOsc(440) : dm.crybaby_demo;
 // ```
 //------------------------------------------------------------
 declare crybaby_demo author "Julius O. Smith III";
@@ -551,7 +723,9 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// flanger_demo_test = os.osc(440), os.osc(442) : dm.flanger_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// flanger_demo_test = stereoOsc(440, 442) : dm.flanger_demo;
 // ```
 //------------------------------------------------------------
 declare flanger_demo author "Julius O. Smith III";
@@ -580,7 +754,7 @@ with{
     lfol = os.oscrs;
     lfor = os.oscrc;
 
-    dmax = 2048;
+    dmax = 8192; // 40 ms (both delay sliders at max) is 7680 samples at 192 kHz
     dflange = 0.001 * ma.SR *
         del_group(hslider("[1] Flange Delay [unit:ms] [style:knob]", 10, 0, 20, 0.001));
     odflange = 0.001 * ma.SR *
@@ -608,7 +782,9 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// phaser2_demo_test = os.osc(440), os.osc(442) : dm.phaser2_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// phaser2_demo_test = stereoOsc(440, 442) : dm.phaser2_demo;
 // ```
 //------------------------------------------------------------
 declare phaser2_demo author "Julius O. Smith III";
@@ -670,12 +846,14 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// tapeStop_demo_test = os.osc(440), os.osc(442) : dm.tapeStop_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// tapeStop_demo_test = stereoOsc(440, 442) : dm.tapeStop_demo;
 // ```
 //------------------------------------------------------------
 declare tapeStop_demo author "David Braun";
 declare tapeStop_demo copyright "Copyright (C) 2024 by David Braun <braun@ccrma.stanford.edu>";
-declare tapeStop_demo license "MIT-style STK-4.3 license";
+declare tapeStop_demo license "LicenseRef-STK-4.3";
 
 tapeStop_demo = hgroup("Tape Stop", ef.tapeStop(2, LAGRANGE_ORDER, MAX_TIME_SAMP, crossfade, gainAlpha, stopAlpha, stopTime, stop))
 with {
@@ -711,11 +889,13 @@ with {
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// freeverb_demo_test = os.osc(440), os.osc(442) : dm.freeverb_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// freeverb_demo_test = stereoOsc(440, 442) : dm.freeverb_demo;
 // ```
 //------------------------------------------------------------
 declare freeverb_demo author " Romain Michon";
-declare freeverb_demo licence "LGPL";
+declare freeverb_demo licence "LGPL-2.1-or-later";
 
 freeverb_demo = _,_ <: (*(g)*fixedgain,*(g)*fixedgain :
     re.stereo_freeverb(combfeed, allpassfeed, damping, spatSpread)),
@@ -742,6 +922,40 @@ with{
         between 0 and 1 with 1 for the maximum amount of reverb.]", 0.3333, 0, 1, 0.025));
 };
 
+//---------------------------`(dm.)springreverb_demo`----------------------------
+// Mono spring-inspired reverb demo using `re.springreverb`.
+//
+// #### Usage
+//
+// ```
+// _ : springreverb_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// os = library("oscillators.lib");
+// monoOsc(freq) = os.tosc(freq);
+// springreverb_demo_test = monoOsc(220) : dm.springreverb_demo;
+// ```
+//------------------------------------------------------------
+declare springreverb_demo author "Daniel Leonov";
+declare springreverb_demo licence "MIT";
+
+springreverb_demo = hgroup("Spring Reverb", spring_reverb)
+with {
+
+    dwell   = vslider("[0] Dwell [style:knob] [tooltip: Feedback amount; controls decay length (0..1)]", 0.5, 0, 1, 0.01);
+    blend   = vslider("[1] Blend [style:knob] [tooltip: Wet gain scaling; maps to 0..0.8 (0..1)]", 0.5, 0, 1, 0.01);
+    tone    = vslider("[2] Tone [style:knob] [tooltip: Lowpass cutoff on wet path; darker to brighter (0..1)]", 0.5, 0, 1, 0.01);
+    tension = vslider("[3] Tension [style:knob] [tooltip: Base delay time; affects predelay and tail diffusion (0..1)]", 0.5, 0, 1, 0.01);
+    springs = nentry("[4] Springs [style:menu{'Left':0;'Right':1;'Middle':2}] [tooltip: Spacing preset between spring delays]", 1, 0, 2, 1);
+    wetmix  = vslider("[5] Wet [style:knob] [tooltip: Wet/dry mix (0=dry, 1=wet)]", 0.5, 0, 1, 0.01);
+
+    spring_reverb = _ <: (_, re.springreverb(dwell, blend, tone, tension, springs))
+        :> (*(1 - wetmix), *(wetmix)) :> +;
+};
+
 //---------------------`(dm.)stereo_reverb_tester`--------------------
 // Handy test inputs for reverberator demos below.
 //
@@ -750,20 +964,30 @@ with{
 // ```
 // _,_ : stereo_reverb_tester(gui_group) : _,_
 // ```
-// For suppressing the `gui_group` input, pass it as `!`.
-// (See `(dm.)fdnrev0_demo` for an example of its use).
+//
+// Where:
+//
+// * `gui_group`: accepted for compatibility and ignored: the tester controls
+//   appear at the top level of the GUI, and every older call compiles,
+//   including `stereo_reverb_tester(!)` and the bare
+//   `process = dm.stereo_reverb_tester;` (three inputs, the first unused).
+//   `(dm.)fdnrev0_demo` puts the same controls in its own group.
 //
 // #### Test
 // ```
 // dm = library("demos.lib");
 // no = library("noises.lib");
-// stereo_reverb_tester_test = no.noise, no.noise : dm.stereo_reverb_tester(!);
+// stereoNoise = no.noise, no.noise;
+// stereo_reverb_tester_test = stereoNoise : dm.stereo_reverb_tester(_);
 // ```
 //------------------------------------------------------------
 declare stereo_reverb_tester author "Julius O. Smith III";
 declare stereo_reverb_tester licence "MIT";
 
-stereo_reverb_tester(revin_group,x,y) = reverb_tester(_,x,y)
+stereo_reverb_tester(gui_group,x,y) = _stereo_reverb_tester(_,x,y);
+
+// stereo_reverb_tester with its controls in revin_group, for fdnrev0_demo
+_stereo_reverb_tester(revin_group,x,y) = reverb_tester(revin_group,x,y)
 with {
     reverb_tester(revin_group,x,y) = inx,iny with {
         ck_group(x) = revin_group(vgroup("[1] Input Config",x));
@@ -795,7 +1019,7 @@ with {
 // #### Usage
 //
 // ```
-// _,_,_,_ : fdnrev0_demo(N,NB,BBSO) : _,_
+// _,_ : fdnrev0_demo(N,NB,BBSO) : _,_
 // ```
 //
 // Where:
@@ -812,17 +1036,18 @@ with {
 // ```
 // dm = library("demos.lib");
 // no = library("noises.lib");
-// fdnrev0_demo_test = no.noise, no.noise : dm.fdnrev0_demo(16, 5, 3);
+// stereoNoise = no.noise, no.noise;
+// fdnrev0_demo_test = stereoNoise : dm.fdnrev0_demo(16, 5, 3);
 // ```
 //------------------------------------------------------------
 declare fdnrev0_demo author "Julius O. Smith III";
 declare fdnrev0_demo licence "MIT";
 
-fdnrev0_demo(N,NB,BBSO) = stereo_reverb_tester(revin_group)
+fdnrev0_demo(N,NB,BBSO) = _stereo_reverb_tester(revin_group)
       <: re.fdnrev0(MAXDELAY,delays,BBSO,freqs,durs,loopgainmax,nonl)
       :> *(gain),*(gain)
 with{
-    MAXDELAY = 8192; // sync w delays and prime_power_delays above
+    MAXDELAY = 8192; // de.prime_power_delays caps every length at 8192
     defdurs = (8.4,6.5,5.0,3.8,2.7); // NB default durations (sec)
     deffreqs = (500,1000,2000,4000); // NB-1 default crossover frequencies (Hz)
     deflens = (56.3,63.0); // 2 default min and max path lengths
@@ -871,7 +1096,8 @@ with{
 };
 
 //---------------------------`(dm.)zita_rev_fdn_demo`------------------------------
-// Reverb demo application based on `zita_rev_fdn`.
+// Reverb demo application based on `zita_rev_fdn`, with an 8-channel input
+// bus and an 8-channel output bus.
 //
 // #### Usage
 //
@@ -883,7 +1109,8 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// zita_rev_fdn_demo_test = par(i, 8, os.osc(440 + i)) : dm.zita_rev_fdn_demo;
+// monoOsc(freq) = os.tosc(freq);
+// zita_rev_fdn_demo_test = par(i, 8, monoOsc(440 + i)) : dm.zita_rev_fdn_demo;
 // ```
 //------------------------------------------------------------
 declare zita_rev_fdn_demo author "Julius O. Smith III";
@@ -891,7 +1118,7 @@ declare zita_rev_fdn_demo licence "MIT";
 
 zita_rev_fdn_demo = re.zita_rev_fdn(f1,f2,t60dc,t60m,fsmax)
 with{
-    fsmax = 48000.0;
+    fsmax = 192000.0; // sizes the delay lines: covers every sampling rate
     fdn_group(x) = hgroup("Zita_Rev Internal FDN Reverb [tooltip: ~ Zita_Rev's internal
         8x8 Feedback Delay Network (FDN) & Schroeder allpass-comb reverberator.     See
         Faust's reverbs.lib for documentation and references]",x);
@@ -906,7 +1133,7 @@ with{
     2, 1, 8, 0.1));
     f2 = fdn_group(vslider("[4] HF Damping [unit:Hz] [style:knob] [scale:log]
     [tooltip: Frequency (Hz) at which the high-frequency T60 is half the middle-band's T60]",
-    6000, 1500, 0.49*fsmax, 1));
+    6000, 1500, 23520, 1));
 };
 
 //---------------------------`(dm.)zita_light`------------------------------
@@ -922,7 +1149,9 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// zita_light_test = os.osc(440), os.osc(442) : dm.zita_light;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// zita_light_test = stereoOsc(440, 442) : dm.zita_light;
 // ```
 //------------------------------------------------------------
 declare zita_light author "Julius O. Smith III";
@@ -931,29 +1160,30 @@ declare zita_light licence "MIT";
 zita_light = hgroup("Zita Light",(_,_ <: re.zita_rev1_stereo(rdel,f1,f2,t60dc,t60m,fsmax),_,_ : 
     out_eq,_,_ : dry_wet : out_level))
 with{
-    fsmax = 48000.0;  // highest sampling rate that will be used
-    rdel = 60;    
+    fsmax = 192000.0;  // highest sampling rate that will be used
+    rdel = 40; // zita-rev1 defaults: 40 ms, 200 Hz, 3 s, 2 s, 6 kHz, EQ at 160 Hz and 2.5 kHz
     f1 = 200;
     t60dc = 3;
     t60m = 2;
     f2 = 6000;
-    out_eq = pareq_stereo(eq1f,eq1l,eq1q) : pareq_stereo(eq2f,eq2l,eq2q);
-    pareq_stereo(eqf,eql,Q) = fi.peak_eq_rm(eql,eqf,tpbt), fi.peak_eq_rm(eql,eqf,tpbt)
+    out_eq = pareq_stereo(eq1f,eq1l) : pareq_stereo(eq2f,eq2l);
+    pareq_stereo(eqf,eql) = fi.peak_eq_rm(eql,eqf,tpbt), fi.peak_eq_rm(eql,eqf,tpbt)
     with {
         tpbt = wcT/sqrt(max(0,g)); // tan(PI*B/SR), B bw in Hz (Q^2 ~ g/4)
         wcT = 2*ma.PI*eqf/ma.SR;  // peak frequency in rad/sample
         g = ba.db2linear(eql); // peak gain
     };
-    eq1f = 315;
+    eq1f = 160;
     eq1l = 0;
-    eq1q = 3;
-    eq2f = 1500;
+    eq2f = 2500;
     eq2l = 0;
-    eq2q = 3;
-    dry_wet(x,y) = *(wet) + dry*x, *(wet) + dry*y 
+    // zita-rev1's mix law (reverb.cc): with m = (1 - drywet)/2, dry gain 1 - m^2,
+    // wet gain 0.7 m (2-m)/sqrt(t60m), of which re.zita_rev1_stereo applies 0.525/sqrt(t60m)
+    dry_wet(wl,wr) = *(gd) + gw*wl, *(gd) + gw*wr
     with {
-        wet = 0.5*(drywet+1.0);
-        dry = 1.0-wet;
+        m = 0.5*(1.0-drywet);
+        gd = (1.0-m)*(1.0+m);
+        gw = m*(2.0-m)/0.75;
     };
     drywet = vslider("[1] Wet/Dry Mix [style:knob] [tooltip: Ratio of dry and wet signal. -1 = fully wet, +1 = fully dry]",
         0,-1.0,1.0,0.01) : si.smoo;
@@ -964,6 +1194,10 @@ with{
 
 //----------------------------------`(dm.)zita_rev1`------------------------------
 // Example GUI for `zita_rev1_stereo` (mostly following the Linux `zita-rev1` GUI).
+// The Wet/Dry Mix follows the `zita-rev1` mix law: with m = (1 - mix)/2,
+// the dry gain is 1 - m^2 and the wet gain 0.7 m (2-m)/sqrt(`t60m`).
+// The defaults are those of `zita-rev1`; as there, the equalizer
+// bandwidths are fixed (no Q control).
 //
 // Only the dry/wet and output level parameters are "dezippered" here. If
 // parameters are to be varied in real time, use `smooth(0.999)` or the like
@@ -979,7 +1213,9 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// zita_rev1_test = os.osc(440), os.osc(442) : dm.zita_rev1;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// zita_rev1_test = stereoOsc(440, 442) : dm.zita_rev1;
 // ```
 //
 // #### References
@@ -992,7 +1228,7 @@ declare zita_rev1 licence "MIT";
 zita_rev1 = _,_ <: re.zita_rev1_stereo(rdel,f1,f2,t60dc,t60m,fsmax),_,_ : out_eq,_,_ :
     dry_wet : out_level
 with{
-    fsmax = 48000.0;  // highest sampling rate that will be used
+    fsmax = 192000.0;  // highest sampling rate that will be used
 
     fdn_group(x) = hgroup(
     "[0] Zita_Rev1 [tooltip: ~ ZITA REV1 FEEDBACK DELAY NETWORK (FDN) & SCHROEDER
@@ -1002,7 +1238,7 @@ with{
     in_group(x) = fdn_group(hgroup("[1] Input", x));
 
     rdel = in_group(vslider("[1] In Delay [unit:ms] [style:knob] [tooltip: Delay in ms
-        before reverberation begins]",60,20,100,1));
+        before reverberation begins]",40,20,100,1));
 
     freq_group(x) = fdn_group(hgroup("[2] Decay Times in Bands (see tooltips)", x));
 
@@ -1018,13 +1254,12 @@ with{
 
     f2 = freq_group(vslider("[4] HF Damping [unit:Hz] [style:knob] [scale:log]
     [tooltip: Frequency (Hz) at which the high-frequency T60 is half the middle-band's T60]",
-    6000, 1500, 0.49*fsmax, 1));
+    6000, 1500, 23520, 1));
 
-    out_eq = pareq_stereo(eq1f,eq1l,eq1q) : pareq_stereo(eq2f,eq2l,eq2q);
-    // Zolzer style peaking eq (not used in zita-rev1) (filters.lib):
-    // pareq_stereo(eqf,eql,Q) = peak_eq(eql,eqf,eqf/Q), peak_eq(eql,eqf,eqf/Q);
-    // Regalia-Mitra peaking eq with "Q" hard-wired near sqrt(g)/2 (filters.lib):
-    pareq_stereo(eqf,eql,Q) = fi.peak_eq_rm(eql,eqf,tpbt), fi.peak_eq_rm(eql,eqf,tpbt)
+    out_eq = pareq_stereo(eq1f,eq1l) : pareq_stereo(eq2f,eq2l);
+    // Regalia-Mitra peaking eq with its bandwidth tied to the gain, as in zita-rev1
+    // (pareq.cc), which has no Q control (filters.lib):
+    pareq_stereo(eqf,eql) = fi.peak_eq_rm(eql,eqf,tpbt), fi.peak_eq_rm(eql,eqf,tpbt)
     with {
         tpbt = wcT/sqrt(max(0,g)); // tan(PI*B/SR), B bw in Hz (Q^2 ~ g/4)
         wcT = 2*ma.PI*eqf/ma.SR;  // peak frequency in rad/sample
@@ -1035,31 +1270,28 @@ with{
 
     eq1f = eq1_group(vslider("[1] Eq1 Freq [unit:Hz] [style:knob] [scale:log] [tooltip:
         Center-frequency of second-order Regalia-Mitra peaking equalizer section 1]",
-    315, 40, 2500, 1));
+    160, 40, 2500, 1));
 
     eq1l = eq1_group(vslider("[2] Eq1 Level [unit:dB] [style:knob] [tooltip: Peak level
         in dB of second-order Regalia-Mitra peaking equalizer section 1]", 0, -15, 15, 0.1));
-
-    eq1q = eq1_group(vslider("[3] Eq1 Q [style:knob] [tooltip: Q = centerFrequency/bandwidth
-        of second-order peaking equalizer section 1]", 3, 0.1, 10, 0.1));
 
     eq2_group(x) = fdn_group(hgroup("[4] RM Peaking Equalizer 2", x));
 
     eq2f = eq2_group(vslider("[1] Eq2 Freq [unit:Hz] [style:knob] [scale:log] [tooltip:
         Center-frequency of second-order Regalia-Mitra peaking equalizer section 2]",
-    1500, 160, 10000, 1));
+    2500, 160, 10000, 1));
 
     eq2l = eq2_group(vslider("[2] Eq2 Level [unit:dB] [style:knob] [tooltip: Peak level
         in dB of second-order Regalia-Mitra peaking equalizer section 2]", 0, -15, 15, 0.1));
 
-    eq2q = eq2_group(vslider("[3] Eq2 Q [style:knob] [tooltip: Q = centerFrequency/bandwidth
-        of second-order peaking equalizer section 2]", 3, 0.1, 10, 0.1));
-
     out_group(x) = fdn_group(hgroup("[5] Output", x));
 
-    dry_wet(x,y) = *(wet) + dry*x, *(wet) + dry*y with {
-        wet = 0.5*(drywet+1.0);
-        dry = 1.0-wet;
+    // zita-rev1's mix law (reverb.cc): with m = (1 - drywet)/2, dry gain 1 - m^2,
+    // wet gain 0.7 m (2-m)/sqrt(t60m), of which re.zita_rev1_stereo applies 0.525/sqrt(t60m)
+    dry_wet(wl,wr) = *(gd) + gw*wl, *(gd) + gw*wr with {
+        m = 0.5*(1.0-drywet);
+        gd = (1.0-m)*(1.0+m);
+        gw = m*(2.0-m)/0.75;
     };
 
     drywet = out_group(vslider("[1] Wet/Dry Mix [style:knob] [tooltip: Ratio of dry and wet signal. -1 = fully wet, +1 = fully dry]",
@@ -1085,7 +1317,9 @@ with{
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// vital_rev_demo_test = os.osc(440), os.osc(442) : dm.vital_rev_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// vital_rev_demo_test = stereoOsc(440, 442) : dm.vital_rev_demo;
 // ```
 //------------------------------------------------------------
 vital_rev_demo = hgroup("Reverb", re.vital_rev(prelow, prehigh, lowcutoff, highcutoff, lowgain, highgain, chorus_amt, chorus_freq, predelay, time, size, mix))
@@ -1117,7 +1351,7 @@ with {
     mix = hslider("[4] Mix [style:knob]",  1, 0, 1, .01) : SMOO : aa.clip(0, 1);
 };
 declare vital_rev_demo author "David Braun";
-declare vital_rev_demo license "GPL-3.0";
+declare vital_rev_demo license "GPL-3.0-only";
 
 
 //--------------------------`(dm.)reverbTank_demo`---------------------------
@@ -1136,7 +1370,9 @@ declare vital_rev_demo license "GPL-3.0";
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// reverbTank_demo_test = os.osc(440), os.osc(442) : dm.reverbTank_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// reverbTank_demo_test = stereoOsc(440, 442) : dm.reverbTank_demo;
 // ```
 //
 // #### References
@@ -1351,7 +1587,7 @@ with {
 
 declare reverbTank_demo author "David Braun";
 declare reverbTank_demo copyright "Copyright (C) 2024 by David Braun <braun@ccrma.stanford.edu>";
-declare reverbTank_demo license "MIT-style STK-4.3 license";
+declare reverbTank_demo license "LicenseRef-STK-4.3";
 
 
 //--------------------------`(dm.)kb_rom_rev1_demo`--------------------------
@@ -1367,11 +1603,13 @@ declare reverbTank_demo license "MIT-style STK-4.3 license";
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// kb_rom_rev1_demo_test = os.osc(440), os.osc(442) : dm.kb_rom_rev1_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// kb_rom_rev1_demo_test = stereoOsc(440, 442) : dm.kb_rom_rev1_demo;
 // ```
 //------------------------------------------------------------
 declare kb_rom_rev1_demo author "Luca Spanedda";
-declare kb_rom_rev1_demo licence "GPL-3.0";
+declare kb_rom_rev1_demo licence "GPL-3.0-only";
 
 kb_rom_rev1_demo = hgroup("Reverb", dryWetMix(re.kb_rom_rev1(rt, damp)))
 with {
@@ -1404,11 +1642,13 @@ with {
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// dattorro_rev_demo_test = os.osc(440), os.osc(442) : dm.dattorro_rev_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// dattorro_rev_demo_test = stereoOsc(440, 442) : dm.dattorro_rev_demo;
 // ```
 //------------------------------------------------------------
 declare dattorro_rev_demo author "Jakob Zerbian";
-declare dattorro_rev_demo license "MIT-style STK-4.3 license";
+declare dattorro_rev_demo license "LicenseRef-STK-4.3";
 
 dattorro_rev_demo = _,_ <: re.dattorro_rev(pre_delay, bw, i_diff1, i_diff2, decay, d_diff1, d_diff2, damping),_,_:
     dry_wet : out_level
@@ -1451,11 +1691,13 @@ with {
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// jprev_demo_test = os.osc(440), os.osc(442) : dm.jprev_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// jprev_demo_test = stereoOsc(440, 442) : dm.jprev_demo;
 // ```
 //------------------------------------------------------------
 declare jprev_demo author "Till Bovermann";
-declare jprev_demo license "GPL2+";
+declare jprev_demo license "GPL-2.0-or-later";
 
 jprev_demo = re.jpverb(t60, damp, size, early_diff, mod_depth, mod_freq, low, mid, high, low_cutoff, high_cutoff)
 with {
@@ -1493,11 +1735,13 @@ with {
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// greyhole_demo_test = os.osc(440), os.osc(442) : dm.greyhole_demo;
+// stereoOsc(f1, f2) = monoOsc(f1), monoOsc(f2);
+// monoOsc(freq) = os.tosc(freq);
+// greyhole_demo_test = stereoOsc(440, 442) : dm.greyhole_demo;
 // ```
 //------------------------------------------------------------
 declare greyhole_demo author "Till Bovermann";
-declare greyhole_demo license "GPL2+";
+declare greyhole_demo license "GPL-2.0-or-later";
 
 greyhole_demo = re.greyhole(dt, damp, size, early_diff, feedback, mod_depth, mod_freq)
 with {
@@ -1531,7 +1775,9 @@ with {
 // #### Test
 // ```
 // dm = library("demos.lib");
-// sawtooth_demo_test = dm.sawtooth_demo;
+// monoOsc(freq) = os.tosc(freq);
+// os = library("oscillators.lib");
+// sawtooth_demo_test = dm.sawtooth_demo + monoOsc(110) * 0.001;
 // ```
 //------------------------------------------------------------
 declare sawtooth_demo author "Julius O. Smith III";
@@ -1559,7 +1805,7 @@ with{
         suppression]",2,1,os.MAX_SAW_ORDER,1));
     sawchoice = _ <: par(i,os.MAX_SAW_ORDER,os.sawN(i+1)) :
         ba.selectn(int(os.MAX_SAW_ORDER), int(saworder-1)); // when max is pwr of 2
-    tone = (amp/3) * (sawchoice(sfreq) + sawchoice(sfreq*detune1) + sawchoice(sfreq*detune2));
+    tone = (1/3) * (sawchoice(sfreq) + sawchoice(sfreq*detune1) + sawchoice(sfreq*detune2));
     signal = amp * select2(ei, select2(ss, tone, white_or_pink_noise), _);
     white_or_pink_noise = select2(wp,no.noise,no.pink_noise);
     checkbox_group(x) = knob_group(vgroup("[7] Alternate Signals",x));
@@ -1650,7 +1896,7 @@ with{
     freq = af_group(hslider("[2] Frequency [unit:PK] [style:hslider] [tooltip: Sawtooth
         frequency as a Piano Key (PK) number (A440 = key 49)]",49,1,88,0.01) : ba.pianokey2hz);
 
-    detune1 = 1 - 0.01 * knob_group(
+    detune1 = 1 + 0.01 * knob_group(
         vslider("[3] Detuning 1 [unit:%%] [style:knob]
     [tooltip: Percentage frequency-shift up or down for second oscillator]",
     -0.1,-10,10,0.01));
@@ -1665,6 +1911,79 @@ with{
     saworder = knob_group(nentry("[6] Saw Order [tooltip: Order of sawtooth aliasing
     suppression]",2,1,os.MAX_SAW_ORDER,1));
     sfreq = freq : si.smooth(ba.tau2pole(portamento));
+};
+
+//--------------------------`(dm.)twin_osc_demo`------------------------------
+// TwinOsc - virtual analog synthesis with a time-varying comb filter.
+//
+// Based on: "Virtual Analog Synthesis with a Time-Varying Comb Filter"
+// D. Lowenfels, AES Convention 115, October 2003.
+//
+// #### Usage
+//
+// ```
+// twin_osc_demo : _,_
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// twin_osc_demo_test = dm.twin_osc_demo;
+// ```
+//
+// #### References
+//
+// * <https://www.researchgate.net/publication/325654284>
+//------------------------------------------------------------
+declare twin_osc_demo author "David Lowenfels";
+
+twin_osc_demo = output * level <: _,_
+with {
+    // --- Oscillator ---
+    freq = hgroup("[0]Oscillator",
+        hslider("[0]Frequency[style:knob][scale:log][unit:Hz][tooltip:Base oscillator frequency]",
+            220, 20, 2000, 0.1)) : si.smoo;
+
+    // --- Mode + Amount ---
+    mode = hgroup("[1]Mode/Amount",
+        hslider("[0]Mode[style:menu{'PWM':0;'Morph':1;'Detune':2}][tooltip:PWM=pulse width mod, Morph=saw-square blend, Detune=pitch interval]",
+            0, 0, 2, 1));
+
+    amount = hgroup("[1]Mode/Amount",
+        hslider("[1]Amount[style:knob][tooltip:PWM: pulse width. Morph: blend. Detune: 0=1:1, 0.33=4:3, 0.5=3:2, 1=2:1]",
+            0.5, 0.0, 1.0, 0.01)) : si.smoo;
+
+    // --- PWM Vibrato (only active in PWM mode) ---
+    vibrato = hgroup("[2]PWM Vibrato",
+        hslider("[0]Vibrato[style:knob][tooltip:PWM pulse width modulation depth/rate]",
+            0, 0, 1, 0.01));
+
+    isPWM = mode < 0.5;
+    vibratoActive = select2(isPWM, 0, vibrato);
+    lfoRate = 1 + vibratoActive * 7;
+    lfoDepth = vibratoActive * 0.5;
+
+    // --- Output ---
+    level = hgroup("[3]Output",
+        hslider("[0]Level[style:knob][tooltip:Output volume]",
+            0.5, 0, 1, 0.01)) : si.smoo;
+
+    // LFO for PWM modulation
+    lfo = os.lf_triangle(lfoRate);
+    mod_amount = amount + lfo * lfoDepth * 0.5 : max(0) : min(1);
+
+    // PWM and Morph use the comb filter oscillator
+    pwm_morph_out = os.twin_osc(freq, mod_amount, 0, mode);
+
+    // Detune: pitch shift via Doppler effect
+    osc_source = os.sawtooth(freq);
+    ratio = 1 + amount;
+    osc_shifted = osc_source : ef.doppler_shift(freq, ratio);
+    detune_out = (osc_source + osc_shifted) * 0.707;
+
+    // Mode selection
+    isDetune = mode > 1.5;
+    output = select2(isDetune, pwm_morph_out, detune_out);
 };
 
 
@@ -1705,6 +2024,25 @@ with{
     signal = amp * os.oscrs(sfreq);
 };
 
+//------------------------`(dm.)oscr_demo`---------------------------
+// Sine oscillator demo based on 2D vector rotation. Synonym for
+// `oscrs_demo`.
+//
+// #### Usage
+//
+// ```
+// oscr_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// oscr_demo_test = dm.oscr_demo;
+// ```
+//------------------------------------------------------------
+declare oscr_demo author "Julius O. Smith III";
+declare oscr_demo licence "MIT";
+
 oscr_demo = oscrs_demo; // synonym
 
 
@@ -1735,9 +2073,18 @@ with{
 
 
 //--------------------------`(dm.)latch_demo`---------------------------
-// Illustrate latch operation.
+// Illustrate latch operation. The three outputs are a sine signal, the
+// latch control signal, and the sine sampled and held by the latch.
 //
 // #### Usage
+//
+// ```
+// latch_demo : _,_,_
+// ```
+//
+// #### Example
+//
+// One way to visualize it is:
 //
 // ```
 // echo 'import("stdfaust.lib");' > latch_demo.dsp
@@ -1765,8 +2112,18 @@ with{
 
 //--------------------------`(dm.)envelopes_demo`---------------------------
 // Illustrate various envelopes overlaid, including their gate * 1.1.
+// The eight outputs are the gate * 1.1, then the `smoothEnvelope`, `ar`,
+// `arfe`, `are`, `asr`, `adsr` and `adsre` envelopes.
 //
 // #### Usage
+//
+// ```
+// envelopes_demo : si.bus(8)
+// ```
+//
+// #### Example
+//
+// One way to visualize it is:
 //
 // ```
 // echo 'import("stdfaust.lib");' > envelopes_demo.dsp
@@ -1802,12 +2159,23 @@ with{
 
 //-------------------`(dm.)fft_spectral_level_demo`------------------
 // Make a real-time spectrum analyzer using FFT from analyzers.lib.
+// The input signal is passed through, its spectrum is displayed in bargraphs.
 //
 // #### Usage
 //
 // ```
+// _ : fft_spectral_level_demo(N) : _
+// ```
+//
+// Where:
+//
+// * `N`: FFT size (must be a power of 2 known at compile time)
+//
+// #### Example
+//
+// ```
 // echo 'import("stdfaust.lib");' > fft_spectral_level_demo.dsp
-// echo 'process = dm.fft_spectral_level_demo;' >> fft_spectral_level_demo.dsp
+// echo 'process = dm.fft_spectral_level_demo(256);' >> fft_spectral_level_demo.dsp
 // Mac:
 //   faust2caqt fft_spectral_level_demo.dsp
 //   open fft_spectral_level_demo.app
@@ -1822,7 +2190,8 @@ with{
 // #### Test
 // ```
 // dm = library("demos.lib");
-// fft_spectral_level_demo_test = dm.fft_spectral_level_demo(256);
+// no = library("noises.lib");
+// fft_spectral_level_demo_test = no.noise : dm.fft_spectral_level_demo(256);
 // ```
 //-------------------------------------------------------------------
 declare fft_spectral_level_demo author "Julius O. Smith III";
@@ -1839,10 +2208,21 @@ with{
         50,-50,100,1));
 };
 
-//-----------------`(dm.)reverse_echo_demo(nChans)`----------------
-// Multichannel echo effect with reverse delays.
+//-----------------`(dm.)reverse_echo_demo`----------------
+// Multichannel echo effect with reverse delays, the nChans echo channels
+// being panned to stereo.
 //
 // #### Usage
+//
+// ```
+// _ : reverse_echo_demo(nChans) : _,_
+// ```
+//
+// Where:
+//
+// * `nChans`: number of echo channels, an integer > 1 known at compile time
+//
+// #### Example
 //
 // ```
 // echo 'import("stdfaust.lib");' > reverse_echo_demo.dsp
@@ -1892,6 +2272,12 @@ with {
 // #### Usage
 //
 // ```
+// _ : pospass_demo : _,_
+// ```
+//
+// #### Example
+//
+// ```
 // echo 'import("stdfaust.lib");' > pospass_demo.dsp
 // echo 'process = dm.pospass_demo;' >> pospass_demo.dsp
 // Mac:
@@ -1910,7 +2296,8 @@ with {
 // ```
 // dm = library("demos.lib");
 // os = library("oscillators.lib");
-// pospass_demo_test = os.osc(440) : dm.pospass_demo;
+// monoOsc(freq) = os.tosc(freq);
+// pospass_demo_test = monoOsc(440) : dm.pospass_demo;
 // ```
 //-------------------------------------------------------------------
 declare pospass_demo author "Julius O. Smith III";
@@ -1922,14 +2309,16 @@ pospass_demo(x) = analytic_signal, modulator : si.cmul with {
   octavesShift = hslider("Frequency Shift in octaves away from SR/16",
          -2,-7,3,0.001) : si.smooth(0.999);
   in_select = checkbox("Use Mic");
-  sine_tone = os.oscrs(f0);
+  sine_tone = os.tosc(f0);
   f0 = ma.SR/16.0;   // original frequency to be shifted
   fn = f0 * 2.0^octavesShift; // modulated frequency
   df = fn - f0; // frequency-shift as a difference
   input = select2(in_select, sine_tone, x);
   analytic_signal = input : fi.pospass6e(fc); // filter out neg freqs
   //analytic_signal = os.oscrs(f0) : fi.pospass(N,fc); // Butterworth case
-  modulator = os.oscrq(df) : si.cconj; // complex modulation sinusoid
+  // complex modulation sinusoid, on a phasor: the rotation of os.oscrq(df)
+  // drifts in amplitude in single precision (+0.23 % after 1 s at 192 kHz)
+  modulator = 2.0 * ma.PI * os.lf_sawpos(df) <: sin, cos : si.cconj;
   // modulator(n) = exp(sqrt(-1) * 2 * ma.PI * df * n / ma.SR) // if complex ok
 };
 
@@ -2006,7 +2395,7 @@ released under LGPL, STK-4.3, MIT, BSD, or a similar FOSS license.
 // * <https://www.researchgate.net/publication/258333577_Modeling_the_Harmonic_Exciter>
 //-------------------------------------------------------------------------------------
 declare exciter author "PPriyanka Shekar and Julius O. Smith III";
-declare exciter licence "STK-4.3";
+declare exciter licence "LicenseRef-STK-4.3";
 
 //-------------------------------------------------------------------------------------
 exciter = _ <: (fi.highpass(2, fc) : compressor : pregain : harmonicCreator :
@@ -2087,14 +2476,14 @@ with{
 
 //----------------------------`(dm.)vocoder_demo`-------------------------
 // Use example of the vocoder function where an impulse train is used
-// as excitation.
+// as excitation. The vocoder output is duplicated on two outputs.
 //
 // #### Usage
 //
 // ```
-// _ : vocoder_demo : _
-// 
+// _ : vocoder_demo : _,_
 // ```
+//
 // #### Test
 // ```
 // dm = library("demos.lib");
@@ -2104,7 +2493,7 @@ with{
 // ```
 //------------------------------------------------------------
 declare vocoder_demo author "Romain Michon";
-declare vocoder_demo licence "LGPL";
+declare vocoder_demo licence "LGPL-2.1-or-later";
 
 vocoder_demo = hgroup("My Vocoder",_,os.lf_imptrain(freq)*gain :
     ve.vocoder(bands,att,rel,BWRatio) <: _,_)
@@ -2149,4 +2538,646 @@ with {
     gate = checkbox("[2] Gate");
 };
 
+//======================================Motion===========================================
+// Motion, gravity, and orientation demos based on motion helpers.
+//========================================================================================
+
+//-----------------`(dm.)shock_trigger_demo`--------------------
+// Debounced shock trigger driving a tone. UI:
+//
+// - [Auto Pulse] synths periodic impacts.
+// - [Pulse Rate] sets the tempo.
+// - [Axis Offset] trims the accelerometer input before HP/threshold.
+// - [High-pass], [Threshold], [Debounce] shape the trigger window.
+// - [Tone Frequency] sets the audible indicator driven by the shock gate.
+//
+// #### Usage
+//
+// ```
+// shock_trigger_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// shock_trigger_demo_test = dm.shock_trigger_demo;
+// ```
+//-------------------------------------------------
+shock_trigger_demo = demoGroup(shockTone)
+with {
+    // Group the controls under a titled UI folder.
+    demoGroup(x) = vgroup("[0] Shock Trigger Demo", x);
+    // Checkbox to synthesize periodic impacts instead of relying on external accel data.
+    autoPulse = checkbox("[0] Auto Pulse");
+    // Knob to set the frequency of the synthetic pulse train (Hz).
+    pulseRate = hslider("[1] Pulse Rate [unit:Hz] [style:knob]", 2, 0.1, 10, 0.1);
+    // DC offset applied to the accel axis (in g) to bias the detector up/down.
+    axisTrim = hslider("[2] Axis Offset [unit:g] [style:knob]", 0, -2, 2, 0.001);
+    // Effective axis signal: manual offset plus optional auto pulse.
+    axis = axisTrim + (autoPulse * os.pulsetrain(pulseRate, 0.5));
+    // High-pass cutoff used to isolate shocks (Hz).
+    hp = hslider("[3] High-pass [unit:Hz] [style:knob]", 50, 1, 200, 0.1);
+    // Detection threshold after HP (normalized g).
+    thr = hslider("[4] Threshold [style:knob]", 0.75, 0, 3, 0.01);
+    // Debounce/hold time (ms) to avoid rapid retriggering.
+    debounce = hslider("[5] Debounce [unit:ms] [style:knob]", 75, 0, 1000, 1);
+    // Detected gate, lightly smoothed for UI viewing.
+    env = mo.shockTrigger(hp, thr, debounce, axis) : si.smooth(0.999);
+    // Tone frequency (Hz) to make the gate audible.
+    toneFreq = hslider("[6] Tone Frequency [unit:Hz] [style:knob]", 220, 60, 1200, 1);
+    shockTone = env * os.sawtooth(toneFreq) * 0.2;
+};
+
+//-----------------`(dm.)projected_gravity_demo`--------------------
+// Gravity projection mapped to a low-pass filter sweep. UI:
+//
+// - [Auto Tilt] + [Tilt Rate]/[Tilt Depth] synthesize rocking.
+// - [Axis Offset] biases the axis.
+// - [Low-pass] controls smoothing before projection
+// - [Offset] sets the dead-zone.
+// - [Noise Level] sets bed loudness; projection modulates filter cutoff.
+//
+// #### Usage
+//
+// ```
+// projected_gravity_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// projected_gravity_demo_test = dm.projected_gravity_demo;
+// ```
+//-------------------------------------------------
+projected_gravity_demo = demoGroup(filteredNoise)
+with {
+    // Group the controls under a titled UI folder.
+    demoGroup(x) = vgroup("[1] Gravity Projection Demo", x);
+    // Checkbox to auto-synthesize a tilt signal.
+    autoTilt = checkbox("[0] Auto Tilt");
+    // Knob to set the rate of the synthetic tilt (Hz).
+    tiltRate = hslider("[1] Tilt Rate [unit:Hz] [style:knob]", 0.1, 0.01, 1, 0.01);
+    // Knob to set the amplitude of the synthetic tilt (0..1 g).
+    tiltDepth = hslider("[2] Tilt Depth [style:knob]", 0.5, 0, 1, 0.001);
+    // Manual axis bias (g) applied before projection.
+    axisManual = hslider("[3] Axis Offset [unit:g] [style:knob]", 0, -1, 1, 0.001);
+    // Effective axis: manual bias plus optional auto tilt waveform.
+    axis = axisManual + (autoTilt : *(os.triangle(tiltRate) * tiltDepth));
+    // Low-pass cutoff (Hz) to smooth the axis before projection.
+    lp = hslider("[4] Low-pass [unit:Hz] [style:knob]", 1.5, 0.1, 20, 0.01);
+    // Dead-zone offset applied after projection (0..0.33).
+    offset = hslider("[5] Offset [style:knob]", 0.08, 0, 0.33, 0.01);
+    // Normalized projection of the axis onto gravity.
+    proj = mo.projectedGravity(lp, offset, axis);
+    // Input noise level in dB.
+    noiseLevel = hslider("[6] Noise Level [unit:dB] [style:knob]", -20, -60, 0, 0.1) : ba.db2linear;
+    // Map projected gravity to filter cutoff (Hz).
+    cutoff = 200 + proj * 18000;
+    filteredNoise = no.noise : *(noiseLevel) : fi.lowpass(1, cutoff);
+};
+
+//-----------------`(dm.)total_accel_demo`--------------------
+// Total acceleration envelope mapped to noise amplitude. UI:
+//
+// - [Auto Motion] + per-axis rates/depth synthesize movement; per-axis offsets bias inputs.
+// - [Threshold]/[Gain] set envelope detection.
+// - [Attack]/[Release] smooth it.
+// - Envelope scales the saw tone amplitude.
+//
+// #### Usage
+//
+// ```
+// total_accel_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// total_accel_demo_test = dm.total_accel_demo;
+// ```
+//-------------------------------------------------
+total_accel_demo = demoGroup(outSig)
+with {
+    // Group the controls under a titled UI folder.
+    demoGroup(x) = vgroup("[2] Total Accel Demo", x);
+    // Checkbox to synthesize movement on all axes.
+    autoMotion = checkbox("[0] Auto Motion");
+    // Per-axis rate knobs (Hz) for the synthetic motion LFOs.
+    rateX = hslider("[1] Rate X [unit:Hz] [style:knob]", 0.2, 0.01, 2, 0.01);
+    rateY = hslider("[2] Rate Y [unit:Hz] [style:knob]", 0.27, 0.01, 2, 0.01);
+    rateZ = hslider("[3] Rate Z [unit:Hz] [style:knob]", 0.34, 0.01, 2, 0.01);
+    // Global depth for the synthetic motion (g).
+    depth = hslider("[4] Motion Depth [style:knob]", 0.6, 0, 1, 0.001);
+    // Manual per-axis biases (g).
+    axManual = hslider("[5] Axis X Offset [unit:g] [style:knob]", 0, -1, 1, 0.001);
+    ayManual = hslider("[6] Axis Y Offset [unit:g] [style:knob]", 0, -1, 1, 0.001);
+    azManual = hslider("[7] Axis Z Offset [unit:g] [style:knob]", 0, -1, 1, 0.001);
+    // Effective axes: manual bias plus optional synthetic motion waveforms.
+    ax = axManual + (autoMotion : *(os.sawtooth(rateX) * depth));
+    ay = ayManual + (autoMotion : *(os.triangle(rateY) * depth));
+    az = azManual + (autoMotion : *(os.sawtooth(rateZ) * depth));
+    // Envelope detector controls: threshold, gain, attack, release.
+    thr = hslider("[8] Threshold [style:knob]", 0.1, 0, 1, 0.01);
+    gain = hslider("[9] Gain [style:knob]", 1.35, 0, 5, 0.01);
+    envUp = hslider("[10] Attack [unit:ms] [style:knob]", 10, 0, 5000, 1);
+    envDown = hslider("[11] Release [unit:ms] [style:knob]", 10, 0, 5000, 1);
+    // Envelope driven by total acceleration magnitude.
+    env = mo.totalAccel(thr, gain, envUp, envDown, ax, ay, az);
+    // Base saw tone scaled by the envelope.
+    baseTone = os.sawtooth(110) * 0.1;
+    outSig = env * baseTone;
+};
+
+//-----------------`(dm.)orientation6_demo`--------------------
+// Six-axis orientation weights mapped to six tonal channels. UI:
+//
+// - [Auto Orbit] + [Orbit Rate]/[Depth] synthesize a 3D path; X/Y/Z knobs add offsets.
+// - Six [Shape ...] knobs tighten/loosen each face’s lobe.
+// - [Smooth] sets response time.
+// - Each weight drives a distinct tone channel.
+//
+// #### Usage
+//
+// ```
+// orientation6_demo : _,_,_,_,_,_
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// orientation6_demo_test = dm.orientation6_demo;
+// ```
+//-------------------------------------------------
+orientation6_demo = demoGroup(weightedTones)
+with {
+    // Group the controls under a titled UI folder.
+    demoGroup(x) = vgroup("[3] Orientation6 Demo", x);
+    // Checkbox to auto-orbit in 3D space.
+    autoOrbit = checkbox("[0] Auto Orbit");
+    // Orbit speed (Hz) for the synthetic path.
+    orbitRate = hslider("[1] Orbit Rate [unit:Hz] [style:knob]", 0.05, 0.005, 0.2, 0.005);
+    // Manual XYZ offsets (-1..1) applied to the orientation vector.
+    manualX = hslider("[2] X [style:knob]", 0, -1, 1, 0.001);
+    manualY = hslider("[3] Y [style:knob]", 0, -1, 1, 0.001);
+    manualZ = hslider("[4] Z [style:knob]", 0, -1, 1, 0.001);
+    // Depth of the synthetic orbit modulation.
+    orbitDepth = hslider("[5] Orbit Depth [style:knob]", 0.6, 0, 1, 0.001);
+    // Effective orientation vector: manual offsets plus optional auto orbit waveforms.
+    xs = manualX + (autoOrbit : *(os.oscsin(orbitRate) * orbitDepth));
+    ys = manualY + (autoOrbit : *(os.sawtooth(orbitRate * 0.7) * orbitDepth));
+    zs = manualZ + (autoOrbit : *(os.triangle(orbitRate * 0.5) * orbitDepth));
+    // Per-face shape controls to widen/tighten each lobe (-X, -Y, +X, +Y, -Z, +Z).
+    shapeCour = hslider("[6] Shape Cour [style:knob]", 1, 0, 4, 0.01);
+    shapeRear = hslider("[7] Shape Rear [style:knob]", 1, 0, 4, 0.01);
+    shapeJardin = hslider("[8] Shape Jardin [style:knob]", 1, 0, 4, 0.01);
+    shapeFront = hslider("[9] Shape Front [style:knob]", 1, 0, 4, 0.01);
+    shapeDown = hslider("[10] Shape Down [style:knob]", 1, 0, 4, 0.01);
+    shapeUp = hslider("[11] Shape Up [style:knob]", 1, 0, 4, 0.01);
+    // Smoothing time (ms) for the six weights.
+    smoothMs = hslider("[12] Smooth [unit:ms] [style:knob]", 10, 0, 200, 1);
+    // Six weights computed from orientation and per-face shapes.
+    weights = mo.orientation6(xs, ys, zs, shapeCour, shapeRear, shapeJardin, shapeFront, shapeDown, shapeUp, smoothMs);
+    // Each weight drives its own tone channel.
+    weightedTones = weights :> par(i,6, *(os.oscsin(120 * (i + 1)) * 0.1));
+};
+
+//-----------------`(dm.)motion_wrapper_demo`--------------------
+// End-to-end motion feature monitor built on motion.lib:
+//
+// - Ingests six 3-axis IMUs (left arm, feet, back, right arm, head, stomach).
+// - Derives shock triggers, inclinometers, projected gravity, accel/gyro envelopes,
+//   six-face orientation weights per sensor, and raw/scaled axis taps.
+// - Exposes 92 outputs matching the motion.lib signal names, each gated by
+//   its own checkbox: an output whose checkbox is off is 0.
+//
+// The 18 inputs are, in order: `leftArm_x`, `leftArm_y`, `leftArm_z`,
+// `feet_x`, `feet_y`, `feet_z`, `back_x`, `back_y`, `back_z`,
+// `rightArm_x`, `rightArm_y`, `rightArm_z`, `head_x`, `head_y`, `head_z`,
+// `stomach_x`, `stomach_y`, `stomach_z`.
+//
+// #### Usage
+//
+// ```
+// si.bus(18) : motion_wrapper_demo : si.bus(92)
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// motion_wrapper_demo_test = dm.motion_wrapper_demo;
+// ```
+//-------------------------------------------------
+motion_wrapper_demo = demoGroup(wrapperGraph)
+with {
+    // Group controls under a dedicated demo folder.
+    demoGroup(x) = vgroup("[4] Motion Wrapper Demo", x);
+
+    // Gate an output by its checkbox: 0 when the checkbox is off. A plain
+    // select2 rather than the enable primitive, so that a disabled output
+    // is 0 with every compiler and backend.
+    gate(on) = select2(on, 0, _);
+
+    // Sensor inputs
+    accX = hslider("acc_x [acc:0 0 -30 0 30][hidden:1]", 0, -1, 1, 0.001);
+    accY = hslider("acc_y [acc:1 0 -30 0 30][hidden:1]", 0, -1, 1, 0.001);
+    accZ = hslider("acc_z [acc:2 0 -30 0 30][hidden:1]", 0, -1, 1, 0.001);
+    accXEnv = accX : fi.dcblockerat(12);
+    accYEnv = accY : fi.dcblockerat(12);
+    accZEnv = accZ : fi.dcblockerat(12);
+
+    gyroX = hslider("gx [gyr:0 0 -35 0 35][hidden:1]", 0, -1, 1, 0.001) : si.smoo;
+    gyroY = hslider("gy [gyr:1 0 -35 0 35][hidden:1]", 0, -1, 1, 0.001) : si.smoo;
+    gyroZ = hslider("gz [gyr:2 0 -35 0 35][hidden:1]", 0, -1, 1, 0.001) : si.smoo;
+
+    // Parameters
+    hpHz = hslider("[101]hp_Param [showName:highPass]", 50, 1, 50, 0.01);
+    shockThreshold = hslider("[102]shock_threshold_Param [showName:shockThreshold]", 0.75, 0.1, 3, 0.01);
+    debounceMs = hslider("[103]debounce_Param [showName:debounce][unit:ms]", 75, 0, 5000, 1);
+
+    lpHz = hslider("[104]lp_Param [showName:lowPass]", 1.5, 0.1, 20, 0.01);
+    offsetProjection = hslider("[105]offsetProjection_Param [showName:offsetProjection]", 0.08, 0, 0.33, 0.01);
+
+    accelThreshold = hslider("[106]accel_threshold_Param [showName:accelThreshold]", 0.1, 0, 1, 0.01);
+    accelGain = hslider("[107]accel_gain_Param [showName:accelGain]", 1.35, 0, 5, 0.01);
+    accelRiseMs = hslider("[108]accel_rise_Param [showName:accelRise][unit:ms]", 10, 0, 5000, 1);
+    accelFallMs = hslider("[109]accel_fall_Param [showName:accelFall][unit:ms]", 10, 0, 5000, 1);
+
+    gyroThreshold = hslider("[110]gyro_threshold_Param [showName:gyroThreshold]", 0.01, 0, 1, 0.001);
+    gyroGain = hslider("[111]gyro_gain_Param [showName:gyroGain]", 0.79, 0, 5, 0.01);
+    gyroRiseMs = hslider("[112]gyro_rise_Param [showName:gyroRise][unit:ms]", 50, 0, 5000, 1);
+    gyroFallMs = hslider("[113]gyro_fall_Param [showName:gyroFall][unit:ms]", 50, 0, 5000, 1);
+
+    shapeStageLeft = hslider("[114]shapeStageLeft_Param [showName:shapeStageLeft]", 1, 0, 100, 0.01);
+    shapeRear = hslider("[115]shapeRear_Param [showName:shapeRear]", 1, 0, 100, 0.01);
+    shapeStageRight = hslider("[116]shapeStageRight_Param [showName:shapeStageRight]", 1, 0, 100, 0.01);
+    shapeFront = hslider("[117]shapeFront_Param [showName:shapeFront]", 1, 0, 100, 0.01);
+    shapeDown = hslider("[118]shapeDown_Param [showName:shapeDown]", 1, 0, 100, 0.01);
+    shapeUp = hslider("[119]shapeUp_Param [showName:shapeUp]", 1, 0, 100, 0.01);
+    orientSmoothMs = hslider("[120]orientSmooth_Param [showName:orientSmooth][unit:ms]", 10, 0, 500, 1);
+
+    // Derived signals using motion.lib helpers
+    shockPos(sig) = mo.shockTrigger(hpHz, shockThreshold, debounceMs, sig:max(0));
+    shockNeg(sig) = mo.shockTrigger(hpHz, shockThreshold, debounceMs, sig * (-1):max(0));
+    sxp = shockPos(accX); syp = shockPos(accY); szp = shockPos(accZ);
+    sxn = shockNeg(accX); syn = shockNeg(accY); szn = shockNeg(accZ);
+
+    ixp = mo.inclinometer(lpHz, accX);
+    iyp = mo.inclinometer(lpHz, accY);
+    izp = mo.inclinometer(lpHz, accZ);
+    ixn = mo.inclinometer(lpHz, accX * (-1));
+    iyn = mo.inclinometer(lpHz, accY * (-1));
+    izn = mo.inclinometer(lpHz, accZ * (-1));
+
+    ixpn = mo.inclineBalance(lpHz, accX, accX * (-1));
+    iypn = mo.inclineBalance(lpHz, accY, accY * (-1));
+    izpn = mo.inclineBalance(lpHz, accZ, accZ * (-1));
+    ixpn_sym = mo.inclineSymmetric(lpHz, accX, accX * (-1));
+    iypn_sym = mo.inclineSymmetric(lpHz, accY, accY * (-1));
+    izpn_sym = mo.inclineSymmetric(lpHz, accZ, accZ * (-1));
+
+    pixp = mo.projectedGravity(lpHz, offsetProjection, accX);
+    piyp = mo.projectedGravity(lpHz, offsetProjection, accY);
+    pizp = mo.projectedGravity(lpHz, offsetProjection, accZ);
+    pixn = mo.projectedGravity(lpHz, offsetProjection, accX * (-1));
+    piyn = mo.projectedGravity(lpHz, offsetProjection, accY * (-1));
+    pizn = mo.projectedGravity(lpHz, offsetProjection, accZ * (-1));
+
+    axpn = mo.accelEnvelopeAbs(accelThreshold, accelGain, accelRiseMs, accelFallMs, accXEnv);
+    aypn = mo.accelEnvelopeAbs(accelThreshold, accelGain, accelRiseMs, accelFallMs, accYEnv);
+    azpn = mo.accelEnvelopeAbs(accelThreshold, accelGain, accelRiseMs, accelFallMs, accZEnv);
+    axp = mo.accelEnvelopePos(accelThreshold, accelGain, accelRiseMs, accelFallMs, accXEnv);
+    ayp = mo.accelEnvelopePos(accelThreshold, accelGain, accelRiseMs, accelFallMs, accYEnv);
+    azp = mo.accelEnvelopePos(accelThreshold, accelGain, accelRiseMs, accelFallMs, accZEnv);
+    axn = mo.accelEnvelopeNeg(accelThreshold, accelGain, accelRiseMs, accelFallMs, accXEnv);
+    ayn = mo.accelEnvelopeNeg(accelThreshold, accelGain, accelRiseMs, accelFallMs, accYEnv);
+    azn = mo.accelEnvelopeNeg(accelThreshold, accelGain, accelRiseMs, accelFallMs, accZEnv);
+    totalaccel = mo.totalAccel(accelThreshold, accelGain, accelRiseMs, accelFallMs, accXEnv, accYEnv, accZEnv);
+
+    gxpn = mo.gyroEnvelopeAbs(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroX);
+    gypn = mo.gyroEnvelopeAbs(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroY);
+    gzpn = mo.gyroEnvelopeAbs(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroZ);
+    gxp = mo.gyroEnvelopePos(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroX);
+    gyp = mo.gyroEnvelopePos(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroY);
+    gzp = mo.gyroEnvelopePos(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroZ);
+    gxn = mo.gyroEnvelopeNeg(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroX);
+    gyn = mo.gyroEnvelopeNeg(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroY);
+    gzn = mo.gyroEnvelopeNeg(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroZ);
+    totalgyro = mo.totalGyro(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroX, gyroY, gyroZ);
+    gyro_xy = mo.totalEnvelope(gyroThreshold, gyroGain, gyroRiseMs, gyroFallMs, gyroX, gyroY, 0);
+
+    orient(xs, ys, zs) = mo.orientation6(xs, ys, zs,
+                                         shapeStageLeft, shapeRear, shapeStageRight, shapeFront, shapeDown, shapeUp,
+                                         orientSmoothMs);
+    orientStageLeft(xs, ys, zs) = orient(xs, ys, zs) : _,!,!,!,!,!;
+    orientRear(xs, ys, zs) = orient(xs, ys, zs) : !,_,!,!,!,!;
+    orientStageRight(xs, ys, zs) = orient(xs, ys, zs) : !,!,_,!,!,!;
+    orientFront(xs, ys, zs) = orient(xs, ys, zs) : !,!,!,_,!,!;
+    orientDown(xs, ys, zs) = orient(xs, ys, zs) : !,!,!,!,_,!;
+    orientUp(xs, ys, zs) = orient(xs, ys, zs) : !,!,!,!,!,_;
+
+    wrapperGraph(leftArm_x, leftArm_y, leftArm_z,
+                 feet_x, feet_y, feet_z,
+                 back_x, back_y, back_z,
+                 rightArm_x, rightArm_y, rightArm_z,
+                 head_x, head_y, head_z,
+                 stomach_x, stomach_y, stomach_z) =
+      vgroup("Motion",
+        (sxp : gate(checkbox("[00]sxpOn [motionName:sxp]")) ),
+        (syp : gate(checkbox("[01]sypOn [motionName:syp]")) ),
+        (szp : gate(checkbox("[02]szpOn [motionName:szp]")) ),
+        (sxn : gate(checkbox("[03]sxnOn [motionName:sxn]")) ),
+        (syn : gate(checkbox("[04]synOn [motionName:syn]")) ),
+        (szn : gate(checkbox("[05]sznOn [motionName:szn]")) ),
+        (ixp : gate(checkbox("[06]ixpOn [motionName:ixp]")) ),
+        (iyp : gate(checkbox("[07]iypOn [motionName:iyp]")) ),
+        (izp : gate(checkbox("[08]izpOn [motionName:izp]")) ),
+        (ixn : gate(checkbox("[09]ixnOn [motionName:ixn]")) ),
+        (iyn : gate(checkbox("[10]iynOn [motionName:iyn]")) ),
+        (izn : gate(checkbox("[11]iznOn [motionName:izn]")) ),
+        (pixp : gate(checkbox("[12]pixpOn [motionName:pixp]")) ),
+        (piyp : gate(checkbox("[13]piypOn [motionName:piyp]")) ),
+        (pizp : gate(checkbox("[14]pizpOn [motionName:pizp]")) ),
+        (pixn : gate(checkbox("[15]pixnOn [motionName:pixn]")) ),
+        (piyn : gate(checkbox("[16]piynOn [motionName:piyn]")) ),
+        (pizn : gate(checkbox("[17]piznOn [motionName:pizn]")) ),
+        (axpn : gate(checkbox("[18]axpnOn [motionName:axpn]")) ),
+        (aypn : gate(checkbox("[19]aypnOn [motionName:aypn]")) ),
+        (azpn : gate(checkbox("[20]azpnOn [motionName:azpn]")) ),
+        (axp : gate(checkbox("[21]axpOn [motionName:axp]")) ),
+        (ayp : gate(checkbox("[22]aypOn [motionName:ayp]")) ),
+        (azp : gate(checkbox("[23]azpOn [motionName:azp]")) ),
+        (axn : gate(checkbox("[24]axnOn [motionName:axn]")) ),
+        (ayn : gate(checkbox("[25]aynOn [motionName:ayn]")) ),
+        (azn : gate(checkbox("[26]aznOn [motionName:azn]")) ),
+        (totalaccel : gate(checkbox("[27]totalaccelOn [motionName:totalaccel]")) ),
+        (gxpn : gate(checkbox("[28]gxpnOn [motionName:gxpn]")) ),
+        (gypn : gate(checkbox("[29]gypnOn [motionName:gypn]")) ),
+        (gzpn : gate(checkbox("[30]gzpnOn [motionName:gzpn]")) ),
+        (gxp : gate(checkbox("[31]gxpOn [motionName:gxp]")) ),
+        (gyp : gate(checkbox("[32]gypOn [motionName:gyp]")) ),
+        (gzp : gate(checkbox("[33]gzpOn [motionName:gzp]")) ),
+        (gxn : gate(checkbox("[34]gxnOn [motionName:gxn]")) ),
+        (gyn : gate(checkbox("[35]gynOn [motionName:gyn]")) ),
+        (gzn : gate(checkbox("[36]gznOn [motionName:gzn]")) ),
+        (totalgyro : gate(checkbox("[37]totalgyroOn [motionName:totalgyro]")) ),
+
+        (leftArm_stageLeft : gate(checkbox("[38]leftArm_stageLeftOn [motionName:leftArm_stageLeft]")) ),
+        (leftArm_rear : gate(checkbox("[39]leftArm_rearOn [motionName:leftArm_rear]")) ),
+        (leftArm_stageRight : gate(checkbox("[40]leftArm_stageRightOn [motionName:leftArm_stageRight]")) ),
+        (leftArm_front : gate(checkbox("[41]leftArm_frontOn [motionName:leftArm_front]")) ),
+        (leftArm_down : gate(checkbox("[42]leftArm_downOn [motionName:leftArm_down]")) ),
+        (leftArm_up : gate(checkbox("[43]leftArm_upOn [motionName:leftArm_up]")) ),
+
+        (feet_stageLeft : gate(checkbox("[44]feet_stageLeftOn [motionName:feet_stageLeft]")) ),
+        (feet_rear : gate(checkbox("[45]feet_rearOn [motionName:feet_rear]")) ),
+        (feet_stageRight : gate(checkbox("[46]feet_stageRightOn [motionName:feet_stageRight]")) ),
+        (feet_front : gate(checkbox("[47]feet_frontOn [motionName:feet_front]")) ),
+        (feet_down : gate(checkbox("[48]feet_downOn [motionName:feet_down]")) ),
+        (feet_up : gate(checkbox("[49]feet_upOn [motionName:feet_up]")) ),
+
+        (back_stageLeft : gate(checkbox("[50]back_stageLeftOn [motionName:back_stageLeft]")) ),
+        (back_rear : gate(checkbox("[51]back_rearOn [motionName:back_rear]")) ),
+        (back_stageRight : gate(checkbox("[52]back_stageRightOn [motionName:back_stageRight]")) ),
+        (back_front : gate(checkbox("[53]back_frontOn [motionName:back_front]")) ),
+        (back_down : gate(checkbox("[54]back_downOn [motionName:back_down]")) ),
+        (back_up : gate(checkbox("[55]back_upOn [motionName:back_up]")) ),
+
+        (rightArm_stageLeft : gate(checkbox("[56]rightArm_stageLeftOn [motionName:rightArm_stageLeft]")) ),
+        (rightArm_rear : gate(checkbox("[57]rightArm_rearOn [motionName:rightArm_rear]")) ),
+        (rightArm_stageRight : gate(checkbox("[58]rightArm_stageRightOn [motionName:rightArm_stageRight]")) ),
+        (rightArm_front : gate(checkbox("[59]rightArm_frontOn [motionName:rightArm_front]")) ),
+        (rightArm_down : gate(checkbox("[60]rightArm_downOn [motionName:rightArm_down]")) ),
+        (rightArm_up : gate(checkbox("[61]rightArm_upOn [motionName:rightArm_up]")) ),
+
+        (head_stageLeft : gate(checkbox("[62]head_stageLeftOn [motionName:head_stageLeft]")) ),
+        (head_rear : gate(checkbox("[63]head_rearOn [motionName:head_rear]")) ),
+        (head_stageRight : gate(checkbox("[64]head_stageRightOn [motionName:head_stageRight]")) ),
+        (head_front : gate(checkbox("[65]head_frontOn [motionName:head_front]")) ),
+        (head_down : gate(checkbox("[66]head_downOn [motionName:head_down]")) ),
+        (head_up : gate(checkbox("[67]head_upOn [motionName:head_up]")) ),
+
+        (stomach_stageLeft : gate(checkbox("[68]stomach_stageLeftOn [motionName:stomach_stageLeft]")) ),
+        (stomach_rear : gate(checkbox("[69]stomach_rearOn [motionName:stomach_rear]")) ),
+        (stomach_stageRight : gate(checkbox("[70]stomach_stageRightOn [motionName:stomach_stageRight]")) ),
+        (stomach_front : gate(checkbox("[71]stomach_frontOn [motionName:stomach_front]")) ),
+        (stomach_down : gate(checkbox("[72]stomach_downOn [motionName:stomach_down]")) ),
+        (stomach_up : gate(checkbox("[73]stomach_upOn [motionName:stomach_up]")) ),
+
+        (ixpn : gate(checkbox("[74]ixpnOn [motionName:ixpn]")) ),
+        (iypn : gate(checkbox("[75]iypnOn [motionName:iypn]")) ),
+        (izpn : gate(checkbox("[76]izpnOn [motionName:izpn]")) ),
+        (ixpn_sym : gate(checkbox("[77]ixpn_symOn [motionName:ixpn_sym]")) ),
+        (iypn_sym : gate(checkbox("[78]iypn_symOn [motionName:iypn_sym]")) ),
+        (izpn_sym : gate(checkbox("[79]izpn_symOn [motionName:izpn_sym]")) ),
+        (back_x_scaled : gate(checkbox("[80]back_x_scaledOn [motionName:back_x_scaled]")) ),
+        (back_y_scaled : gate(checkbox("[81]back_y_scaledOn [motionName:back_y_scaled]")) ),
+        (back_x : gate(checkbox("[82]back_xOn [motionName:back_x]")) ),
+        (back_y : gate(checkbox("[83]back_yOn [motionName:back_y]")) ),
+        (back_z : gate(checkbox("[84]back_zOn [motionName:back_z]")) ),
+        (head_x : gate(checkbox("[85]head_xOn [motionName:head_x]")) ),
+        (head_y : gate(checkbox("[86]head_yOn [motionName:head_y]")) ),
+        (head_z : gate(checkbox("[87]head_zOn [motionName:head_z]")) ),
+        (leftArm_x : gate(checkbox("[88]leftArm_xOn [motionName:leftArm_x]")) ),
+        (leftArm_y : gate(checkbox("[89]leftArm_yOn [motionName:leftArm_y]")) ),
+        (leftArm_z : gate(checkbox("[90]leftArm_zOn [motionName:leftArm_z]")) ),
+        (gyro_xy : gate(checkbox("[91]gyro_xyOn [motionName:gyro_xy]")) )
+      )
+    with {
+        leftArm_stageLeft = orientStageLeft(leftArm_x, leftArm_y, leftArm_z);
+        leftArm_rear = orientRear(leftArm_x, leftArm_y, leftArm_z);
+        leftArm_stageRight = orientStageRight(leftArm_x, leftArm_y, leftArm_z);
+        leftArm_front = orientFront(leftArm_x, leftArm_y, leftArm_z);
+        leftArm_down = orientDown(leftArm_x, leftArm_y, leftArm_z);
+        leftArm_up = orientUp(leftArm_x, leftArm_y, leftArm_z);
+
+        feet_stageLeft = orientStageLeft(feet_x, feet_y, feet_z);
+        feet_rear = orientRear(feet_x, feet_y, feet_z);
+        feet_stageRight = orientStageRight(feet_x, feet_y, feet_z);
+        feet_front = orientFront(feet_x, feet_y, feet_z);
+        feet_down = orientDown(feet_x, feet_y, feet_z);
+        feet_up = orientUp(feet_x, feet_y, feet_z);
+
+        back_stageLeft = orientStageLeft(back_x, back_y, back_z);
+        back_rear = orientRear(back_x, back_y, back_z);
+        back_stageRight = orientStageRight(back_x, back_y, back_z);
+        back_front = orientFront(back_x, back_y, back_z);
+        back_down = orientDown(back_x, back_y, back_z);
+        back_up = orientUp(back_x, back_y, back_z);
+
+        rightArm_stageLeft = orientStageLeft(rightArm_x, rightArm_y, rightArm_z);
+        rightArm_rear = orientRear(rightArm_x, rightArm_y, rightArm_z);
+        rightArm_stageRight = orientStageRight(rightArm_x, rightArm_y, rightArm_z);
+        rightArm_front = orientFront(rightArm_x, rightArm_y, rightArm_z);
+        rightArm_down = orientDown(rightArm_x, rightArm_y, rightArm_z);
+        rightArm_up = orientUp(rightArm_x, rightArm_y, rightArm_z);
+
+        head_stageLeft = orientStageLeft(head_x, head_y, head_z);
+        head_rear = orientRear(head_x, head_y, head_z);
+        head_stageRight = orientStageRight(head_x, head_y, head_z);
+        head_front = orientFront(head_x, head_y, head_z);
+        head_down = orientDown(head_x, head_y, head_z);
+        head_up = orientUp(head_x, head_y, head_z);
+
+        stomach_stageLeft = orientStageLeft(stomach_x, stomach_y, stomach_z);
+        stomach_rear = orientRear(stomach_x, stomach_y, stomach_z);
+        stomach_stageRight = orientStageRight(stomach_x, stomach_y, stomach_z);
+        stomach_front = orientFront(stomach_x, stomach_y, stomach_z);
+        stomach_down = orientDown(stomach_x, stomach_y, stomach_z);
+        stomach_up = orientUp(stomach_x, stomach_y, stomach_z);
+
+        back_x_scaled = (back_x * (-0.5) + 0.5) : mo.scale(0.2, 0.8, 0, 1);
+        back_y_scaled = (back_y * (-0.5) + 0.5) : mo.scale(0.2, 0.8, 0, 1);
+    };
+};
+
+//====================================Hysteresis==========================================
+//========================================================================================
+
+//----------------------------`(dm.)ja_transformer_demo`-----------------------------
+// Magnetic transformer saturation demo using Jiles-Atherton hysteresis.
+// Stereo processor with Pre-EQ, J-A hysteresis core, and inverse Post-EQ.
+//
+// #### Usage
+//
+// ```
+// _,_ : ja_transformer_demo : _,_
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// no = library("noises.lib");
+// stereoNoise = no.noise, no.noise;
+// ja_transformer_demo_test = stereoNoise : dm.ja_transformer_demo;
+// ```
+//------------------------------------------------------------
+declare ja_transformer_demo author "Thomas Mandolini";
+declare ja_transformer_demo licence "LGPL-2.1-only";
+
+ja_transformer_demo = par(i, 2, transformer)
+with {
+    // UI Groups
+    ui(x) = vgroup("[0]J-A TRANSFORMER", x);
+    top_row(x) = ui(hgroup("[1]EQ & CORE", x));
+    pre_eq_group(x) = top_row(hgroup("[0]Pre-EQ", x));
+    ja_group(x) = top_row(hgroup("[1]Core Material", x));
+    drive_group(x) = ui(hgroup("[2]Drive and Mix", x));
+
+    // Pre-EQ Controls
+    ls_freq = pre_eq_group(vslider("[0]LS Freq", 80, 20, 400, 1));
+    ls_gain = pre_eq_group(vslider("[1]LS Gain dB", 0, -12, 12, 0.1));
+    mid_freq = pre_eq_group(vslider("[2]Mid Freq", 1500, 200, 8000, 10));
+    mid_q = pre_eq_group(vslider("[3]Mid Q", 0.38, 0.3, 3.0, 0.01));
+    mid_gain = pre_eq_group(vslider("[4]Mid Gain dB", 0, -12, 12, 0.1));
+    hs_freq = pre_eq_group(vslider("[5]HS Freq", 12000, 2000, 20000, 100));
+    hs_gain = pre_eq_group(vslider("[6]HS Gain dB", 0, -12, 12, 0.1));
+    eq_scale = pre_eq_group(vslider("[7]EQ Scale %", 100, 0, 200, 1)) / 100.0;
+
+    // J-A Core Controls
+    a_param = ja_group(vslider("[0]Anhysteretic a", 720, 100, 2000, 1));
+    k_param = ja_group(vslider("[1]Coercivity k", 380, 50, 1000, 1));
+    alpha_param = ja_group(vslider("[2]Alpha coupling", 0.015, 0.001, 0.1, 0.001));
+    c_param = ja_group(vslider("[3]Reversibility c", 0.25, 0.0, 1.0, 0.01));
+
+    // Drive and Mix Controls
+    input_gain = drive_group(vslider("[0]Input Gain dB", 0, -20, 20, 0.1)) : ba.db2linear;
+    ja_calibration = drive_group(vslider("[1]JA Calibration dB", -50, -60, 60, 0.1)) : ba.db2linear;
+    saturation_drive = drive_group(vslider("[2]Drive", 0, -50, 50, 0.1)) : ba.db2linear : si.smoo;
+    Ms = drive_group(vslider("[3]Saturation", 380, 100, 1000, 1)) : si.smoo;
+    drive_comp = 1.0 / max(0.001, saturation_drive);
+    ja_norm = a_param / max(0.01, c_param * Ms);
+    ja_trim = drive_group(vslider("[4]Output Trim dB", 0, -20, 20, 0.1)) : ba.db2linear;
+    inverse_amt = drive_group(vslider("[5]Inverse EQ %", 100, 0, 100, 1)) / 100.0;
+    mix = drive_group(vslider("[6]Wet/Dry Mix", 100, 0, 100, 1)) / 100.0;
+    output_gain = drive_group(vslider("[7]Output Gain dB", 0, -20, 20, 0.1)) : ba.db2linear;
+
+    // EQ Processors
+    ls_gain_scaled = ls_gain * eq_scale;
+    mid_gain_scaled = mid_gain * eq_scale;
+    hs_gain_scaled = hs_gain * eq_scale;
+    ls_gain_inv = -ls_gain_scaled * inverse_amt;
+    mid_gain_inv = -mid_gain_scaled * inverse_amt;
+    hs_gain_inv = -hs_gain_scaled * inverse_amt;
+
+    pre_eq = fi.svf.ls(ls_freq, 0.707, ls_gain_scaled)
+           : fi.svf.bell(mid_freq, mid_q, mid_gain_scaled)
+           : fi.svf.hs(hs_freq, 0.707, hs_gain_scaled);
+
+    post_eq = fi.svf.ls(ls_freq, 0.707, ls_gain_inv)
+            : fi.svf.bell(mid_freq, mid_q, mid_gain_inv)
+            : fi.svf.hs(hs_freq, 0.707, hs_gain_inv);
+
+    dc_blocker = fi.SVFTPT.HP2(7.0, 0.7071);
+
+    // Signal flow: EQ shaping → drive into saturation → J-A hysteresis → normalize → inverse EQ
+    input_stage = *(input_gain);
+    wet_chain = pre_eq
+              : *(saturation_drive)
+              : *(ja_calibration)
+              : hy.ja_hysteresis(Ms, a_param, alpha_param, k_param, c_param)
+              : *(ja_norm)
+              : dc_blocker
+              : *(ja_trim)
+              : *(drive_comp)
+              : /(ja_calibration)
+              : post_eq;
+    dry_chain = _;
+    mix_stage = _ <: (wet_chain : _ * mix), (dry_chain : _ * (1.0 - mix)) :> _;
+    output_stage = _ * output_gain;
+
+    transformer = input_stage : mix_stage : output_stage;
+};
+
 // end further contributions section
+
+//====================================Pink Trombone======================================
+//========================================================================================
+
+//----------------------------`(dm.)pink_trombone_demo`----------------------------------
+// Neil Thapen's Pink Trombone vocal-tract synthesiser (see `pinktrombone.lib`) with its
+// original controls: voicebox (pitch, tenseness, always voice, pitch wobble), tract
+// (tongue index/diameter, nasal) and two independent constrictions (index, diameter, active).
+// As in the original, "always voice" is on by default, so the demo speaks on start-up.
+//
+// #### Usage
+//
+// ```
+// pink_trombone_demo : _
+// ```
+//
+// #### Test
+// ```
+// dm = library("demos.lib");
+// pink_trombone_demo_test = dm.pink_trombone_demo;
+// ```
+//------------------------------------------------------------
+declare pink_trombone_demo author "David Braun";
+declare pink_trombone_demo license "MIT";
+
+pink_trombone_demo = hgroup("[0] Pink Trombone",
+    pt.pinkTrombone2(freq, tenseness, voiced, wobble, tongueIndex, tongueDiameter,
+                  cIndex, cDiameter, cActive, c2Index, c2Diameter, c2Active, nasal)
+)
+with {
+    vb(x) = vgroup("[0] voicebox", x);
+    tr(x) = vgroup("[1] tract", x);
+    cs(x) = vgroup("[2] constriction", x);
+    // keyboard: baseNote F2 = 87.3071 Hz, 20 semitones
+    semitone = vb(hslider("[0] pitch [unit:semitones][style:knob]", 9, 0, 20, 0.01));
+    freq = 87.3071*pow(2, semitone/12);
+    tenseness = vb(hslider("[1] tenseness [style:knob]", 0.6, 0, 1, 0.001));
+    // on by default, as in the original (`alwaysVoice = true`); a checkbox
+    // cannot default to 1
+    voiced = vb(nentry("[2] always voice [style:menu{'off':0;'on':1}]", 1, 0, 1, 1));
+    wobble = vb(checkbox("[3] pitch wobble"));
+    tongueIndex = tr(hslider("[0] tongue index [style:knob]", 12.9, 12, 29, 0.01));
+    tongueDiameter = tr(hslider("[1] tongue diameter [style:knob]", 2.43, 2.05, 3.5, 0.01));
+    nasal = tr(checkbox("[2] nasal (velum open)"));
+    cIndex = cs(hslider("[0] index [style:knob]", 30, 2, 44, 0.01));
+    cDiameter = cs(hslider("[1] diameter [style:knob]", 1.0, 0, 3, 0.01));
+    cActive = cs(checkbox("[2] active"));
+    cs2(x) = vgroup("[3] constriction 2", x);
+    c2Index = cs2(hslider("[0] index [style:knob]", 20, 2, 44, 0.01));
+    c2Diameter = cs2(hslider("[1] diameter [style:knob]", 1.0, 0, 3, 0.01));
+    c2Active = cs2(checkbox("[2] active"));
+};

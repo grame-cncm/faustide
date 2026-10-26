@@ -54,8 +54,8 @@ ba = library("basics.lib");
 declare name "Reduce Library";
 declare author "Yann Orlarey";
 declare copyright "Grame and Yann Orlarey";
-declare version "1.2.0";
-declare license "LGPL with exception"; 
+declare version "1.2.1";
+declare license "LicenseRef-LGPL-2.1-or-later-with-Faust-exception"; 
 
 //----------------------------`(rm.)parReduce`--------------------------------
 // `parReduce(op,N)` combines a set of `N` parallel signals into a single one
@@ -83,10 +83,8 @@ declare license "LGPL with exception";
 //
 // Where:
 //
-// * `op`: is a binary operation 
-// * `N`: is the number of incomming signals (`N>0`). We use a capital letter
-// here to indicate that the number of incomming signals must be constant and
-// known at compile time.
+// * `op`: binary reduction operation
+// * `N`: number of incoming signals (`N > 0`), known at compile time
 //
 // #### Test
 // ```
@@ -157,10 +155,8 @@ topReduce(op,N) = topReduce(op,N-1), par(i,outputs(op),_) : op;
 //
 // Where:
 //
-// * op: is a binary operation
-// * N: is the number of incomming signals (`N>0`). We use a capital letter
-// here to indicate that the number of incomming signals must be constant and
-// known at compile time.
+// * `op`: binary reduction operation
+// * `N`: number of incoming signals (`N > 0`), known at compile time
 //
 // #### Test
 // ```
@@ -195,7 +191,7 @@ botReduce(op,n) = par(i,outputs(op),_), botReduce(op,n-1) : op;
 // #### Test
 // ```
 // rm = library("reducemaps.lib");
-// reduce_test = rm.reduce(max, 4, hslider("reduce:input", 0, -1, 1, 0.01));
+// reduce_test = rm.reduce(max, 4, hslider("reduce:input", 0.5, -1, 1, 0.01));
 // ```
 //-----------------------------------------------------------------------------
 reduce(op, n, x) = compute ~ (_,_,_) : (!,!,_)
@@ -228,7 +224,7 @@ reduce(op, n, x) = compute ~ (_,_,_) : (!,!,_)
 // #### Test
 // ```
 // rm = library("reducemaps.lib");
-// reducemap_test = rm.reducemap(+, /(4), 4, hslider("reducemap:input", 0, -1, 1, 0.01));
+// reducemap_test = rm.reducemap(+, /(4), 4, hslider("reducemap:input", 0.5, -1, 1, 0.01));
 // ```
 //-----------------------------------------------------------------------------
 reducemap(op, foo, n, x) = compute ~ (_,_,_) : (!,!,_)
@@ -239,19 +235,39 @@ reducemap(op, foo, n, x) = compute ~ (_,_,_) : (!,!,_)
             ba.if(count<n, val, foo(acc));  // new val
     };
 
-// Some examples using `reduce`and `reducemap`
+//--------------`(rm.)sumn`, `(rm.)maxn`, `(rm.)minn`, `(rm.)mean`, `(rm.)RMS`--------------
+// Block-wise statistics of the input signal, built on `reduce` and
+// `reducemap`: for each block of `n` consecutive samples, output the sum
+// (`sumn`), the maximum (`maxn`), the minimum (`minn`), the average
+// (`mean`), or the root mean square (`RMS`) of the block.
 //
-// the sum of the amplitudes of the input signal
+// #### Usage
+//
+// ```
+// _ : sumn(n) : _
+// _ : maxn(n) : _
+// _ : minn(n) : _
+// _ : mean(n) : _
+// _ : RMS(n) : _
+// ```
+//
+// Where:
+//
+// * `n`: the block size in samples, an int > 0 known at compile time
+//
+// #### Test
+// ```
+// rm = library("reducemaps.lib");
+// os = library("oscillators.lib");
+// sumn_test = os.tosc(440) : rm.sumn(64);
+// maxn_test = os.tosc(440) : rm.maxn(64);
+// minn_test = os.tosc(440) : rm.minn(64);
+// mean_test = os.tosc(440) : rm.mean(64);
+// RMS_test = os.tosc(440) : rm.RMS(64);
+// ```
+//----------------------------------------------------------
 sumn(n) = reduce(+,n);
-
-// the maximum amplitude of the input signal
 maxn(n) = reduce(max,n);
-
-// the minimum amplitude of the input signal
 minn(n) = reduce(min,n);
-
-// the average amplitude of the input signal
 mean(n) = reducemap(+, /(n), n);
-
-// RMS
 RMS(n) = float : ^(2) : reducemap(+, (/(n):sqrt), n);

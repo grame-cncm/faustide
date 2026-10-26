@@ -1,12 +1,16 @@
 //#################################### spats.lib ##########################################
 // Spatialization (Spats) library. Its official prefix is `sp`.
 //
-// This library provides spatialization in Faust.
-// It includes panning and wfs algorithms.
+// This library provides spatialization in Faust: stereo and multichannel
+// amplitude panning, wave field synthesis and binaural rendering.
 //
-// The Spats library is organized into 1 section:
+// The Spats library is organized into 5 sections:
 //
-// * [Functions Reference](#functions-reference)
+// * [Stereo Panning](#stereo-panning)
+// * [Multichannel Amplitude Panning](#multichannel-amplitude-panning)
+// * [Wave Field Synthesis](#wave-field-synthesis)
+// * [Binaural Rendering](#binaural-rendering)
+// * [Utilities](#utilities)
 //
 // #### References
 //
@@ -52,9 +56,12 @@ fi = library("filters.lib");
 de = library("delays.lib");
 
 declare name "Faust Spatialization Library";
-declare version "1.2.0";
+declare version "1.3.3";
 
-//=============================Functions Reference========================================
+//=====================================Stereo Panning=====================================
+// Placing a mono source, or balancing a stereo pair, between two loudspeakers
+// by amplitude: with a linear law (`panner`) or a constant-power law
+// (`constantPowerPan`).
 //========================================================================================
 
 //-----------------------`(sp.)panner`------------------------
@@ -69,13 +76,13 @@ declare version "1.2.0";
 //
 // Where:
 //
-// * `g`: the panning (0-1)
+// * `g`: the panning (0-1): 0 sends the input to the left (first) output, 1 to the right one; the gains are `1-g` and `g` (each -6 dB at 0.5)
 //
 // #### Test
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// panner_test = os.osc(220) : sp.panner(hslider("panner:pan", 0.3, 0, 1, 0.01));
+// panner_test = os.tosc(220) : sp.panner(hslider("panner:pan", 0.3, 0, 1, 0.01));
 // ```
 //------------------------------------------------------------
 panner(g) = _ <: *(1-g), *(g);
@@ -83,12 +90,33 @@ panner(g) = _ <: *(1-g), *(g);
 // TODO: need demo function for panner here
 
 
-//---------------`(sp.)constantPowerPan`----------------------
-// Apply the constant power pan rule to a stereo signal.
-// The channels are not respatialized. Their gains are simply
-// adjusted. A pan of 0 preserves the left channel and silences
-// the right channel. A pan of 1 has the opposite effect.
-// A pan value of 0.5 applies a gain of 0.5 to both channels. 
+//---------------`(sp.)constantPowerPan`---------------------------------------
+// Apply constant-power panning to a stereo signal. Each input channel's gain
+// is adjusted according to the pan position using a cosine/sine law: the left
+// input is scaled by cos(θ)/√2 and the right input by sin(θ)/√2, where
+// θ = π·p/2.
+//
+// #### Normalization
+//
+// A standard constant-power pan uses bare cos/sin gains, which peak at unity
+// (0 dB) when hard-panned and dip to 1/√2 (−3 dB) at center. This
+// implementation divides by √2, halving all gains:
+//
+// * `p = 0`  : left = 1/√2 ≈ 0.707 (−3 dB), right = 0
+// * `p = 0.5`: left = 0.5 (−6 dB),          right = 0.5 (−6 dB)
+// * `p = 1`  : left = 0,                    right = 1/√2 ≈ 0.707 (−3 dB)
+//
+// The /√2 factor makes the panner mono-safe: if the two output channels are
+// ever summed to mono, the worst case is center pan, where the mono signal
+// becomes 0.5*x + 0.5*y. Without the normalization, center pan would produce
+// ≈ 0.707*x + 0.707*y, which can clip with correlated or in-phase material.
+// More generally, the normalization guarantees that the sum of the two gains
+// never exceeds unity for any pan position:
+//
+//   gainLeft + gainRight = (cos θ + sin θ) / √2 ≤ 1
+//
+// This holds because cos θ + sin θ has a maximum of √2 (at θ = π/4), and
+// √2/√2 = 1. The total power is also constant at 0.5 for all pan positions.
 //
 // #### Usage
 //
@@ -104,11 +132,11 @@ panner(g) = _ <: *(1-g), *(g);
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// constantPowerPan_test = (os.osc(110), os.osc(220))
+// constantPowerPan_test = (os.tosc(110), os.tosc(220))
 //   : sp.constantPowerPan(hslider("constantPowerPan:pan", 0.4, 0, 1, 0.01));
 // ```
 //------------------------------------------------------------
-declare dryWetMixer author "David Braun";
+declare constantPowerPan author "David Braun";
 
 constantPowerPan(p, x, y) = x*gainLeft, y*gainRight
 with {
@@ -117,6 +145,13 @@ with {
     gainRight = sin(theta)/sqrt(2.);
 };
 
+
+//=============================Multichannel Amplitude Panning=============================
+// Distributing a mono source over `N` loudspeakers by amplitude, from its
+// direction: `spat` for loudspeakers evenly spaced on a circle, with a source
+// distance, and `spcap` for an arbitrary 2D layout, with a correction for the
+// speaker density.
+//========================================================================================
 
 //-----------------------`(sp.)spat`------------------------
 // GMEM SPAT: n-outputs spatializer.
@@ -138,7 +173,7 @@ with {
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// spat_test = os.osc(330)
+// spat_test = os.tosc(330)
 //   : sp.spat(4,
 //       hslider("spat:rotation", 0.25, 0, 1, 0.01),
 //       hslider("spat:distance", 0.5, 0, 1, 0.01));
@@ -152,6 +187,151 @@ with {
     * sqrt(max(0.0, 1.0 - abs(fmod(a+0.5+float(N-i)/N, 1.0) - 0.5) * N * d));
 };
 
+// TODO: need demo function of spat here
+
+
+//-----------------`(sp.)spcap`--------------------
+// Speaker-Placement Correction Amplitude Panning (SPCAP).
+//
+// SPCAP calculates panning gains for an arbitrary 2D loudspeaker 
+// layout by computing the angular distance between the virtual source 
+// and each speaker, and correcting for "speaker density" (groupings 
+// of speakers that would otherwise cause a volume imbalance).
+//
+// Important note on physical distance: this algorithm only handles spatial
+// distribution based on azimuth angles. It does not compensate for volume drops
+// or acoustic delays caused by uneven physical distances of the speakers from
+// the listener. In a complete DSP chain, distance correction must be applied
+// downstream from this algorithm, individually per channel, using a delay line
+// for time alignment and a static gain trim to equalize acoustic pressure.
+//
+// #### Usage
+//
+// ```
+// _ : spcap(N, alpha, th, theta_s) : si.bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of speakers (a constant numerical expression)
+// * `alpha`: panning sharpness/width (float signal, typical range 1.0 to 10.0)
+// * `th`: a function `th(i)` returning the physical azimuth angle of speaker `i` in radians
+// * `theta_s`: virtual source azimuth angle in radians (float signal)
+//
+// #### Test
+//
+// ```
+// sp = library("spats.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// spcap_spk_deg(0) = -135;
+// spcap_spk_deg(1) = -45;
+// spcap_spk_deg(2) = 45;
+// spcap_spk_deg(3) = 135;
+// spcap_spk_angle(i) = spcap_spk_deg(i) : ma.deg2rad;
+// spcap_test = os.tosc(440) : sp.spcap(4, 2.0, spcap_spk_angle, 0.0);
+// ```
+//
+// #### References
+//
+// * Ramy Sadek and Chris Kyriakakis, "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations", 2004. (DTIC Reference: ADA464895)
+// * <https://apps.dtic.mil/sti/tr/pdf/ADA464895.pdf>
+//------------------------------------------------------------
+
+declare spcap author "Gemini, revised by GRAME";
+declare spcap version "0.1";
+declare spcap license "MIT";
+
+spcap(N, alpha, th, theta_s) = _ <: par(i, N, *(g(i)))
+with {
+    // Helper: Wrap phase between -PI and PI
+    wrap_pi(x) = x - 2.0 * ma.PI * floor((x + ma.PI) / (2.0 * ma.PI));
+
+    // 1. Basic Amplitude Panning@
+    P(i) = max(0.0, cos(wrap_pi(theta_s - th(i)) / 2.0)) ^ alpha;
+
+    // 2. Density Factor (Placement Correction)
+    beta(i) = sum(j, N, max(0.0, cos(wrap_pi(th(i) - th(j)) / 2.0)) ^ alpha);
+
+    // 3. Correction Application (Basic Panning / Density)
+    G(i) = P(i) / max(0.0001, beta(i));
+
+    // 4. Power Normalization (Constant Power Rule)
+    total_power = sum(i, N, G(i)^2);
+    norm_factor = sqrt(total_power) + 0.000001;
+
+    // Final gain applied to speaker i
+    g(i) = G(i) / norm_factor;
+};
+
+
+//-----------------`(sp.)spcap_ui`--------------------
+// Speaker-Placement Correction Amplitude Panning with a built-in UI.
+// This is a convenience wrapper around `spcap` for interactive control of the
+// virtual source azimuth, the panning sharpness, and the physical azimuth of
+// each loudspeaker.
+//
+// UI controls: `SPCAP/pan_sharpness` is the panning sharpness parameter
+// `alpha` (higher values make the virtual source more focused around the
+// closest speakers); `SPCAP/source_angle` is the virtual source azimuth in
+// degrees, converted to radians before calling `spcap`;
+// `SPCAP/Speaker%2i/angle` is the physical azimuth of speaker `i` in degrees
+// (the default layout is a regular circular distribution centered in each
+// speaker sector, and can be edited from the UI).
+//
+// Use `spcap` directly when the source angle, speaker angles, or sharpness
+// parameter must be supplied by an existing DSP expression instead of UI
+// controls.
+//
+// #### Usage
+//
+// ```
+// _ : spcap_ui(N) : si.bus(N)
+// ```
+//
+// Where:
+//
+// * `N`: number of speakers (a constant numerical expression). The function has one
+//   input signal and produces `N` output signals, one per speaker
+//
+// #### Test
+//
+// ```
+// sp = library("spats.lib");
+// os = library("oscillators.lib");
+// spcap_ui_test = os.tosc(440) : sp.spcap_ui(4);
+// ```
+//
+// #### Example test program
+//
+// ```
+// import("stdfaust.lib");
+//
+// process = os.osc(440) : sp.spcap_ui(8);
+// ```
+//------------------------------------------------------------
+declare spcap_ui author "Gemini, revised by GRAME";
+declare spcap_ui version "0.1";
+declare spcap_ui license "MIT";
+
+spcap_ui(N) = spcap(N, alpha_ui, th_ui, theta_s_ui)
+with {
+    alpha_ui = hslider("v:SPCAP/pan_sharpness", 2.0, 1.0, 10.0, 0.1);
+    theta_s_ui = hslider("v:SPCAP/source_angle [unit:deg]", 0, -180, 180, 0.1)
+        : ma.deg2rad;
+
+    default_spk_deg(i) = -180.0 + 360.0 * (float(i) + 0.5) / float(N);
+    spk_deg(i) = hslider("v:SPCAP/v:Speaker%2i/angle [unit:deg]",
+                         default_spk_deg(i), -180, 180, 1);
+    th_ui(i) = spk_deg(i) : ma.deg2rad;
+};
+
+
+//==================================Wave Field Synthesis==================================
+// Reconstructing the wave field of several sources over a linear loudspeaker
+// array: each loudspeaker plays every source delayed and attenuated according
+// to its distance from the source.
+//========================================================================================
 
 //-------`(sp.)wfs`-------------------
 // Wave Field Synthesis algorithm for multiple sound sources. 
@@ -160,52 +340,45 @@ with {
 // #### Usage
 //
 // ```
-// wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inGain, xs, ys, zs) : si.bus(nSpeakers)
+// wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inProc, xs, ys, zs) : si.bus(nSpeakers)
 // ```
 //
 // Where:
 //
-// * `xref`: x-coordinate of the reference listening point
-// * `yref`: y-coordinate of the reference listening point
-// * `zref`: z-coordinate of the reference listening point
-// * `speakersDist`: distance between speakers
-// * `nSources`: number of sound sources
-// * `nSpeakers`: number of speakers
-// * `inGain`: input gain (0-1) as a function of the source index
-// * `xs`: x-coordinate of the sound source as a function of the source index
-// * `ys`: y-coordinate of the sound source as a function of the source index
-// * `zs`: z-coordinate of the sound source as a function of the source index
+// * `xref`: x-coordinate of the reference listening point in meters
+// * `yref`: y-coordinate of the reference listening point in meters
+// * `zref`: z-coordinate of the reference listening point in meters
+// * `speakersDist`: distance between speakers in meters (a constant numerical expression)
+// * `nSources`: number of sound sources (a constant numerical expression)
+// * `nSpeakers`: number of speakers (a constant numerical expression)
+// * `inProc`: per-source processor function, as a function of the source index
+// * `xs`: x-coordinate of the sound source in meters, as a function of the source index
+// * `ys`: y-coordinate of the sound source in meters, as a function of the source index
+// * `zs`: z-coordinate of the sound source in meters, as a function of the source index
 //
 // #### Test
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// wfs_inGain(i) = 0.5;
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// wfs_proc(i) = *(0.5); // Simple gain processor
 // wfs_xs(i) = 0.0;
 // wfs_ys(i) = 1.0;
 // wfs_zs(i) = 0.0;
-// wfs_test = os.osc(440)
-//   : sp.wfs(0, 1, 0, 0.5, 1, 2, wfs_inGain, wfs_xs, wfs_ys, wfs_zs);
+// wfs_test = os.tosc(440)
+//   : sp.wfs(0, 1, 0, 0.5, 1, 2, wfs_proc, wfs_xs, wfs_ys, wfs_zs);
+// wfs_modulated_test = os.tosc(440) : sp.wfs(0, 1, 0, 0.5, 1, 2, proc, xs, ys, zs) with { proc(i) = *(0.5); xs(i) = 2*tri - 1; ys(i) = 1.0; zs(i) = 0.0; P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // ```
 //--------------------------------------
 declare wfs author "Pierre Lecomte, revised by GRAME";
-wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inGain, xs, ys, zs) 
-    = par(i, nSources, oneSource(xref,yref,zref,speakersDist,nSpeakers,inGain(i),xs(i),ys(i),zs(i))) 
+wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inProc, xs, ys, zs) 
+    = par(i, nSources, oneSource(xref,yref,zref,speakersDist,nSpeakers,inProc(i),xs(i),ys(i),zs(i))) 
     :> si.bus(nSpeakers)
 with {
 
     // Physical constant: speed of sound in air (m/s)
     c = 340;
-
-    // Filtering stage (pre-defined transfer function approximation)
-    filter = fi.tf2(b0,b1,b2,a1,a2)
-    with {
-        b0 = 1;
-        b1 = -0.8715;
-        b2 = 0.0412;
-        a1 = -0.31134;
-        a2 = -0.088955;
-    };
 
     // Function to compute Euclidean distance between two points in 3D space
     norm(x1, y1, z1, x2, y2, z2) = sqrt((x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2);
@@ -226,9 +399,8 @@ with {
     speakersXpos(speakersDist, nSpeakers) = par(i,nSpeakers,(-speakersDist*nSpeakers/2 + speakersDist/2 + i*speakersDist));
 
     // Function to synthesize a single sound source for WFS
-    oneSource(xref, yref, zref, speakersDist, nSpeakers, inGain, xs, ys, zs) =
-        *(inGain)
-        : filter <:
+    oneSource(xref, yref, zref, speakersDist, nSpeakers, inProc, xs, ys, zs) =
+        inProc <: // Apply per-source processor
         (speakersXpos(speakersDist,nSpeakers) <: par(i,nSpeakers,norm(xref,yref,zref,_,0,0)*ys),(par(i,nSpeakers,norm(xs,ys,zs,_,0,0))
          <: par(i,nSpeakers,_),(mins(nSpeakers)
          <: par(i,nSpeakers,_)))),par(i,nSpeakers,_)
@@ -237,29 +409,30 @@ with {
 
 };
 
+
 //-------`(sp.)wfs_ui`-------------------
 // Wave Field Synthesis algorithm for multiple sound sources with a built-in UI.
 //
 // #### Usage
 //
 // ```
-// wfs_ui(xref, yref, zref, speakersDist, nSources, nSpeaker) : si.bus(nSpeakers)
+// wfs_ui(xref, yref, zref, speakersDist, nSources, nSpeakers) : si.bus(nSpeakers)
 // ```
 //
 // Where:
 //
-// * `xref`: x-coordinate of the reference listening point
-// * `yref`: y-coordinate of the reference listening point
-// * `zref`: z-coordinate of the reference listening point
-// * `speakersDist`: distance between speakers
-// * `nSources`: number of sound sources
-// * `nSpeakers`: number of speakers
+// * `xref`: x-coordinate of the reference listening point in meters
+// * `yref`: y-coordinate of the reference listening point in meters
+// * `zref`: z-coordinate of the reference listening point in meters
+// * `speakersDist`: distance between speakers in meters
+// * `nSources`: number of sound sources (a constant numerical expression)
+// * `nSpeakers`: number of speakers (a constant numerical expression)
 //
 // #### Test
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// wfs_ui_test = os.osc(550)
+// wfs_ui_test = os.tosc(550)
 //   : sp.wfs_ui(0, 1, 0, 0.5, 1, 2);
 // ```
 //
@@ -278,14 +451,127 @@ with {
 // process = wfs_ui(xref,yref,zref,speakersDist,4,16);
 // ```
 //--------------------------------------
-declare wfs author "Pierre Lecomte, revised by GRAME";
-wfs_ui(xref, yref, zref, speakersDist, nSources, nSpeakers) = wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inGain, xs, ys, zs)
+declare wfs_ui author "Pierre Lecomte, revised by GRAME";
+wfs_ui(xref, yref, zref, speakersDist, nSources, nSpeakers) = wfs(xref, yref, zref, speakersDist, nSources, nSpeakers, inProc, xs, ys, zs)
 with {
     xs(i) = hslider("v:Sound%2i/xs", 0, -10, 10, 0.01);
     ys(i) = hslider("v:Sound%2i/ys", 1.5,  1, 10, 0.01);
     zs(i) = hslider("v:Sound%2i/zs", 0, -10, 10, 0.01);
     inGain(i) = hslider("v:Sound%2i/inGain",1,0,10,0.01);
+    inProc(i) = *(inGain(i)) : fi.tf2(b0,b1,b2,a1,a2) // Filtering stage (pre-defined transfer function approximation)
+    with {
+        b0 = 1;
+        b1 = -0.8715;
+        b2 = 0.0412;
+        a1 = -0.31134;
+        a2 = -0.088955;
+    };
 };
+
+
+//===================================Binaural Rendering===================================
+// Rendering a mono source for headphones as the two signals that reach the
+// ears: from a parametric head model (`binauralModel`) or from measured head
+// related impulse responses (`binauralFir`).
+//========================================================================================
+
+//-----------------------`(sp.)binauralModel`------------------------
+// Parametric (structural) binaural spatializer after Brown and Duda: a mono
+// source is placed at a given azimuth using the two dominant localization
+// cues. The interaural time difference follows the Woodworth spherical-head
+// formula (radius 8.75 cm, applied as a fractional delay on the far ear),
+// and the interaural level difference is a one-pole/one-zero head-shadow
+// filter per ear whose high-frequency response varies continuously from
+// +6 dB (source side) to shadowed (opposite side), corner around 1.2 kHz.
+// No elevation cues and no pinna model: for full localization use measured
+// HRIRs with `sp.binauralFir`.
+//
+// #### Usage
+//
+// ```
+// _ : binauralModel(az) : _,_ // left, right
+// ```
+//
+// Where:
+//
+// * `az`: azimuth in degrees, 0 in front, positive towards the RIGHT ear,
+//   any value (wrapped internally to [-180, 180])
+//
+// #### Test
+// ```
+// sp = library("spats.lib");
+// os = library("oscillators.lib");
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// binauralModel_test = os.tosc(440) : sp.binauralModel(45);
+// binauralModel_modulated_test = os.tosc(440) : sp.binauralModel(180*tri - 90) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// binauralModel_jump_test = os.tosc(440) : sp.binauralModel(180*sq - 90) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
+// ```
+//
+// #### References
+//
+// * C.P. Brown and R.O. Duda, "A structural model for binaural sound
+//   synthesis", IEEE Trans. Speech and Audio Processing, 6(5), 1998.
+// * <https://ccrma.stanford.edu/~jos/pasp/Spherical_Head_Model.html>
+//------------------------------------------------------------
+declare binauralModel license "MIT";
+binauralModel(az) = _ <: ear(-1), ear(+1)
+with {
+    a = 0.0875;              // head radius in meters
+    c = 343.0;               // speed of sound in m/s
+    radConv = ma.PI/180.0;
+    azw = ma.frac((az + 180.0)/360.0)*360.0 - 180.0;   // wrap to [-180,180)
+    theta = azw * radConv;
+    // Woodworth ITD, front/back symmetric
+    phi = min(abs(theta), ma.PI - abs(theta));
+    itd = a/c * (phi + sin(abs(theta)));
+    // side = +1 for the right ear, -1 for the left
+    ear(side) = de.fdelay(512, dly(side)*ma.SR) : shadow(side);
+    dly(side) = select2(side*azw >= 0.0, itd, 0.0);    // far ear gets the ITD
+    // head-shadow filter: H(s) = (alpha*s + 1)/(s + 1) at w0 = 2c/a rad/s
+    shadow(side) = fi.tf1s(alpha(side), 1.0, 1.0, 2.0*c/a);
+    alpha(side) = 1.0 + side*sin(theta);
+};
+
+
+//-----------------------`(sp.)binauralFir`------------------------
+// Binaural rendering by direct convolution with a measured pair of head
+// related impulse responses. Measured HRIRs are short (128-256 taps at
+// 44.1/48 kHz), so a direct FIR is perfectly affordable and no partitioned
+// convolution is needed: pass the taps of the left-ear and right-ear HRIRs
+// for the desired direction as two constant lists.
+//
+// #### Usage
+//
+// ```
+// _ : binauralFir(hL, hR) : _,_ // left, right
+// ```
+//
+// Where:
+//
+// * `hL`: left-ear HRIR taps, a list `(l0, l1, ...)` of constant numerical expressions
+// * `hR`: right-ear HRIR taps, a list `(r0, r1, ...)` of constant numerical expressions
+//
+// #### Example
+//
+// ```
+// _ : binauralFir((0.9, 0.05, 0.02), (0.4, 0.3, 0.1)) : _,_
+// ```
+//
+// #### Test
+// ```
+// sp = library("spats.lib");
+// os = library("oscillators.lib");
+// binauralFir_test = os.tosc(440) : sp.binauralFir((0.9, 0.05, 0.02), (0.4, 0.3, 0.1));
+// ```
+//------------------------------------------------------------
+declare binauralFir license "MIT";
+binauralFir(hL, hR) = _ <: fi.fir(hL), fi.fir(hR);
+
+
+//=======================================Utilities========================================
+// Adapting processors to a stereo signal chain.
+//========================================================================================
 
 //---------------`(sp.)stereoize`-------------
 // Transform an arbitrary processor `p` into a stereo processor with 2 inputs
@@ -305,7 +591,7 @@ with {
 // ```
 // sp = library("spats.lib");
 // os = library("oscillators.lib");
-// stereoize_test = (os.osc(660), os.osc(770))
+// stereoize_test = (os.tosc(660), os.tosc(770))
 //   : sp.stereoize(+);
 // ```
 //----------------------------------------
@@ -326,8 +612,6 @@ with {
     // processors with inputs > 2 and outputs > 2
     S(n,m) = _,_ <: p,p :> _,_;    // we are sure this works if n or p are odd
 };
-
-// TODO: need demo function of spat here
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // UNDOCUMENTED/DISMISSED ELEMENTS
