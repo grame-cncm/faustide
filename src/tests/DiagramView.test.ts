@@ -92,6 +92,23 @@ describe("DiagramView", () => {
             expect(options).toMatchObject({ use: 2, n: 7 });
         });
 
+        it("tells the place shown: file, and use and sample of the player", () => {
+            const state = vi.fn(() => ({ use: 1, n: 9 }));
+            scope.FaustSvgStep = vi.fn(() => ({ go: vi.fn(), use: vi.fn(), state }));
+            const source = { readGeneratedSvg: vi.fn(() => "<svg width=\"10\" height=\"10\"></svg>") };
+            const view = new DiagramView(source);
+            view.bind();
+
+            expect(view.currentPlace()).toEqual({ file: "process.svg" });
+            view.display(steppable("sub"), { file: "sub-1.svg", use: 1, n: 4 });
+            expect(view.currentPlace()).toEqual({ file: "sub-1.svg", use: 1, n: 9 });
+
+            // A plain diagram reached by a link has no player.
+            $("#diagram-svg").html('<svg width="10" height="10"><a href="sub-2.svg"><rect></rect></a></svg>');
+            $("#diagram-svg a").trigger("click");
+            expect(view.currentPlace()).toEqual({ file: "sub-2.svg" });
+        });
+
         it("leaves a plain diagram without player", () => {
             scope.FaustSvgStep = vi.fn();
             new DiagramView({ readGeneratedSvg: vi.fn() }).display("<svg width=\"10\" height=\"10\"></svg>");

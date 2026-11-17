@@ -160,4 +160,47 @@ test.describe("Block diagram", () => {
         expect(slots.length).toBeGreaterThan(0);
         expect(slots.every(Boolean)).toBe(true);
     });
+    test("Step keeps the sub-diagram shown, and its sample", async ({ page }) => {
+        await openApp(page);
+        await setEditorCode(page, "import(\"stdfaust.lib\");\nprocess = + ~ _ : fi.lowpass(3, 1000);");
+        await runDsp(page);
+        await expect(page.locator("#faust-ui")).toHaveClass(/active/);
+        await page.locator("#tab-diagram").click();
+        await expect(page.locator("#diagram")).toHaveClass(/show/);
+
+        // A diagram is told by the files its links lead to (its parent, its folded
+        // blocks), without the "#..." part steppable diagrams add to them.
+        const pane = page.locator("#diagram-svg");
+        const svg = page.locator("#diagram-svg svg").first();
+        const links = () => svg.evaluate(el => Array.from(el.querySelectorAll("a"))
+            .map(a => (a.getAttribute("xlink:href") || a.getAttribute("href") || "").split("#")[0])
+            .sort().join(" "));
+
+        // Go down into the folded filter in the plain diagram.
+        const top = await links();
+        await page.locator("#diagram-svg svg a").first().dispatchEvent("click");
+        await expect.poll(links).not.toBe(top);
+        const sub = await links();
+
+        // Step: the same sub-diagram, now steppable.
+        await page.locator("#check-diagram-step").check();
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(1);
+        expect(await links()).toBe(sub);
+        const state = () => svg.evaluate(el => (el as any).__faustSvgStep?.state());
+        await svg.click({ position: { x: 5, y: 5 } });
+        for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowRight");
+        await expect.poll(state).toEqual({ use: 0, n: 5 });
+
+        // Fewer samples: the same sub-diagram at the same sample.
+        await page.locator("#diagram-step-samples").fill("8");
+        await page.locator("#diagram-step-samples").blur();
+        await expect.poll(() => svg.evaluate(el => el.querySelector("script.faust-svg-step-data")?.textContent?.slice(0, 7))).toBe("{\"n\":8,");
+        expect(await links()).toBe(sub);
+        await expect.poll(state).toEqual({ use: 0, n: 5 });
+
+        // Step off: the same sub-diagram, plain again.
+        await page.locator("#check-diagram-step").uncheck();
+        await expect(pane.locator("svg script.faust-svg-step")).toHaveCount(0);
+        expect(await links()).toBe(sub);
+    });
 });

@@ -1,4 +1,5 @@
 import type { DiagramName, DiagramService, DiagramStepOptions } from "../runtime/DiagramService";
+import type { DiagramPlace } from "./DiagramView";
 import type { FaustEditorCompileOptions } from "../runtime/types";
 import type { AlertController } from "./AlertController";
 
@@ -11,7 +12,8 @@ type MonacoRangeFactory = {
 };
 
 type DiagramDisplay = {
-    display: (strSvg: string) => SVGSVGElement;
+    display: (strSvg: string, place?: DiagramPlace) => SVGSVGElement;
+    currentPlace: () => DiagramPlace;
 };
 
 type DiagramControllerOptions = {
@@ -31,7 +33,8 @@ type DiagramControllerOptions = {
  * error alerting, empty-state visibility, the process/effect selector shown
  * when a polyphonic instrument defines an `effect`, and the Step controls of
  * the diagram toolbar, which regenerate the diagrams as steppable diagrams
- * (`faust -sst`) for a number of samples and a test signal. The displayed set
+ * (`faust -sst`) for a number of samples and a test signal, and show again
+ * the sub-diagram, use and sample that were shown. The displayed set
  * is recorded in `#diagram-svg[data-diagram]` so DiagramView follows links in
  * the right generated directory.
  */
@@ -68,9 +71,11 @@ export class DiagramController {
     /**
      * Reads the Step controls and regenerates the last diagrammed code: plain
      * diagrams when Step is off, otherwise steppable diagrams for the given
-     * number of samples (1 to 1024) and test signal.
+     * number of samples (1 to 1024) and test signal. The diagram shown (a
+     * sub-diagram, its use and sample) stays shown when it still exists.
      */
     private applyStep() {
+        const place = this.diagramView.currentPlace();
         const enabled = $<HTMLInputElement>("#check-diagram-step").prop("checked") as boolean;
         $("#diagram-step-samples, #diagram-step-input").prop("disabled", !enabled);
         const samples = Math.round(+$("#diagram-step-samples").val());
@@ -81,7 +86,7 @@ export class DiagramController {
             }
             : undefined;
         if (this.step) $("#diagram-step-samples").val(this.step.samples);
-        if (this.code !== undefined) this.update(this.code);
+        if (this.code !== undefined) this.update(this.code, place);
     }
 
     /**
@@ -90,8 +95,10 @@ export class DiagramController {
      * displayed while it still exists.
      *
      * @param code Faust source code to diagram
+     * @param place the place to show in the selected diagram set when its
+     *     file still exists, `process.svg` otherwise and by default
      */
-    update(code: string): { success: boolean; error?: Error } {
+    update(code: string, place?: DiagramPlace): { success: boolean; error?: Error } {
         this.code = code;
         this.editorDecorations = this.editor.deltaDecorations(this.editorDecorations, []);
         const { args, useDouble } = this.compileOptions;
@@ -101,7 +108,8 @@ export class DiagramController {
         this.svgs = { main: result.svg };
         if (effect?.success) this.svgs.effect = effect.svg;
         $("#diagram-selector").toggleClass("d-none", !this.svgs.effect);
-        this.show(this.svgs[this.selected] ? this.selected : "main");
+        if (this.svgs[this.selected]) this.show(this.selected, place);
+        else this.show("main");
         $("#diagram-default").hide();
         $("#diagram-svg").show();
         if (effect && !effect.success) return this.fail(effect);
@@ -113,16 +121,34 @@ export class DiagramController {
      * Displays one of the generated diagrams, fitted to the pane.
      *
      * @param name diagram set to display; ignored when it was not generated
+     * @param place the place to show in it, its `process.svg` by default or
+     *     when the file of the place is not in the set
      */
-    show(name: DiagramName) {
+    show(name: DiagramName, place?: DiagramPlace) {
         const strSvg = this.svgs[name];
         if (!strSvg) return;
         this.selected = name;
         $("#diagram-svg").attr("data-diagram", name);
-        this.diagramView.display(strSvg);
+        const file = place?.file && place.file !== "process.svg" ? place.file : undefined;
+        const subSvg = file ? this.readGenerated(file, name) : undefined;
+        if (subSvg !== undefined) this.diagramView.display(subSvg, place);
+        else this.diagramView.display(strSvg, file ? {} : { use: place?.use, n: place?.n });
         $("#diagram-selector button").each((_i, button) => {
             $(button).toggleClass("active", $(button).attr("data-diagram") === name);
         });
+    }
+
+    /**
+     * Reads a generated file of a diagram set.
+     *
+     * @returns its SVG source, or `undefined` when the set has no such file
+     */
+    private readGenerated(file: string, name: DiagramName) {
+        try {
+            return this.diagramService.readGeneratedSvg(file, name);
+        } catch {
+            return undefined;
+        }
     }
 
     /**

@@ -32,7 +32,11 @@ const bindController = (overrides: any = {}) => {
                 success: true,
                 svg: '<svg width="600" height="300"><path /></svg>'
             })),
-            generateEffectSvg: vi.fn(() => null)
+            generateEffectSvg: vi.fn(() => null),
+            readGeneratedSvg: vi.fn((file: string): string => {
+                if (file === "sub-1.svg") return '<svg width="600" height="300"><text>sub</text></svg>';
+                throw new Error(`ENOENT: ${file}`);
+            })
         },
         diagramView: new DiagramView({ readGeneratedSvg: vi.fn() }),
         alertController: {
@@ -150,6 +154,32 @@ describe("DiagramController", () => {
         expect(options.diagramService.generateProcessSvg).toHaveBeenLastCalledWith(
             "process = +(1) ~ _;", ["-I", "/usr/share/project/"], false, undefined
         );
+    });
+
+    it("keeps the sub-diagram shown when Step regenerates the diagrams", () => {
+        const { controller, options } = bindController();
+        controller.bind();
+        controller.update("process = _;");
+        options.diagramView.display('<svg width="600" height="300"><text>sub</text></svg>', { file: "sub-1.svg" });
+        $("#diagram-svg text").text("old");
+
+        $("#check-diagram-step").prop("checked", true).trigger("change");
+
+        expect(options.diagramService.readGeneratedSvg).toHaveBeenCalledWith("sub-1.svg", "main");
+        expect($("#diagram-svg text").text()).toBe("sub");
+        expect(options.diagramView.currentPlace()).toEqual({ file: "sub-1.svg" });
+    });
+
+    it("falls back to the process diagram when the sub-diagram is gone", () => {
+        const { controller, options } = bindController();
+        controller.bind();
+        controller.update("process = _;");
+        options.diagramView.display("<svg><text>gone</text></svg>", { file: "gone-2.svg" });
+
+        $("#check-diagram-step").prop("checked", true).trigger("change");
+
+        expect($("#diagram-svg text").length).toBe(0);
+        expect(options.diagramView.currentPlace()).toEqual({ file: "process.svg" });
     });
 
     it("waits for a first diagram before applying the Step controls", () => {
