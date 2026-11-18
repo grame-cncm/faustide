@@ -26,6 +26,17 @@ export type DiagramResult = {
 export type DiagramName = "main" | "effect";
 
 /**
+ * Settings of steppable diagrams (`faust -sst`): the number of samples whose
+ * values the compiler writes into the diagrams, and the test signal fed to the
+ * inputs of `process`, a Faust expression (empty for the compiler's default,
+ * an impulse).
+ */
+export type DiagramStepOptions = {
+    samples: number;
+    input: string;
+};
+
+/**
  * Generates Faust SVG diagrams and reads linked generated SVG files.
  *
  * The service is intentionally UI-free: it returns SVG strings and parsed error
@@ -51,6 +62,22 @@ export class DiagramService {
     }
 
     /**
+     * Compiler arguments that make the diagrams steppable, none without step
+     * options. `FaustSvgDiagrams.from` splits its arguments at every space and
+     * handles no quotes, so the white space of the test signal is removed.
+     *
+     * @param step step options, or `undefined` for plain diagrams
+     * @returns the `-sst` (and `-ssi`) arguments
+     */
+    static stepArgs(step?: DiagramStepOptions) {
+        if (!step) return [];
+        const args = ["-sst", String(step.samples)];
+        const input = step.input.replace(/\s+/g, "");
+        if (input) args.push("-ssi", input);
+        return args;
+    }
+
+    /**
      * Extracts Faust's source line number from generated error messages.
      */
     static parseErrorLine(error: Error) {
@@ -61,9 +88,11 @@ export class DiagramService {
 
     /**
      * Generates the main process SVG and returns a structured error on failure.
+     *
+     * @param step step options for steppable diagrams, plain diagrams without
      */
-    generateProcessSvg(code: string, argsIn: string[], useDouble: boolean): DiagramResult {
-        const args = DiagramService.argsWithPrecision(argsIn, useDouble);
+    generateProcessSvg(code: string, argsIn: string[], useDouble: boolean, step?: DiagramStepOptions): DiagramResult {
+        const args = [...DiagramService.argsWithPrecision(argsIn, useDouble), ...DiagramService.stepArgs(step)];
         try {
             return {
                 success: true,
@@ -93,11 +122,12 @@ export class DiagramService {
      * environment the same way faustwasm compiles the effect. The wrapper keeps
      * the user code on line 1 so error line numbers stay valid.
      *
+     * @param step step options for steppable diagrams, plain diagrams without
      * @returns the diagram result, or `null` when the code defines no effect
      */
-    generateEffectSvg(code: string, argsIn: string[], useDouble: boolean): DiagramResult | null {
+    generateEffectSvg(code: string, argsIn: string[], useDouble: boolean, step?: DiagramStepOptions): DiagramResult | null {
         if (!DiagramService.definesEffect(code)) return null;
-        const args = DiagramService.argsWithPrecision(argsIn, useDouble);
+        const args = [...DiagramService.argsWithPrecision(argsIn, useDouble), ...DiagramService.stepArgs(step)];
         const effectCode = `dsp_code = environment{${code}\n};\nprocess = dsp_code.effect;`;
         try {
             return {
@@ -118,7 +148,8 @@ export class DiagramService {
     /**
      * Reads linked SVG files produced by Faust under `<diagramName>-svg/`.
      *
-     * @param fileName linked file name found in a generated SVG
+     * @param fileName linked file name found in a generated SVG, without the
+     *     `#...` part steppable diagrams add to it
      * @param diagramName diagram set the link belongs to
      */
     readGeneratedSvg(fileName: string, diagramName: DiagramName = "main") {

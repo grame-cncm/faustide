@@ -13,6 +13,24 @@ describe("DiagramService", () => {
         expect(from).toHaveBeenCalledWith("main", "process = _;", "-I /project -double");
     });
 
+    it("makes steppable diagrams from step options", () => {
+        expect(DiagramService.stepArgs()).toEqual([]);
+        expect(DiagramService.stepArgs({ samples: 32, input: "" })).toEqual(["-sst", "32"]);
+        // from() splits its arguments at spaces: the test signal loses its white space.
+        expect(DiagramService.stepArgs({ samples: 8, input: " 1 - 1' , 0.5 " })).toEqual(["-sst", "8", "-ssi", "1-1',0.5"]);
+    });
+
+    it("passes the step arguments to the process and effect diagrams", () => {
+        const from = vi.fn(() => ({ "process.svg": "<svg></svg>" }));
+        const service = new DiagramService({ from }, {} as any);
+        const step = { samples: 16, input: "os.osc(440)" };
+
+        service.generateProcessSvg("process = _;", ["-I", "/project"], true, step);
+        expect(from).toHaveBeenLastCalledWith("main", "process = _;", "-I /project -double -sst 16 -ssi os.osc(440)");
+        service.generateEffectSvg("effect = _;", [], false, step);
+        expect(from).toHaveBeenLastCalledWith("effect", expect.any(String), "-sst 16 -ssi os.osc(440)");
+    });
+
     it("returns Faust error and parsed line", () => {
         const error = new Error("FaustDSP : 12 : syntax error");
         const service = new DiagramService({

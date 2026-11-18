@@ -205,7 +205,8 @@ $(async () => {
      * initialization later when audio is unlocked.
      *
      * DiagramController can be constructed immediately because it depends only
-     * on the editor, Monaco, compile options, and DiagramService. The
+     * on the editor, Monaco, compile options, DiagramService, and the
+     * DiagramView that inserts the diagrams (bound later with the other views). The
      * composition root only supplies browser adapters and callbacks between
      * these pieces.
      */
@@ -221,9 +222,11 @@ $(async () => {
         projectDir: PROJECT_DIR
     });
     const analyserScopeController = new AnalyserScopeController({ audioEnv, uiEnv, compileOptions });
+    const diagramView = new DiagramView(diagramService);
     const diagramController = new DiagramController({
         compileOptions,
         diagramService,
+        diagramView,
         alertController,
         editor,
         monaco
@@ -572,7 +575,7 @@ $(async () => {
     projectRuntimeController.bindEditorContent(editor, uiEnv.fileManager);
     faustUiController.bind();
     diagramController.bind();
-    new DiagramView(diagramService).bind();
+    diagramView.bind();
     new GlobalShortcutsController({
         docs: () => $("#btn-docs")[0].click(),
         run: () => $("#btn-run").click()

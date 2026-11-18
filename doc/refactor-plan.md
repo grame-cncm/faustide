@@ -106,7 +106,7 @@ The plan above is driven by characterization testing: behavior is locked down wi
 
 - Config in `playwright.config.ts`: a minimal static server (`tests/e2e/serve-dist.cjs`) serves the built `dist/` on `http://127.0.0.1:4173`, so e2e exercises the production artifact, not the source.
 - `tests/e2e/app-smoke.spec.ts` validates high-level behavior that jsdom cannot cover reliably: app load plus `window.faustEnv` exposure, default `untitled.dsp` project, Monaco editing updating the selected file, deleting the last file recreating the default DSP, export targets populated from a mocked `faustservice.inria.fr/targets` route, and the share URL containing name/voices/autorun/inline code.
-- Additional e2e specs cover real example compilation, DSP replacement, embedded and popup Faust UI parameter restoration, diagram navigation and zoom, plot/scopes, panels, settings, MIDI, file manager behavior, and export modal wiring.
+- Additional e2e specs cover real example compilation, DSP replacement, embedded and popup Faust UI parameter restoration, diagram navigation and zoom, steppable diagrams (`faust -sst`: the player started in the page, keys, links at the current sample), plot/scopes, panels, settings, MIDI, file manager behavior, and export modal wiring.
 - External Faust service requests are mocked via `page.route`. Real audio hardware, popup blockers, and production Faust service export stay in the manual checklist.
 
 ## Phase 1: test harness before refactoring
@@ -948,6 +948,7 @@ Run these manually after phases touching audio, DSP, export, or cross-window mes
 - use keyboard MIDI and a real MIDI input when available;
 - drag/drop a source audio file;
 - generate a diagram, zoom, pan, and follow SVG links (also in the `effect` diagram of a polyphonic instrument);
+- check Step in the diagram toolbar, step through a diagram with the keys and buttons of its player, use its table and guess mode, and follow a link at the current sample;
 - export via the production Faust service;
 - verify layout on narrow and wide windows.
 

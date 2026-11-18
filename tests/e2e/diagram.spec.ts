@@ -89,4 +89,53 @@ test.describe("Block diagram", () => {
         await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
         await expect(page.locator("#diagram-selector")).toBeHidden();
     });
+    test("Step makes a diagram that steps sample by sample and keeps the sample across links", async ({ page }) => {
+        await openApp(page);
+        // A counter fed by a step: the wire after the recursion counts 1, 2, 3...
+        // The library filter is a folded block, so the diagram links to its own file.
+        await setEditorCode(page, "import(\"stdfaust.lib\");\nprocess = + ~ _ : fi.lowpass(3, 1000);");
+        await runDsp(page);
+        // The run switches to the Faust UI tab once the DSP exists: wait for it
+        // before showing the diagram, which real clicks below must reach.
+        await expect(page.locator("#faust-ui")).toHaveClass(/active/);
+        await page.locator("#tab-diagram").click();
+        await expect(page.locator("#diagram")).toHaveClass(/show/);
+        await expect(page.locator("#diagram-svg svg").first()).toBeVisible();
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(0);
+
+        // The sample count and test signal are enabled with Step.
+        await expect(page.locator("#diagram-step-samples")).toBeDisabled();
+        await page.locator("#check-diagram-step").check();
+        await page.locator("#diagram-step-samples").fill("16");
+        await page.locator("#diagram-step-input").fill("1");
+        await page.locator("#diagram-step-input").blur();
+
+        // The player of the inserted SVG is started on it, at sample 0.
+        const svg = page.locator("#diagram-svg svg").first();
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(1);
+        const state = () => svg.evaluate(el => (el as any).__faustSvgStep?.state());
+        await expect.poll(state).toEqual({ use: 0, n: 0 });
+
+        // A click gives the diagram the keys; arrows step, End goes to the last sample.
+        await svg.click({ position: { x: 5, y: 5 } });
+        await page.keyboard.press("ArrowRight");
+        await page.keyboard.press("ArrowRight");
+        await expect.poll(state).toEqual({ use: 0, n: 2 });
+        await page.keyboard.press("End");
+        await expect.poll(state).toEqual({ use: 0, n: 15 });
+        await page.keyboard.press("ArrowLeft");
+        await expect.poll(state).toEqual({ use: 0, n: 14 });
+
+        // The link to the folded filter opens its diagram, stepped at the same sample.
+        const before = await page.locator("#diagram-svg").innerHTML();
+        await page.locator("#diagram-svg svg a").first().dispatchEvent("click");
+        await expect.poll(() => page.locator("#diagram-svg").innerHTML()).not.toBe(before);
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(1);
+        await expect.poll(state).toEqual({ use: 0, n: 14 });
+
+        // Step off: plain diagrams again.
+        await page.locator("#check-diagram-step").uncheck();
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(0);
+        await expect(page.locator("#diagram-step-samples")).toBeDisabled();
+    });
 });

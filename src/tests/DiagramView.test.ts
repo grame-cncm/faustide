@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DiagramView } from "../ui/DiagramView";
 
 // DiagramView tests focus on DOM interaction only; SVG generation stays covered
@@ -42,6 +42,62 @@ describe("DiagramView", () => {
         $("#diagram-svg a").trigger("click");
 
         expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested.svg", "effect");
+    });
+
+    it("follows a link without the part a steppable diagram adds to it", () => {
+        const source = { readGeneratedSvg: vi.fn(() => "<svg></svg>") };
+        $("#diagram-svg a").attr("href", "nested.svg#c=1&b=0");
+        new DiagramView(source).bind();
+
+        $("#diagram-svg a").trigger("click");
+
+        expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested.svg", "main");
+    });
+
+    describe("steppable diagrams", () => {
+        const steppable = (name: string) =>
+            `<svg width="200" height="100"><text>${name}</text><script type="text/javascript" class="faust-svg-step"></script></svg>`;
+        const scope = window as unknown as { FaustSvgStep?: ReturnType<typeof vi.fn> };
+
+        afterEach(() => {
+            delete scope.FaustSvgStep;
+        });
+
+        it("starts the player of the diagram at the given use and sample", () => {
+            scope.FaustSvgStep = vi.fn(() => ({ go: vi.fn(), use: vi.fn(), state: vi.fn() }));
+            const view = new DiagramView({ readGeneratedSvg: vi.fn() });
+
+            const svg = view.display(steppable("process"), { use: 1, n: 5 });
+
+            // SVG elements are compared by identity: Vitest's deep equality fails on jsdom SVG nodes.
+            expect($("#diagram-svg svg")[0] === svg).toBe(true);
+            expect($("#diagram-svg svg").width()).toBe(400);
+            const [target, options] = scope.FaustSvgStep.mock.calls[0];
+            expect(target === svg).toBe(true);
+            expect(options).toMatchObject({ use: 1, n: 5 });
+        });
+
+        it("opens the target of a player link at its use and sample", () => {
+            scope.FaustSvgStep = vi.fn(() => ({ go: vi.fn(), use: vi.fn(), state: vi.fn() }));
+            const source = { readGeneratedSvg: vi.fn(() => steppable("nested")) };
+            $("#diagram-svg").attr("data-diagram", "effect");
+            new DiagramView(source).display(steppable("process"));
+
+            scope.FaustSvgStep.mock.calls[0][1].onNavigate({ file: "nested-3.svg", use: 2, n: 7 });
+
+            expect(source.readGeneratedSvg).toHaveBeenCalledWith("nested-3.svg", "effect");
+            expect($("#diagram-svg svg text").text()).toBe("nested");
+            const [target, options] = scope.FaustSvgStep.mock.lastCall;
+            expect(target === $("#diagram-svg svg")[0]).toBe(true);
+            expect(options).toMatchObject({ use: 2, n: 7 });
+        });
+
+        it("leaves a plain diagram without player", () => {
+            scope.FaustSvgStep = vi.fn();
+            new DiagramView({ readGeneratedSvg: vi.fn() }).display("<svg width=\"10\" height=\"10\"></svg>");
+
+            expect(scope.FaustSvgStep).not.toHaveBeenCalled();
+        });
     });
 
     it("zooms the displayed SVG only with ctrl wheel", () => {

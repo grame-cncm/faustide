@@ -1,4 +1,4 @@
-import type { DiagramName, DiagramService } from "../runtime/DiagramService";
+import type { DiagramName, DiagramService, DiagramStepOptions } from "../runtime/DiagramService";
 import type { FaustEditorCompileOptions } from "../runtime/types";
 import type { AlertController } from "./AlertController";
 
@@ -10,9 +10,14 @@ type MonacoRangeFactory = {
     Range: new (startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number) => unknown;
 };
 
+type DiagramDisplay = {
+    display: (strSvg: string) => SVGSVGElement;
+};
+
 type DiagramControllerOptions = {
     compileOptions: FaustEditorCompileOptions;
     diagramService: DiagramService;
+    diagramView: DiagramDisplay;
     alertController: AlertController;
     editor: EditorDecorationTarget;
     monaco: MonacoRangeFactory;
@@ -21,36 +26,62 @@ type DiagramControllerOptions = {
 /**
  * Renders generated Faust process and effect diagrams into the diagram pane.
  *
- * DiagramService performs UI-free SVG generation. This controller owns the
- * editor decoration lifecycle, error alerting, SVG DOM replacement, empty-state
- * visibility, initial fit-to-pane sizing, and the process/effect selector shown
- * when a polyphonic instrument defines an `effect`. The displayed set is
- * recorded in `#diagram-svg[data-diagram]` so DiagramView follows links in the
- * right generated directory.
+ * DiagramService performs UI-free SVG generation and DiagramView inserts the
+ * SVG into the pane. This controller owns the editor decoration lifecycle,
+ * error alerting, empty-state visibility, the process/effect selector shown
+ * when a polyphonic instrument defines an `effect`, and the Step controls of
+ * the diagram toolbar, which regenerate the diagrams as steppable diagrams
+ * (`faust -sst`) for a number of samples and a test signal. The displayed set
+ * is recorded in `#diagram-svg[data-diagram]` so DiagramView follows links in
+ * the right generated directory.
  */
 export class DiagramController {
     private readonly compileOptions: FaustEditorCompileOptions;
     private readonly diagramService: DiagramService;
+    private readonly diagramView: DiagramDisplay;
     private readonly alertController: AlertController;
     private readonly editor: EditorDecorationTarget;
     private readonly monaco: MonacoRangeFactory;
     private editorDecorations: string[] = [];
     private svgs: Partial<Record<DiagramName, string>> = {};
     private selected: DiagramName = "main";
+    private step: DiagramStepOptions | undefined;
+    private code: string | undefined;
 
     constructor(options: DiagramControllerOptions) {
         this.compileOptions = options.compileOptions;
         this.diagramService = options.diagramService;
+        this.diagramView = options.diagramView;
         this.alertController = options.alertController;
         this.editor = options.editor;
         this.monaco = options.monaco;
     }
 
-    /** Binds the process/effect selector buttons. */
+    /** Binds the process/effect selector buttons and the Step controls. */
     bind() {
         $("#diagram-selector").on("click", "button", (e) => {
             this.show($(e.currentTarget).attr("data-diagram") as DiagramName);
         });
+        $("#check-diagram-step, #diagram-step-samples, #diagram-step-input").on("change", () => this.applyStep());
+    }
+
+    /**
+     * Reads the Step controls and regenerates the last diagrammed code: plain
+     * diagrams when Step is off, otherwise steppable diagrams for the given
+     * number of samples (1 to 1024) and test signal.
+     */
+    private applyStep() {
+        const enabled = $<HTMLInputElement>("#check-diagram-step").prop("checked") as boolean;
+        $("#diagram-step-samples, #diagram-step-input").prop("disabled", !enabled);
+        const samples = Math.round(+$("#diagram-step-samples").val());
+        this.step = enabled
+            ? {
+                samples: Number.isFinite(samples) ? Math.min(1024, Math.max(1, samples)) : 32,
+                input: String($("#diagram-step-input").val() ?? "")
+            }
+            : undefined;
+        if (this.step) $("#diagram-step-samples").val(this.step.samples);
+        if (this.code !== undefined) this.update(this.code);
     }
 
     /**
@@ -61,11 +92,12 @@ export class DiagramController {
      * @param code Faust source code to diagram
      */
     update(code: string): { success: boolean; error?: Error } {
+        this.code = code;
         this.editorDecorations = this.editor.deltaDecorations(this.editorDecorations, []);
         const { args, useDouble } = this.compileOptions;
-        const result = this.diagramService.generateProcessSvg(code, args, useDouble);
+        const result = this.diagramService.generateProcessSvg(code, args, useDouble, this.step);
         if (!result.success) return this.fail(result);
-        const effect = this.diagramService.generateEffectSvg(code, args, useDouble);
+        const effect = this.diagramService.generateEffectSvg(code, args, useDouble, this.step);
         this.svgs = { main: result.svg };
         if (effect?.success) this.svgs.effect = effect.svg;
         $("#diagram-selector").toggleClass("d-none", !this.svgs.effect);
@@ -86,8 +118,8 @@ export class DiagramController {
         const strSvg = this.svgs[name];
         if (!strSvg) return;
         this.selected = name;
-        const svg = $<SVGSVGElement>(strSvg).filter("svg")[0];
-        $("#diagram-svg").attr("data-diagram", name).empty().append(svg).children("svg").width(this.fitWidth(svg));
+        $("#diagram-svg").attr("data-diagram", name);
+        this.diagramView.display(strSvg);
         $("#diagram-selector button").each((_i, button) => {
             $(button).toggleClass("active", $(button).attr("data-diagram") === name);
         });
@@ -110,17 +142,5 @@ export class DiagramController {
             range: new this.monaco.Range(errorLine, 1, errorLine, 1),
             options: { isWholeLine: true, linesDecorationsClassName: "monaco-decoration-error" }
         }]);
-    }
-
-    /**
-     * Fits the generated SVG to the current diagram viewport, below the
-     * process/effect selector when shown, while preserving aspect ratio.
-     */
-    private fitWidth(svg: SVGSVGElement) {
-        const svgWidth = svg.width?.baseVal?.value || +svg.getAttribute("width") || 0;
-        const svgHeight = svg.height?.baseVal?.value || +svg.getAttribute("height") || 1;
-        const $selector = $("#diagram-selector").not(".d-none");
-        const height = $("#diagram").height() - ($selector.length ? $selector.outerHeight(true) : 0);
-        return Math.min($("#diagram").width(), height / svgHeight * svgWidth);
     }
 }

@@ -362,9 +362,17 @@
 						<div id="diagram-default" class="alert alert-info" role="alert">
 							<h5>Diagram not available</h5>
 						</div>
-						<div id="diagram-selector" class="btn-group btn-group-sm d-none" role="group" aria-label="Diagram">
-							<button type="button" class="btn btn-outline-secondary active" data-diagram="main">process</button>
-							<button type="button" class="btn btn-outline-secondary" data-diagram="effect">effect</button>
+						<div id="diagram-toolbar">
+							<div id="diagram-selector" class="btn-group btn-group-sm d-none" role="group" aria-label="Diagram">
+								<button type="button" class="btn btn-outline-secondary active" data-diagram="main">process</button>
+								<button type="button" class="btn btn-outline-secondary" data-diagram="effect">effect</button>
+							</div>
+							<div id="diagram-step" title="Steppable diagram: the value of every wire, sample by sample (faust -sst). Click the diagram, then step with the arrow keys.">
+								<input type="checkbox" id="check-diagram-step">
+								<label for="check-diagram-step">Step</label>
+								<input type="number" id="diagram-step-samples" class="form-control form-control-sm" value="32" min="1" max="1024" disabled title="Number of samples">
+								<input type="text" id="diagram-step-input" class="form-control form-control-sm" placeholder="1-1'" disabled title="Test signal fed to the inputs, a Faust expression (default 1-1', an impulse)">
+							</div>
 						</div>
 						<div id="diagram-svg"></div>
 					</div>

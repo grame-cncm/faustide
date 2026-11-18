@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DiagramController } from "../ui/DiagramController";
+import { DiagramView } from "../ui/DiagramView";
 
 const setupDom = () => {
     document.body.innerHTML = `
         <div id="diagram" style="width: 300px; height: 150px"></div>
-        <div id="diagram-selector" class="d-none">
-            <button data-diagram="main" class="active"></button>
-            <button data-diagram="effect"></button>
+        <div id="diagram-toolbar">
+            <div id="diagram-selector" class="d-none">
+                <button data-diagram="main" class="active"></button>
+                <button data-diagram="effect"></button>
+            </div>
+            <input type="checkbox" id="check-diagram-step">
+            <input type="number" id="diagram-step-samples" value="32" disabled>
+            <input type="text" id="diagram-step-input" disabled>
         </div>
         <div id="diagram-svg"></div>
         <div id="diagram-default"></div>
@@ -28,6 +34,7 @@ const bindController = (overrides: any = {}) => {
             })),
             generateEffectSvg: vi.fn(() => null)
         },
+        diagramView: new DiagramView({ readGeneratedSvg: vi.fn() }),
         alertController: {
             show: vi.fn(),
             clear: vi.fn()
@@ -63,7 +70,8 @@ describe("DiagramController", () => {
         expect(options.diagramService.generateProcessSvg).toHaveBeenCalledWith(
             "process = _;",
             ["-I", "/usr/share/project/"],
-            false
+            false,
+            undefined
         );
         expect($("#diagram-svg svg").length).toBe(1);
         expect($("#diagram-svg svg").width()).toBe(300);
@@ -102,15 +110,55 @@ describe("DiagramController", () => {
         expect($("#diagram-selector").hasClass("d-none")).toBe(true);
     });
 
-    it("fits the diagram below the visible process/effect selector", () => {
+    it("fits the diagram below the diagram toolbar", () => {
         const { controller, options } = bindController();
-        $("#diagram-selector").height(30);
+        $("#diagram-toolbar").height(30);
         options.diagramService.generateEffectSvg = vi.fn(() => ({ success: true, svg: "<svg></svg>" }));
 
         controller.update("process = _; effect = _;");
 
-        // (150 - 30) / 300 * 600: the selector height is taken from the pane.
+        // (150 - 30) / 300 * 600: the toolbar height is taken from the pane.
         expect($("#diagram-svg svg").width()).toBe(240);
+    });
+
+    it("regenerates the last diagram as a steppable diagram with the Step controls", () => {
+        const { controller, options } = bindController();
+        controller.bind();
+        const step = $<HTMLInputElement>("#check-diagram-step");
+        controller.update("process = _;");
+
+        step.prop("checked", true).trigger("change");
+        expect($("#diagram-step-samples").prop("disabled")).toBe(false);
+        expect(options.diagramService.generateProcessSvg).toHaveBeenLastCalledWith(
+            "process = _;", ["-I", "/usr/share/project/"], false, { samples: 32, input: "" }
+        );
+
+        // The number of samples is clamped to 1..1024; later updates keep the options.
+        $("#diagram-step-samples").val("5000").trigger("change");
+        $("#diagram-step-input").val("1").trigger("change");
+        expect($("#diagram-step-samples").val()).toBe("1024");
+        controller.update("process = +(1) ~ _;");
+        expect(options.diagramService.generateProcessSvg).toHaveBeenLastCalledWith(
+            "process = +(1) ~ _;", ["-I", "/usr/share/project/"], false, { samples: 1024, input: "1" }
+        );
+        expect(options.diagramService.generateEffectSvg).toHaveBeenLastCalledWith(
+            "process = +(1) ~ _;", ["-I", "/usr/share/project/"], false, { samples: 1024, input: "1" }
+        );
+
+        step.prop("checked", false).trigger("change");
+        expect($("#diagram-step-input").prop("disabled")).toBe(true);
+        expect(options.diagramService.generateProcessSvg).toHaveBeenLastCalledWith(
+            "process = +(1) ~ _;", ["-I", "/usr/share/project/"], false, undefined
+        );
+    });
+
+    it("waits for a first diagram before applying the Step controls", () => {
+        const { controller, options } = bindController();
+        controller.bind();
+
+        $("#check-diagram-step").prop("checked", true).trigger("change");
+
+        expect(options.diagramService.generateProcessSvg).not.toHaveBeenCalled();
     });
 
     it("shows the process diagram and reports an effect error", () => {
