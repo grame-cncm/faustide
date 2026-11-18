@@ -138,4 +138,26 @@ test.describe("Block diagram", () => {
         await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(0);
         await expect(page.locator("#diagram-step-samples")).toBeDisabled();
     });
+    test("Step computes the signals that go through math foreign functions", async ({ page }) => {
+        await openApp(page);
+        // pm.djembe goes through ma.tanh, a foreign function of the C math library
+        // (tanhf): the compiler computes it, so every wire of the diagram has values.
+        await setEditorCode(page, "import(\"stdfaust.lib\");\nprocess = ba.pulsen(1, 10000) : pm.djembe(60, 0.3, 0.4, 1) <: dm.freeverb_demo;");
+        await runDsp(page);
+        await expect(page.locator("#faust-ui")).toHaveClass(/active/);
+        await page.locator("#tab-diagram").click();
+        await expect(page.locator("#diagram")).toHaveClass(/show/);
+
+        await page.locator("#check-diagram-step").check();
+
+        await expect(page.locator("#diagram-svg svg script.faust-svg-step")).toHaveCount(1);
+        await expect(page.locator("#alert-faust-code")).not.toContainText("foreign function");
+        // The values of the diagram: each wire (slot) of each use has its values.
+        const slots = await page.locator("#diagram-svg svg script.faust-svg-step-data").evaluate(el => {
+            const data = JSON.parse(el.textContent || "{}");
+            return data.ctx.flatMap((c: { s: { v?: number[] }[] }) => c.s.map(s => Array.isArray(s.v)));
+        });
+        expect(slots.length).toBeGreaterThan(0);
+        expect(slots.every(Boolean)).toBe(true);
+    });
 });
