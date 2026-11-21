@@ -66,7 +66,7 @@ it = library("interpolators.lib");
 si = library("signals.lib");
 
 declare name "Faust Basic Element Library";
-declare version "1.23.6";
+declare version "1.23.9";
 
 //=============================Conversion Tools===========================================
 //========================================================================================
@@ -534,7 +534,7 @@ FAUST library file, GRAME section 2
 // #### Test
 // ```
 // ba = library("basics.lib");
-// counter_test = ba.counter(button("trig"));
+// counter_test = ba.counter(ba.pulse(10));
 // ```
 //----------------------------
 declare counter author "Stephane Letz";
@@ -890,7 +890,7 @@ beat(t) = pulse(tempo(t));
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countup_test = ba.pulse_countup(1) + 0.001;
+// pulse_countup_test = ba.pulse(2) : ba.pulse_countup(ba.period(100) < 80);
 // ```
 //----------------------------
 declare pulse_countup author "Vince";
@@ -915,7 +915,7 @@ pulse_countup(trig) = + ~ _ * trig;
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countdown_test = ba.pulse_countdown(1) + 0.001;
+// pulse_countdown_test = ba.pulse(2) : ba.pulse_countdown(ba.period(100) < 80);
 // ```
 //----------------------------
 declare pulse_countdown author "Vince";
@@ -947,7 +947,7 @@ pulse_countdown(trig) = - ~ _ * trig;
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countup_loop_test = ba.pulse_countup_loop(4, 1) + 0.001;
+// pulse_countup_loop_test = ba.pulse(2) : ba.pulse_countup_loop(4, ba.period(100) < 80);
 // pulse_countup_loop_pulses_test = ba.pulse(2) : ba.pulse_countup_loop(4, 1);
 // ```
 //----------------------------
@@ -985,7 +985,7 @@ with {
 // #### Test
 // ```
 // ba = library("basics.lib");
-// pulse_countdown_loop_test = ba.pulse_countdown_loop(4, 1) + 0.001;
+// pulse_countdown_loop_test = ba.pulse(2) : ba.pulse_countdown_loop(4, ba.period(100) < 80);
 // pulse_countdown_loop_pulses_test = ba.pulse(2) : ba.pulse_countdown_loop(4, 1);
 // ```
 //----------------------------
@@ -1261,9 +1261,10 @@ subseq(head, 0, N)         = head;
 // ba = library("basics.lib");
 // it = library("interpolators.lib");
 // si = library("signals.lib");
+// os = library("oscillators.lib");
 // // 3-input processor, 2 arrays supplied -> 1 N-wide bus input, sliders smoothed:
 // processArray_proc(a, b, c) = a + b + c;
-// processArray_test = si.bus(4) : ba.processArray(4, processArray_proc, it.interpolate_linear, si.smoo, (0.1, 1.0), (1.0, 10.0));
+// processArray_test = par(i, 4, 0.1*os.tosc(110*(i+1))) : ba.processArray(4, processArray_proc, it.interpolate_linear, si.smoo, (0.1, 1.0), (1.0, 10.0));
 // ```
 //----------------------------
 declare processArray author "Bart Brouns";
@@ -2799,8 +2800,8 @@ impulsify = _ <: _,mem : - <: >(0)*_;
 // #### Test
 // ```
 // ba = library("basics.lib");
-// autoControl = hslider("autoControl", 0.2, 0, 1, 0.01);
-// automat_test = autoControl : ba.automat(120, 4, 0.0);
+// os = library("oscillators.lib");
+// automat_test = os.tosc(3) : ba.automat(1200, 4, 0.0);
 // ```
 //----------------------------
 automat(t, size, init, input) = rwtable(size+1, init, windex, input, rindex)
@@ -2880,6 +2881,16 @@ with {
 // `f = bpf.start(0,1) : bpf.curve_end(.9,1,0);`
 //
 // `bpf` is a standard Faust function.
+//
+// #### Test
+// ```
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// bpf_test = x : ba.bpf.start(0.1, 0.2) : ba.bpf.point(0.5, 1) : ba.bpf.end(0.9, 0.25) with { P = int(ma.SR); x = ba.period(P)/P; };
+// bpf_step_test = x : ba.bpf.start(0, 0) : ba.bpf.step(0.2, 0.3) : ba.bpf.step(0.4, 0.6) : ba.bpf.step_end(1, 1) with { P = int(ma.SR); x = 1.1*ba.period(P)/P; };
+// bpf_curve_test = x : ba.bpf.start(0, 0) : ba.bpf.curve(0.15, 0.5, 0.5) : ba.bpf.curve_end(0.85, 1, 1) with { P = int(ma.SR); x = ba.period(P)/P; };
+// ```
+//
 //--------------------------------------------------------
 bpf = environment
 {
@@ -3107,7 +3118,7 @@ with {
 // #### Test
 // ```
 // ba = library("basics.lib");
-// toggle_test = ba.toggle(button("trig"));
+// toggle_test = ba.toggle(ba.pulse(10));
 // ```
 //----------------------------
 declare toggle author "Vince";
@@ -3142,7 +3153,7 @@ with {
 // #### Test
 // ```
 // ba = library("basics.lib");
-// on_and_off_test = button("on"), button("off") : ba.on_and_off;
+// on_and_off_test = ba.pulse(64), ba.pulse(64)@16 : ba.on_and_off;
 // ```
 //----------------------------
 declare on_and_off author "Vince";

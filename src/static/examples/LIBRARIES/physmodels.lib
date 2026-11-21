@@ -81,7 +81,7 @@ closed source license or any other license if you decide so.
 import("stdfaust.lib");
 
 declare name "Faust Physical Models Library";
-declare version "1.2.5";
+declare version "1.2.14";
 
 /*
 TODO:
@@ -109,6 +109,13 @@ TODO:
 // ```
 // speedOfSound : _
 // ```
+//
+// #### Test
+// ```
+// pm = library("physmodels.lib");
+// speedOfSound_test = pm.speedOfSound;
+// ```
+//
 //--------------------------------------
 speedOfSound = 340;
 
@@ -121,6 +128,13 @@ speedOfSound = 340;
 // ```
 // maxLength : _
 // ```
+//
+// #### Test
+// ```
+// pm = library("physmodels.lib");
+// maxLength_test = pm.maxLength;
+// ```
+//
 //--------------------------------------
 maxLength = 3;
 
@@ -465,7 +479,8 @@ terminations(a,b,c) = (_,ro.crossnn(1),_,_ : +,+,_ : b) ~ (a,c : ro.crossnn(1));
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// lTermination_test = 0.25, -0.15, 0.05 : pm.lTermination(*(-1), pm.basicBlock);
+// no = library("noises.lib");
+// lTermination_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.lTermination(*(-1), pm.basicBlock);
 // ```
 //----------------------------------------
 lTermination(a,b) = (ro.crossnn(1),_,_ : _,+,_ : b) ~ a;
@@ -494,7 +509,8 @@ lTermination(a,b) = (ro.crossnn(1),_,_ : _,+,_ : b) ~ a;
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// rTermination_test = 0.25, -0.15, 0.05 : pm.rTermination(pm.basicBlock, *(-1));
+// no = library("noises.lib");
+// rTermination_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.rTermination(pm.basicBlock, *(-1));
 // ```
 //----------------------------------------
 rTermination(b,c) = (_,_,_,_ : +,_,_ : b) ~ (!,c);
@@ -614,10 +630,11 @@ endChain(b) = closeIns : b : closeOuts;
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// waveguideUd_test = 0.25, -0.15, 0.05 : pm.waveguideUd(512, 32);
-// waveguideFd_test = 0.25, -0.15, 0.05 : pm.waveguideFd(512, 32);
-// waveguideFd2_test = 0.25, -0.15, 0.05 : pm.waveguideFd2(512, 32);
-// waveguideFd4_test = 0.25, -0.15, 0.05 : pm.waveguideFd4(512, 32);
+// no = library("noises.lib");
+// waveguideUd_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.waveguideUd(512, 32);
+// waveguideFd_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.waveguideFd(512, 32);
+// waveguideFd2_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.waveguideFd2(512, 32);
+// waveguideFd4_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.waveguideFd4(512, 32);
 // ```
 //----------------------------------
 waveguideUd(nMax,n) = par(i,2,de.delay(nMax,n)),_;
@@ -649,7 +666,8 @@ waveguideFd4(nMax,n) = par(i,2,de.fdelay4(nMax,n)),_;
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// waveguide_test = 0.25, -0.15, 0.05 : pm.waveguide(512, 32);
+// no = library("noises.lib");
+// waveguide_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.waveguide(512, 32);
 // ```
 //----------------------------------
 waveguide(nMax,n) = waveguideFd4(nMax,n);
@@ -750,7 +768,8 @@ with {
     // otherwise fold its division into the per-sample expression.
     f2 = min(4*B0/((1 + t)*(1 + t)), ma.MAX);
     qq = min(t/B0, ma.MAX);
-    gi = min(gain*(1 + t)*(1 + t)/(4*B0), ma.MAX);
+    // the peak gain of the mode is 1/(1 - r), in t60*SR: `gain` is referred to 44.1 kHz
+    gi = min(gain*44100/ma.SR*(1 + t)*(1 + t)/(4*B0), ma.MAX);
     // l = lowpass/f, bp = bandpass; the input is (1 + z^-1)*x
     tick(l, bp) = ln, bp + f2*(gi*(x + x') - ln - qq*bp)
     with {
@@ -787,7 +806,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// stringSegment_test = 0.25, -0.15, 0.05 : pm.stringSegment(1.0, 0.5);
+// no = library("noises.lib");
+// stringSegment_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.stringSegment(1.0, 0.5);
 // ```
 //----------------------------------
 stringSegment(maxLength,length) = waveguide(nMax,n)
@@ -942,7 +962,9 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// openStringPick_test = pm.endChain(pm.openStringPick(0.8, 0.4, 0.3, pm.impulseExcitation(button("pm.openStringPick/gate"))));
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// openStringPick_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.openStringPick(0.8, 0.4, 0.3, pm.impulseExcitation(ba.pulse(64)));
 // ```
 //----------------------------------
 openStringPick(length,stiffness,pluckPosition,excitation) = strChain
@@ -986,7 +1008,9 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// openStringPickUp_test = pm.endChain(pm.openStringPickUp(0.8, 0.4, 0.6, 0.7, pm.impulseExcitation(button("pm.openStringPickUp/gate"))));
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// openStringPickUp_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.openStringPickUp(0.8, 0.4, 0.6, 0.7, pm.impulseExcitation(ba.pulse(64)));
 // ```
 //----------------------------------
 openStringPickUp(length,stiffness,pluckPosition,pickupPosition,excitation) = strChain
@@ -1033,7 +1057,9 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// openStringPickDown_test = pm.endChain(pm.openStringPickDown(0.8, 0.4, 0.6, 0.5, pm.impulseExcitation(button("pm.openStringPickDown/gate"))));
+// no = library("noises.lib");
+// ba = library("basics.lib");
+// openStringPickDown_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.openStringPickDown(0.8, 0.4, 0.6, 0.5, pm.impulseExcitation(ba.pulse(64)));
 // ```
 //----------------------------------
 openStringPickDown(length,stiffness,pluckPosition,pickupPosition,excitation) =
@@ -1102,7 +1128,8 @@ ksReflexionFilter = _ <: (_+_')/2;
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// rStringRigidTermination_test = 0.25, -0.15, 0.05 : pm.rStringRigidTermination;
+// no = library("noises.lib");
+// rStringRigidTermination_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.rStringRigidTermination;
 // ```
 //----------------------------------
 rStringRigidTermination = rTermination(basicBlock,*(-1));
@@ -1127,7 +1154,8 @@ rStringRigidTermination = rTermination(basicBlock,*(-1));
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// lStringRigidTermination_test = 0.25, -0.15, 0.05 : pm.lStringRigidTermination;
+// no = library("noises.lib");
+// lStringRigidTermination_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.lStringRigidTermination;
 // ```
 //----------------------------------
 lStringRigidTermination = lTermination(*(-1),basicBlock);
@@ -1155,7 +1183,8 @@ lStringRigidTermination = lTermination(*(-1),basicBlock);
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// elecGuitarBridge_test = 0.25, -0.15, 0.05 : pm.elecGuitarBridge;
+// no = library("noises.lib");
+// elecGuitarBridge_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.elecGuitarBridge;
 // ```
 //----------------------------------
 elecGuitarBridge = rTermination(basicBlock,-bridgeFilter(0.8,0.6));
@@ -1183,7 +1212,8 @@ elecGuitarBridge = rTermination(basicBlock,-bridgeFilter(0.8,0.6));
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// elecGuitarNuts_test = 0.25, -0.15, 0.05 : pm.elecGuitarNuts;
+// no = library("noises.lib");
+// elecGuitarNuts_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.elecGuitarNuts;
 // ```
 //----------------------------------
 elecGuitarNuts = lTermination(-bridgeFilter(0.8,0.6),basicBlock);
@@ -1211,7 +1241,8 @@ elecGuitarNuts = lTermination(-bridgeFilter(0.8,0.6),basicBlock);
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// guitarBridge_test = 0.25, -0.15, 0.05 : pm.guitarBridge;
+// no = library("noises.lib");
+// guitarBridge_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.guitarBridge;
 // ```
 //----------------------------------
 guitarBridge = rTermination(basicBlock,reflectance) : _,transmittance,_
@@ -1243,7 +1274,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// guitarNuts_test = 0.25, -0.15, 0.05 : pm.guitarNuts;
+// no = library("noises.lib");
+// guitarNuts_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.guitarNuts;
 // ```
 //----------------------------------
 guitarNuts = lTermination(-bridgeFilter(0.4,0.5),basicBlock);
@@ -1281,8 +1313,9 @@ guitarNuts = lTermination(-bridgeFilter(0.4,0.5),basicBlock);
 idealString(length,pluckPosition,excitation) = wg
 with {
     maxStringLength = maxLength;
-    lengthTuning = 0.08; // tuned "by hand"
-    tunedLength = length-lengthTuning;
+    // delay of the loop in samples: 9 from the chain, 2 from its terminations
+    loopDelay = 11;
+    tunedLength = length-loopDelay*speedOfSound/ma.SR;
     nUp = tunedLength*pluckPosition; // upper string segment length
     nDown = tunedLength*(1-pluckPosition); // lower string segment length
     wg = chain(lStringRigidTermination : stringSegment(maxStringLength,nUp) :
@@ -1316,8 +1349,10 @@ with {
 ks(length,damping,excitation) = endChain(ksChain)
 with {
     maxStringLength = maxLength;
-    lengthTuning = 0.05; // tuned "by hand"
-    tunedLength = length-lengthTuning;
+    // delay of the loop in samples: 4 from the chain, 2 from the terminations,
+    // 0.5 from ksReflexionFilter
+    loopDelay = 6.5;
+    tunedLength = length-loopDelay*speedOfSound/ma.SR;
     refCoef = (1-damping)*0.2+0.8;
     refFilter = ksReflexionFilter*refCoef;
     ksChain = terminations(_,chain(in(excitation) :
@@ -1386,8 +1421,10 @@ with {
 elecGuitarModel(length,pluckPosition,mute,excitation) = endChain(egChain)
 with {
     maxStringLength = maxLength;
-    lengthTuning = 0.11; // tuned "by hand"
-    stringL = length-lengthTuning;
+    // delay of the loop in samples: 17 from the chain, its terminations and
+    // the bridge filters, s/(1-s) from each of the two si.smooth(0.05) of the string
+    loopDelay = 17+2*0.05/(1-0.05);
+    stringL = length-loopDelay*speedOfSound/ma.SR;
     muteBlock = *(mute),*(mute),_;
     egChain = chain(
         elecGuitarNuts :
@@ -1421,7 +1458,9 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// elecGuitar_test = pm.elecGuitar(0.9, 0.3, 0.8, 0.6, button("pm.elecGuitar/gate"));
+// ba = library("basics.lib");
+// ma = library("maths.lib");
+// elecGuitar_test = pm.elecGuitar(0.9, 0.3, 0.8, 0.6, ba.pulsen(1, int(ma.SR/4)));
 // ```
 //----------------------------------
 elecGuitar(stringLength,pluckPosition,mute,gain,trigger) =
@@ -1520,8 +1559,10 @@ with {
 guitarModel(length,pluckPosition,excitation) = endChain(egChain)
 with {
     maxStringLength = maxLength;
-    lengthTuning = 0.1; // tuned "by hand"
-    stringL = length-lengthTuning;
+    // delay of the loop in samples: 14 from the chain, its terminations and
+    // the bridge filters, s/(1-s) from each of the two si.smooth(0.05) of steelString
+    loopDelay = 14+2*0.05/(1-0.05);
+    stringL = length-loopDelay*speedOfSound/ma.SR;
     egChain = chain(guitarNuts : steelString(stringL,pluckPosition,excitation) :
     guitarBridge : guitarBody : out);
 };
@@ -1619,8 +1660,10 @@ with {
 nylonGuitarModel(length,pluckPosition,excitation) = endChain(egChain)
 with {
     maxStringLength = maxLength; // meters
-    lengthTuning = 0.11;
-    stringL = length-lengthTuning;
+    // delay of the loop in samples: 14 from the chain, its terminations and
+    // the bridge filters, s/(1-s) from each of the two si.smooth(0.4) of nylonString
+    loopDelay = 14+2*0.4/(1-0.4);
+    stringL = length-loopDelay*speedOfSound/ma.SR;
     egChain = chain(guitarNuts : nylonString(stringL,pluckPosition,excitation) :
     guitarBridge : guitarBody : out);
 };
@@ -1812,7 +1855,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// modularInterpBody_test = 0.25, -0.15, 0.05 : pm.modularInterpBody(20, 1.0, 1.5);
+// no = library("noises.lib");
+// modularInterpBody_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.modularInterpBody(20, 1.0, 1.5);
 // ```
 //----------------------------------
 modularInterpBody(nModes,shape,scale) = _,modeInterpRes(nModes,shape,scale),_;
@@ -1847,8 +1891,10 @@ modularInterpBody(nModes,shape,scale) = _,modeInterpRes(nModes,shape,scale),_;
 modularInterpStringModel(stringLength,pluckPosition,shape,scale,bodyExcitation,stringExcitation) = endChain(egChain)*0.5
 with {
     maxStringLength = maxLength;
-    lengthTuning = 0.1; // tuned "by hand"
-    stringL = stringLength-lengthTuning;
+    // delay of the loop in samples: 14 from the chain, its terminations and
+    // the bridge filters, s/(1-s) from each of the two si.smooth(0.05) of steelString
+    loopDelay = 14+2*0.05/(1-0.05);
+    stringL = stringLength-loopDelay*speedOfSound/ma.SR;
     nBodyModes = 40;
     egChain = chain(guitarNuts : steelString(stringL,pluckPosition,stringExcitation) :
     guitarBridge : inRightWave(bodyExcitation) : modularInterpBody(nBodyModes,shape,scale) : out);
@@ -1950,7 +1996,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// bowTable_test = pm.bowTable(0.4, 0.1);
+// os = library("oscillators.lib");
+// bowTable_test = os.tosc(220) : pm.bowTable(0.4, 3);
 // ```
 //----------------------------------
 bowTable(offset,slope) = pow(abs(sample) + 0.75, -4) : min(1)
@@ -2009,7 +2056,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// bowInteraction_test = pm.bowInteraction((0.4, 0.05));
+// no = library("noises.lib");
+// bowInteraction_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.bowInteraction((*(0.5), *(-0.5)));
 // ```
 //----------------------------------
 bowInteraction(b) = (_,_ <: b,_,_ :> _,_),_;
@@ -2039,7 +2087,8 @@ bowInteraction(b) = (_,_ <: b,_,_ :> _,_),_;
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// violinBow_test = pm.violinBow(0.4, 0.05);
+// no = library("noises.lib");
+// violinBow_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.violinBow(0.4, 0.05);
 // ```
 //----------------------------------
 violinBow(bowPressure,bowVelocity) = bowInteraction(bowSystem)
@@ -2074,7 +2123,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// violinBowedString_test = 0.25, -0.15, 0.05 : pm.violinBowedString(0.82, 0.35, 0.2, 0.15);
+// no = library("noises.lib");
+// violinBowedString_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.violinBowedString(0.82, 0.35, 0.2, 0.15);
 // ```
 //----------------------------------
 violinBowedString(stringLength,bowPressure,bowVelocity,bowPosition) =
@@ -2109,7 +2159,8 @@ violinBowedString(stringLength,bowPressure,bowVelocity,bowPosition) =
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// violinNuts_test = 0.25, -0.15, 0.05 : pm.violinNuts;
+// no = library("noises.lib");
+// violinNuts_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.violinNuts;
 // ```
 //----------------------------------
 violinNuts = lTermination(-bridgeFilter(0.6,0.1),basicBlock);
@@ -2134,7 +2185,8 @@ violinNuts = lTermination(-bridgeFilter(0.6,0.1),basicBlock);
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// violinBridge_test = 0.25, -0.15, 0.05 : pm.violinBridge;
+// no = library("noises.lib");
+// violinBridge_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.violinBridge;
 // ```
 //----------------------------------
 // TODO:
@@ -2165,7 +2217,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// violinBody_test = 0.25, -0.15, 0.05 : pm.violinBody;
+// no = library("noises.lib");
+// violinBody_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.violinBody;
 // ```
 //----------------------------------
 // TODO:
@@ -2205,8 +2258,10 @@ with {
 violinModel(stringLength,bowPressure,bowVelocity,bowPosition) =
     endChain(modelChain)
 with {
-    stringTuning = 0.08;
-    stringL = stringLength-stringTuning;
+    // delay of the loop in samples (measured): the chain, its terminations
+    // and the bridge filters
+    loopDelay = 12;
+    stringL = stringLength-loopDelay*speedOfSound/ma.SR;
     modelChain = chain(
         violinNuts :
         violinBowedString(stringL,bowPressure,bowVelocity,bowPosition) :
@@ -2320,7 +2375,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// openTube_test = 0.25, -0.15, 0.05 : pm.openTube(pm.maxLength, 0.9);
+// no = library("noises.lib");
+// openTube_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.openTube(pm.maxLength, 0.9);
 // ```
 //----------------------------------
 openTube = stringSegment;
@@ -2386,7 +2442,9 @@ with {
 // and that the lips and tube of the instrument are coupled to each other, the
 // length of that tube must be provided here. The lip resonance is realized
 // with `fi.tf2_tpt`, which stays accurate in single precision at low
-// frequencies and finite when the tube length or the lip tension moves.
+// frequencies and finite when the tube length or the lip tension moves. It has
+// a constant Q, and the same gain and phase relative to its frequency at every
+// note and sample rate (those of a 440 Hz resonance at 44.1 kHz).
 //
 // #### Usage
 //
@@ -2409,18 +2467,27 @@ with {
 // no = library("noises.lib");
 // brassLipsTable_test = os.tosc(220) : pm.brassLipsTable(0.3, 0.2);
 // brassLipsTable_slider_test = 0.02*os.tosc(220) : pm.brassLipsTable(hslider("tubeLength", 0.3, 0.01, 2.5, 0.01), hslider("lipsTension", 0.2, 0, 1, 0.01));
-// brassLipsTable_low_test = 0.003*no.noise : pm.brassLipsTable(2.5, 0);
+// brassLipsTable_low_test = 0.375*no.noise : pm.brassLipsTable(2.5, 0);
 // brassLipsTable_modulated_test = 0.02*os.tosc(220) : pm.brassLipsTable(0.1*pow(25.0, tri), 0.2) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
 // brassLipsTable_jump_test = 0.02*os.tosc(220) : pm.brassLipsTable(0.1*pow(25.0, sq), 0.2) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // brassLipsTable_audio_modulated_test = 0.1*no.noise : pm.brassLipsTable(340/fc, 0.5) with { fc = max(20, 1000*(1 + 0.9*os.tosc(500))); };
 // ```
 //----------------------------------
-brassLipsTable(tubeLength,lipsTension) = *(0.03) : lipFilter <: * : clipping
+brassLipsTable(tubeLength,lipsTension) = *(0.012*k) : lipFilter : mem <: * : clipping
 with {
+    // 0.012 (STK's Brass: 0.03): with 0.03, from 0.44 of pressure on, the lips' response
+    // to the constant pressure alone saturated their area, a stable state without
+    // oscillation in which the brass stayed once a lip tension or a pressure moved
     clipping = min(1) : max(-1);
     freq = (tubeLength : l2f)*pow(4,(2*lipsTension)-1);
-    // resonance with same freq as tube: 1/(1 - 2R*cos(th)*z^-1 + R^2*z^-2), R = 0.997
-    om = 0.003; // 1 - R
+    // resonance with same freq as tube: 1/(1 - 2R*cos(th)*z^-1 + R^2*z^-2), with a constant
+    // Q: R = 0.997 at 440 Hz at 44.1 kHz, the bandwidth proportional to freq at every rate.
+    // Its gain, at the resonance as 1/((1 - R)*th) and at DC as 1/((1 - R)^2 + th^2), is
+    // held by k at its value at 440 Hz at 44.1 kHz: the lips have the same response, relative
+    // to their frequency, at every note and rate. Its phase at the resonance is -pi/2 + th,
+    // a lead of one sample that mem takes back
+    om = 0.003*(freq/440)*44100/ma.SR; // 1 - R
+    k = ((freq/440)*44100/ma.SR)^2;
     th = 2*ma.PI*freq/ma.SR;
     P = om*om + 4*(1 - om)*sin(0.5*th)^2;
     S = om*om + 4*(1 - om)*cos(0.5*th)^2;
@@ -2483,7 +2550,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// clarinetMouthPiece_test = 0.25, -0.15, 0.05 : pm.clarinetMouthPiece(0.6, 0.4);
+// no = library("noises.lib");
+// clarinetMouthPiece_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.clarinetMouthPiece(0.6, 0.4);
 // ```
 //----------------------------------
 clarinetMouthPiece(reedStiffness,pressure) = lTermination(reedInteraction,in(pressure))
@@ -2520,15 +2588,17 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// brassLips_test = 0.25, -0.15, 0.05 : pm.brassLips(0.3, 0.2, 0.1);
+// no = library("noises.lib");
+// brassLips_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.brassLips(0.3, 0.2, 0.1);
 // ```
 //----------------------------------
 brassLips(tubeLength,lipsTension,pressure) = lTermination(mpInteraction,basicBlock)
 with {
     absorption = *(0.85); // absorption coefficient
     p = pressure*0.3; // scaling pressure
+    dcBlock = fi.dcblocker; // the same cutoff (35 Hz) at every rate
     mpInteraction = absorption <:
-    (p-_ : brassLipsTable(tubeLength,lipsTension) <: *(p),1-_),_ : _,* : + : fi.dcblocker;
+    (p-_ : brassLipsTable(tubeLength,lipsTension) <: *(p),1-_),_ : _,* : + : dcBlock;
 };
 
 
@@ -2578,7 +2648,8 @@ fluteEmbouchure(pressure) =
 //
 // Where:
 //
-// * `opening`: the "opening" of bell (0-1)
+// * `opening`: the "opening" of bell (0-1): the pole of the one-pole lowpass the bell
+// reflects through, at 44.1 kHz; the lowpass has the same cutoff at every sample rate
 //
 // #### Example
 //
@@ -2589,10 +2660,16 @@ fluteEmbouchure(pressure) =
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// wBell_test = 0.25, -0.15, 0.05 : pm.wBell(0.4);
+// no = library("noises.lib");
+// ma = library("maths.lib");
+// ba = library("basics.lib");
+// wBell_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.wBell(0.4);
+// wBell_slider_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.wBell(hslider("opening", 0.4, 0, 1, 0.01));
+// wBell_modulated_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.wBell(0.1 + 0.8*tri) with { P = int(ma.SR/10); tri = 1 - abs(2*ba.period(P)/P - 1); };
+// wBell_jump_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.wBell(0.1 + 0.8*sq) with { P = int(ma.SR/10); sq = ba.period(2*P) < P; };
 // ```
 //----------------------------------
-wBell(opening) = rTermination(basicBlock,si.smooth(opening));
+wBell(opening) = rTermination(basicBlock,si.smooth(pow(opening, 44100/ma.SR)));
 
 
 //-------`(pm.)fluteHead`----------
@@ -2613,7 +2690,8 @@ wBell(opening) = rTermination(basicBlock,si.smooth(opening));
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// fluteHead_test = 0.25, -0.15, 0.05 : pm.fluteHead;
+// no = library("noises.lib");
+// fluteHead_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.fluteHead;
 // ```
 //----------------------------------
 fluteHead = lTermination(*(absorption),basicBlock)
@@ -2623,7 +2701,8 @@ with {
 
 
 //-------`(pm.)fluteFoot`----------
-// Simple flute foot implementing waves reflexion and dispersion.
+// Simple flute foot implementing waves reflexion and dispersion. Its lowpass
+// has the same cutoff at every sample rate.
 //
 // #### Usage
 //
@@ -2640,12 +2719,13 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// fluteFoot_test = 0.25, -0.15, 0.05 : pm.fluteFoot;
+// no = library("noises.lib");
+// fluteFoot_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.fluteFoot;
 // ```
 //----------------------------------
 fluteFoot = rTermination(basicBlock,*(absorption) : dispersion)
 with {
-    dispersion = si.smooth(0.7); // just a simple lowpass
+    dispersion = si.smooth(pow(0.7, 44100/ma.SR)); // a simple lowpass, pole 0.7 at 44.1 kHz
     absorption = 0.95;           // same as for head
 };
 
@@ -2677,9 +2757,18 @@ with {
 //----------------------------------
 clarinetModel(tubeLength,pressure,reedStiffness,bellOpening) = endChain(modelChain)
 with {
-    lengthTuning = 0.05; // empirical adjustment of the tuning of the tube
+    // the reed reflects with inversion, the bell without: a period is two round
+    // trips in the tube, hence tubeLength/2. Delay of a round trip in samples
+    // (measured): the chain and its terminations, and wBell's lowpass, which counts
+    // 0.964 times its delay at DC, pb/(1 - pb), at every note (a fit within 0.13
+    // sample for bellOpening from 0.1 to 0.7, from 44.1 to 192 kHz)
+    pb = pow(bellOpening, 44100/ma.SR); // the pole of wBell's lowpass
+    loopDelay = 5.99 + 0.964*pb/max(1 - pb, 0.01);
     maxTubeLength = maxLength;
-    tunedLength = tubeLength/2-lengthTuning; // not really sure why we had to shift octave here
+    // at least 1.5 samples each way, the shortest delay fdelay4 interpolates: below it, a
+    // tube starting from 0 (clarinetModel_ui's si.smoo) left in single precision at 176.4
+    // and 192 kHz a parasitic mode at 0.39*SR, or an onset that depended on the rounding
+    tunedLength = max(3*speedOfSound/ma.SR, tubeLength/2-loopDelay*speedOfSound/ma.SR);
     modelChain =
         chain(
             clarinetMouthPiece(reedStiffness,pressure) :
@@ -2708,7 +2797,7 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// clarinetModel_ui_test = pm.clarinetModel_ui(0.4);
+// clarinetModel_ui_test = pm.clarinetModel_ui(0.9);
 // ```
 //----------------------------------
 clarinetModel_ui(pressure) = clarinetModel(tubeLength,pressure,reedStiffness,bellOpening)*outGain
@@ -2803,7 +2892,8 @@ with {
 //
 // Where:
 //
-// * `tubeLength`: the length of the tube in meters
+// * `tubeLength`: the length of the tube in meters; with `lipsTension` and `mute`
+// at 0.5, the instrument sounds at `l2f(tubeLength)` (pass `f2l(freq)` to play `freq`)
 // * `lipsTension`: tension of the lips (0-1) (default: 0.5)
 // * `mute`: mute opening at the end of the instrument (0-1) (default: 0.5)
 // * `pressure`: the pressure of the air flow created by the virtual performer (0-1).
@@ -2818,10 +2908,24 @@ with {
 //----------------------------------
 brassModel(tubeLength,lipsTension,mute,pressure) = endChain(brassChain)
 with {
-    maxTubeLength = maxLength;
-    lengthTuning = 0; // Not that important for that one because of lips tension
-    tunedLength = tubeLength + lengthTuning;
-    brassChain = chain(brassLips(tunedLength,lipsTension,pressure) : openTube(maxTubeLength,tunedLength) : wBell(mute) : out);
+    // the tube holds up to 2*maxTubeLength: 8.4 m at 50 Hz
+    maxTubeLength = 5;
+    // The lips, tuned to l2f(tubeLength), pull the oscillation above the tube's resonance:
+    // the tube is made ratio times longer, ratio = 1.2081 - 1.2447*f^-0.9191 (a fit, the
+    // same at every rate: within 0.0008 of the ratio that plays f from 55 to 880 Hz, with
+    // lipsTension and mute 0.5 and pressure 0.5, the default gain of brass_ui_MIDI; the
+    // pitch moves with the pressure, 1 to 6 cents higher at 0.8). Delay of the loop in samples at the
+    // tube's frequency: 4 from the chain, 2 from its terminations, the phase delay of
+    // wBell's si.smooth(mute), and that of the lips' dcblocker (a lead)
+    f = l2f(tubeLength);
+    ratio = 1.2081 - 1.2447*pow(f, -0.9191);
+    w = 2*ma.PI*f/(ratio*ma.SR);
+    pdc = pow(0.995, 44100/ma.SR); // the pole of brassLips's dcblocker
+    pb = pow(mute, 44100/ma.SR); // the pole of wBell's lowpass
+    loopDelay = 6 + atan2(pb*sin(w), 1 - pb*cos(w))/w
+        - (atan2(sin(w), 1 - cos(w)) - atan2(pdc*sin(w), 1 - pdc*cos(w)))/w;
+    tunedLength = tubeLength*ratio-loopDelay*speedOfSound/ma.SR;
+    brassChain = chain(brassLips(tubeLength,lipsTension,pressure) : openTube(maxTubeLength,tunedLength) : wBell(mute) : out);
 };
 
 
@@ -2934,7 +3038,8 @@ with {
 //
 // Where:
 //
-// * `tubeLength`: the length of the tube in meters
+// * `tubeLength`: the length of the tube in meters; the flute sounds at
+// `l2f(tubeLength)` (pass `f2l(freq)` to play `freq`)
 // * `mouthPosition`: position of the mouth on the embouchure (0-1) (default: 0.5)
 // * `pressure`: the pressure of the air flow created by the virtual performer (0-1).
 // This can also be any kind of signal that will directly injected in the mouthpiece
@@ -2943,15 +3048,25 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// fluteModel_test = pm.fluteModel(0.9, 0.4, 0.6);
+// fluteModel_test = pm.fluteModel(0.9, 0.5, 0.9);
 // ```
 //----------------------------------
-// TODO: this model is out of tune and we're not really sure why
 fluteModel(tubeLength,mouthPosition,pressure) = endChain(fluteChain) : fi.dcblocker
 with {
-    maxTubeLength = maxLength;
-    tubeTuning = 0.27; // set "by hand"
-    tLength = tubeLength+tubeTuning; // global tube length
+    // a segment holds up to 2*maxTubeLength: at 50 Hz the tube is 9.8 m, 7.2 m of it on the foot side
+    maxTubeLength = 4;
+    // The jet couples two loops, embouchure-head-embouchure and embouchure-foot-embouchure,
+    // and the flute plays a period of about 0.8*(foot round trip + head round trip/2), not
+    // the tube's round trip. The global tube length n, in samples, is set from the period
+    // wanted, P = SR/freq, by P = 0.7952*(1 - e/2)*n + 6.418 - 1.659*SR/44100 + 1.381*d,
+    // e the embouchure position and d the phase delay of the foot's lowpass at freq: a fit,
+    // within 0.56 cent from 110 to 880 Hz at 44.1 to 192 kHz with mouthPosition 0.5 and
+    // pressure 0.9 (the pitch moves with the pressure, about 2 cents lower at 0.8)
+    w = 2*ma.PI*l2f(tubeLength)/ma.SR;
+    footPole = pow(0.7, 44100/ma.SR); // the lowpass of fluteFoot
+    d = atan2(footPole*sin(w), 1 - footPole*cos(w))/w;
+    n = (2*ma.PI/w - 6.418 + 1.659*ma.SR/44100 - 1.381*d)/(0.7952*(1 - embouchurePos/2));
+    tLength = n*speedOfSound/ma.SR; // global tube length
     embouchurePos = 0.27 + (mouthPosition-0.5)*0.4; // position of the embouchure on the tube
     tted = tLength*embouchurePos; // head to embouchure distance
     eted = tLength*(1-embouchurePos); // embouchure to foot distance
@@ -2978,7 +3093,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// fluteModel_ui_test = pm.fluteModel_ui(0.4);
+// no = library("noises.lib");
+// fluteModel_ui_test = pm.fluteModel_ui(0.9 + 0.01*no.noise);
 // ```
 //----------------------------------
 fluteModel_ui(pressure) =
@@ -3238,7 +3354,9 @@ with {
 
 
 //-------`(pm.)blower_ui`--------------
-// Same as [`blower`](#blower) but with a built-in UI.
+// Same as [`blower`](#blower) but with a built-in UI. The pressure defaults to
+// 0.9, where `clarinet_ui`, `brass_ui` and `flute_ui` all sound: they play as
+// soon as they run, 0 silences them.
 //
 // #### Usage
 //
@@ -3260,7 +3378,7 @@ with {
 //--------------------------------------
 blower_ui = blower(pressure,breathGain,breathCutoff,vibratoFreq,vibratoGain)
 with {
-    pressure = hslider("v:blower/[0]pressure",0,0,1,0.01) : si.smoo;
+    pressure = hslider("v:blower/[0]pressure",0.9,0,1,0.01) : si.smoo;
     breathGain = hslider("v:blower/[1]breathGain",0.1,0,1,0.01)*0.05;
     breathCutoff = hslider("v:blower/[2]breathCutoff",2000,20,20000,0.1);
     vibratoFreq = hslider("v:blower/[3]vibratoFreq",5,0.1,10,0.1);
@@ -3439,9 +3557,23 @@ with {
 marimbaResTube(tubeLength,excitation) = endChain(tubeChain)
 with {
     maxTubeLength = maxLength;
-    lengthTuning = 0.04;
-    tunedLength = tubeLength-lengthTuning;
-    endTubeReflexion = si.smooth(0.95)*0.99;
+    // reflection lowpass: pole 0.95 at 44.1 kHz, the same time constant at every rate
+    pole = pow(0.95, 44100/ma.SR);
+    g = 0.99;
+    endTubeReflexion = si.smooth(pole)*g;
+    // delay of the loop in samples at the tube's frequency f: 2 from the terminations,
+    // the phase delay of the two reflection lowpasses, and the shift that brings the
+    // peak of the damped resonance onto f. The loop gain r falls with the frequency
+    // (slope dr), which pulls the peak of 1/|1 - r*exp(j*phi)| below the frequency where
+    // phi = 0, by (-dr)*(1 - r)/(r*N) radians to first order (N: the period in samples).
+    w = 2*ma.PI*l2f(tubeLength)/ma.SR;
+    lpDelay = atan2(pole*sin(w), 1 - pole*cos(w))/w;
+    D = 1 - 2*pole*cos(w) + pole*pole;
+    r = g*g*(1 - pole)^2/D;
+    dr = 0 - g*g*(1 - pole)^2*2*pole*sin(w)/(D*D);
+    N = 2*ma.PI/w;
+    loopDelay = 2 + 2*lpDelay + (0 - dr)*(1 - r)/(r*N)/w;
+    tunedLength = tubeLength-loopDelay*speedOfSound/ma.SR;
     tubeChain =
         chain(
             in(excitation) :
@@ -3513,8 +3645,10 @@ with {
 //
 // #### Test
 // ```
+// ba = library("basics.lib");
+// ma = library("maths.lib");
 // pm = library("physmodels.lib");
-// marimba_test = pm.marimba(220, 0.4, 1, 0.5, 0.8, button("pm.marimba/gate"));
+// marimba_test = pm.marimba(220, 0.4, 7000, 0.5, 0.8, ba.pulsen(1, int(ma.SR/4)));
 // ```
 //----------------------------------
 marimba(freq,strikePosition,strikeCutoff,strikeSharpness,gain,trigger) =
@@ -5343,7 +5477,8 @@ with {
 // #### Test
 // ```
 // pm = library("physmodels.lib");
-// allpassNL_test = 0.25, -0.15, 0.05 : pm.allpassNL(0.4);
+// no = library("noises.lib");
+// allpassNL_test = no.multinoise(3) : *(0.25), *(-0.15), *(0.05) : pm.allpassNL(0.4);
 // ```
 //--------------------------------------
 allpassNL(nonlinearity) = par(i,2,nlf),_

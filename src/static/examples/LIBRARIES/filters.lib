@@ -55,7 +55,7 @@ fi = library("filters.lib"); // for compatible copy/paste out of this file
 la = library("linearalgebra.lib");
 
 declare name "Faust Filters Library";
-declare version "1.13.4";
+declare version "1.13.6";
 
 //===============================Basic Filters============================================
 //========================================================================================
@@ -204,8 +204,10 @@ with {
 };
 
 //----------------------`(fi.)dcblocker`--------------------------
-// DC blocker. Default dc blocker has -3dB point near 35 Hz (at 44.1 kHz)
-// and high-frequency gain near 1.0025 (due to no scaling).
+// DC blocker. Default dc blocker has -3dB point near 35 Hz at every rate:
+// its pole is 0.995 at 44.1 kHz, `pow(0.995,44100/ma.SR)` at the others.
+// Its high-frequency gain is 2/(1 + pole), near 1.0025 at 44.1 kHz and
+// 1.0006 at 192 kHz (due to no scaling).
 // `dcblocker` is a standard Faust function.
 //
 // #### Usage
@@ -225,7 +227,7 @@ with {
 declare dcblocker author "Julius O. Smith III";
 declare dcblocker copyright "Copyright (C) 2003-2019 by Julius O. Smith III <jos@ccrma.stanford.edu>";
 declare dcblocker license "LicenseRef-STK-4.3";
-dcblocker = zero(1) : pole(0.995);
+dcblocker = zero(1) : pole(pow(0.995, 44100/ma.SR));
 
 //----------------------------`(fi.)lptN`--------------------------------------
 // One-pole lowpass filter with arbitrary dis/charging factors set in dB and
@@ -1021,6 +1023,11 @@ fir(b0) = *(b0);
 // signal with all the coefficients. `convN` takes N signals and sums the i-th,
 // delayed by i samples, times the i-th coefficient: split one signal to N
 // copies first to convolve it with the first N coefficients.
+//
+// Both are direct convolutions: one multiplication per coefficient and per
+// sample, in a single expression. Thousands of coefficients cost far more than
+// a partitioned FFT convolution, which these libraries do not have, and their
+// generated code can exceed the limits of a C++ compiler.
 //
 // #### Usage
 //

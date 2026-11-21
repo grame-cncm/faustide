@@ -163,6 +163,36 @@ Note: **Stylelint currently fails** on the SCSS sources (the config is not
 SCSS-aware) and runs **non-blocking** in CI. Don't treat its failure as a
 regression you caused, and don't disable other lint to "fix" it.
 
+## Updating faustwasm
+
+`@grame/faustwasm` brings libfaust-wasm (the Faust compiler and the standard
+libraries it embeds); webpack copies `libfaust-wasm.*` from `node_modules` to
+`dist/faustwasm/`. For a new version `X.Y.Z`, on a branch:
+
+1. `npm install @grame/faustwasm@^X.Y.Z`, then check
+   `grep '"version"' node_modules/@grame/faustwasm/package.json`.
+2. Check that the symbols imported from `@grame/faustwasm` in `src/` still
+   exist in `node_modules/@grame/faustwasm/dist/esm/index.d.ts`;
+   `npm run type-check:fs` and the unit tests catch most API changes.
+3. Keep `src/static/examples/LIBRARIES` (the library sources shown in the
+   Examples menu) identical to the libraries embedded in
+   `libfaust-wasm.data`. Before installing, note the `shasum` of
+   `libfaust-wasm.data`; if it is unchanged, the sources stay in sync.
+   Otherwise extract the embedded files: `libfaust-wasm.js` lists them as
+   `{filename:"/usr/share/faust/<name>",start:<a>,end:<b>}`, the bytes `a`
+   to `b` of `libfaust-wasm.data`. Copy over the top-level `.lib` files the
+   directory already has, add the new ones (not `doc.lib`, documentation
+   tooling, nor the deprecated `effect.lib`, `filter.lib`, `math.lib`,
+   `music.lib`, `oscillator.lib`), check that every file is byte-identical to
+   the embedded one, then `npm run prebuild` to regenerate
+   `src/static/examples.json`.
+4. Run the full gate, e2e included: the update touches DSP compilation.
+5. Commit `package.json`, `package-lock.json` and, when they changed, the
+   library sources and `examples.json`, as
+   `chore(deps): update to faustwasm X.Y.Z`. The body says what the new
+   version brings, whether `libfaust-wasm.data` changed (and the libraries
+   version, from `version.lib`), and the results of the gate.
+
 ## Documentation
 
 - **Code:** TSDoc-style comments. Each module gets a file/class-level `/**`

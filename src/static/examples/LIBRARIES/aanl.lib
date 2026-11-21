@@ -50,7 +50,7 @@ ba = library("basics.lib");
 ma = library("maths.lib");
 
 declare name "Faust Antialiased Nonlinearities";
-declare version "1.6.0";
+declare version "1.6.2";
 
 //==============================Auxiliary Functions=======================================
 //========================================================================================
@@ -72,6 +72,13 @@ _clip(l, h, x) = max(l, min(h, x));
 //
 // * `x`: input signal
 //
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// os = library("oscillators.lib");
+// Rsqrt_test = aa.Rsqrt(os.tosc(220));
+// ```
+//
 //-----------------------------
 Rsqrt(x) = sqrt(max(0.0, x));
 
@@ -90,6 +97,15 @@ Rsqrt(x) = sqrt(max(0.0, x));
 //
 // * `x`: input signal
 //
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// Rlog_test = aa.Rlog(1.5 + os.tosc(220));
+// Rlog_floor_test = aa.Rlog(-1) == log(ma.EPSILON);
+// ```
+//
 //-----------------------------
 Rlog(x) = log(max(ma.EPSILON, x));
 
@@ -106,6 +122,13 @@ Rlog(x) = log(max(ma.EPSILON, x));
 // Where:
 //
 // * `x`: input signal
+//
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// os = library("oscillators.lib");
+// Rtan_test = aa.Rtan(os.tosc(220));
+// ```
 //
 //-----------------------------
 Rtan(x) = tan(_clip(0-ma.MAX, ma.MAX, x));
@@ -124,6 +147,13 @@ Rtan(x) = tan(_clip(0-ma.MAX, ma.MAX, x));
 //
 // * `x`: input signal
 //
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// os = library("oscillators.lib");
+// Racos_test = aa.Racos(1.5 * os.tosc(220));
+// ```
+//
 //-----------------------------
 Racos(x) = acos(_clip(-1.0, 1.0, x));
 
@@ -140,6 +170,13 @@ Racos(x) = acos(_clip(-1.0, 1.0, x));
 // Where:
 //
 // * `x`: input signal
+//
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// os = library("oscillators.lib");
+// Rasin_test = aa.Rasin(1.5 * os.tosc(220));
+// ```
 //
 //-----------------------------
 Rasin(x) = asin(_clip(-1.0, 1.0, x));
@@ -158,6 +195,13 @@ Rasin(x) = asin(_clip(-1.0, 1.0, x));
 //
 // * `x`: input signal
 //
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// os = library("oscillators.lib");
+// Racosh_test = aa.Racosh(1.5 + os.tosc(220));
+// ```
+//
 //------------------------------
 Racosh(x) = ma.acosh(_clip(1.0, ma.MAX, x));
 
@@ -174,6 +218,15 @@ Racosh(x) = ma.acosh(_clip(1.0, ma.MAX, x));
 // Where:
 //
 // * `x`: input signal
+//
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// Rcosh_test = aa.Rcosh(2 * os.tosc(220));
+// Rcosh_clamp_test = aa.Rcosh(1000) == ma.MAX;
+// ```
 //
 //-----------------------------
 Rcosh(x) = min(ma.MAX, ma.cosh(x));
@@ -192,6 +245,15 @@ Rcosh(x) = min(ma.MAX, ma.cosh(x));
 //
 // * `x`: input signal
 //
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// Rsinh_test = aa.Rsinh(2 * os.tosc(220));
+// Rsinh_clamp_test = (aa.Rsinh(1000) == ma.MAX), (aa.Rsinh(-1000) == 0 - ma.MAX);
+// ```
+//
 //------------------------------
 Rsinh(x) = _clip(0-ma.MAX, ma.MAX, ma.sinh(x));
 
@@ -209,6 +271,15 @@ Rsinh(x) = _clip(0-ma.MAX, ma.MAX, ma.sinh(x));
 // Where:
 //
 // * `x`: input signal
+//
+// #### Test
+// ```
+// aa = library("aanl.lib");
+// ma = library("maths.lib");
+// os = library("oscillators.lib");
+// Ratanh_test = aa.Ratanh(0.9 * os.tosc(220));
+// Ratanh_clip_test = (aa.Ratanh(2) == ma.atanh(1 - ma.EPSILON)), (aa.Ratanh(-2) == ma.atanh(ma.EPSILON - 1));
+// ```
 //
 //------------------------------
 Ratanh(x) = ma.atanh(_clip(-1.0 + ma.EPSILON, 1.0 - ma.EPSILON, x));
@@ -391,6 +462,7 @@ hardclip(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // hardclip2_test = aa.hardclip2(sig);
+// hardclip2_fast_test = aa.hardclip2(0.9*os.tosc(5000));
 // ```
 //---------------------------------------------
 declare hardclip2 author "Dario Sanfilippo";
@@ -520,6 +592,7 @@ parabolic(x) = ADAA1(EPS, f, F1, x)
 // parabolic2_test = aa.parabolic2(sig);
 // parabolic2_noise_test = aa.parabolic2(4.0 * no.noise)
 //     with { no = library("noises.lib"); };
+// parabolic2_fast_test = aa.parabolic2(0.9*os.tosc(5000));
 // ```
 //---------------------------------------------
 declare parabolic2 author "Dario Sanfilippo";
@@ -599,6 +672,7 @@ hyperbolic(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // hyperbolic2_test = aa.hyperbolic2(sig);
+// hyperbolic2_fast_test = aa.hyperbolic2(0.9*os.tosc(5000));
 // ```
 //----------------------------------------------
 declare hyperbolic2 author "Dario Sanfilippo";
@@ -674,6 +748,7 @@ sinarctan(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // sinarctan2_test = aa.sinarctan2(sig);
+// sinarctan2_fast_test = aa.sinarctan2(0.9*os.tosc(5000));
 // ```
 //----------------------------------------------
 declare sinarctan2 author "Dario Sanfilippo";
@@ -885,6 +960,7 @@ softclipQuadratic1 = softclipEnv.softclipQuadratic1;
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // softclipQuadratic2_test = aa.softclipQuadratic2(sig);
+// softclipQuadratic2_fast_test = aa.softclipQuadratic2(0.9*os.tosc(5000));
 // ```
 //----------------------------------------------
 declare softclipQuadratic2 author "David Braun";
@@ -985,6 +1061,7 @@ arctan(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // arctan2_test = aa.arctan2(sig);
+// arctan2_fast_test = aa.arctan2(0.9*os.tosc(5000));
 // ```
 //-------------------------------------------
 declare arctan2 author "Dario Sanfilippo";
@@ -1059,6 +1136,7 @@ asinh1(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // asinh2_test = aa.asinh2(sig);
+// asinh2_fast_test = aa.asinh2(0.9*os.tosc(5000));
 // ```
 //-------------------------------------------
 declare asinh2 author "Dario Sanfilippo";
@@ -1407,6 +1485,7 @@ cosine1(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // cosine2_test = aa.cosine2(sig);
+// cosine2_fast_test = aa.cosine2(0.9*os.tosc(5000));
 // ```
 //-------------------------------------------
 declare cosine2 author "Dario Sanfilippo";
@@ -1488,6 +1567,7 @@ arccos(x) = ADAA1(EPS, f, F1, x)
 // arccos2_test = aa.arccos2(sig);
 // arccos2_noise_test = aa.arccos2(no.noise)
 //     with { no = library("noises.lib"); };
+// arccos2_fast_test = aa.arccos2(0.9*os.tosc(5000));
 // ```
 //--------------------------------------------
 declare arccos2 author "Dario Sanfilippo";
@@ -1568,6 +1648,7 @@ acosh1(x) = ADAA1(EPS, f, F1, x)
 // acoshDomainSig = 1.0 + abs(sig);
 // sig = os.tosc(110);
 // acosh2_test = aa.acosh2(acoshDomainSig);
+// acosh2_fast_test = aa.acosh2(1.0 + abs(0.9*os.tosc(5000)));
 // ```
 //-------------------------------------------
 declare acosh2 author "Dario Sanfilippo";
@@ -1641,6 +1722,7 @@ sine(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // sine2_test = aa.sine2(sig);
+// sine2_fast_test = aa.sine2(0.9*os.tosc(5000));
 // ```
 //----------------------------------------
 declare sine2 author "Dario Sanfilippo";
@@ -1720,6 +1802,7 @@ arcsin(x) = ADAA1(EPS, f, F1, x)
 // os = library("oscillators.lib");
 // sig = os.tosc(110);
 // arcsin2_test = aa.arcsin2(sig);
+// arcsin2_fast_test = aa.arcsin2(0.9*os.tosc(5000));
 // ```
 //------------------------------------------
 declare arcsin2 author "Dario Sanfilippo";
@@ -1834,6 +1917,7 @@ atanh1(x) = ADAA1(EPS, f, F1, x)
 // atanhDomainSig = 0.8 * sig;
 // sig = os.tosc(110);
 // atanh2_test = aa.atanh2(atanhDomainSig);
+// atanh2_fast_test = aa.atanh2(0.8*os.tosc(5000));
 // ```
 //------------------------------------------
 declare atanh2 author "Dario Sanfilippo";
